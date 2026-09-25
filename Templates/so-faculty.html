@@ -20,24 +20,30 @@
 </head>
 
 
-<body class="so-faculty-page">
+<!--
+    IMPORTANT:
+    so-student-page = ginagamit para EXACT Student header/sidebar styling
+    so-faculty-page = ginagamit para sa Faculty main-content styling
+-->
+<body class="so-student-page so-faculty-page">
 
 
     <!-- =====================================================
          HEADER
+         EXACT SAME STRUCTURE AS SO-STUDENT
          ===================================================== -->
 
-    <header class="sof-header">
+    <header class="so-topbar">
 
 
         <!-- BRAND -->
-        <div class="sof-brand">
+        <div class="so-brand">
 
-            <div class="sof-logo">
+            <div class="so-brand-logo">
                 Edu<span>Metrics</span>
             </div>
 
-            <div class="sof-tagline">
+            <div class="so-brand-subtitle">
                 Academic Assessment &amp; Grading System
             </div>
 
@@ -46,12 +52,12 @@
 
 
         <!-- USER AREA -->
-        <div class="sof-header-user">
+        <div class="so-user-area">
 
 
             <!-- NOTIFICATION -->
             <button
-                class="sof-notification-btn"
+                class="so-notification-btn"
                 type="button"
                 aria-label="Notifications"
             >
@@ -59,22 +65,18 @@
                 <img
                     src="../Static/images/sidebar/notif.png"
                     alt="Notifications"
-                    class="sof-notification-image"
+                    class="so-notification-image"
                 >
 
-                <span class="sof-notification-dot"></span>
+                <span class="so-notification-dot"></span>
 
             </button>
 
 
 
-            <!-- FACULTY INFORMATION -->
-            <div class="sof-user-copy">
+            <!-- FACULTY INFO -->
+            <div class="so-user-info">
 
-                <!--
-                    Backend later:
-                    Full name ng logged-in faculty.
-                -->
                 <strong id="facultyName"></strong>
 
                 <span>
@@ -87,14 +89,16 @@
 
             <!-- PROFILE AVATAR -->
             <div
-                class="sof-avatar"
+                class="so-avatar"
                 aria-hidden="true"
             >
-                ●
+                <span class="so-avatar-person">●</span>
             </div>
 
+
+            <!-- ONLINE INDICATOR -->
             <span
-                class="sof-online-dot"
+                class="so-online-dot"
                 aria-hidden="true"
             ></span>
 
@@ -106,8 +110,31 @@
 
 
 
-    <!-- GOLD LINE -->
-    <div class="sof-gold-line"></div>
+    <!-- =====================================================
+         YELLOW LINE
+         EXACT SAME STRUCTURE AS SO-STUDENT
+         ===================================================== -->
+
+    <div class="so-header-lines">
+
+        <div class="so-header-gold"></div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         HEADER LINES
+         SAME AS EXISTING SO-STUDENT
+         ===================================================== -->
+
+    <div class="so-header-lines">
+
+        <div class="so-header-blue"></div>
+
+        <div class="so-header-gold"></div>
+
+    </div>
 
 
 
@@ -115,26 +142,27 @@
          PAGE SHELL
          ===================================================== -->
 
-    <div class="sof-shell">
+    <div class="so-shell">
 
 
         <!-- =================================================
              SIDEBAR
+             EXACT SAME STRUCTURE AS SO-STUDENT
              ================================================= -->
 
-        <aside class="sof-sidebar">
+        <aside class="so-sidebar">
 
 
             <!-- PAGES LABEL -->
-            <div class="sof-pages-label">
+            <div class="so-pages-title">
 
 
-                <span class="sof-pages-icon-wrap">
+                <span class="so-grid-icon so-pages-image-wrap">
 
                     <img
                         src="../Static/images/sidebar/pages.png"
                         alt=""
-                        class="sof-pages-icon"
+                        class="so-pages-image"
                     >
 
                 </span>
@@ -150,19 +178,27 @@
 
 
             <!-- NAVIGATION -->
-            <nav class="sof-nav">
+            <nav
+                class="so-nav"
+                aria-label="Faculty navigation"
+            >
 
 
                 <!-- HOME -->
                 <a
-                    class="sof-nav-item"
                     href="#"
+                    class="so-nav-item"
                 >
 
-                    <img
-                        src="../Static/images/sidebar/home-white.png"
-                        alt=""
-                    >
+                    <span class="so-nav-icon so-nav-image-wrap">
+
+                        <img
+                            src="../Static/images/sidebar/home-white.png"
+                            alt=""
+                            class="so-nav-image"
+                        >
+
+                    </span>
 
                     <span>
                         Home
@@ -174,14 +210,19 @@
 
                 <!-- MY COURSES -->
                 <a
-                    class="sof-nav-item"
                     href="#"
+                    class="so-nav-item"
                 >
 
-                    <img
-                        src="../Static/images/sidebar/course-white.png"
-                        alt=""
-                    >
+                    <span class="so-nav-icon so-nav-image-wrap">
+
+                        <img
+                            src="../Static/images/sidebar/course-white.png"
+                            alt=""
+                            class="so-nav-image"
+                        >
+
+                    </span>
 
                     <span>
                         My Courses
@@ -193,14 +234,19 @@
 
                 <!-- PLATFORM -->
                 <a
-                    class="sof-nav-item"
                     href="#"
+                    class="so-nav-item"
                 >
 
-                    <img
-                        src="../Static/images/sidebar/pl-white.png"
-                        alt=""
-                    >
+                    <span class="so-nav-icon so-nav-image-wrap">
+
+                        <img
+                            src="../Static/images/sidebar/pl-white.png"
+                            alt=""
+                            class="so-nav-image"
+                        >
+
+                    </span>
 
                     <span>
                         Platform
@@ -214,34 +260,39 @@
                      WORKFLOW
                      ================================================= -->
 
-                <div class="sof-workflow-group">
+                <div class="so-nav-group">
 
 
-                    <a
-                        class="sof-nav-item sof-workflow-active"
-                        href="#"
+                    <button
+                        class="so-nav-item so-products active"
+                        type="button"
                     >
 
-                        <img
-                            src="../Static/images/sidebar/ws-blue.png"
-                            alt=""
-                        >
+                        <span class="so-nav-icon so-nav-image-wrap">
+
+                            <img
+                                src="../Static/images/sidebar/ws-blue.png"
+                                alt=""
+                                class="so-nav-image"
+                            >
+
+                        </span>
 
                         <span>
                             Workflow
                         </span>
 
-                    </a>
+                    </button>
 
 
 
                     <!-- WORKFLOW SUBMENU -->
-                    <div class="sof-subnav">
+                    <div class="so-subnav">
 
 
                         <a
-                            class="active"
                             href="#"
+                            class="active"
                         >
                             Syllabus &amp; Outcomes
                         </a>
@@ -291,14 +342,19 @@
 
                 <!-- RESOURCES -->
                 <a
-                    class="sof-nav-item"
                     href="#"
+                    class="so-nav-item"
                 >
 
-                    <img
-                        src="../Static/images/sidebar/rs-white.png"
-                        alt=""
-                    >
+                    <span class="so-nav-icon so-nav-image-wrap">
+
+                        <img
+                            src="../Static/images/sidebar/rs-white.png"
+                            alt=""
+                            class="so-nav-image"
+                        >
+
+                    </span>
 
                     <span>
                         Resources
@@ -310,14 +366,19 @@
 
                 <!-- ABOUT US -->
                 <a
-                    class="sof-nav-item"
                     href="#"
+                    class="so-nav-item"
                 >
 
-                    <img
-                        src="../Static/images/sidebar/au-white.png"
-                        alt=""
-                    >
+                    <span class="so-nav-icon so-nav-image-wrap">
+
+                        <img
+                            src="../Static/images/sidebar/au-white.png"
+                            alt=""
+                            class="so-nav-image"
+                        >
+
+                    </span>
 
                     <span>
                         About us
@@ -330,10 +391,13 @@
 
 
 
-            <!-- SIDEBAR BRAND -->
-            <div class="sof-sidebar-brand">
+            <!-- =================================================
+                 SIDEBAR BRAND
+                 ================================================= -->
 
-                <div>
+            <div class="so-sidebar-brand">
+
+                <div class="so-sidebar-logo">
                     Edu<span>Metrics</span>
                 </div>
 
@@ -349,7 +413,7 @@
 
 
         <!-- =================================================
-             MAIN CONTENT
+             FACULTY MAIN CONTENT
              ================================================= -->
 
         <main class="sof-main">
@@ -415,7 +479,7 @@
 
 
 
-                <!-- TERM -->
+                <!-- ACADEMIC TERM -->
                 <div class="sof-filter-group">
 
                     <label for="facultyTerm">
@@ -458,9 +522,7 @@
                     class="sof-course-details-btn"
                     type="button"
                 >
-
                     View Course Details
-
                 </button>
 
 
@@ -469,7 +531,7 @@
 
 
             <!-- =================================================
-                 CONTENT
+                 CONTENT CARD
                  ================================================= -->
 
             <section class="sof-content-card">
@@ -601,7 +663,7 @@
 
 
                     <!-- =================================================
-                         FILE ROW
+                         UPLOADED FILE
                          ================================================= -->
 
                     <div
@@ -703,9 +765,9 @@
 
 
 
-                            <!-- =========================================
-                                 MORE / THREE DOTS
-                                 ========================================= -->
+                            <!-- =================================================
+                                 THREE DOTS
+                                 ================================================= -->
 
                             <div class="sof-more-wrapper">
 
@@ -748,6 +810,7 @@
                                         </span>
 
                                     </button>
+
 
                                 </div>
 
@@ -836,10 +899,12 @@
         hidden
     >
 
+
         <div
             class="sof-delete-modal-backdrop"
             id="deleteSyllabusBackdrop"
         ></div>
+
 
 
         <div
@@ -850,21 +915,16 @@
         >
 
 
-            <!-- ICON -->
             <div class="sof-delete-dialog-icon">
                 🗑
             </div>
 
 
-
-            <!-- TITLE -->
             <h2 id="deleteSyllabusTitle">
                 Delete syllabus?
             </h2>
 
 
-
-            <!-- MESSAGE -->
             <p>
                 Are you sure you want to delete
                 <strong id="deleteSyllabusFileName">
@@ -879,7 +939,6 @@
 
 
 
-            <!-- ACTIONS -->
             <div class="sof-delete-dialog-actions">
 
 
@@ -912,7 +971,7 @@
 
 
     <!-- =====================================================
-         FRONTEND JAVASCRIPT
+         JAVASCRIPT
          ===================================================== -->
 
     <script>
@@ -935,12 +994,16 @@
 
 
                 tabs.forEach((item) => {
+
                     item.classList.remove("active");
+
                 });
 
 
                 panels.forEach((panel) => {
+
                     panel.classList.remove("active");
+
                 });
 
 
@@ -954,7 +1017,9 @@
 
 
                 if (targetPanel) {
+
                     targetPanel.classList.add("active");
+
                 }
 
 
@@ -966,32 +1031,47 @@
 
         /* =====================================================
            SYLLABUS FILE
-           FRONTEND PREVIEW ONLY
            ===================================================== */
 
         const syllabusFile =
-            document.getElementById("syllabusFile");
+            document.getElementById(
+                "syllabusFile"
+            );
 
         const syllabusFileName =
-            document.getElementById("syllabusFileName");
+            document.getElementById(
+                "syllabusFileName"
+            );
 
         const syllabusFileSize =
-            document.getElementById("syllabusFileSize");
+            document.getElementById(
+                "syllabusFileSize"
+            );
 
         const syllabusLastUpdated =
-            document.getElementById("syllabusLastUpdated");
+            document.getElementById(
+                "syllabusLastUpdated"
+            );
 
         const facultySyllabusEmpty =
-            document.getElementById("facultySyllabusEmpty");
+            document.getElementById(
+                "facultySyllabusEmpty"
+            );
 
         const facultySyllabusFileRow =
-            document.getElementById("facultySyllabusFileRow");
+            document.getElementById(
+                "facultySyllabusFileRow"
+            );
 
         const viewSyllabusButton =
-            document.getElementById("viewSyllabusButton");
+            document.getElementById(
+                "viewSyllabusButton"
+            );
 
         const downloadSyllabusButton =
-            document.getElementById("downloadSyllabusButton");
+            document.getElementById(
+                "downloadSyllabusButton"
+            );
 
 
         let currentSyllabusURL = null;
@@ -999,7 +1079,7 @@
 
 
         /* =====================================================
-           WHEN FACULTY SELECTS PDF
+           UPLOAD PDF
            ===================================================== */
 
         syllabusFile.addEventListener(
@@ -1008,7 +1088,9 @@
 
 
                 if (!syllabusFile.files.length) {
+
                     return;
+
                 }
 
 
@@ -1016,13 +1098,18 @@
                     syllabusFile.files[0];
 
 
+
                 /* PDF ONLY */
                 if (
                     selectedFile.type !== "application/pdf" &&
-                    !selectedFile.name.toLowerCase().endsWith(".pdf")
+                    !selectedFile.name
+                        .toLowerCase()
+                        .endsWith(".pdf")
                 ) {
 
-                    alert("Please select a PDF file.");
+                    alert(
+                        "Please select a PDF file."
+                    );
 
                     syllabusFile.value = "";
 
@@ -1032,7 +1119,7 @@
 
 
 
-                /* REMOVE OLD TEMPORARY URL */
+                /* REMOVE PREVIOUS URL */
                 if (currentSyllabusURL) {
 
                     URL.revokeObjectURL(
@@ -1064,7 +1151,8 @@
 
 
                 syllabusFileSize.textContent =
-                    fileSizeMB.toFixed(2) + " MB";
+                    fileSizeMB.toFixed(2) +
+                    " MB";
 
 
 
@@ -1086,16 +1174,15 @@
 
 
 
-                /* HIDE EMPTY STATE */
-                facultySyllabusEmpty.hidden = true;
+                /* SHOW FILE */
+                facultySyllabusEmpty.hidden =
+                    true;
+
+                facultySyllabusFileRow.hidden =
+                    false;
 
 
 
-                /* SHOW FILE ROW */
-                facultySyllabusFileRow.hidden = false;
-
-
-                /* CLOSE MORE MENU */
                 closeSyllabusMenu();
 
 
@@ -1114,7 +1201,9 @@
 
 
                 if (!currentSyllabusURL) {
+
                     return;
+
                 }
 
 
@@ -1142,12 +1231,16 @@
                     !currentSyllabusURL ||
                     !syllabusFile.files.length
                 ) {
+
                     return;
+
                 }
 
 
                 const downloadLink =
-                    document.createElement("a");
+                    document.createElement(
+                        "a"
+                    );
 
 
                 downloadLink.href =
@@ -1175,7 +1268,7 @@
 
 
         /* =====================================================
-           THREE DOTS / DELETE MENU
+           THREE DOTS MENU
            ===================================================== */
 
         const syllabusMoreButton =
@@ -1197,7 +1290,8 @@
 
         function closeSyllabusMenu() {
 
-            syllabusFileMenu.hidden = true;
+            syllabusFileMenu.hidden =
+                true;
 
             syllabusMoreButton.setAttribute(
                 "aria-expanded",
@@ -1210,7 +1304,8 @@
 
         function openSyllabusMenu() {
 
-            syllabusFileMenu.hidden = false;
+            syllabusFileMenu.hidden =
+                false;
 
             syllabusMoreButton.setAttribute(
                 "aria-expanded",
@@ -1225,6 +1320,8 @@
             "click",
             (event) => {
 
+
+                event.preventDefault();
 
                 event.stopPropagation();
 
@@ -1267,26 +1364,8 @@
 
 
 
-        /* ESCAPE CLOSES MENU */
-        document.addEventListener(
-            "keydown",
-            (event) => {
-
-
-                if (event.key === "Escape") {
-
-                    closeSyllabusMenu();
-
-                }
-
-
-            }
-        );
-
-
-
         /* =====================================================
-           DELETE CONFIRMATION MODAL
+           DELETE MODAL
            ===================================================== */
 
         const deleteSyllabusModal =
@@ -1327,7 +1406,8 @@
                 "this syllabus";
 
 
-            deleteSyllabusModal.hidden = false;
+            deleteSyllabusModal.hidden =
+                false;
 
 
             document.body.classList.add(
@@ -1335,11 +1415,14 @@
             );
 
 
-            setTimeout(() => {
+            setTimeout(
+                () => {
 
-                cancelDeleteSyllabus.focus();
+                    cancelDeleteSyllabus.focus();
 
-            }, 0);
+                },
+                0
+            );
 
 
         }
@@ -1349,7 +1432,8 @@
         function closeDeleteSyllabusModal() {
 
 
-            deleteSyllabusModal.hidden = true;
+            deleteSyllabusModal.hidden =
+                true;
 
 
             document.body.classList.remove(
@@ -1364,7 +1448,10 @@
 
 
 
-        /* CLICK DELETE FILE IN DROPDOWN */
+        /* =====================================================
+           CLICK DELETE FILE
+           ===================================================== */
+
         deleteSyllabusOption.addEventListener(
             "click",
             () => {
@@ -1376,7 +1463,10 @@
 
 
 
-        /* CANCEL */
+        /* =====================================================
+           CANCEL DELETE
+           ===================================================== */
+
         cancelDeleteSyllabus.addEventListener(
             "click",
             () => {
@@ -1388,7 +1478,10 @@
 
 
 
-        /* CLICK OUTSIDE MODAL */
+        /* =====================================================
+           CLICK BACKDROP
+           ===================================================== */
+
         deleteSyllabusBackdrop.addEventListener(
             "click",
             () => {
@@ -1416,18 +1509,20 @@
                         currentSyllabusURL
                     );
 
-                    currentSyllabusURL = null;
+                    currentSyllabusURL =
+                        null;
 
                 }
 
 
 
                 /* RESET FILE INPUT */
-                syllabusFile.value = "";
+                syllabusFile.value =
+                    "";
 
 
 
-                /* RESET FILE DETAILS */
+                /* RESET FILE INFORMATION */
                 syllabusFileName.textContent =
                     "Course_Syllabus.pdf";
 
@@ -1436,24 +1531,23 @@
                     "0 MB";
 
 
-
-                /* RESET LAST UPDATED */
                 syllabusLastUpdated.textContent =
                     "No syllabus uploaded";
 
 
 
                 /* HIDE FILE ROW */
-                facultySyllabusFileRow.hidden = true;
+                facultySyllabusFileRow.hidden =
+                    true;
 
 
 
                 /* SHOW EMPTY STATE */
-                facultySyllabusEmpty.hidden = false;
+                facultySyllabusEmpty.hidden =
+                    false;
 
 
 
-                /* CLOSE MODAL */
                 closeDeleteSyllabusModal();
 
 
@@ -1463,7 +1557,7 @@
 
 
         /* =====================================================
-           ESCAPE KEY FOR MODAL
+           ESCAPE KEY
            ===================================================== */
 
         document.addEventListener(
@@ -1471,14 +1565,25 @@
             (event) => {
 
 
+                if (event.key !== "Escape") {
+
+                    return;
+
+                }
+
+
                 if (
-                    event.key === "Escape" &&
                     !deleteSyllabusModal.hidden
                 ) {
 
                     closeDeleteSyllabusModal();
 
+                    return;
+
                 }
+
+
+                closeSyllabusMenu();
 
 
             }
