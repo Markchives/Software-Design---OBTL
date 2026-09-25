@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>EduMetrics | Website</title>
+
+    <!-- MAIN STYLESHEET -->
+    <link
+        rel="stylesheet"
+        href="../Static/style.css"
+    >
+
+    <style>
+        /*HEADER */
+
+        .header-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            padding: 8px 5px;
+            border: none;
+            background: transparent;
+            color: #123B68;
+            font-size: 15px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .header-action-icon {
+            width: 25px;
+            height: 25px;
+            min-width: 25px;
+            display: block;
+            color: currentColor;
+        }
+
+        .header-action:hover {
+            color: #0A294A;
+        }
+
+
+        /* LOGIN */
+        .login-dropdown {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .login-dropdown .login-pill {
+            border: 2px solid #123B68;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+
+        /* DROPDOWN MENU */
+        .login-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 7px);
+            right: 0;
+            width: 175px;
+            display: none;
+            flex-direction: column;
+            padding: 7px;
+            background: #123B68;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            box-shadow:
+                0 12px 28px rgba(7, 31, 58, 0.20);
+            overflow: hidden;
+            z-index: 9999;
+        }
+
+        .login-dropdown-menu.show {
+            display: flex;
+        }
+
+
+        /* DROPDOWN OPTIONS */
+        .login-dropdown-menu a {
+            width: 100%;
+            min-height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 10px;
+            border-radius: 6px;
+            background: transparent;
+            color: #FFFFFF;
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1.2;
+            text-align: center;
+            text-decoration: none;
+            transition:
+                background 0.18s ease,
+                color 0.18s ease;
+        }
+
+        .login-dropdown-menu a:hover {
+            background: #F4C300;
+            color: #123B68;
+        }
+
+        .login-dropdown-menu a + a {
+            margin-top: 2px;
+        }
+
+        /* LOGIN GOLD ARROW */
+        .login-dropdown .login-pill b {
+            width: 15px;
+            height: 15px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            color: transparent;
+            font-size: 0;
+            transition: transform 0.2s ease;
+        }
+
+        .login-dropdown .login-pill b::after {
+            content: "";
+            width: 7px;
+            height: 7px;
+            position: absolute;
+            border-right: 2px solid #F4C300;
+            border-bottom: 2px solid #F4C300;
+            transform: rotate(45deg) translate(-1px, -1px);
+            transition: transform 0.2s ease;
+        }
+
+        .login-dropdown.open .login-pill b {
+            transform: rotate(180deg);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 950px) {
+
+            .header-action {
+                font-size: 13px;
+                gap: 7px;
+            }
+
+            .header-action-icon {
+                width: 21px;
+                height: 21px;
+                min-width: 21px;
+            }
+
+            .login-dropdown-menu {
+                width: 165px;
+            }
+        }
+
+
+        @media (max-width: 650px) {
+
+            .header-action {
+                display: none;
+            }
+
+            .login-dropdown-menu {
+                width: 165px;
+                top: calc(100% + 6px);
+            }
+
+            .login-dropdown-menu a {
+                min-height: 36px;
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!--MAIN PAGE -->
+    <div class="page-shell">
+
+        <!-- HEADER-->
+        <header class="site-header">
+
+            <!-- BRAND -->
+            <div class="brand-area">
+                <div class="brand"><span>Edu</span>Metrics  </div>
+                <p> Academic Assessment &amp; Grading System  </p>
+            </div>
+
+            <div class="top-actions">
+
+                <!-- SUPPORT -->
+                <button
+                    type="button"
+                    class="text-btn header-action"
+                    onclick="showSupport()"
+                    aria-label="Support"
+                >
+
+                    <svg
+                        class="header-action-icon"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true"
+                    >
+                        <path
+                            d="M4 13V11C4 6.58 7.58 3 12 3C16.42 3 20 6.58 20 11V13"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                        />
+
+                        <path
+                            d="M4 12H5.5C6.33 12 7 12.67 7 13.5V17.5C7 18.33 6.33 19 5.5 19H5C3.9 19 3 18.1 3 17V13C3 12.45 3.45 12 4 12Z"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linejoin="round"
+                        />
+
+                        <path
+                            d="M20 12H18.5C17.67 12 17 12.67 17 13.5V17.5C17 18.33 17.67 19 18.5 19H19C20.1 19 21 18.1 21 17V13C21 12.45 20.55 12 20 12Z"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linejoin="round"
+                        />
+
+                        <path
+                            d="M17 19C16.25 20.2 14.65 21 13 21H11"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                        />
+                    </svg>
+                    <span>Support</span>
+                </button>
+
+                <!-- SETTINGS -->
+                <button
+                    type="button"
+                    class="text-btn header-action"
+                    onclick="showSettings()"
+                    aria-label="Settings"
+                >
+
+                    <svg
+                        class="header-action-icon"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true"
+                    >
+                        <circle
+                            cx="12"
+                            cy="12"
+                            r="3"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        />
+
+                        <path
+                            d="
+                                M19.4 15
+                                A1.65 1.65 0 0 0 19.73 16.82
+                                L19.79 16.88
+                                A2 2 0 1 1 16.96 19.71
+                                L16.9 19.65
+                                A1.65 1.65 0 0 0 15.08 19.32
+                                A1.65 1.65 0 0 0 14.08 20.83
+                                V21
+                                A2 2 0 1 1 10.08 21
+                                V20.91
+                                A1.65 1.65 0 0 0 9 19.4
+                                A1.65 1.65 0 0 0 7.18 19.73
+                                L7.12 19.79
+                                A2 2 0 1 1 4.29 16.96
+                                L4.35 16.9
+                                A1.65 1.65 0 0 0 4.68 15.08
+                                A1.65 1.65 0 0 0 3.17 14.08
+                                H3
+                                A2 2 0 1 1 3 10.08
+                                H3.09
+                                A1.65 1.65 0 0 0 4.6 9
+                                A1.65 1.65 0 0 0 4.27 7.18
+                                L4.21 7.12
+                                A2 2 0 1 1 7.04 4.29
+                                L7.1 4.35
+                                A1.65 1.65 0 0 0 8.92 4.68
+                                H9
+                                A1.65 1.65 0 0 0 10 3.17
+                                V3
+                                A2 2 0 1 1 14 3
+                                V3.09
+                                A1.65 1.65 0 0 0 15 4.6
+                                A1.65 1.65 0 0 0 16.82 4.27
+                                L16.88 4.21
+                                A2 2 0 1 1 19.71 7.04
+                                L19.65 7.1
+                                A1.65 1.65 0 0 0 19.32 8.92
+                                V9
+                                A1.65 1.65 0 0 0 20.83 10
+                                H21
+                                A2 2 0 1 1 21 14
+                                H20.91
+                                A1.65 1.65 0 0 0 19.4 15
+                                Z
+                            "
+                            stroke="currentColor"
+                            stroke-width="1.7"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
+                    </svg>
+                    <span>Settings</span>
+                </button>
+
+
+                <!-- LOGIN ROLE -->
+                <div
+                    class="login-dropdown"
+                    id="loginDropdown"
+                >
+                    <button
+                        type="button"
+                        class="login-pill"
+                        id="loginDropdownButton"
+                        aria-expanded="false"
+                        aria-haspopup="true"
+                        aria-controls="loginDropdownMenu"
+                        onclick="toggleLoginDropdown(event)"
+                    >
+                        <span>Log in</span>
+                        <b aria-hidden="true"></b>
+                    </button>
+
+                    <div
+                        class="login-dropdown-menu"
+                        id="loginDropdownMenu"
+                        role="menu"
+                    >
+                        <!-- STUDENT -->
+                        <a
+                            href="login page.html?role=student"
+                            role="menuitem"
+                        >
+                            Student
+                        </a>
+
+                        <!-- FACULTY -->
+                        <a
+                            href="login page.html?role=faculty"
+                            role="menuitem"
+                        >
+                            Faculty
+                        </a>
+
+                        <!-- DEPARTMENT HEAD -->
+                        <a
+                            href="login page.html?role=department-head"
+                            role="menuitem"
+                        >
+                            Department Head
+                        </a>
+
+                        <!-- ADMIN & SECURITY -->
+                        <a
+                            href="login page.html?role=admin-security"
+                            role="menuitem"
+                        >
+                            Admin &amp; Security
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- =MAIN CONTENT -->
+        <main class="landing-main">
+
+            <!-- HERO SECTION -->
+            <section class="landing-hero">
+
+                <!-- LEFT SIDE -->
+                <div class="hero-copy">
+
+                    <div class="eyebrow">
+                        WELCOME TO
+                    </div>
+
+                    <h1><span>Edu</span>Metrics </h1>
+                    <p class="hero-subtitle">Academic Assessment &amp; Grading System  </p>
+                    <div class="gold-line"></div>
+
+                    <!-- FOUR MAIN FEATURES -->
+                    <div class="feature-grid">
+
+                        <!-- CURRICULUM MAPPING -->
+                        <div class="feature-item">
+
+                            <img
+                                src="../Static/images/icons/curriculum mapping.png"
+                                alt="Curriculum Mapping"
+                                class="feature-image"
+                            >
+
+                            <span>
+                                Curriculum<br>
+                                Mapping
+                            </span>
+                        </div>
+
+                        <!-- ASSESSMENT & GRADING -->
+                        <div class="feature-item">
+
+                            <img
+                                src="../Static/images/icons/assessment & grading.png"
+                                alt="Assessment and Grading"
+                                class="feature-image"
+                            >
+
+                            <span>
+                                Assessment<br>
+                                &amp; Grading
+                            </span>
+                        </div>
+
+                        <!-- OUTCOME ATTAINMENT -->
+                        <div class="feature-item">
+
+                            <img
+                                src="../Static/images/icons/outcome attainment.png"
+                                alt="Outcome Attainment"
+                                class="feature-image"
+                            >
+
+                            <span>
+                                Outcome<br>
+                                Attainment
+                            </span>
+                        </div>
+
+                        <!-- CQI ANALYTICS -->
+                        <div class="feature-item">
+
+                            <img
+                                src="../Static/images/icons/cqi analytics.png"
+                                alt="CQI Analytics"
+                                class="feature-image"
+                            >
+
+                            <span>
+                                CQI<br>
+                                Analytics
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT SIDE IMAGE -->
+                <div class="hero-image">
+
+                    <img
+                        src="../Static/images/background/background.png"
+                        alt="National University Manila Building"
+                    >
+                </div>
+            </section>
+
+            <!-- BOTTOM INFO CARDS -->
+            <section class="info-row">
+
+                <!-- PLATFORM -->
+                <a
+                    href="#"
+                    class="info-card"
+                    onclick="handleInfoClick(event, 'platform')"
+                >
+
+                    <img
+                        src="../Static/images/icons/platform.png"
+                        alt="Platform"
+                        class="info-icon"
+                    >
+
+                    <span class="info-content">
+
+                        <strong>
+                            Platform
+                        </strong>
+
+                        <small>
+                            Explore system features
+                        </small>
+                    </span>
+
+                    <em class="info-arrow">
+                        →
+                    </em>
+                </a>
+
+                <!-- Workflow -->
+                <a
+                    href="#"
+                    class="info-card"
+                    onclick="handleInfoClick(event, 'workflow')"
+                >
+
+                    <img
+                        src="../Static/images/icons/workflow.png"
+                        alt="Workflow"
+                        class="info-icon"
+                    >
+
+                    <span class="info-content">
+
+                        <strong>
+                            Workflow
+                        </strong>
+
+                        <small>
+                            Tools for assessments,
+                            outcomes, and CQI
+                        </small>
+
+                    </span>
+
+                    <em class="info-arrow">
+                        →
+                    </em>
+
+                </a>
+
+                <!-- RESOURCES -->
+                <a
+                    href="#"
+                    class="info-card"
+                    onclick="handleInfoClick(event, 'resources')"
+                >
+
+                    <img
+                        src="../Static/images/icons/resources.png"
+                        alt="Resources"
+                        class="info-icon"
+                    >
+
+                    <span class="info-content">
+
+                        <strong>
+                            Resources
+                        </strong>
+
+                        <small>
+                            Guides, manuals, and
+                            resource materials
+                        </small>
+                    </span>
+
+                    <em class="info-arrow">
+                        →
+                    </em>
+                </a>
+
+                <!-- ABOUT US -->
+                <a
+                    href="#"
+                    class="info-card"
+                    onclick="handleInfoClick(event, 'about')"
+                >
+
+                    <img
+                        src="../Static/images/icons/about us.png"
+                        alt="About Us"
+                        class="info-icon"
+                    >
+
+                    <span class="info-content">
+
+                        <strong>About Us  </strong>
+
+                        <small>
+                            Our vision, mission,
+                            and commitment
+                        </small>
+                    </span>
+                    <em class="info-arrow"> →  </em>
+                </a>
+            </section>
+        </main>
+    </div>
+
+    <!-- INFO MODAL -->
+    <div
+        id="infoModal"
+        class="simple-modal"
+        aria-hidden="true"
+    >
+
+        <div class="modal-box">
+
+            <button
+                type="button"
+                class="modal-close"
+                onclick="closeInfoModal()"
+                aria-label="Close"
+            >
+                ×
+            </button>
+
+            <div
+                id="modalIcon"
+                class="modal-icon"
+                aria-hidden="true"
+            >
+                ◇
+            </div>
+            <h2 id="modalTitle"> EduMetrics  </h2>
+            <p id="modalText"> Welcome to EduMetrics.   </p>
+            <button
+                type="button"
+                class="modal-button"
+                onclick="closeInfoModal()"
+            >
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- JS -->
+    <script src="../Static/script.js"></script>
+
+    <!-- LOGIN DROPDOWN JS -->
+    <script>
+
+        function toggleLoginDropdown(event) {
+            event.stopPropagation();
+            const dropdown =
+                document.getElementById("loginDropdown");
+            const menu =
+                document.getElementById("loginDropdownMenu");
+            const button =
+                document.getElementById("loginDropdownButton");
+
+            if (!dropdown || !menu || !button) {
+                return;
+            }
+
+            const willOpen =
+                !menu.classList.contains("show");
+            menu.classList.toggle(
+                "show",
+                willOpen
+            );
+            dropdown.classList.toggle(
+                "open",
+                willOpen
+            );
+
+            button.setAttribute(
+                "aria-expanded",
+                willOpen ? "true" : "false"
+            );
+        }
+
+        /* CLOSEDOWN */
+        document.addEventListener(
+            "click",
+            function (event) {
+
+                const dropdown =
+                    document.getElementById("loginDropdown");
+
+                if (!dropdown) {
+                    return;
+                }
+
+                if (!dropdown.contains(event.target)) {
+                    closeLoginDropdown();
+                }
+            }
+        );
+
+        /* CLOSE WITH ESC */
+        document.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (event.key === "Escape") {
+                    closeLoginDropdown();
+                }
+
+            }
+        );
+
+        /* CLOSE FUNCTION */
+        function closeLoginDropdown() {
+
+            const dropdown =
+                document.getElementById("loginDropdown");
+            const menu =
+                document.getElementById("loginDropdownMenu");
+            const button =
+                document.getElementById("loginDropdownButton");
+            if (menu) {
+                menu.classList.remove("show");
+            }
+            if (dropdown) {
+                dropdown.classList.remove("open");
+            }
+            if (button) {
+                button.setAttribute(
+                    "aria-expanded",
+                    "false"
+                );
+            }
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Syllabus & Outcomes | EduMetrics
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="../Static/style.css"
+    >
+</head>
+
+
+<body class="so-student-page">
+
+    <!-- =====================================================
+         TOP HEADER
+         ===================================================== -->
+
+    <header class="so-topbar">
+
+        <!-- BRAND -->
+        <div class="so-brand">
+
+            <div class="so-brand-logo">
+                <span>Edu</span>Metrics
+            </div>
+
+            <div class="so-brand-subtitle">
+                Academic Assessment &amp; Grading System
+            </div>
+
+        </div>
+
+
+        <!-- USER AREA -->
+        <div class="so-user-area">
+
+            <!-- NOTIFICATION -->
+            <button
+                class="so-notification-btn"
+                type="button"
+                aria-label="Notifications"
+            >
+
+                <span class="so-bell">
+                    ♧
+                </span>
+
+                <span class="so-notification-dot"></span>
+
+            </button>
+
+
+            <!-- STUDENT INFORMATION -->
+            <div class="so-user-info">
+
+                <strong>
+                    Angel S. Villanueva
+                </strong>
+
+                <span>
+                    Student
+                </span>
+
+            </div>
+
+
+            <!-- PROFILE -->
+            <div
+                class="so-avatar"
+                aria-hidden="true"
+            >
+
+                <span class="so-avatar-head"></span>
+
+                <span class="so-avatar-body"></span>
+
+                <span class="so-avatar-check">
+                    ✓
+                </span>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         HEADER LINES
+         ===================================================== -->
+
+    <div class="so-header-lines">
+
+        <div class="so-header-blue"></div>
+
+        <div class="so-header-gold"></div>
+
+    </div>
+
+
+    <!-- =====================================================
+         PAGE SHELL
+         ===================================================== -->
+
+    <div class="so-shell">
+
+
+        <!-- =================================================
+             SIDEBAR
+             ================================================= -->
+
+        <aside class="so-sidebar">
+
+
+            <!-- PAGES LABEL -->
+            <div class="so-pages-title">
+
+                <span class="so-grid-icon">
+                    ⠿
+                </span>
+
+                <span>
+                    Pages
+                </span>
+
+            </div>
+
+
+            <!-- NAVIGATION -->
+            <nav
+                class="so-nav"
+                aria-label="Student navigation"
+            >
+
+
+                <!-- HOME -->
+                <a
+                    href="#"
+                    class="so-nav-item"
+                >
+
+                    <span class="so-nav-icon">
+                        ⌂
+                    </span>
+
+                    <span>
+                        Home
+                    </span>
+
+                </a>
+
+
+                <!-- MY COURSES -->
+                <a
+                    href="#"
+                    class="so-nav-item"
+                >
+
+                    <span class="so-nav-icon">
+                        ◇
+                    </span>
+
+                    <span>
+                        My Courses
+                    </span>
+
+                </a>
+
+
+                <!-- PLATFORM -->
+                <a
+                    href="#"
+                    class="so-nav-item"
+                >
+
+                    <span class="so-nav-icon">
+                        ▣
+                    </span>
+
+                    <span>
+                        Platform
+                    </span>
+
+                </a>
+
+
+                <!-- PRODUCTS -->
+                <div class="so-nav-group">
+
+                    <button
+                        class="so-nav-item so-products active"
+                        type="button"
+                    >
+
+                        <span class="so-nav-icon">
+                            ◆
+                        </span>
+
+                        <span>
+                            Products
+                        </span>
+
+                    </button>
+
+
+                    <!-- PRODUCTS SUBMENU -->
+                    <div class="so-subnav">
+
+                        <a
+                            href="#"
+                            class="active"
+                        >
+                            Syllabus &amp; Outcomes
+                        </a>
+
+                        <a href="#">
+                            Curriculum Mapping
+                        </a>
+
+                        <a href="#">
+                            Class Roster
+                        </a>
+
+                        <a href="#">
+                            Assessment Entry
+                        </a>
+
+                        <a href="#">
+                            Attainment
+                        </a>
+
+                        <a href="#">
+                            CQI Planning
+                        </a>
+
+                        <a href="#">
+                            Gradebook
+                        </a>
+
+                        <a href="#">
+                            Compliance Report
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                <!-- RESOURCES -->
+                <a
+                    href="#"
+                    class="so-nav-item"
+                >
+
+                    <span class="so-nav-icon">
+                        ▥
+                    </span>
+
+                    <span>
+                        Resources
+                    </span>
+
+                </a>
+
+
+                <!-- ABOUT -->
+                <a
+                    href="#"
+                    class="so-nav-item"
+                >
+
+                    <span class="so-nav-icon">
+                        ♧
+                    </span>
+
+                    <span>
+                        About us
+                    </span>
+
+                </a>
+
+            </nav>
+
+
+            <!-- SIDEBAR LOGO -->
+            <div class="so-sidebar-brand">
+
+                <div class="so-sidebar-logo">
+                    <span>Edu</span>Metrics
+                </div>
+
+                <small>
+                    Academic Assessment &amp; Grading System
+                </small>
+
+            </div>
+
+        </aside>
+
+
+        <!-- =================================================
+             MAIN CONTENT
+             ================================================= -->
+
+        <main class="so-main">
+
+
+            <!-- =================================================
+                 PAGE TITLE
+                 ================================================= -->
+
+            <section class="so-page-heading">
+
+                <h1>
+                    Syllabus &amp; Outcomes
+                </h1>
+
+                <p>
+                    View and download your course syllabus and
+                    SO/CO assessments
+                </p>
+
+            </section>
+
+
+            <!-- =================================================
+                 SUMMARY CARDS
+                 ================================================= -->
+
+            <section class="so-summary-grid">
+
+
+                <!-- PENDING SO -->
+                <article class="so-summary-card">
+
+                    <div class="so-summary-accent"></div>
+
+                    <strong class="so-summary-number">
+                        0
+                    </strong>
+
+                    <span class="so-summary-label">
+                        Pending SO
+                        <br>
+                        self-assessments
+                    </span>
+
+                </article>
+
+
+                <!-- DUE THIS WEEK -->
+                <article class="so-summary-card">
+
+                    <div class="so-summary-accent"></div>
+
+                    <strong class="so-summary-number">
+                        0
+                    </strong>
+
+                    <span class="so-summary-label">
+                        Due this week
+                    </span>
+
+                </article>
+
+
+                <!-- AVAILABLE SYLLABUS -->
+                <article class="so-summary-card">
+
+                    <div class="so-summary-accent"></div>
+
+                    <strong class="so-summary-number">
+                        0
+                    </strong>
+
+                    <span class="so-summary-label">
+                        Available Syllabus
+                    </span>
+
+                </article>
+
+            </section>
+
+
+            <!-- =================================================
+                 PENDING SO SELF-ASSESSMENTS
+                 ================================================= -->
+
+            <section class="so-content-card">
+
+
+                <!-- SECTION HEADER -->
+                <div class="so-section-header">
+
+                    <h2>
+                        Pending SO self-assessments
+                    </h2>
+
+
+                    <!-- SEARCH -->
+                    <div class="so-search">
+
+                        <span>
+                            ⌕
+                        </span>
+
+                        <input
+                            type="search"
+                            placeholder="Search"
+                            aria-label="Search pending self-assessments"
+                        >
+
+                        <span>
+                            ♩
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="so-section-rule"></div>
+
+
+                <!-- =============================================
+                     EMPTY STATE
+
+                     FRONTEND DEFAULT:
+                     No SO assessments yet.
+
+                     Later sa backend:
+                     dito ipapalit / ilalagay ang course rows
+                     kapag may assigned SO assessment na.
+                     ============================================= -->
+
+                <div class="so-empty-state">
+
+                    <div class="so-empty-icon">
+                        ✓
+                    </div>
+
+                    <h3>
+                        No pending self-assessments
+                    </h3>
+
+                    <p>
+                        Your assigned SO self-assessments
+                        will appear here once they become available.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 MY COURSE SYLLABUS
+                 ================================================= -->
+
+            <section class="so-content-card so-syllabus-card">
+
+
+                <!-- SECTION HEADER -->
+                <div class="so-section-header">
+
+                    <h2>
+                        My course syllabus
+                    </h2>
+
+
+                    <!-- SEARCH -->
+                    <div class="so-search">
+
+                        <span>
+                            ⌕
+                        </span>
+
+                        <input
+                            type="search"
+                            placeholder="Search"
+                            aria-label="Search syllabus"
+                        >
+
+                        <span>
+                            ♩
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="so-section-rule"></div>
+
+
+                <!-- =============================================
+                     EMPTY STATE
+
+                     FRONTEND DEFAULT:
+                     Student has no assigned courses yet.
+
+                     Later sa backend:
+                     kapag in-add ng faculty ang student sa course,
+                     saka lalabas dito ang course syllabus.
+                     ============================================= -->
+
+                <div class="so-empty-state">
+
+                    <div class="so-empty-icon so-empty-course-icon">
+                        ▤
+                    </div>
+
+                    <h3>
+                        No courses yet
+                    </h3>
+
+                    <p>
+                        Your course syllabus will appear here
+                        once you are added to a course.
+                    </p>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

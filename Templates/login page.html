@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>EduMetrics | Student Log In</title>
+
+    <link
+        rel="stylesheet"
+        href="../Static/style.css"
+    >
+</head>
+
+<body class="auth-page">
+
+    <!-- HEADER -->
+    <header class="site-header auth-site-header">
+        <!-- LOGO -->
+        <a
+            href="website.html"
+            class="brand-area auth-header-brand"
+            aria-label="EduMetrics home"
+        >
+            <div class="brand">
+                <span>Edu</span>Metrics
+            </div>
+
+            <p>Academic Assessment &amp; Grading System </p>
+        </a>
+
+        <!-- HEADER RIGHT SIDE -->
+        <div class="top-actions auth-header-actions">
+
+            <!-- SUPPORT -->
+            <button
+                type="button"
+                class="text-btn header-action"
+                onclick="showHeaderMessage('Support')"
+            >
+                <img
+                    src="../Static/images/icons/support.png"
+                    alt=""
+                    class="header-action-icon"
+                >
+
+                <span>Support</span>
+            </button>
+
+            <!-- SETTINGS -->
+            <button
+                type="button"
+                class="text-btn header-action"
+                onclick="showHeaderMessage('Settings')"
+            >
+                <img
+                    src="../Static/images/icons/settings.png"
+                    alt=""
+                    class="header-action-icon"
+                >
+
+                <span>Settings</span>
+            </button>
+
+            <!-- STUDENT -->
+            <div class="login-pill auth-role-pill" aria-label="Account role">
+                <span id="loginRoleLabel">Student</span>
+            </div>
+    </header>
+
+    <!-- LOGIN AREA (DIRTY WHITE) -->
+    <main class="auth-container">
+
+        <div class="login-stage">
+            <a
+                href="website.html"
+                class="back-button"
+                aria-label="Back to website"
+            >
+                <span
+                    class="back-arrow"
+                    aria-hidden="true"
+                >
+                    ←
+                </span>
+                <span>Back </span>
+            </a>
+
+            <!-- OVERLAPPING -->
+            <section class="auth-card">
+
+                <!-- LEFT BLUE PANEL -->
+                <div class="auth-brand-panel">
+
+                    <!-- LOGO -->
+                    <div class="auth-logo">
+                        <span class="gold-text">
+                            Edu
+                        </span>Metrics
+                    </div>
+
+                    <!-- SUBTITLE -->
+                    <p class="auth-brand-subtitle"> Academic Assessment &amp; Grading System</p>
+
+                    <!-- GOLD LINE -->
+                    <div class="auth-gold-line"></div>
+                    <!-- MAIN MESSAGE -->
+                    <h1 class="brand-heading">
+                        Measure Learning.
+                        <br>
+                        Improve
+                        <span class="gold-text">
+                            Outcomes.
+                        </span>
+                    </h1>
+
+                    <!-- FEATURES -->
+                    <div class="brand-features">
+
+                        <!-- CURRICULUM MAPPING -->
+                        <div class="brand-feature">
+
+                            <img
+                                src="../Static/images/icons/cm.png"
+                                alt="Curriculum Mapping"
+                                class="brand-feature-icon-image"
+                            >
+                            <span>Curriculum Mapping</span>
+                        </div>
+
+                        <!-- ASSESSMENT & GRADING -->
+                        <div class="brand-feature">
+
+                            <img
+                                src="../Static/images/icons/a&g.png"
+                                alt="Assessment and Grading"
+                                class="brand-feature-icon-image"
+                            >
+
+                            <span>Assessment &amp; Grading</span>
+                        </div>
+
+                        <!-- OUTCOME ATTAINMENT -->
+                        <div class="brand-feature">
+
+                            <img
+                                src="../Static/images/icons/oa.png"
+                                alt="Outcome Attainment"
+                                class="brand-feature-icon-image"
+                            >
+
+                            <span>Outcome Attainment</span>
+
+                        </div>
+
+                        <!-- CQI ANALYTICS -->
+                        <div class="brand-feature">
+
+                            <img
+                                src="../Static/images/icons/cqi.png"
+                                alt="CQI Analytics"
+                                class="brand-feature-icon-image"
+                            >
+
+                            <span>CQI Analytics</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT WELCOME (LOGIN PANEL) -->
+                <div class="auth-form-panel">
+
+                    <!-- HEADING -->
+                    <div class="form-heading">
+                        <h2>Welcome to EduMetrics! </h2>
+                        <p>Log in to continue to your account. </p>
+                    </div>
+
+                    <!-- SOCIAL LOGIN-->
+                    <div class="social-login social-login-icons">
+
+                        <!-- GOOGLE -->
+                        <button
+                            type="button"
+                            class="social-button social-icon-button"
+                            onclick="socialLogin('Google')"
+                            aria-label="Continue with Google"
+                        >
+                            <img
+                                src="../Static/images/icons/gmail.png"
+                                alt="Google"
+                            >
+                        </button>
+
+                        <!-- MICROSOFT -->
+                        <button
+                            type="button"
+                            class="social-button social-icon-button"
+                            onclick="socialLogin('Microsoft')"
+                            aria-label="Continue with Microsoft"
+                        >
+                            <img
+                                src="../Static/images/icons/microsoft.png"
+                                alt="Microsoft"
+                            >
+                        </button>
+
+                    </div>
+
+                    <!-- DIVIDER -->
+                    <div class="divider">
+                        <span></span>
+                        <p>or use your account</p>
+                        <span></span>
+                    </div>
+
+                    <!-- LOGIN FORM -->
+                    <form
+                        id="loginForm"
+                        class="auth-form"
+                        novalidate
+                    >
+                        <!-- EMAIL -->
+                        <div class="form-group">
+                            <label for="loginEmail">Email</label>
+                            <div class="input-wrapper">
+
+                                <!-- EMAIL ICON -->
+                                <span
+                                    class="input-icon"
+                                    aria-hidden="true"
+                                >
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                    >
+                                        <path d="M3 5.5h18v13H3z"></path>
+
+                                        <path d="m4 7 8 6 8-6"></path>
+                                    </svg>
+                                </span>
+
+
+                                <input
+                                    type="email"
+                                    id="loginEmail"
+                                    name="email"
+                                    placeholder="Enter your email"
+                                    autocomplete="email"
+                                    required
+                                >
+                            </div>
+
+                            <small
+                                id="loginEmailError"
+                                class="form-error"
+                            ></small>
+                        </div>
+
+                        <!-- PASSWORD -->
+                        <div class="form-group">
+                            <label for="loginPassword">Password </label>
+                            <div class="input-wrapper">
+
+                                <!-- LOCK ICON -->
+                                <span
+                                    class="input-icon"
+                                    aria-hidden="true"
+                                >
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                    >
+                                        <rect
+                                            x="5"
+                                            y="10"
+                                            width="14"
+                                            height="10"
+                                            rx="2"
+                                        ></rect>
+
+                                        <path
+                                            d="M8 10V7a4 4 0 0 1 8 0v3"
+                                        ></path>
+                                    </svg>
+                                </span>
+
+                                <!-- PASSWORD -->
+                                <input
+                                    type="password"
+                                    id="loginPassword"
+                                    name="password"
+                                    placeholder="Enter your password"
+                                    autocomplete="current-password"
+                                    required
+                                >
+
+                                <!-- SHOW / HIDE PASSWORD -->
+                                <button
+                                    type="button"
+                                    class="password-toggle"
+                                    onclick="toggleLoginPassword()"
+                                    aria-label="Show password"
+                                >
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                    >
+                                        <path
+                                            d="M2.5 12s3.5-5 9.5-5 9.5 5 9.5 5-3.5 5-9.5 5-9.5-5-9.5-5z"
+                                        ></path>
+
+                                        <circle
+                                            cx="12"
+                                            cy="12"
+                                            r="2.5"
+                                        ></circle>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <small
+                                id="loginPasswordError"
+                                class="form-error"
+                            ></small>
+                        </div>
+
+                        <!-- FORGOT PASSWORD -->
+                        <div class="login-options">
+
+                            <!-- REMEMBER ME -->
+                            <label class="remember-option">
+
+                                <input
+                                    type="checkbox"
+                                    id="rememberMe"
+                                    name="rememberMe"
+                                >
+
+                                <span>
+                                    Remember me
+                                </span>
+
+                            </label>
+
+                            <!-- FORGOT PASSWORD -->
+                            <a
+                                href="#"
+                                class="forgot-password"
+                                onclick="handleForgotPassword(event)"
+                            >
+                                Forgot password?
+                            </a>
+                        </div>
+
+                        <!-- LOGIN BUTTON-->
+                        <button
+                            type="submit"
+                            class="primary-auth-button"
+                        >
+                            Log in
+                        </button>
+                    </form>
+
+                    <!-- REGISTER -->
+                        <div class="register-prompt">
+
+                            <span>
+                                Don't have an account?
+                            </span>
+
+                            <a
+                                href="registration.html"
+                                id="createAccountLink"
+                            >
+                                Create one
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- MESSAGE MODAL= -->
+    <div
+        id="loginMessageModal"
+        class="auth-modal"
+        aria-hidden="true"
+    >
+
+        <div class="auth-modal-box">
+
+            <!-- CLOSE -->
+            <button
+                type="button"
+                class="modal-close-button"
+                onclick="closeLoginModal()"
+                aria-label="Close"
+            >
+                ×
+            </button>
+
+            <!-- ICON -->
+            <div
+                id="loginModalIcon"
+                class="modal-status-icon"
+            >
+                !
+            </div>
+
+            <!-- TITLE -->
+            <h2 id="loginModalTitle">
+                Message
+            </h2>
+
+            <!-- MESSAGE -->
+            <p id="loginModalMessage">
+                Please check your information.
+            </p>
+
+            <!-- OK -->
+            <button
+                type="button"
+                class="modal-primary-button"
+                onclick="closeLoginModal()"
+            >
+                OK
+            </button>
+        </div>
+    </div>
+
+    <!--LOGIN JS -->
+    <script>
+
+        /* HEADER */
+        function showHeaderMessage(section) {
+            showLoginModal(
+                section,
+                section +
+                " options will be available once this section is connected.",
+                "!"
+            );
+        }
+
+        /* HEADER */
+        function showHeaderMessage(section) {
+            showLoginModal(
+                section,
+                section +
+                " options will be available once this section is connected.",
+                "!"
+            );
+        }
+
+        /* ACCOUNT ROLE */
+        const params = new URLSearchParams(window.location.search);
+        const role = params.get("role") || "student";
+        const roleNames = {
+            "student": "Student",
+            "faculty": "Faculty",
+            "department-head": "Department Head",
+            "admin-security": "Admin & Security"
+        };
+
+        const loginRoleLabel =
+            document.getElementById("loginRoleLabel");
+
+        if (loginRoleLabel) {
+            loginRoleLabel.textContent =
+                roleNames[role] || "Student";
+        }
+
+        const createAccountLink =
+            document.getElementById("createAccountLink");
+
+        if (createAccountLink) {
+            createAccountLink.href =
+                "registration.html?role=" +
+                encodeURIComponent(role);
+        }
+
+        /*ELEMENTS */
+        const loginForm =
+            document.getElementById("loginForm");
+
+        const loginEmail =
+            document.getElementById("loginEmail");
+
+        const loginPassword =
+            document.getElementById("loginPassword");
+
+
+        /* SHOW PASSWORD */
+        function toggleLoginPassword() {
+            const button =
+                document.querySelector(
+                    ".password-toggle"
+                );
+
+            if (
+                loginPassword.type === "password"
+            ) {
+                loginPassword.type = "text";
+                button.setAttribute(
+                    "aria-label",
+                    "Hide password"
+                );
+
+            } else {
+                loginPassword.type = "password";
+                button.setAttribute(
+                    "aria-label",
+                    "Show password"
+                );
+            }
+        }
+
+        /* EMAIL VALIDATION */
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        /* CLEAR ERRORS */
+        function clearLoginErrors() {
+
+            document
+                .getElementById(
+                    "loginEmailError"
+                )
+                .textContent = "";
+
+            document
+                .getElementById(
+                    "loginPasswordError"
+                )
+                .textContent = "";
+
+            loginEmail.classList.remove(
+                "input-error"
+            );
+
+            loginPassword.classList.remove(
+                "input-error"
+            );
+        }
+
+        /* LOGIN FORM SUBMISSION*/
+        loginForm.addEventListener(
+            "submit",
+            function(event) {
+
+                event.preventDefault();
+                clearLoginErrors();
+                const email =
+                    loginEmail.value.trim();
+                const password =
+                    loginPassword.value;
+                let valid = true;
+
+                /* EMAIL*/
+                if (!email) {
+
+                    document
+                        .getElementById(
+                            "loginEmailError"
+                        )
+                        .textContent =
+                        "Please enter your email.";
+
+                    loginEmail.classList.add(
+                        "input-error"
+                    );
+                    valid = false;
+                }
+                else if (
+                    !isValidEmail(email)
+                ) {
+
+                    document
+                        .getElementById(
+                            "loginEmailError"
+                        )
+                        .textContent =
+                        "Please enter a valid email address.";
+
+                    loginEmail.classList.add(
+                        "input-error"
+                    );
+                    valid = false;
+                }
+
+                /* PASSWORD */
+                if (!password) {
+                    document
+                        .getElementById(
+                            "loginPasswordError"
+                        )
+                        .textContent =
+                        "Please enter your password.";
+                    loginPassword.classList.add(
+                        "input-error"
+                    );
+                    valid = false;
+                }
+
+                /* STOP IF INVALID */
+                if (!valid) {
+                    return;
+                }
+
+                /* SAVE LOGIN INFORMATION */
+
+                sessionStorage.setItem(
+                    "verificationEmail",
+                    email
+                );
+
+                sessionStorage.setItem(
+                    "verificationRole",
+                    role
+                );
+
+                sessionStorage.setItem(
+                    "verificationPurpose",
+                    "login"
+                );
+
+                /* VERIFICATION PAGE*/
+                window.location.href =
+                    "verification-login.html";
+            }
+        );
+
+        /* SOCIAL LOGIN */
+        function socialLogin(provider) {
+
+            /* Save the same login verification context used by the normal login flow. */
+            sessionStorage.setItem(
+                "verificationRole",
+                role
+            );
+
+            sessionStorage.setItem(
+                "verificationPurpose",
+                "login"
+            );
+
+            if (provider === "Google") {
+                sessionStorage.setItem(
+                    "verificationProvider",
+                    "google"
+                );
+
+                window.location.href =
+                    "verification-gmail-login.html";
+                return;
+            }
+
+            if (provider === "Microsoft") {
+                sessionStorage.setItem(
+                    "verificationProvider",
+                    "microsoft"
+                );
+
+                window.location.href =
+                    "verification-ms-login.html";
+            }
+        }
+
+        /* FORGOT PASSWORD */
+        function handleForgotPassword(event) {
+            event.preventDefault();
+            showLoginModal(
+                "Forgot Password",
+                "Password recovery will be available once the account security system is connected.",
+                "?"
+            );
+        }
+
+        /* SHOW MODAL */
+        function showLoginModal(
+            title,
+            message,
+            icon
+        ) {
+
+            const modal =
+                document.getElementById(
+                    "loginMessageModal"
+                );
+
+            document.getElementById(
+                "loginModalTitle"
+            ).textContent =
+                title;
+
+            document.getElementById(
+                "loginModalMessage"
+            ).textContent =
+                message;
+
+            document.getElementById(
+                "loginModalIcon"
+            ).textContent =
+                icon;
+
+            modal.classList.add(
+                "show"
+            );
+
+            modal.setAttribute(
+                "aria-hidden",
+                "false"
+            );
+        }
+
+        /* CLOSE MODAL */
+
+        function closeLoginModal() {
+
+            const modal =
+                document.getElementById(
+                    "loginMessageModal"
+                );
+
+            modal.classList.remove(
+                "show"
+            );
+
+            modal.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+        }
+
+        /* CLICK OURSIDE MODAL */
+        document.addEventListener(
+            "click",
+            function(event) {
+
+                const modal =
+                    document.getElementById(
+                        "loginMessageModal"
+                    );
+
+                if (
+                    event.target === modal
+                ) {
+                    closeLoginModal();
+                }
+            }
+        );
+
+        /* ESC TO CLOSE */
+        document.addEventListener(
+            "keydown",
+            function(event) {
+                if (
+                    event.key === "Escape"
+                ) {
+                    closeLoginModal();
+                }
+            }
+        );
+
+    </script>
+
+    <!-- SHARED JAVASCRIPT -->
+    <script src="../Static/script.js"></script>
+
+</body>
+</html>

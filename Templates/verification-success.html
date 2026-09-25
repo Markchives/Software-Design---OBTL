@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>EduMetrics | Account Verified</title>
+
+    <link
+        rel="stylesheet"
+        href="../Static/style.css"
+    >
+</head>
+
+<body class="auth-page verification-success-page">
+
+    <!-- HEADER-->
+    <header class="site-header auth-site-header">
+
+        <a
+            href="website.html"
+            class="brand-area auth-header-brand"
+            aria-label="EduMetrics home"
+        >
+            <div class="brand">
+                <span>Edu</span>Metrics
+            </div>
+
+            <p>
+                Academic Assessment &amp; Grading System
+            </p>
+        </a>
+
+
+        <div class="top-actions auth-header-actions">
+
+            <!-- SUPPORT -->
+            <button
+                type="button"
+                class="text-btn header-action"
+                onclick="showHeaderMessage('Support')"
+            >
+                <img
+                    src="../Static/images/icons/support.png"
+                    alt=""
+                    class="header-action-icon"
+                >
+
+                <span>Support</span>
+            </button>
+
+
+            <!-- SETTINGS -->
+            <button
+                type="button"
+                class="text-btn header-action"
+                onclick="showHeaderMessage('Settings')"
+            >
+                <img
+                    src="../Static/images/icons/settings.png"
+                    alt=""
+                    class="header-action-icon"
+                >
+
+                <span>Settings</span>
+            </button>
+
+
+            <!-- ROLE -->
+            <div
+                class="login-pill auth-role-pill"
+                aria-label="Account role"
+            >
+                <span id="successRoleLabel">
+                    Student
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- VERIFICATION SUCCESS -->
+    <main class="auth-container">
+
+        <div class="login-stage verification-success-stage">
+
+            <!-- BACK -->
+            <a
+                href="login page.html"
+                class="back-button"
+                id="successBackButton"
+                aria-label="Back to login"
+            >
+                <span
+                    class="back-arrow"
+                    aria-hidden="true"
+                >
+                    ←
+                </span>
+
+                <span>Back</span>
+            </a>
+
+
+            <!-- SUCCESS CARD-->
+            <section class="auth-card verification-success-card">
+
+
+                <!-- LEFT BLUE SUCCESS PANEL-->
+                <div class="verification-success-panel">
+
+                    <div class="verification-success-content">
+
+
+                        <!-- SUCCESS ICON -->
+                        <div class="verification-success-icon-wrap">
+
+                            <img
+                                src="../Static/images/icons/success.png"
+                                alt=""
+                                class="verification-success-check-image"
+                                aria-hidden="true"
+                            >
+
+                        </div>
+
+                        <!-- SUCCESS TEXT -->
+                        <div class="verification-success-heading">
+
+                            <h1 id="successTitle">
+                                Account Verified!
+                            </h1>
+
+                            <p class="verification-success-welcome">
+                                Welcome to EduMetrics
+                            </p>
+
+                            <p id="successMessage">
+                                Your account has been successfully verified.
+                                <br>
+                                You can now log in and access the main dashboard.
+                            </p>
+                        </div>
+
+                        <!-- BUTTON -->
+                        <button
+                            type="button"
+                            id="primaryButton"
+                            class="verification-success-button"
+                            onclick="continueToLogin()"
+                        >
+                            Go to Log in
+                        </button>
+                    </div>
+                </div>
+
+                <!-- RIGHT BEIGE PANEL -->
+                <div
+                    class="auth-brand-panel registration-brand-panel verification-success-brand-panel"
+                >
+
+                    <!-- LOGO -->
+                    <div class="auth-logo">
+
+                        <span class="gold-text">
+                            Edu
+                        </span>Metrics
+
+                    </div>
+
+                    <!-- SUBTITLE -->
+                    <p class="auth-brand-subtitle">
+                        Academic Assessment &amp; Grading System
+                    </p>
+
+                    <!-- GOLD LINE -->
+                    <div class="auth-gold-line"></div>
+
+                    <!-- HEADING -->
+                    <h2 class="brand-heading">
+                        Measure Learning.
+                        <br>
+                        Improve
+                        <span class="gold-text">
+                            Outcomes.
+                        </span>
+                    </h2>
+
+                    <!-- FEATURES -->
+                    <div class="brand-features">
+
+                        <!-- CURRICULUM MAPPING -->
+                        <div class="brand-feature">
+
+                            <img
+                                src="../Static/images/icons/curriculum mapping.png"
+                                alt=""
+                                class="brand-feature-icon-image"
+                            >
+
+                            <span>
+                                Curriculum Mapping
+                            </span>
+                        </div>
+
+
+                        <!-- ASSESSMENT & GRADING -->
+                        <div class="brand-feature">
+
+                            <img
+                                src="../Static/images/icons/assessment & grading.png"
+                                alt=""
+                                class="brand-feature-icon-image"
+                            >
+
+                            <span>
+                                Assessment &amp; Grading
+                            </span>
+                        </div>
+
+                        <!-- OUTCOME ATTAINMENT -->
+                        <div class="brand-feature">
+
+                            <img
+                                src="../Static/images/icons/outcome attainment.png"
+                                alt=""
+                                class="brand-feature-icon-image"
+                            >
+
+                            <span>
+                                Outcome Attainment
+                            </span>
+                        </div>
+
+
+                        <!-- CQI ANALYTICS -->
+                        <div class="brand-feature">
+
+                            <img
+                                src="../Static/images/icons/cqi analytics.png"
+                                alt=""
+                                class="brand-feature-icon-image"
+                            >
+
+                            <span>
+                                CQI Analytics
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!--MODAL
+         HIDDEN BY DEFAULT-->
+    <div
+        id="verificationModal"
+        class="auth-modal"
+        aria-hidden="true"
+        hidden
+    >
+
+        <div class="auth-modal-box">
+
+            <button
+                type="button"
+                class="modal-close-button"
+                onclick="closeSuccessModal()"
+                aria-label="Close"
+            >
+                ×
+            </button>
+
+
+            <div
+                id="verificationModalIcon"
+                class="modal-status-icon"
+            >
+                !
+            </div>
+
+
+            <h2 id="verificationModalTitle">
+                EduMetrics
+            </h2>
+
+
+            <p id="verificationModalMessage">
+                Please try again.
+            </p>
+
+
+            <button
+                type="button"
+                class="modal-primary-button"
+                onclick="closeSuccessModal()"
+            >
+                OK
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+
+        /* ROLE NAMES */
+
+        const successRoleNames = {
+
+            "student":
+                "Student",
+
+            "faculty":
+                "Faculty",
+
+            "department-head":
+                "Department Head",
+
+            "admin-security":
+                "Admin & Security"
+
+        };
+
+
+        /* GET VERIFICATION INFORMATION */
+
+        const verificationType =
+            sessionStorage.getItem(
+                "verificationType"
+            );
+
+
+        const verificationCompleted =
+            sessionStorage.getItem(
+                "verificationCompleted"
+            );
+
+
+        const verifiedRole =
+            sessionStorage.getItem(
+                "verifiedRole"
+            ) ||
+
+            sessionStorage.getItem(
+                "verificationRole"
+            ) ||
+
+            sessionStorage.getItem(
+                "selectedRole"
+            ) ||
+
+            "student";
+
+
+        /* ELEMENTS */
+        const successTitle =
+            document.getElementById(
+                "successTitle"
+            );
+
+        const successMessage =
+            document.getElementById(
+                "successMessage"
+            );
+
+        const primaryButton =
+            document.getElementById(
+                "primaryButton"
+            );
+
+        const successRoleLabel =
+            document.getElementById(
+                "successRoleLabel"
+            );
+
+        const successBackButton =
+            document.getElementById(
+                "successBackButton"
+            );
+
+
+        const verificationModal =
+            document.getElementById(
+                "verificationModal"
+            );
+
+        const verificationModalTitle =
+            document.getElementById(
+                "verificationModalTitle"
+            );
+
+        const verificationModalMessage =
+            document.getElementById(
+                "verificationModalMessage"
+            );
+
+        /* DISPLAY ROLE */
+
+        if (successRoleLabel) {
+
+            successRoleLabel.textContent =
+                successRoleNames[
+                    verifiedRole
+                ] ||
+                "Student";
+
+        }
+
+        /* REGISTRATION VERIFICATION SUCCESS */
+
+        if (
+            verificationType === "signup"
+        ) {
+
+            document.title =
+                "EduMetrics | Account Verified";
+
+
+            if (successTitle) {
+
+                successTitle.textContent =
+                    "Account Verified!";
+
+            }
+
+            if (successMessage) {
+
+                successMessage.innerHTML =
+                    "Your account has been successfully verified.<br>" +
+                    "You can now log in and access the main dashboard.";
+
+            }
+
+            if (primaryButton) {
+
+                primaryButton.textContent =
+                    "Go to Log in";
+            }
+        }
+
+        /* LOGIN VERIFICATION SUCCESS */
+
+else if (
+    verificationType === "login"
+) {
+
+    /* Add separate class for LOGIN success design */
+    document.body.classList.add(
+        "login-success-mode"
+    );
+
+
+    /* LEFT PANEL ICONS */
+    const loginSuccessFeatureIcons =
+        document.querySelectorAll(
+            ".verification-success-brand-panel .brand-feature-icon-image"
+        );
+
+    const loginSuccessIconSources = [
+        "../Static/images/icons/cm.png",
+        "../Static/images/icons/a&g.png",
+        "../Static/images/icons/oa.png",
+        "../Static/images/icons/cqi.png"
+    ];
+
+    loginSuccessFeatureIcons.forEach(
+        function (icon, index) {
+
+            if (loginSuccessIconSources[index]) {
+
+                icon.src =
+                    loginSuccessIconSources[index];
+
+            }
+
+        }
+    );
+
+
+    /* PAGE TITLE */
+    document.title =
+        "EduMetrics | Account Verified";
+
+    /* SUCCESS TITLE */
+    if (successTitle) {
+        successTitle.textContent =
+            "Account Verified!";
+    }
+
+    /* SUCCESS MESSAGE */
+    if (successMessage) {
+
+        successMessage.innerHTML =
+            "Your account has been successfully verified.<br>" +
+            "You can now continue to your dashboard.";
+
+    }
+
+    /* BUTTON */
+    if (primaryButton) {
+
+        primaryButton.textContent =
+            "Continue";
+    }
+}
+        /*DEFAULT VERIFICATION SUCCESS */
+        else {
+
+            document.title =
+                "EduMetrics | Verification Successful";
+
+            if (successTitle) {
+                successTitle.textContent =
+                    "Verification Successful!";
+            }
+
+            if (successMessage) {
+                successMessage.innerHTML =
+                    "Your verification was completed successfully.<br>" +
+                    "You may now continue.";
+
+            }
+
+
+            if (primaryButton) {
+
+                primaryButton.textContent =
+                    "Continue";
+            }
+        }
+
+        /* CONTINUE BUTTON*/
+        function continueToLogin() {
+
+            if (
+                verificationType === "login"
+            ) {
+
+                window.location.href =
+                    "login page.html?role=" +
+                    encodeURIComponent(
+                        verifiedRole
+                    );
+
+                return;
+
+            }
+
+
+            window.location.href =
+                "login page.html?role=" +
+                encodeURIComponent(
+                    verifiedRole
+                );
+
+        }
+        /* BACK BUTTON */
+        if (successBackButton) {
+            successBackButton.href =
+                "login page.html?role=" +
+                encodeURIComponent(
+                    verifiedRole
+                );
+        }
+
+        /* HEADER MESSAGE */
+        function showHeaderMessage(type) {
+
+            if (!verificationModal) {
+                return;
+            }
+
+
+            if (verificationModalTitle) {
+                verificationModalTitle.textContent =
+                    type;
+            }
+
+            if (verificationModalMessage) {
+                if (type === "Support") {
+                    verificationModalMessage.textContent =
+                        "Support options will be available once this section is connected.";
+
+                }
+
+                else {
+                    verificationModalMessage.textContent =
+                        "Settings options will be available once this section is connected.";
+                }
+            }
+
+            /*
+             * Remove hidden ONLY when modal is intentionally opened.
+             */
+
+            verificationModal.hidden = false;
+            verificationModal.classList.add(
+                "show"
+            );
+            verificationModal.setAttribute(
+                "aria-hidden",
+                "false"
+            );
+
+        }
+
+
+        /* CLOSE MODAL */
+        function closeSuccessModal() {
+
+            if (!verificationModal) {
+                return;
+            }
+
+
+            verificationModal.classList.remove(
+                "show"
+            );
+
+            verificationModal.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+
+
+            /*
+             * Hide again after closing.
+             */
+
+            verificationModal.hidden = true;
+
+        }
+
+        /* ESC KEY */
+        document.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (
+                    event.key === "Escape" &&
+                    verificationModal &&
+                    !verificationModal.hidden
+                ) {
+
+                    closeSuccessModal();
+
+                }
+
+            }
+        );
+
+
+        /*CLICK OUTSIDE MODAL */
+        if (verificationModal) {
+            verificationModal.addEventListener(
+                "click",
+                function (event) {
+
+                    if (
+                        event.target ===
+                        verificationModal
+                    ) {
+
+                        closeSuccessModal();
+                    }
+                }
+            );
+        }
+    </script>
+</body>
+</html>

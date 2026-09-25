@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>EduMetrics | Student Registration </title>
+
+    <link
+        rel="stylesheet"
+        href="../Static/style.css"
+    >
+
+</head>
+
+<body class="registration-page">
+
+    <!-- HEADER -->
+    <header class="site-header auth-site-header">
+
+        <!-- BRAND -->
+        <a
+            href="website.html"
+            class="brand-area auth-header-brand"
+            aria-label="EduMetrics home"
+        >
+            <div class="brand"><span>Edu</span>Metrics</div>
+            <p>Academic Assessment &amp; Grading System</p>
+        </a>
+
+        <!-- HEADER ACTIONS -->
+        <div class="top-actions auth-header-actions">
+
+            <!-- SUPPORT -->
+            <button
+                type="button"
+                class="text-btn header-action"
+                onclick="showRegistrationMessage(
+                    'Support',
+                    'Support options will be available once this section is connected.'
+                )"
+            >
+                <img
+                    src="../Static/images/icons/support.png"
+                    alt=""
+                    class="header-action-icon"
+                >
+                <span>Support</span>
+            </button>
+
+            <!-- SETTINGS -->
+            <button
+                type="button"
+                class="text-btn header-action"
+                onclick="showRegistrationMessage(
+                    'Settings',
+                    'Settings options will be available once this section is connected.'
+                )"
+            >
+                <img
+                    src="../Static/images/icons/settings.png"
+                    alt=""
+                    class="header-action-icon"
+                >
+                <span> Settings </span>
+            </button>
+
+            <!--ROLE DISPLAY-->
+            <div
+                class="login-pill auth-role-pill"
+                aria-label="Account role"
+            >
+                <span id="registrationHeaderRole">
+                    Student
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!--MAIN REGISTRATION -->
+
+    <main class="auth-container registration-main">
+        <div class="registration-stage">
+
+            <!-- BACK-->
+            <div class="registration-top-row">
+                <a
+                    href="login page.html"
+                    id="registrationBackButton"
+                    class="registration-back"
+                >
+                    <span class="registration-back-arrow">←</span>
+                    <span> Back</span>
+                </a>
+            </div>
+
+            <!-- REGISTRATION CARD -->
+            <section
+                class="auth-card registration-card"
+                aria-label="Create EduMetrics account"
+            >
+                <!-- CREATE ACCOUNT (LEFT SIDE) -->
+
+                <div
+                    class="auth-form-panel registration-form-panel"
+                >
+
+                    <!-- HEADING -->
+                    <div class="form-heading">
+                        <h2> Create Account</h2>
+                    </div>
+
+                    <!-- FORM-->
+                    <form
+                        id="registrationForm"
+                        class="auth-form"
+                        novalidate
+                    >
+                        <!-- FIRMS & LAST NAME -->
+                        <div class="two-column-inputs">
+
+                            <!-- FIRST NAME -->
+                            <div class="form-group">
+                                <div class="input-wrapper">
+                                    <span
+                                        class="input-icon"
+                                        aria-hidden="true"
+                                    >
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            aria-hidden="true"
+                                        >
+                                            <circle
+                                                cx="12"
+                                                cy="8"
+                                                r="3.5"
+                                            ></circle>
+
+                                            <path
+                                                d="M5.5 19c.7-3.5 3-5.3 6.5-5.3s5.8 1.8 6.5 5.3"
+                                            ></path>
+                                        </svg>
+                                    </span>
+
+                                    <input
+                                        type="text"
+                                        id="firstName"
+                                        name="firstName"
+                                        placeholder="First Name"
+                                        autocomplete="given-name"
+                                    >
+
+                                </div>
+
+                                <small
+                                    id="firstNameError"
+                                    class="form-error"
+                                ></small>
+
+                            </div>
+
+                            <!-- LAST NAME -->
+                            <div class="form-group">
+                                <div class="input-wrapper">
+                                    <span
+                                        class="input-icon"
+                                        aria-hidden="true"
+                                    >
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            aria-hidden="true"
+                                        >
+                                            <circle
+                                                cx="12"
+                                                cy="8"
+                                                r="3.5"
+                                            ></circle>
+
+                                            <path
+                                                d="M5.5 19c.7-3.5 3-5.3 6.5-5.3s5.8 1.8 6.5 5.3"
+                                            ></path>
+                                        </svg>
+                                    </span>
+
+                                    <input
+                                        type="text"
+                                        id="lastName"
+                                        name="lastName"
+                                        placeholder="Last Name"
+                                        autocomplete="family-name"
+                                    >
+                                </div>
+
+                                <small
+                                    id="lastNameError"
+                                    class="form-error"
+                                ></small>
+
+                            </div>
+                        </div>
+
+                        <!-- ID NUMBER-->
+                        <div class="form-group">
+                            <div class="input-wrapper">
+                                <span
+                                    class="input-icon"
+                                    aria-hidden="true"
+                                >
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                    >
+                                        <rect
+                                            x="4"
+                                            y="5"
+                                            width="16"
+                                            height="14"
+                                            rx="2"
+                                        ></rect>
+
+                                        <circle
+                                            cx="9"
+                                            cy="10"
+                                            r="2"
+                                        ></circle>
+
+                                        <path
+                                            d="M7 15c.4-1.5 1.2-2.3 2-2.3s1.6.8 2 2.3"
+                                        ></path>
+
+                                        <path
+                                            d="M14 9h3.5M14 12h3.5"
+                                        ></path>
+                                    </svg>
+                                </span>
+
+                                <input
+                                    type="text"
+                                    id="idNumber"
+                                    name="idNumber"
+                                    placeholder="Student ID Number"
+                                    autocomplete="off"
+                                >
+                            </div>
+
+                            <small
+                                id="idNumberError"
+                                class="form-error"
+                            ></small>
+                        </div>
+
+                        <!-- DEPARTMENT/PROGRAM -->
+                        <div class="form-group">
+                            <div class="input-wrapper">
+                                <span
+                                    class="input-icon"
+                                    aria-hidden="true"
+                                >
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                    >
+                                        <path
+                                            d="M3 9l9-5 9 5-9 5-9-5z"
+                                        ></path>
+
+                                        <path
+                                            d="M6 11.5V16c3.5 2.4 8.5 2.4 12 0v-4.5"
+                                        ></path>
+                                    </svg>
+                                </span>
+
+                                <input
+                                    type="text"
+                                    id="department"
+                                    name="department"
+                                    placeholder="Program"
+                                    autocomplete="organization"
+                                >
+                            </div>
+                            <small
+                                id="departmentError"
+                                class="form-error"
+                            ></small>
+                        </div>
+
+                        <!-- EMAIL -->
+
+                        <div class="form-group">
+                            <div class="input-wrapper">
+                                <span
+                                    class="input-icon"
+                                    aria-hidden="true"
+                                >
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                    >
+                                        <rect
+                                            x="3"
+                                            y="5"
+                                            width="18"
+                                            height="14"
+                                            rx="2"
+                                        ></rect>
+
+                                        <path
+                                            d="M4 7l8 6 8-6"
+                                        ></path>
+                                    </svg>
+                                </span>
+
+                                <input
+                                    type="email"
+                                    id="signupEmail"
+                                    name="signupEmail"
+                                    placeholder="Email"
+                                    autocomplete="email"
+                                >
+                            </div>
+
+                            <small
+                                id="signupEmailError"
+                                class="form-error"
+                            ></small>
+                        </div>
+
+                        <!-- PASSWORD -->
+                        <div class="form-group">
+                            <div class="input-wrapper">
+                                <span
+                                    class="input-icon"
+                                    aria-hidden="true"
+                                >
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                    >
+                                        <rect
+                                            x="5"
+                                            y="10"
+                                            width="14"
+                                            height="10"
+                                            rx="2"
+                                        ></rect>
+
+                                        <path
+                                            d="M8 10V7a4 4 0 0 1 8 0v3"
+                                        ></path>
+                                    </svg>
+                                </span>
+
+                                <input
+                                    type="password"
+                                    id="signupPassword"
+                                    name="signupPassword"
+                                    placeholder="Password"
+                                    autocomplete="new-password"
+                                >
+
+                                <button
+                                    type="button"
+                                    class="password-toggle"
+                                    onclick="
+                                        toggleRegistrationPassword(
+                                            'signupPassword',
+                                            this
+                                        )
+                                    "
+                                    aria-label="Show password"
+                                >
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                    >
+                                        <path
+                                            d="M2.5 12s3.5-5 9.5-5 9.5 5 9.5 5-3.5 5-9.5 5-9.5-5-9.5-5z"
+                                        ></path>
+
+                                        <circle
+                                            cx="12"
+                                            cy="12"
+                                            r="2.5"
+                                        ></circle>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <small
+                                id="signupPasswordError"
+                                class="form-error"
+                            ></small>
+
+                            <!-- PASSWORD REQUIREMENTS -->
+                            <div
+                                id="passwordRequirements"
+                                class="password-requirements"
+                            >
+                                <p>Password must contain:</p>
+                                <span id="lengthRequirement">○ 8 or more characters </span>
+                                <span id="uppercaseRequirement"> ○ At least one uppercase letter </span>
+                                <span id="lowercaseRequirement">○ At least one lowercase letter </span>
+                                <span id="numberRequirement">○ At least one number </span>
+                                <span id="specialRequirement">○ At least one special character</span>
+                            </div>
+                        </div>
+
+                        <!-- CONFIRM PASSWORD-->
+                        <div class="form-group">
+                            <div class="input-wrapper">
+                                <span
+                                    class="input-icon"
+                                    aria-hidden="true"
+                                >
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                    >
+                                        <rect
+                                            x="5"
+                                            y="10"
+                                            width="14"
+                                            height="10"
+                                            rx="2"
+                                        ></rect>
+
+                                        <path
+                                            d="M8 10V7a4 4 0 0 1 8 0v3"
+                                        ></path>
+                                    </svg>
+
+                                </span>
+
+                                <input
+                                    type="password"
+                                    id="confirmPassword"
+                                    name="confirmPassword"
+                                    placeholder="Confirm Password"
+                                    autocomplete="new-password"
+                                >
+
+                                <button
+                                    type="button"
+                                    class="password-toggle"
+                                    onclick="
+                                        toggleRegistrationPassword(
+                                            'confirmPassword',
+                                            this
+                                        )
+                                    "
+                                    aria-label="Show password"
+                                >
+
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                    >
+                                        <path
+                                            d="M2.5 12s3.5-5 9.5-5 9.5 5 9.5 5-3.5 5-9.5 5-9.5-5-9.5-5z"
+                                        ></path>
+
+                                        <circle
+                                            cx="12"
+                                            cy="12"
+                                            r="2.5"
+                                        ></circle>
+                                    </svg>
+                                </button>
+                            </div>
+                            <small
+                                id="confirmPasswordError"
+                                class="form-error"
+                            ></small>
+                        </div>
+
+                        <!-- TERMS -->
+                        <div class="terms-row">
+                            <label class="remember-option terms-option">
+                                <input
+                                    type="checkbox"
+                                    id="termsAgreement"
+                                >
+                                <span>
+                                    I agree to the
+                                    <a
+                                        href="#"
+                                        onclick="
+                                            showTerms(event)
+                                        "
+                                    >
+                                        Terms and Conditions
+                                    </a>
+                                </span>
+                            </label>
+                            <small
+                                id="termsError"
+                                class="form-error"
+                            ></small>
+                        </div>
+
+                        <!-- SIGN UP -->
+                        <button
+                            type="submit"
+                            class="primary-auth-button"
+                        >
+                            Sign Up
+                        </button>
+                    </form>
+                </div>
+
+                <!-- RIGH SIDE (DIRTY WHITE) -->
+                <div
+                    class="auth-brand-panel registration-brand-panel"
+                >
+                    <!-- LOGO -->
+                    <div class="auth-logo">
+                        <span class="gold-text">Edu</span>Metrics
+                    </div>
+                    <p class="auth-brand-subtitle">Academic Assessment &amp; Grading System</p>
+                    <div class="auth-gold-line"></div>
+
+                    <!-- HEADING -->
+                    <h2 class="brand-heading">
+                        Measure Learning.
+                        <br>
+                        Improve
+                        <span class="gold-text">
+                            Outcomes.
+                        </span>
+                    </h2>
+
+                    <!-- FEATURES -->
+                    <div class="brand-features">
+
+                        <!-- CURRICULUM MAPPING -->
+                        <div class="brand-feature">
+                            <img
+                                src="../Static/images/icons/curriculum mapping.png"
+                                alt=""
+                                class="brand-feature-icon-image"
+                            >
+                            <span>
+                                Curriculum Mapping
+                            </span>
+                        </div>
+
+                        <!-- ASSESSMENT -->
+                        <div class="brand-feature">
+                            <img
+                                src="../Static/images/icons/assessment & grading.png"
+                                alt=""
+                                class="brand-feature-icon-image"
+                            >
+                            <span>Assessment &amp; Grading</span>
+                        </div>
+
+                        <!-- OUTCOME -->
+                        <div class="brand-feature">
+                            <img
+                                src="../Static/images/icons/outcome attainment.png"
+                                alt=""
+                                class="brand-feature-icon-image"
+                            >
+                            <span>Outcome Attainment</span>
+                        </div>
+
+                        <!-- ANALYTICS -->
+                        <div class="brand-feature">
+                            <img
+                                src="../Static/images/icons/cqi analytics.png"
+                                alt=""
+                                class="brand-feature-icon-image"
+                            >
+                            <span>CQI Analytics</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- REGISTRATION MODAL -->
+    <div
+        id="registrationModal"
+        class="registration-modal"
+        aria-hidden="true"
+    >
+
+        <div class="registration-modal-box">
+
+            <button
+                type="button"
+                class="registration-modal-close"
+                onclick="closeRegistrationModal()"
+                aria-label="Close"
+            >
+                ×
+            </button>
+
+            <h2 id="registrationModalTitle">Terms and Conditions</h2>
+            <p id="registrationModalMessage">
+                By creating an EduMetrics account,
+                you agree to follow the rules and
+                policies established for the system.
+            </p>
+
+            <button
+                type="button"
+                id="registrationModalButton"
+                class="registration-modal-button"
+                onclick="acceptRegistrationTerms()"
+            >
+                I Understand
+            </button>
+        </div>
+    </div>
+
+    <!-- JS -->
+    <script>
+
+        /* ROLE */
+        const registrationParams =
+            new URLSearchParams(
+                window.location.search
+            );
+
+        const validRegistrationRoles = [
+            "student",
+            "faculty",
+            "department-head",
+            "admin-security"
+        ];
+
+        const registrationRoleNames = {
+            "student":
+                "Student",
+
+            "faculty":
+                "Faculty",
+
+            "department-head":
+                "Department Head",
+
+            "admin-security":
+                "Admin & Security"
+
+        };
+
+        const requestedRegistrationRole =
+            registrationParams.get("role") ||
+            sessionStorage.getItem("selectedRole") ||
+            "student";
+
+        let currentRegistrationRole =
+            validRegistrationRoles.includes(
+                requestedRegistrationRole
+            )
+                ? requestedRegistrationRole
+                : "student";
+
+        const registrationHeaderRole =
+            document.getElementById(
+                "registrationHeaderRole"
+            );
+
+        function updateRegistrationRole(role) {
+            currentRegistrationRole =
+                validRegistrationRoles.includes(role)
+                    ? role
+                    : "student";
+
+            /* UPDATE ROLE IN HEADER */
+            if (registrationHeaderRole) {
+                registrationHeaderRole.textContent =
+                    registrationRoleNames[
+                        currentRegistrationRole
+                    ];
+            }
+
+            /* UPDATE ROLE-SPECIFIC REGISTRATION FIELDS */
+            const roleIdNumber =
+                document.getElementById(
+                    "idNumber"
+                );
+
+            const roleDepartment =
+                document.getElementById(
+                    "department"
+                );
+
+
+            if (currentRegistrationRole === "student") {
+                if (roleIdNumber) {
+                    roleIdNumber.placeholder =
+                        "Student ID Number";
+                }
+                if (roleDepartment) {
+                    roleDepartment.placeholder =
+                        "Program";
+                }
+            }
+
+            else if (
+                currentRegistrationRole === "faculty" ||
+                currentRegistrationRole === "department-head"
+            ) {
+
+                if (roleIdNumber) {
+                    roleIdNumber.placeholder =
+                        "Employee ID Number";
+                }
+
+                if (roleDepartment) {
+                    roleDepartment.placeholder =
+                        "Department";
+                }
+            }
+
+            else if (
+                currentRegistrationRole === "admin-security"
+            ) {
+
+                if (roleIdNumber) {
+                    roleIdNumber.placeholder =
+                        "Employee ID Number";
+                }
+
+                if (roleDepartment) {
+                    roleDepartment.placeholder =
+                        "Role";
+                }
+            }
+
+            sessionStorage.setItem(
+                "selectedRole",
+                currentRegistrationRole
+            );
+
+            document.title =
+                "EduMetrics | " +
+                registrationRoleNames[
+                    currentRegistrationRole
+                ] +
+                " Registration";
+
+        }
+
+        updateRegistrationRole(
+            currentRegistrationRole
+        );
+
+        /* FORM ELEMENTS */
+        const registrationForm =
+            document.getElementById(
+                "registrationForm"
+            );
+
+        const firstName =
+            document.getElementById(
+                "firstName"
+            );
+
+        const lastName =
+            document.getElementById(
+                "lastName"
+            );
+
+        const idNumber =
+            document.getElementById(
+                "idNumber"
+            );
+
+        const department =
+            document.getElementById(
+                "department"
+            );
+
+        const signupEmail =
+            document.getElementById(
+                "signupEmail"
+            );
+
+        const signupPassword =
+            document.getElementById(
+                "signupPassword"
+            );
+
+        const confirmPassword =
+            document.getElementById(
+                "confirmPassword"
+            );
+
+        const termsAgreement =
+            document.getElementById(
+                "termsAgreement"
+            );
+
+        /* EMAIL VALIDATION*/
+        function validRegistrationEmail(email) {
+            return (
+                /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+            ).test(email);
+        }
+
+        /* PASSWORD VALIDATION*/
+        function validateRegistrationPassword(
+            password
+        ) {
+            return {
+                length:
+                    password.length >= 8,
+                uppercase:
+                    /[A-Z]/.test(password),
+                lowercase:
+                    /[a-z]/.test(password),
+                number:
+                    /[0-9]/.test(password),
+                special:
+                    /[^A-Za-z0-9]/.test(password)
+            };
+        }
+
+        /* PASS REQUIREMENTS */
+        const lengthRequirement =
+            document.getElementById(
+                "lengthRequirement"
+            );
+
+        const uppercaseRequirement =
+            document.getElementById(
+                "uppercaseRequirement"
+            );
+
+        const lowercaseRequirement =
+            document.getElementById(
+                "lowercaseRequirement"
+            );
+
+        const numberRequirement =
+            document.getElementById(
+                "numberRequirement"
+            );
+
+        const specialRequirement =
+            document.getElementById(
+                "specialRequirement"
+            );
+
+        /* UPDATE PASSWORD */
+        function updateRequirement(
+            element,
+            passed,
+            text
+        ) {
+            if (!element) {
+                return;
+            }
+
+            if (passed) {
+
+                element.textContent =
+                    "✓ " + text;
+
+                element.classList.add(
+                    "requirement-passed"
+                );
+            }
+            else {
+                element.textContent =
+                    "○ " + text;
+
+                element.classList.remove(
+                    "requirement-passed"
+                );
+            }
+        }
+
+        /* LIVE PASSWORD REQ */
+        function updatePasswordRequirements() {
+            const result =
+                validateRegistrationPassword(
+                    signupPassword.value
+                );
+
+            updateRequirement(
+                lengthRequirement,
+                result.length,
+                "8 or more characters"
+            );
+
+            updateRequirement(
+                uppercaseRequirement,
+                result.uppercase,
+                "At least one uppercase letter"
+            );
+
+            updateRequirement(
+                lowercaseRequirement,
+                result.lowercase,
+                "At least one lowercase letter"
+            );
+
+            updateRequirement(
+                numberRequirement,
+                result.number,
+                "At least one number"
+            );
+
+            updateRequirement(
+                specialRequirement,
+                result.special,
+                "At least one special character"
+            );
+
+        }
+
+        signupPassword.addEventListener(
+            "input",
+            updatePasswordRequirements
+        );
+
+        /* PASSWORD SHOW/HIDE */
+        function toggleRegistrationPassword(
+            inputId,
+            button
+        ) {
+            const input =
+                document.getElementById(
+                    inputId
+                );
+
+            if (!input) {
+                return;
+            }
+
+            if (
+                input.type === "password"
+            ) {
+                input.type =
+                    "text";
+                button.setAttribute(
+                    "aria-label",
+                    "Hide password"
+                );
+            }
+            else {
+                input.type =
+                    "password";
+
+                button.setAttribute(
+                    "aria-label",
+                    "Show password"
+                );
+            }
+        }
+
+        /* ERROR */
+        function setRegistrationError(
+            input,
+            errorId,
+            message
+        ) {
+            const error =
+                document.getElementById(
+                    errorId
+                );
+
+            if (input) {
+
+                input.classList.add(
+                    "input-error"
+                );
+            }
+
+            if (error) {
+                error.textContent =
+                    message;
+            }
+        }
+
+        function clearRegistrationError(
+            input,
+            errorId
+        ) {
+
+            const error =
+                document.getElementById(
+                    errorId
+                );
+
+            if (input) {
+                input.classList.remove(
+                    "input-error"
+                );
+            }
+
+            if (error) {
+                error.textContent =
+                    "";
+            }
+        }
+
+        function clearRegistrationErrors() {
+            clearRegistrationError(
+                firstName,
+                "firstNameError"
+            );
+
+            clearRegistrationError(
+                lastName,
+                "lastNameError"
+            );
+
+            clearRegistrationError(
+                idNumber,
+                "idNumberError"
+            );
+
+            clearRegistrationError(
+                department,
+                "departmentError"
+            );
+
+            clearRegistrationError(
+                signupEmail,
+                "signupEmailError"
+            );
+
+            clearRegistrationError(
+                signupPassword,
+                "signupPasswordError"
+            );
+
+            clearRegistrationError(
+                confirmPassword,
+                "confirmPasswordError"
+            );
+
+            const termsError =
+                document.getElementById(
+                    "termsError"
+                );
+
+            if (termsError) {
+                termsError.textContent =
+                    "";
+            }
+        }
+
+        /* CLEAR FIELD ERROR */
+        firstName.addEventListener(
+            "input",
+            function () {
+                clearRegistrationError(
+                    firstName,
+                    "firstNameError"
+                );
+            }
+        );
+        lastName.addEventListener(
+            "input",
+            function () {
+
+                clearRegistrationError(
+                    lastName,
+                    "lastNameError"
+                );
+            }
+        );
+
+        idNumber.addEventListener(
+            "input",
+            function () {
+
+                clearRegistrationError(
+                    idNumber,
+                    "idNumberError"
+                );
+            }
+        );
+
+        department.addEventListener(
+            "input",
+            function () {
+                clearRegistrationError(
+                    department,
+                    "departmentError"
+                );
+            }
+        );
+
+        signupEmail.addEventListener(
+            "input",
+            function () {
+                clearRegistrationError(
+                    signupEmail,
+                    "signupEmailError"
+                );
+            }
+        );
+
+        signupPassword.addEventListener(
+            "input",
+            function () {
+
+                clearRegistrationError(
+                    signupPassword,
+                    "signupPasswordError"
+                );
+            }
+        );
+
+        confirmPassword.addEventListener(
+            "input",
+            function () {
+                clearRegistrationError(
+                    confirmPassword,
+                    "confirmPasswordError"
+                );
+            }
+        );
+
+        termsAgreement.addEventListener(
+            "change",
+            function () {
+
+                const termsError =
+                    document.getElementById(
+                        "termsError"
+                    );
+
+                if (termsError) {
+                    termsError.textContent =
+                        "";
+                }
+            }
+        );
+
+        /* SUBMIT */
+        registrationForm.addEventListener(
+            "submit",
+            function (event) {
+                event.preventDefault();
+                clearRegistrationErrors();
+                const first =
+                    firstName.value.trim();
+                const last =
+                    lastName.value.trim();
+                const accountId =
+                    idNumber.value.trim();
+                const selectedDepartment =
+                    department.value.trim();
+                const email =
+                    signupEmail.value.trim();
+                const password =
+                    signupPassword.value;
+                const confirmation =
+                    confirmPassword.value;
+                const passwordResult =
+                    validateRegistrationPassword(
+                        password
+                    );
+
+                let formIsValid =
+                    true;
+
+                /* FIRST NAME */
+                if (!first) {
+                    setRegistrationError(
+                        firstName,
+                        "firstNameError",
+                        "First name is required."
+                    );
+
+                    formIsValid =
+                        false;
+                }
+
+                /* LAST NAME */
+                if (!last) {
+                    setRegistrationError(
+                        lastName,
+                        "lastNameError",
+                        "Last name is required."
+                    );
+
+                    formIsValid =
+                        false;
+                }
+
+                /* ID NUMBER */
+                if (!accountId) {
+                    const idNumberLabel =
+                        currentRegistrationRole === "student"
+                            ? "Student ID number"
+                            : "Employee ID number";
+
+                    setRegistrationError(
+                        idNumber,
+                        "idNumberError",
+                        idNumberLabel + " is required."
+                    );
+
+                    formIsValid =
+                        false;
+                }
+
+                /* DEPARTMENT / PROGRAM */
+                if (!selectedDepartment) {
+                    let secondaryFieldLabel =
+                        "Program";
+                    if (
+                        currentRegistrationRole === "faculty" ||
+                        currentRegistrationRole === "department-head"
+                    ) {
+                        secondaryFieldLabel =
+                            "Department";
+                    }
+
+                    else if (
+                        currentRegistrationRole === "admin-security"
+                    ) {
+                        secondaryFieldLabel =
+                            "Role";
+                    }
+
+                    setRegistrationError(
+                        department,
+                        "departmentError",
+                        secondaryFieldLabel + " is required."
+                    );
+
+                    formIsValid =
+                        false;
+                }
+
+                /* EMAIL */
+                if (!email) {
+                    setRegistrationError(
+                        signupEmail,
+                        "signupEmailError",
+                        "Email is required."
+                    );
+                    formIsValid =
+                        false;
+                }
+                else if (
+                    !validRegistrationEmail(
+                        email
+                    )
+                ) {
+                    setRegistrationError(
+                        signupEmail,
+                        "signupEmailError",
+                        "Enter a valid email address."
+                    );
+                    formIsValid =
+                        false;
+                }
+
+                /* PASSWORD */
+                if (!password) {
+                    setRegistrationError(
+                        signupPassword,
+                        "signupPasswordError",
+                        "Password is required."
+                    );
+                    formIsValid =
+                        false;
+                }
+                else if (
+                    !passwordResult.length ||
+                    !passwordResult.uppercase ||
+                    !passwordResult.lowercase ||
+                    !passwordResult.number ||
+                    !passwordResult.special
+                ) {
+
+                    setRegistrationError(
+                        signupPassword,
+                        "signupPasswordError",
+                        "Password does not meet all requirements."
+                    );
+
+                    formIsValid =
+                        false;
+                }
+
+                /* CONFIRM PASSWORD */
+                if (!confirmation) {
+
+                    setRegistrationError(
+                        confirmPassword,
+                        "confirmPasswordError",
+                        "Please confirm your password."
+                    );
+                    formIsValid =
+                        false;
+                }
+                else if (
+                    password !== confirmation
+                ) {
+                    setRegistrationError(
+                        confirmPassword,
+                        "confirmPasswordError",
+                        "Passwords do not match."
+                    );
+                    formIsValid =
+                        false;
+                }
+
+                /* TERMS */
+                if (
+                    !termsAgreement.checked
+                ) {
+                    const termsError =
+                        document.getElementById(
+                            "termsError"
+                        );
+                    if (termsError) {
+                        termsError.textContent =
+                            "Please agree to the Terms and Conditions.";
+
+                    }
+                    formIsValid =
+                        false;
+                }
+
+                /* STOP WHEN INVALID */
+                if (!formIsValid) {
+                    return;
+                }
+
+                /* SAVETEMPORARY DATA (CHANGE NIYO NA LANG)*/
+                sessionStorage.setItem(
+                    "signupFirstName",
+                    first
+                );
+                sessionStorage.setItem(
+                    "signupLastName",
+                    last
+                );
+                sessionStorage.setItem(
+                    "signupIdNumber",
+                    accountId
+                );
+                sessionStorage.setItem(
+                    "signupDepartment",
+                    selectedDepartment
+                );
+                sessionStorage.setItem(
+                    "verificationEmail",
+                    email
+                );
+                sessionStorage.setItem(
+                    "verificationRole",
+                    currentRegistrationRole
+                );
+                sessionStorage.setItem(
+                    "verificationPurpose",
+                    "signup"
+                );
+
+                /*PASSWORD IS NOT SAVED IN
+                    sessionStorage.*/
+
+                /* GO TO SIGNUP VERIFICATION */
+                window.location.href =
+                    "verification-signup.html";
+            }
+        );
+
+
+        /* MODAL*/
+        const registrationModal =
+            document.getElementById(
+                "registrationModal"
+            );
+        const registrationModalTitle =
+            document.getElementById(
+                "registrationModalTitle"
+            );
+        const registrationModalMessage =
+            document.getElementById(
+                "registrationModalMessage"
+            );
+        const registrationModalButton =
+            document.getElementById(
+                "registrationModalButton"
+            );
+
+        /* OPEN MODAL */
+        function openRegistrationModal() {
+            if (!registrationModal) {
+                return;
+            }
+            registrationModal.classList.add(
+                "show"
+            );
+            registrationModal.setAttribute(
+                "aria-hidden",
+                "false"
+            );
+        }
+
+        /* CLODE MODAL */
+        function closeRegistrationModal() {
+            if (!registrationModal) {
+                return;
+            }
+            registrationModal.classList.remove(
+                "show"
+            );
+            registrationModal.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+        }
+
+        /* TERMS */
+        function showTerms(event) {
+            if (event) {
+                event.preventDefault();
+            }
+            registrationModalTitle.textContent =
+                "Terms and Conditions";
+            registrationModalMessage.textContent =
+                "By creating an EduMetrics account, " +
+                "you agree to follow the rules and " +
+                "policies established for the system.";
+            registrationModalButton.textContent =
+                "I Understand";
+            registrationModalButton.onclick =
+                acceptRegistrationTerms;
+            openRegistrationModal();
+        }
+
+        /* ACCEPT TERMS */
+        function acceptRegistrationTerms() {
+            termsAgreement.checked =
+                true;
+            const termsError =
+                document.getElementById(
+                    "termsError"
+                );
+
+            if (termsError) {
+                termsError.textContent =
+                    "";
+            }
+            closeRegistrationModal();
+        }
+
+        /* SETTING MESSAGE */
+        function showRegistrationMessage(
+            title,
+            message
+        ) {
+            registrationModalTitle.textContent =
+                title;
+            registrationModalMessage.textContent =
+                message;
+            registrationModalButton.textContent =
+                "Close";
+            registrationModalButton.onclick =
+                closeRegistrationModal;
+            openRegistrationModal();
+        }
+
+        /* CLICK OUTSIDE MODAL */
+        registrationModal.addEventListener(
+            "click",
+            function (event) {
+                if (
+                    event.target ===
+                    registrationModal
+                ) {
+                    closeRegistrationModal();
+                }
+            }
+        );
+
+        /* ESC CLOSE*/
+        document.addEventListener(
+            "keydown",
+            function (event) {
+                if (
+                    event.key === "Escape"
+                ) {
+
+                    closeRegistrationModal();
+                }
+            }
+        );
+    </script>
+
+    <!-- SHARED JS -->
+    <script src="../Static/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Gmail Account - EduMetrics</title>
+
+    <link rel="stylesheet" href="../Static/style.css">
+</head>
+
+<body class="auth-page verification-gmail-page">
+
+    <header class="site-header auth-site-header">
+        <div class="brand-area">
+            <div class="brand">
+                <span class="gold-text">Edu</span>Metrics
+            </div>
+            <p>Academic Assessment &amp; Grading System</p>
+        </div>
+
+        <div class="top-actions">
+            <button type="button" class="text-btn header-action">
+                <img
+                    src="../Static/images/icons/support.png"
+                    alt=""
+                    class="header-action-icon">
+                <span>Support</span>
+            </button>
+
+            <button type="button" class="text-btn header-action">
+                <img
+                    src="../Static/images/icons/settings.png"
+                    alt=""
+                    class="header-action-icon">
+                <span>Settings</span>
+            </button>
+
+            <span class="login-pill auth-role-pill">Student</span>
+        </div>
+    </header>
+
+    <main class="auth-container">
+        <div class="login-stage">
+
+            <a href="login page.html" class="back-button" aria-label="Back to login">
+                <span class="back-arrow">←</span>
+                <span>Back</span>
+            </a>
+
+            <section class="auth-card">
+
+                <!-- BLUE PANEL-->
+                <div class="auth-brand-panel">
+                    <div class="auth-logo"><span class="gold-text">Edu</span>Metrics</div>
+                    <p class="auth-brand-subtitle">Academic Assessment &amp; Grading System</p>
+                    <div class="auth-gold-line"></div>
+                    <h2 class="brand-heading">
+                        Measure Learning.<br>
+                        Improve <span class="gold-text">Outcomes.</span>
+                    </h2>
+
+                    <div class="brand-features">
+                        <div class="brand-feature">
+                            <img
+                                src="../Static/images/icons/cm.png"
+                                alt=""
+                                class="brand-feature-icon-image">
+                            <span>Curriculum Mapping</span>
+                        </div>
+
+                        <div class="brand-feature">
+                            <img
+                                src="../Static/images/icons/a&g.png"
+                                alt=""
+                                class="brand-feature-icon-image">
+                            <span>Assessment &amp; Grading</span>
+                        </div>
+
+                        <div class="brand-feature">
+                            <img
+                                src="../Static/images/icons/oa.png"
+                                alt=""
+                                class="brand-feature-icon-image">
+                            <span>Outcome Attainment</span>
+                        </div>
+
+                        <div class="brand-feature">
+                            <img
+                                src="../Static/images/icons/cqi.png"
+                                alt=""
+                                class="brand-feature-icon-image">
+                            <span>CQI Analytics</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BEIGE PANEL (GMAIL VERIFICATION CONTENT) -->
+                <div class="auth-form-panel gmail-verification-panel">
+                    <div class="gmail-verification-content">
+
+                        <div class="gmail-provider-circle">
+                            <img
+                                src="../Static/images/icons/no-bg-gmail.png"
+                                alt="Google">
+                        </div>
+
+                        <h1 class="gmail-verification-title">Verify your account</h1>
+                        <p class="gmail-verification-subtitle">
+                            For your security, please confirm your<br>
+                            identity using your Google account
+                        </p>
+
+                        <div class="gmail-account-box">
+                            <div class="gmail-account-main">
+                                <img
+                                    src="../Static/images/icons/gmail.png"
+                                    alt="">
+                                <span id="googleAccountEmail">student@gmail.com</span>
+                            </div>
+
+                            <a href="login page.html" class="gmail-change-account"> Change account</a>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="gmail-continue-button"
+                            id="continueGoogleButton">
+                            Continue to Google
+                        </button>
+
+                        <div class="gmail-method-divider">
+                            <span>or use another method</span>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="microsoft-login-button"
+                            id="continueMicrosoftButton">
+                            <img
+                                src="../Static/images/icons/microsoft.png"
+                                alt="">
+                            <span>Continue with Microsoft</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="../Static/script.js"></script>
+
+    <script>
+        const googleButton = document.getElementById("continueGoogleButton");
+        const microsoftButton = document.getElementById("continueMicrosoftButton");
+
+        if (googleButton) {
+            googleButton.addEventListener("click", function () {
+                /*BACKEND*/
+            });
+        }
+
+        if (microsoftButton) {
+            microsoftButton.addEventListener("click", function () {
+                /*BACKEND*/
+            });
+        }
+    </script>
+</body>
+</html>

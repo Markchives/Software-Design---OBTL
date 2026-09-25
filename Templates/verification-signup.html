@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <title>EduMetrics | Verify Registration</title>
+    <link
+        rel="stylesheet"
+        href="../Static/style.css"
+    >
+</head>
+
+<body class="registration-page verification-signup-page">
+
+    <!--HEADER-->
+    <header class="site-header auth-site-header">
+
+        <!-- BRAND -->
+        <a
+            href="website.html"
+            class="brand-area auth-header-brand"
+            aria-label="EduMetrics home"
+        >
+            <div class="brand"><span>Edu</span>Metrics </div>
+            <p>Academic Assessment &amp; Grading System</p>
+        </a>
+
+        <!-- HEADER ACTIONS -->
+        <div class="top-actions auth-header-actions">
+
+            <!-- SUPPORT -->
+            <button
+                type="button"
+                class="text-btn header-action"
+                onclick="
+                    showVerificationMessage(
+                        'Support',
+                        'Support options will be available once this section is connected.'
+                    )
+                "
+            >
+                <img
+                    src="../Static/images/icons/support.png"
+                    alt=""
+                    class="header-action-icon"
+                >
+
+                <span>Support</span>
+            </button>
+
+            <!-- SETTINGS -->
+            <button
+                type="button"
+                class="text-btn header-action"
+                onclick="
+                    showVerificationMessage(
+                        'Settings',
+                        'Settings options will be available once this section is connected.'
+                    )
+                "
+            >
+                <img
+                    src="../Static/images/icons/settings.png"
+                    alt=""
+                    class="header-action-icon"
+                >
+
+                <span>Settings</span>
+            </button>
+
+            <!-- ROLE -->
+            <div
+                class="login-pill auth-role-pill"
+                aria-label="Account role"
+            >
+                <span id="verificationHeaderRole">Student</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN-->
+    <main class="auth-container registration-main">
+        <div class="registration-stage">
+
+            <!-- BACK -->
+            <div class="registration-top-row">
+                <a
+                    href="registration.html"
+                    id="verificationBackButton"
+                    class="registration-back"
+                >
+                    <span class="registration-back-arrow"> ←</span>
+                    <span> Back </span>
+                </a>
+            </div>
+
+            <!-- VERIFICATION CARD -->
+            <section
+                class="auth-card registration-card verification-signup-card"
+                aria-label="Verify EduMetrics account"
+            >
+
+                <!-- LEFT PANEL -->
+                <div
+                    class="auth-form-panel registration-form-panel verification-signup-panel"
+                >
+                    <div class="verification-signup-content">
+                        <!-- EMAIL ICON -->
+                        <div class="verification-signup-icon-wrap">
+                            <img
+                                src="../Static/images/icons/logver.png"
+                                alt=""
+                                class="verification-signup-icon"
+                            >
+                        </div>
+
+                        <!-- HEADING -->
+                        <div class="verification-signup-heading">
+                            <h2>Verify your email</h2>
+                            <p>We've sent a verification code to</p>
+                            <strong id="verificationEmail">your email address </strong>
+                        </div>
+
+                        <!-- OTP -->
+                        <div
+                            class="verification-signup-otp"
+                            id="otpContainer"
+                        >
+                            <input
+                                type="text"
+                                class="otp-input"
+                                maxlength="1"
+                                inputmode="numeric"
+                                autocomplete="one-time-code"
+                                aria-label="Verification digit 1"
+                            >
+
+                            <input
+                                type="text"
+                                class="otp-input"
+                                maxlength="1"
+                                inputmode="numeric"
+                                aria-label="Verification digit 2"
+                            >
+
+                            <input
+                                type="text"
+                                class="otp-input"
+                                maxlength="1"
+                                inputmode="numeric"
+                                aria-label="Verification digit 3"
+                            >
+                            <input
+                                type="text"
+                                class="otp-input"
+                                maxlength="1"
+                                inputmode="numeric"
+                                aria-label="Verification digit 4"
+                            >
+                            <input
+                                type="text"
+                                class="otp-input"
+                                maxlength="1"
+                                inputmode="numeric"
+                                aria-label="Verification digit 5"
+                            >
+                            <input
+                                type="text"
+                                class="otp-input"
+                                maxlength="1"
+                                inputmode="numeric"
+                                aria-label="Verification digit 6"
+                            >
+                        </div>
+
+                        <!-- ERROR -->
+                        <p
+                            id="otpError"
+                            class="verification-signup-error"
+                        ></p>
+
+                        <!-- RESEND -->
+                        <div class="verification-signup-resend">
+                            <span> Didn't receive the code?</span>
+                            <button
+                                type="button"
+                                id="resendButton"
+                                class="resend-button"
+                                onclick="resendSignupCode()"
+                                disabled
+                            >
+                                Resend
+                            </button>
+                        </div>
+
+                        <!-- TIMER -->
+                        <p
+                            id="resendTimer"
+                            class="verification-signup-timer"
+                        >
+                            Resend available in
+                            <strong id="countdown">
+                                30
+                            </strong>
+                            seconds
+                        </p>
+
+                        <!-- VERIFY -->
+                        <button
+                            type="button"
+                            id="verifyButton"
+                            class="primary-auth-button verification-signup-button"
+                            onclick="verifySignupCode()"
+                        >
+                            Verify
+                        </button>
+
+                        <!-- BACK TO SIGN UP -->
+                        <a
+                            href="registration.html"
+                            id="backToSignupLink"
+                            class="verification-signup-back-link"
+                        >
+                            Back to sign up
+                        </a>
+                    </div>
+                </div>
+
+                <!-- RIGHT PANEL -->
+                <div
+                    class="auth-brand-panel registration-brand-panel"
+                >
+                    <!-- LOGO -->
+                    <div class="auth-logo"> <span class="gold-text">Edu</span>Metrics</div>
+                    <p class="auth-brand-subtitle">Academic Assessment &amp; Grading System </p>
+                    <div class="auth-gold-line"></div>
+
+                    <!-- HEADING -->
+                    <h2 class="brand-heading">
+                        Measure Learning.
+                        <br>
+                        Improve
+                        <span class="gold-text">
+                            Outcomes.
+                        </span>
+                    </h2>
+
+                    <!-- FEATURES -->
+                    <div class="brand-features">
+
+                        <!-- CURRICULUM MAPPING -->
+                        <div class="brand-feature">
+                            <img
+                                src="../Static/images/icons/cmap.png"
+                                alt=""
+                                class="brand-feature-icon-image"
+                            >
+                            <span>Curriculum Mapping</span>
+                        </div>
+
+                        <!-- ASSESSMENT -->
+                        <div class="brand-feature">
+                            <img
+                                src="../Static/images/icons/agrade.png"
+                                alt=""
+                                class="brand-feature-icon-image"
+                            >
+                            <span>Assessment &amp; Grading</span>
+                        </div>
+
+                        <!-- OUTCOME -->
+                        <div class="brand-feature">
+                            <img
+                                src="../Static/images/icons/outain.png"
+                                alt=""
+                                class="brand-feature-icon-image"
+                            >
+                            <span>Outcome Attainment</span>
+                        </div>
+
+                        <!-- ANALYTICS -->
+                        <div class="brand-feature">
+                            <img
+                                src="../Static/images/icons/analytics.png"
+                                alt=""
+                                class="brand-feature-icon-image"
+                            >
+                            <span> CQI Analytics</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- VERIFICATION MODAL-->
+    <div
+        id="verificationModal"
+        class="registration-modal"
+        aria-hidden="true"
+    >
+        <div class="registration-modal-box">
+            <button
+                type="button"
+                class="registration-modal-close"
+                onclick="closeVerificationModal()"
+                aria-label="Close"
+            >
+                ×
+            </button>
+            <h2 id="verificationModalTitle">Verification </h2>
+            <p id="verificationModalMessage">Please check your verification code. </p>
+
+            <button
+                type="button"
+                id="verificationModalButton"
+                class="registration-modal-button"
+                onclick="closeVerificationModal()"
+            >
+                OK
+            </button>
+        </div>
+    </div>
+
+    <!-- JS -->
+    <script>
+
+        /* ROLE */
+        const verificationRoleNames = {
+            "student": "Student",
+            "faculty": "Faculty",
+            "department-head": "Department Head",
+            "admin-security": "Admin & Security"
+        };
+        const validVerificationRoles = [
+            "student",
+            "faculty",
+            "department-head",
+            "admin-security"
+        ];
+        let verificationRole =
+            sessionStorage.getItem("verificationRole") ||
+            sessionStorage.getItem("selectedRole") ||
+            "student";
+        if (
+            !validVerificationRoles.includes(
+                verificationRole
+            )
+        ) {
+            verificationRole = "student";
+        }
+        const verificationHeaderRole =
+            document.getElementById(
+                "verificationHeaderRole"
+            );
+        if (verificationHeaderRole) {
+            verificationHeaderRole.textContent =
+                verificationRoleNames[
+                    verificationRole
+                ];
+        }
+        sessionStorage.setItem(
+            "verificationRole",
+            verificationRole
+        );
+        sessionStorage.setItem(
+            "selectedRole",
+            verificationRole
+        );
+        document.title =
+            "EduMetrics | " +
+            verificationRoleNames[
+                verificationRole
+            ] +
+            " Registration Verification";
+
+        /* REGISTRATION LINKS */
+
+        const registrationURL =
+            "registration.html?role=" +
+            encodeURIComponent(
+                verificationRole
+            );
+        const verificationBackButton =
+            document.getElementById(
+                "verificationBackButton"
+            );
+        const backToSignupLink =
+            document.getElementById(
+                "backToSignupLink"
+            );
+        if (verificationBackButton) {
+            verificationBackButton.href =
+                registrationURL;
+        }
+        if (backToSignupLink) {
+            backToSignupLink.href =
+                registrationURL;
+        }
+
+        /* EMAIL */
+        const verificationEmail =
+            sessionStorage.getItem(
+                "verificationEmail"
+            ) || "";
+        const verificationEmailElement =
+            document.getElementById(
+                "verificationEmail"
+            );
+        if (verificationEmailElement) {
+            verificationEmailElement.textContent =
+                verificationEmail ||
+                "your email address";
+        }
+
+        /* OTP */
+        const otpInputs =
+            document.querySelectorAll(
+                ".verification-signup-otp .otp-input"
+            );
+        const otpError =
+            document.getElementById(
+                "otpError"
+            );
+        const resendButton =
+            document.getElementById(
+                "resendButton"
+            );
+        const resendTimer =
+            document.getElementById(
+                "resendTimer"
+            );
+
+        /* OTP INPUT */
+        otpInputs.forEach(
+            function (input, index) {
+                input.addEventListener(
+                    "input",
+                    function (event) {
+                        event.target.value =
+                            event.target.value.replace(
+                                /[^0-9]/g,
+                            ""
+                            );
+                        if (
+                            event.target.value &&
+                            index <
+                                otpInputs.length - 1
+                        ) {
+                            otpInputs[
+                                index + 1
+                            ].focus();
+                        }
+                        clearSignupOTPError();
+                    }
+                );
+
+                input.addEventListener(
+                    "keydown",
+                    function (event) {
+
+                        if (
+                            event.key === "Backspace" &&
+                            !input.value &&
+                            index > 0
+                        ) {
+
+                            otpInputs[
+                                index - 1
+                            ].focus();
+
+                            otpInputs[
+                                index - 1
+                            ].value = "";
+                        }
+
+                        if (
+                            event.key === "ArrowLeft" &&
+                            index > 0
+                        ) {
+                            otpInputs[
+                                index - 1
+                            ].focus();
+                        }
+
+                        if (
+                            event.key === "ArrowRight" &&
+                            index <
+                                otpInputs.length - 1
+                        ) {
+                            otpInputs[
+                                index + 1
+                            ].focus();
+                        }
+                    }
+                );
+
+
+                input.addEventListener(
+                    "paste",
+                    function (event) {
+                        event.preventDefault();
+                        const pasted =
+                            (
+                                event.clipboardData ||
+                                window.clipboardData
+                            )
+                            .getData("text")
+                            .replace(/\D/g, "")
+                            .substring(0, 6);
+                        if (!pasted) {
+                            return;
+                        }
+
+                        pasted
+                            .split("")
+                            .forEach(
+                                function (
+                                    digit,
+                                    digitIndex
+                                ) {
+
+                                    if (
+                                        otpInputs[
+                                            digitIndex
+                                        ]
+                                    ) {
+                                        otpInputs[
+                                            digitIndex
+                                        ].value = digit;
+                                    }
+                                }
+                            );
+
+                        const focusIndex =
+                            Math.min(
+                                pasted.length,
+                                otpInputs.length
+                            ) - 1;
+
+                        if (focusIndex >= 0) {
+                            otpInputs[
+                                focusIndex
+                            ].focus();
+                        }
+
+                        clearSignupOTPError();
+                    }
+                );
+            }
+        );
+
+        /* GET OTP */
+        function getSignupOTP() {
+            return Array
+                .from(otpInputs)
+                .map(
+                    function (input) {
+                        return input.value;
+                    }
+                )
+                .join("");
+        }
+
+        /* ERROR */
+        function showSignupOTPError(message) {
+            if (otpError) {
+                otpError.textContent =
+                    message;
+            }
+            otpInputs.forEach(
+                function (input) {
+                    input.classList.add(
+                        "input-error"
+                    );
+                }
+            );
+        }
+
+        function clearSignupOTPError() {
+            if (otpError) {
+                otpError.textContent = "";
+            }
+            otpInputs.forEach(
+                function (input) {
+
+                    input.classList.remove(
+                        "input-error"
+                    );
+                }
+            );
+        }
+
+        /* VERIFY */
+        function verifySignupCode() {
+            clearSignupOTPError();
+            const code =
+                getSignupOTP();
+            if (code.length !== 6) {
+                showSignupOTPError(
+                    "Please enter the complete 6-digit verification code."
+                );
+                return;
+            }
+
+            if (!/^\d{6}$/.test(code)) {
+                showSignupOTPError(
+                    "Verification code must contain numbers only."
+                );
+                return;
+            }
+
+            /*PROTOTYPE CODE*/
+            if (code !== "123456") {
+                showSignupOTPError(
+                    "Invalid verification code. Please try again."
+                );
+                return;
+            }
+            sessionStorage.setItem(
+                "verificationCompleted",
+                "true"
+            );
+            sessionStorage.setItem(
+                "verificationType",
+                "signup"
+            );
+
+            sessionStorage.setItem(
+                "accountVerified",
+                "true"
+            );
+            sessionStorage.setItem(
+                "verifiedEmail",
+                verificationEmail
+            );
+            sessionStorage.setItem(
+                "verifiedRole",
+                verificationRole
+            );
+            window.location.href =
+                "verification-success.html";
+        }
+
+        /* RESEND TIMER*/
+        let countdown = 30;
+        let countdownInterval = null;
+        function startSignupCountdown() {
+            clearInterval(
+                countdownInterval
+            );
+
+            countdown = 30;
+            if (resendButton) {
+                resendButton.disabled = true;
+            }
+
+            updateCountdownText();
+            countdownInterval =
+                setInterval(
+                    function () {
+                        countdown--;
+                        if (countdown <= 0) {
+                            clearInterval(
+                                countdownInterval
+                            );
+                            countdown = 0;
+
+
+                            if (resendButton) {
+                                resendButton.disabled =
+                                    false;
+                            }
+
+                            if (resendTimer) {
+                                resendTimer.innerHTML =
+                                    "You can now " +
+                                    "<strong>" +
+                                    "resend the code" +
+                                    "</strong>.";
+                            }
+                            return;
+                        }
+                        updateCountdownText();
+                    },
+                    1000
+                );
+        }
+
+        function updateCountdownText() {
+            if (!resendTimer) {
+                return;
+            }
+
+            resendTimer.innerHTML =
+                "Resend available in " +
+                "<strong id=\"countdown\">" +
+                countdown +
+                "</strong> seconds";
+        }
+
+        /* RESEND */
+        function resendSignupCode() {
+            if (
+                !resendButton ||
+                resendButton.disabled
+            ) {
+                return;
+            }
+
+            showVerificationModal(
+                "Code Resent",
+                "A new verification code has been requested. For this prototype, use 123456."
+            );
+
+            otpInputs.forEach(
+                function (input) {
+                    input.value = "";
+                }
+            );
+
+            clearSignupOTPError();
+            if (otpInputs.length > 0) {
+                otpInputs[0].focus();
+            }
+            startSignupCountdown();
+        }
+
+        /* MODAL */
+        const verificationModal =
+            document.getElementById(
+                "verificationModal"
+            );
+        const verificationModalTitle =
+            document.getElementById(
+                "verificationModalTitle"
+            );
+        const verificationModalMessage =
+            document.getElementById(
+                "verificationModalMessage"
+            );
+        function showVerificationModal(
+            title,
+            message
+        ) 
+        {
+            if (!verificationModal) {
+                return;
+            }
+            if (verificationModalTitle) {
+                verificationModalTitle.textContent =
+                    title;
+            }
+            if (verificationModalMessage) {
+                verificationModalMessage.textContent =
+                    message;
+            }
+            verificationModal.classList.add(
+                "show"
+            );
+            verificationModal.setAttribute(
+                "aria-hidden",
+                "false"
+            );
+        }
+
+        function closeVerificationModal() {
+            if (!verificationModal) {
+                return;
+            }
+            verificationModal.classList.remove(
+                "show"
+            );
+            verificationModal.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+
+        }
+
+        function showVerificationMessage(
+            title,
+            message
+        ) {
+            showVerificationModal(
+                title,
+                message
+            );
+        }
+
+        if (verificationModal) {
+            verificationModal.addEventListener(
+                "click",
+                function (event) {
+
+                    if (
+                        event.target ===
+                        verificationModal
+                    ) {
+                        closeVerificationModal();
+                    }
+                }
+            );
+        }
+
+        document.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (
+                    event.key === "Escape"
+                ) {
+                    closeVerificationModal();
+                }
+            }
+        );
+
+
+        /* INITIALIZE*/
+
+        window.addEventListener(
+            "load",
+            function () {
+
+                if (otpInputs.length > 0) {
+                    otpInputs[0].focus();
+                }
+                startSignupCountdown();
+            }
+        );
+
+    </script>
+
+    <!-- SHARED JS -->
+    <script src="../Static/script.js"></script>
+</body>
+</html>
