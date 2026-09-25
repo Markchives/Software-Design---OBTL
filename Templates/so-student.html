@@ -9,9 +9,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>
-        Syllabus & Outcomes | EduMetrics
-    </title>
+    <title>Syllabus &amp; Outcomes | EduMetrics</title>
 
     <link
         rel="stylesheet"
@@ -22,9 +20,11 @@
 
 <body class="so-student-page">
 
+
     <!-- =====================================================
-         TOP HEADER
-         ===================================================== -->
+     TOP HEADER
+     SAME DESIGN AS SO FACULTY
+     ===================================================== -->
 
     <header class="so-topbar">
 
@@ -32,7 +32,7 @@
         <div class="so-brand">
 
             <div class="so-brand-logo">
-                <span>Edu</span>Metrics
+                Edu<span>Metrics</span>
             </div>
 
             <div class="so-brand-subtitle">
@@ -52,21 +52,21 @@
                 aria-label="Notifications"
             >
 
-                <span class="so-bell">
-                    ♧
-                </span>
+                <img
+                    src="../Static/images/sidebar/notif.png"
+                    alt="Notifications"
+                    class="so-notification-image"
+                >
 
                 <span class="so-notification-dot"></span>
 
             </button>
 
 
-            <!-- STUDENT INFORMATION -->
+            <!-- STUDENT INFO -->
             <div class="so-user-info">
 
-                <strong>
-                    Angel S. Villanueva
-                </strong>
+                <strong id="studentName"></strong>
 
                 <span>
                     Student
@@ -75,26 +75,28 @@
             </div>
 
 
-            <!-- PROFILE -->
+            <!-- SAME PROFILE ICON STYLE AS FACULTY -->
             <div
                 class="so-avatar"
                 aria-hidden="true"
             >
-
-                <span class="so-avatar-head"></span>
-
-                <span class="so-avatar-body"></span>
-
-                <span class="so-avatar-check">
-                    ✓
-                </span>
-
+                <span class="so-avatar-person">●</span>
             </div>
+
+            <span
+                class="so-online-dot"
+                aria-hidden="true"
+            ></span>
 
         </div>
 
     </header>
 
+
+    <!-- SAME YELLOW LINE AS FACULTY -->
+    <div class="so-header-lines">
+        <div class="so-header-gold"></div>
+    </div>
 
     <!-- =====================================================
          HEADER LINES
@@ -107,6 +109,7 @@
         <div class="so-header-gold"></div>
 
     </div>
+
 
 
     <!-- =====================================================
@@ -126,8 +129,14 @@
             <!-- PAGES LABEL -->
             <div class="so-pages-title">
 
-                <span class="so-grid-icon">
-                    ⠿
+                <span class="so-grid-icon so-pages-image-wrap">
+
+                    <img
+                        src="../Static/images/sidebar/pages.png"
+                        alt=""
+                        class="so-pages-image"
+                    >
+
                 </span>
 
                 <span>
@@ -135,6 +144,7 @@
                 </span>
 
             </div>
+
 
 
             <!-- NAVIGATION -->
@@ -150,8 +160,14 @@
                     class="so-nav-item"
                 >
 
-                    <span class="so-nav-icon">
-                        ⌂
+                    <span class="so-nav-icon so-nav-image-wrap">
+
+                        <img
+                            src="../Static/images/sidebar/home-white.png"
+                            alt=""
+                            class="so-nav-image"
+                        >
+
                     </span>
 
                     <span>
@@ -161,14 +177,21 @@
                 </a>
 
 
+
                 <!-- MY COURSES -->
                 <a
                     href="#"
                     class="so-nav-item"
                 >
 
-                    <span class="so-nav-icon">
-                        ◇
+                    <span class="so-nav-icon so-nav-image-wrap">
+
+                        <img
+                            src="../Static/images/sidebar/course-white.png"
+                            alt=""
+                            class="so-nav-image"
+                        >
+
                     </span>
 
                     <span>
@@ -178,14 +201,21 @@
                 </a>
 
 
+
                 <!-- PLATFORM -->
                 <a
                     href="#"
                     class="so-nav-item"
                 >
 
-                    <span class="so-nav-icon">
-                        ▣
+                    <span class="so-nav-icon so-nav-image-wrap">
+
+                        <img
+                            src="../Static/images/sidebar/pl-white.png"
+                            alt=""
+                            class="so-nav-image"
+                        >
+
                     </span>
 
                     <span>
@@ -195,27 +225,40 @@
                 </a>
 
 
-                <!-- PRODUCTS -->
+
+                <!-- =================================================
+                     WORKFLOW
+                     ================================================= -->
+
                 <div class="so-nav-group">
+
 
                     <button
                         class="so-nav-item so-products active"
                         type="button"
                     >
 
-                        <span class="so-nav-icon">
-                            ◆
+                        <span class="so-nav-icon so-nav-image-wrap">
+
+                            <img
+                                src="../Static/images/sidebar/ws-blue.png"
+                                alt=""
+                                class="so-nav-image"
+                            >
+
                         </span>
 
                         <span>
-                            Products
+                            Workflow
                         </span>
 
                     </button>
 
 
-                    <!-- PRODUCTS SUBMENU -->
+
+                    <!-- WORKFLOW SUBMENU -->
                     <div class="so-subnav">
+
 
                         <a
                             href="#"
@@ -224,37 +267,46 @@
                             Syllabus &amp; Outcomes
                         </a>
 
+
                         <a href="#">
                             Curriculum Mapping
                         </a>
+
 
                         <a href="#">
                             Class Roster
                         </a>
 
+
                         <a href="#">
                             Assessment Entry
                         </a>
+
 
                         <a href="#">
                             Attainment
                         </a>
 
+
                         <a href="#">
                             CQI Planning
                         </a>
+
 
                         <a href="#">
                             Gradebook
                         </a>
 
+
                         <a href="#">
                             Compliance Report
                         </a>
 
+
                     </div>
 
                 </div>
+
 
 
                 <!-- RESOURCES -->
@@ -263,8 +315,14 @@
                     class="so-nav-item"
                 >
 
-                    <span class="so-nav-icon">
-                        ▥
+                    <span class="so-nav-icon so-nav-image-wrap">
+
+                        <img
+                            src="../Static/images/sidebar/rs-white.png"
+                            alt=""
+                            class="so-nav-image"
+                        >
+
                     </span>
 
                     <span>
@@ -274,14 +332,21 @@
                 </a>
 
 
-                <!-- ABOUT -->
+
+                <!-- ABOUT US -->
                 <a
                     href="#"
                     class="so-nav-item"
                 >
 
-                    <span class="so-nav-icon">
-                        ♧
+                    <span class="so-nav-icon so-nav-image-wrap">
+
+                        <img
+                            src="../Static/images/sidebar/au-white.png"
+                            alt=""
+                            class="so-nav-image"
+                        >
+
                     </span>
 
                     <span>
@@ -290,14 +355,16 @@
 
                 </a>
 
+
             </nav>
 
 
-            <!-- SIDEBAR LOGO -->
+
+            <!-- SIDEBAR BRAND -->
             <div class="so-sidebar-brand">
 
                 <div class="so-sidebar-logo">
-                    <span>Edu</span>Metrics
+                    Edu<span>Metrics</span>
                 </div>
 
                 <small>
@@ -306,7 +373,9 @@
 
             </div>
 
+
         </aside>
+
 
 
         <!-- =================================================
@@ -316,10 +385,7 @@
         <main class="so-main">
 
 
-            <!-- =================================================
-                 PAGE TITLE
-                 ================================================= -->
-
+            <!-- PAGE TITLE -->
             <section class="so-page-heading">
 
                 <h1>
@@ -332,6 +398,7 @@
                 </p>
 
             </section>
+
 
 
             <!-- =================================================
@@ -359,6 +426,7 @@
                 </article>
 
 
+
                 <!-- DUE THIS WEEK -->
                 <article class="so-summary-card">
 
@@ -373,6 +441,7 @@
                     </span>
 
                 </article>
+
 
 
                 <!-- AVAILABLE SYLLABUS -->
@@ -390,7 +459,9 @@
 
                 </article>
 
+
             </section>
+
 
 
             <!-- =================================================
@@ -400,8 +471,8 @@
             <section class="so-content-card">
 
 
-                <!-- SECTION HEADER -->
                 <div class="so-section-header">
+
 
                     <h2>
                         Pending SO self-assessments
@@ -411,7 +482,7 @@
                     <!-- SEARCH -->
                     <div class="so-search">
 
-                        <span>
+                        <span class="so-search-icon">
                             ⌕
                         </span>
 
@@ -421,11 +492,8 @@
                             aria-label="Search pending self-assessments"
                         >
 
-                        <span>
-                            ♩
-                        </span>
-
                     </div>
+
 
                 </div>
 
@@ -433,22 +501,9 @@
                 <div class="so-section-rule"></div>
 
 
-                <!-- =============================================
-                     EMPTY STATE
 
-                     FRONTEND DEFAULT:
-                     No SO assessments yet.
-
-                     Later sa backend:
-                     dito ipapalit / ilalagay ang course rows
-                     kapag may assigned SO assessment na.
-                     ============================================= -->
-
+                <!-- EMPTY STATE -->
                 <div class="so-empty-state">
-
-                    <div class="so-empty-icon">
-                        ✓
-                    </div>
 
                     <h3>
                         No pending self-assessments
@@ -461,7 +516,9 @@
 
                 </div>
 
+
             </section>
+
 
 
             <!-- =================================================
@@ -471,8 +528,8 @@
             <section class="so-content-card so-syllabus-card">
 
 
-                <!-- SECTION HEADER -->
                 <div class="so-section-header">
+
 
                     <h2>
                         My course syllabus
@@ -482,7 +539,7 @@
                     <!-- SEARCH -->
                     <div class="so-search">
 
-                        <span>
+                        <span class="so-search-icon">
                             ⌕
                         </span>
 
@@ -492,11 +549,8 @@
                             aria-label="Search syllabus"
                         >
 
-                        <span>
-                            ♩
-                        </span>
-
                     </div>
+
 
                 </div>
 
@@ -504,22 +558,20 @@
                 <div class="so-section-rule"></div>
 
 
-                <!-- =============================================
+
+                <!-- =================================================
                      EMPTY STATE
 
-                     FRONTEND DEFAULT:
-                     Student has no assigned courses yet.
+                     Default muna ito habang wala pang course/syllabus.
 
                      Later sa backend:
-                     kapag in-add ng faculty ang student sa course,
-                     saka lalabas dito ang course syllabus.
-                     ============================================= -->
+                     Hide this kapag may syllabus na.
+                     ================================================= -->
 
-                <div class="so-empty-state">
-
-                    <div class="so-empty-icon so-empty-course-icon">
-                        ▤
-                    </div>
+                <div
+                    class="so-empty-state"
+                    id="studentSyllabusEmpty"
+                >
 
                     <h3>
                         No courses yet
@@ -529,9 +581,125 @@
                         Your course syllabus will appear here
                         once you are added to a course.
                     </p>
+
                 </div>
+
+
+
+                <!-- =================================================
+                     SYLLABUS LIST
+
+                     Backend later:
+                     I-display ito kapag may syllabus na uploaded
+                     ang faculty for the student's course.
+
+                     Naka-hidden muna ngayon.
+                     ================================================= -->
+
+                <div
+                    class="so-student-syllabus-list"
+                    id="studentSyllabusList"
+                    hidden
+                >
+
+
+                    <div class="so-student-file-row">
+
+
+                        <!-- FILE INFORMATION -->
+                        <div class="so-student-file-info">
+
+
+                            <div class="so-student-file-copy">
+
+                                <strong id="studentSyllabusFileName">
+                                    Course_Syllabus.pdf
+                                </strong>
+
+                                <div class="so-student-file-meta">
+
+                                    <span>
+                                        PDF
+                                    </span>
+
+                                    <span>
+                                        •
+                                    </span>
+
+                                    <span>
+                                        2.4 MB
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                        </div>
+
+
+
+                        <!-- ACTIONS -->
+                        <div class="so-student-file-actions">
+
+
+                            <!-- VIEW -->
+                            <button
+                                class="so-student-view-btn"
+                                type="button"
+                            >
+
+                                <img
+                                    src="../Static/images/sidebar/view-blue.png"
+                                    alt=""
+                                    class="so-action-icon"
+                                >
+
+                                <span>
+                                    View Syllabus
+                                </span>
+
+                            </button>
+
+
+
+                            <!-- DOWNLOAD -->
+                            <button
+                                class="so-student-download-btn"
+                                type="button"
+                            >
+
+                                <img
+                                    src="../Static/images/sidebar/download.png"
+                                    alt=""
+                                    class="so-action-icon"
+                                >
+
+                                <span>
+                                    Download PDF
+                                </span>
+
+                            </button>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
             </section>
+
+
         </main>
+
+
     </div>
+
+
 </body>
+
 </html>

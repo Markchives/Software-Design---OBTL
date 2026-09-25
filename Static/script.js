@@ -2949,3 +2949,75 @@ document.addEventListener(
 
     }
 );
+/* =====================================================
+   THREE DOTS MENU - FIX
+   ===================================================== */
+
+const syllabusMoreButton =
+    document.getElementById("syllabusMoreButton");
+
+const syllabusFileMenu =
+    document.getElementById("syllabusFileMenu");
+
+const deleteSyllabusOption =
+    document.getElementById("deleteSyllabusOption");
+
+
+if (syllabusMoreButton && syllabusFileMenu) {
+
+    syllabusMoreButton.addEventListener("click", function (event) {
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        const isCurrentlyHidden =
+            syllabusFileMenu.hasAttribute("hidden");
+
+        if (isCurrentlyHidden) {
+
+            syllabusFileMenu.removeAttribute("hidden");
+
+            syllabusMoreButton.setAttribute(
+                "aria-expanded",
+                "true"
+            );
+
+        } else {
+
+            syllabusFileMenu.setAttribute(
+                "hidden",
+                ""
+            );
+
+            syllabusMoreButton.setAttribute(
+                "aria-expanded",
+                "false"
+            );
+
+        }
+
+    });
+
+
+    /* Prevent menu click from immediately closing */
+    syllabusFileMenu.addEventListener("click", function (event) {
+        event.stopPropagation();
+    });
+
+
+    /* Click outside = close */
+    document.addEventListener("click", function () {
+
+        syllabusFileMenu.setAttribute(
+            "hidden",
+            ""
+        );
+
+        syllabusMoreButton.setAttribute(
+            "aria-expanded",
+            "false"
+        );
+
+    });
+
+}
