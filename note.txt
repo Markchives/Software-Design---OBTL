@@ -1,9 +1,3 @@
-- 'Yung designs sa req 1 is not final pa, aayusin ko pa sizing and all pero goods na sa webpage, login, registration, verification.
-- Don't touch muna backend ng student outcome for both faculty and student, inaayos ko pa.-----------------------------------
-Note: Not done sa sizing fo req 1 pero goods na sa website, login, registration, verification.
-Note: If may gusto kayo ipabago, sabihan niyo lang me
-Note: Don't touch pala muna back end ng student outcome for faculty at student, mejo not done pa haha.
------------------------------------
-Note: Not done sa sizing fo req 1 pero goods na sa website, login, registration, verification.
+Note: Not done sa sizing for req 1 pero goods na sa website, login, registration, verification.
 Note: If may gusto kayo ipabago, sabihan niyo lang me
 Note: Don't touch pala muna back end ng student outcome for faculty at student, mejo not done pa haha.
