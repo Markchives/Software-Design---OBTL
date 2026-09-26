@@ -668,9 +668,7 @@
     </div>
 
 
-    <!-- =====================================================
-         PAGE SHELL
-         ===================================================== -->
+    <!-- PAGE SHELL-->
 
     <div class="so-shell">
 
@@ -1975,17 +1973,6 @@
 
     <script src="../Static/script.js"></script>
 
-
-    <!-- =========================================================
-         FACULTY OUTCOME FINAL FIX
-
-         This is intentionally AFTER script.js.
-
-         It uses capture-phase event handlers so this page's
-         CO/SO behavior takes priority over any older shared
-         outcome handler that may still exist in script.js.
-         ========================================================= -->
-
     <script>
 
         document.addEventListener(
@@ -2240,11 +2227,11 @@
                 }
 
 
-                function getSOCheckboxes() {
+                function getSOButtons() {
 
                     return Array.from(
                         document.querySelectorAll(
-                            'input[name="alignedSO"]'
+                            "#courseOutcomeSoOptions .sof-so-option"
                         )
                     );
 
@@ -2253,11 +2240,17 @@
 
                 function clearSOChoices() {
 
-                    getSOCheckboxes().forEach(
-                        function (checkbox) {
+                    getSOButtons().forEach(
+                        function (button) {
 
-                            checkbox.checked =
-                                false;
+                            button.classList.remove(
+                                "selected"
+                            );
+
+                            button.setAttribute(
+                                "aria-pressed",
+                                "false"
+                            );
 
                         }
                     );
@@ -2267,18 +2260,20 @@
 
                 function getSelectedSOs() {
 
-                    return getSOCheckboxes()
+                    return getSOButtons()
                         .filter(
-                            function (checkbox) {
+                            function (button) {
 
-                                return checkbox.checked;
+                                return button.classList.contains(
+                                    "selected"
+                                );
 
                             }
                         )
                         .map(
-                            function (checkbox) {
+                            function (button) {
 
-                                return checkbox.value;
+                                return button.dataset.so;
 
                             }
                         );
@@ -2293,13 +2288,25 @@
                             ? values
                             : [];
 
-                    getSOCheckboxes().forEach(
-                        function (checkbox) {
+                    getSOButtons().forEach(
+                        function (button) {
 
-                            checkbox.checked =
+                            const isSelected =
                                 selected.includes(
-                                    checkbox.value
+                                    button.dataset.so
                                 );
+
+                            button.classList.toggle(
+                                "selected",
+                                isSelected
+                            );
+
+                            button.setAttribute(
+                                "aria-pressed",
+                                isSelected
+                                    ? "true"
+                                    : "false"
+                            );
 
                         }
                     );

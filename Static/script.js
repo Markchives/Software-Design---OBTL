@@ -2431,7 +2431,6 @@ function initFacultySyllabusOutcomes() {
     if (!page) {
         return;
     }
-}
 
     /* COMMON HELPERS*/
     function escapeHTML(value) {
@@ -3278,7 +3277,7 @@ function initFacultySyllabusOutcomes() {
     /* SAVE COURSE OUTCOME*/
     if (saveCourseOutcomeButton) {
         saveCourseOutcomeButton.addEventListener(
-            "pointerdown",
+            "click",
             function (event) {
 
                 event.preventDefault();
@@ -4398,4 +4397,4 @@ function initFacultySyllabusOutcomes() {
 
         }
     );
-
+}
