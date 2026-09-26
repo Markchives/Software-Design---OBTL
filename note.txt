@@ -3,3 +3,7 @@
 Note: Not done sa sizing fo req 1 pero goods na sa website, login, registration, verification.
 Note: If may gusto kayo ipabago, sabihan niyo lang me
 Note: Don't touch pala muna back end ng student outcome for faculty at student, mejo not done pa haha.
+-----------------------------------
+Note: Not done sa sizing fo req 1 pero goods na sa website, login, registration, verification.
+Note: If may gusto kayo ipabago, sabihan niyo lang me
+Note: Don't touch pala muna back end ng student outcome for faculty at student, mejo not done pa haha.
