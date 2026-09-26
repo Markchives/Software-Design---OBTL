@@ -1,13 +1,6 @@
-/* ============================================================
-   EduMetrics
-   Academic Assessment & Grading System
-   FINAL FULL STYLESHEET
-   ============================================================ */
+/* EduMetrics Academic Assessment & Grading System FINAL FULL STYLESHEET */
 
-/* ============================================================
-   ROOT
-   ============================================================ */
-
+/* ROOT */
 :root {
     --blue: #004179;
     --blue-dark: #00345F;
@@ -50,104 +43,15 @@
     --radius-large: 18px;
 }
 
+/* RESET */
 
-/* ============================================================
-   RESET
-   ============================================================ */
+/* LANDING PAGE - OUTER SHELL */
 
+/* LANDING HEADER */
 
+/* LOGIN ROLE DROPDOWN */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* ============================================================
-   LANDING PAGE - OUTER SHELL
-   ============================================================ */
-
-
-
-
-/* ============================================================
-   LANDING HEADER
-   ============================================================ */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* ============================================================
-   LOGIN ROLE DROPDOWN
-   ============================================================ */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* ============================================================
-   LANDING MAIN / HERO
-   ============================================================ */
-
-
-
-
+/* LANDING MAIN / HERO */
 
 .hero-copy {
     width: 100%;
@@ -156,41 +60,7 @@
 
     animation: registrationFormIn 0.65s ease both;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-/* ============================================================
-   MAIN FOUR FEATURES
-   IMAGE ON TOP / LABEL BELOW
-   ============================================================ */
-
-
-
-
-
-/* Your uploaded top-row PNG icons */
-
-
-
-
-/* Backward-compatible styling if an older HTML version
-   still contains .feature-icon text instead of .feature-image */
-
-
-
-/* ============================================================
-   HERO IMAGE
-   ============================================================ */
-
+/* HERO IMAGE */
 .hero-image {
     width: 100%;
 
@@ -219,14 +89,7 @@
     animation: registrationBrandIn 0.65s ease 0.12s both;
 }
 
-
-
-
-
-
-/* ============================================================
-   BOTTOM INFO CARDS
-   ============================================================ */
+/* BOTTOM INFO CARDS */
 
 .info-row {
     width: calc(100% - 5%);
@@ -258,58 +121,13 @@
     animation: registrationBrandIn 0.65s ease 0.12s both;
 }
 
-
-
-
-
-
-
 /* Your uploaded bottom-row PNG icons */
-
 
 /* Backward-compatible fallback if .info-icon is still text */
 
+/* SIMPLE MODAL */
 
-
-
-
-
-
-
-
-
-
-
-
-/* ============================================================
-   SIMPLE MODAL
-   ============================================================ */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* ============================================================
-   AUTH PAGE
-   ============================================================ */
-
-
-
-
+/* AUTH PAGE */
 
 .back-button {
     position: absolute;
@@ -334,36 +152,14 @@
     animation: registrationBackIn 0.45s ease both;
 }
 
-
-
 .back-arrow {
     color: var(--gold-bright);
     font-size: 29px;
 }
 
+/* ROLE SELECTOR */
 
-
-
-
-
-/* ============================================================
-   ROLE SELECTOR
-   ============================================================ */
-
-
-
-
-
-
-
-
-
-
-/* ============================================================
-   AUTH CARD
-   ============================================================ */
-
-
+/* AUTH CARD */
 
 .auth-brand-panel {
     padding: 65px 55px;
@@ -390,7 +186,6 @@
     animation: registrationFormIn 0.65s ease both;
 }
 
-
 .auth-form-panel {
     padding: 55px 65px;
 
@@ -405,13 +200,9 @@
     animation: registrationBrandIn 0.65s ease 0.12s both;
 }
 
-
-/* ============================================================
-   REGISTRATION ENTRANCE ANIMATION
-   ============================================================ */
+/* REGISTRATION ENTRANCE ANIMATION */
 
 @keyframes registrationBackIn {
-
     from {
         opacity: 0;
         transform: translateX(-12px);
@@ -421,11 +212,9 @@
         opacity: 1;
         transform: translateX(0);
     }
-
 }
 
 @keyframes registrationFormIn {
-
     from {
         opacity: 0;
         transform: translateX(-24px);
@@ -435,11 +224,9 @@
         opacity: 1;
         transform: translateX(0);
     }
-
 }
 
 @keyframes registrationBrandIn {
-
     from {
         opacity: 0;
         transform: translateX(24px);
@@ -449,7 +236,6 @@
         opacity: 1;
         transform: translateX(0);
     }
-
 }
 
 .registration-stage {
@@ -460,9 +246,7 @@
     position: relative;
 }
 
-/* ------------------------------------------------------------
-   TOP ROW / BACK
-   ------------------------------------------------------------ */
+/* TOP ROW / BACK */
 
 .registration-page
 .registration-top-row {
@@ -476,7 +260,6 @@
 
     justify-content: flex-start;
 }
-
 
 .registration-page
 .registration-back {
@@ -501,10 +284,7 @@
     animation: registrationBackIn 0.45s ease both;
 }
 
-
-/* ============================================================
-   REGISTRATION CARD
-   ============================================================ */
+/* REGISTRATION CARD */
 
 .registration-page
 .registration-card {
@@ -523,10 +303,7 @@
     box-shadow: none;
 }
 
-/* ============================================================
-   LEFT SIDE
-   BLUE CREATE ACCOUNT PANEL
-   ============================================================ */
+/* LEFT SIDE BLUE CREATE ACCOUNT PANEL */
 
 .registration-page
 .registration-form-panel {
@@ -558,10 +335,7 @@
     animation: registrationFormIn 0.65s ease both;
 }
 
-
-/* ------------------------------------------------------------
-   HEADING
-   ------------------------------------------------------------ */
+/* HEADING */
 
 .registration-page
 .registration-form-panel
@@ -581,7 +355,6 @@
     font-size: 22px;
 }
 
-
 /* Keep browser autofill transparent-blue instead of white/yellow. */
 .registration-page .registration-form-panel .input-wrapper input:-webkit-autofill,
 .registration-page .registration-form-panel .input-wrapper input:-webkit-autofill:hover,
@@ -600,9 +373,7 @@
     background: #0B4F82;
 }
 
-/* ============================================================
-   PASSWORD REQUIREMENTS
-   ============================================================ */
+/* PASSWORD REQUIREMENTS */
 
 /* PASSWORD MUST CONTAIN */
 .registration-page
@@ -644,9 +415,7 @@
     font-weight: 400 !important;
 }
 
-/* ============================================================
-   FORM ERROR
-   ============================================================ */
+/* FORM ERROR */
 
 .registration-page
 .registration-form-panel
@@ -659,9 +428,7 @@
     line-height: 1.25;
 }
 
-/* ============================================================
-   TERMS
-   ============================================================ */
+/* TERMS */
 
 .registration-page
 .terms-option input,
@@ -681,9 +448,7 @@
     margin-left: 0;
 }
 
-/* ============================================================
-   SIGN UP BUTTON
-   ============================================================ */
+/* SIGN UP BUTTON */
 
 .registration-page
 .registration-form-panel
@@ -707,9 +472,7 @@
     justify-content: center;
 }
 
-/* ============================================================
-   ALREADY HAVE ACCOUNT
-   ============================================================ */
+/* ALREADY HAVE ACCOUNT */
 
 .registration-page
 .register-prompt {
@@ -731,10 +494,7 @@
     font-weight: 750;
 }
 
-/* ============================================================
-   RIGHT SIDE
-   DIRTY WHITE OVERLAPPING PANEL
-   ============================================================ */
+/* RIGHT SIDE DIRTY WHITE OVERLAPPING PANEL */
 
 .registration-page
 .registration-brand-panel {
@@ -746,10 +506,7 @@
     /* Dirty-white EduMetrics panel stays BEHIND the blue panel */
     z-index: 1;
 
-    /*
-       Negative margin slides the EduMetrics panel underneath
-       the Create Account panel, creating the intended overlap.
-    */
+    /* Negative margin slides the EduMetrics panel underneath the Create Account panel, creating the intended overlap. */
     margin-left: -10%;
 
     padding:
@@ -772,13 +529,9 @@
     animation: registrationBrandIn 0.65s ease 0.12s both;
 }
 
-
-/* ============================================================
-   TABLET
-   ============================================================ */
+/* TABLET */
 
 @media (max-width: 900px) {
-
     .registration-stage {
         width: min(720px, 100%);
     }
@@ -790,7 +543,6 @@
         flex-direction: column;
     }
 
-    
     .registration-page
     .registration-brand-panel {
         width: 92%;
@@ -805,21 +557,15 @@
             48px;
         border-radius: 14px;
         justify-content: center;
-}  
+}
 }
 
-/* ============================================================
-   MOBILE
-   ============================================================ */
+/* MOBILE */
 
 @media (max-width: 600px) {
-
 }
 
-/* ============================================================
-   LOGIN VERIFICATION
-   SAME LOGIN TEMPLATE / CENTERED SKY-BLUE CONTENT
-   ============================================================ */
+/* LOGIN VERIFICATION SAME LOGIN TEMPLATE / CENTERED SKY-BLUE CONTENT */
 
 .verification-login-page
 .verification-login-card {
@@ -880,7 +626,6 @@
     border-radius: 0;
 }
 
-
 /* HEADING */
 
 .verification-login-heading {
@@ -888,7 +633,6 @@
 
     text-align: center;
 }
-
 
 .verification-login-heading h2 {
     margin: 0;
@@ -902,7 +646,6 @@
 
     letter-spacing: -0.5px;
 }
-
 
 .verification-login-heading p {
     margin:
@@ -918,7 +661,6 @@
     line-height: 1.4;
 }
 
-
 .verification-login-heading strong {
     display: block;
 
@@ -931,7 +673,6 @@
 
     line-height: 1.4;
 }
-
 
 /* OTP */
 
@@ -947,7 +688,6 @@
 
     gap: 14px;
 }
-
 
 .verification-login-page
 .verification-login-otp
@@ -980,7 +720,6 @@
         box-shadow 0.2s ease;
 }
 
-
 .verification-login-page
 .verification-login-otp
 .otp-input:focus {
@@ -993,13 +732,11 @@
         rgba(244, 180, 0, 0.10);
 }
 
-
 .verification-login-page
 .verification-login-otp
 .otp-input.input-error {
     border-color: var(--danger);
 }
-
 
 /* ERROR */
 
@@ -1016,7 +753,6 @@
 
     text-align: center;
 }
-
 
 /* RESEND */
 
@@ -1038,7 +774,6 @@
     text-align: center;
 }
 
-
 .verification-login-resend
 .resend-button {
     padding: 0;
@@ -1059,14 +794,12 @@
     cursor: pointer;
 }
 
-
 .verification-login-resend
 .resend-button:disabled {
     opacity: 0.55;
 
     cursor: default;
 }
-
 
 .verification-login-timer {
      min-height: 18px;
@@ -1078,13 +811,11 @@
     text-align: center;
 }
 
-
 .verification-login-timer strong {
     color: #004179;
     font-size: 20px !important;
     font-weight: 800;
 }
-
 
 /* VERIFY BUTTON */
 
@@ -1104,11 +835,9 @@
     font-weight: 750;
 }
 
-
 .verification-login-button:hover {
     background: #00345F;
 }
-
 
 /* BACK TO LOGIN */
 
@@ -1129,21 +858,17 @@
     text-underline-offset: 2px;
 }
 
-
 .verification-login-back-link:hover {
     color: #D39F00;
 }
 
-
 /* RESPONSIVE */
 
 @media (max-width: 900px) {
-
     .verification-login-page
     .verification-login-card {
         min-height: 0;
     }
-
 
     .verification-login-page
     .verification-login-panel {
@@ -1154,16 +879,12 @@
             35px;
     }
 
-
     .verification-login-content {
         max-width: 550px;
     }
-
 }
 
-
 @media (max-width: 600px) {
-
     .verification-login-page
     .verification-login-panel {
         min-height: 520px;
@@ -1173,34 +894,28 @@
             18px;
     }
 
-
     .verification-login-icon-wrap {
         width: 103px;
         height: 103px;
     }
-
 
     .verification-login-icon {
         width: 103px;
         height: 103px;
     }
 
-
     .verification-login-heading h2 {
         font-size: 39px;
     }
-
 
     .verification-login-heading p,
     .verification-login-heading strong {
         font-size: 23px;
     }
 
-
     .verification-login-otp {
         gap: 7px;
     }
-
 
     .verification-login-page
     .verification-login-otp
@@ -1210,13 +925,9 @@
 
         font-size: 30px;
     }
-
 }
 
-/* ============================================================
-   REGISTRATION VERIFICATION
-   SAME REGISTRATION TEMPLATE / CENTERED VERIFICATION CONTENT
-   ============================================================ */
+/* REGISTRATION VERIFICATION SAME REGISTRATION TEMPLATE / CENTERED VERIFICATION CONTENT */
 
 .verification-signup-page
 .verification-signup-card {
@@ -1532,7 +1243,6 @@
 /* RESPONSIVE */
 
 @media (max-width: 900px) {
-
     .verification-signup-page
     .verification-signup-card {
         min-height: 0;
@@ -1551,11 +1261,9 @@
     .verification-signup-content {
         max-width: 550px;
     }
-
 }
 
 @media (max-width: 600px) {
-
     .verification-signup-page
     .registration-form-panel.verification-signup-panel {
         min-height: 520px;
@@ -1622,583 +1330,108 @@
         margin-top: 15px;
         font-size: 22px;
     }
-
 }
 
+/* VERIFICATION PAGES */
 
-/* ============================================================
-   VERIFICATION PAGES
-   ============================================================ */
+/* OTP */
 
+/* RESEND */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* ============================================================
-   OTP
-   ============================================================ */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* ============================================================
-   RESEND
-   ============================================================ */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* ============================================================
-   SUCCESS
-   ============================================================ */
-
-
-
-
-
-
+/* SUCCESS */
 
 @keyframes successPop {
-    
-
-    
-
-    
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* ============================================================
-   TABLET
-   ============================================================ */
+/* TABLET */
 
 @media (max-width: 950px) {
-   
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
 }
 
-
-/* ============================================================
-   MOBILE
-   ============================================================ */
+/* MOBILE */
 
 @media (max-width: 650px) {
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
 }
 
-
-/* ============================================================
-   VERY SMALL DEVICES
-   ============================================================ */
+/* VERY SMALL DEVICES */
 
 @media (max-width: 380px) {
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
 }
 
-
-/* ============================================================
-   FINAL WHITE BACKGROUND + ICON SIZE OVERRIDE
-   ============================================================ */
-
-
+/* FINAL WHITE BACKGROUND + ICON SIZE OVERRIDE */
 
 @media (min-width: 1200px) {
-    
-
-    
-
-    
-
-    
 }
 
 @media (max-width: 950px) {
-    
-
-    
-
-    
-
-    
-
-    
-
-    
 }
 
 @media (max-width: 650px) {
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
 }
-/* ============================================================
-   FINAL LANDING PAGE POLISH
-   PURE WHITE BACKGROUND + LARGER COMPACT INFO CARDS
-   ============================================================ */
-
-
-
-
-
-
-
-
-
-/* Main hero keeps the blue outline, while the page stays pure white. */
-
-
-
-
-/* Four feature icons: icon above, label below, larger. */
-
-
-
-
-
-
-
-
-/* Bottom info cards: compact in height but larger in content,
-   raised enough to overlap the image. */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* Keep the image large enough that the info row can overlap it. */
-
 
 /* Large desktop */
 @media (min-width: 1500px) {
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
 }
 
 /* Tablet */
 @media (max-width: 950px) {
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
 }
 
 /* Mobile */
 @media (max-width: 650px) {
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
 }
 
-
-/* ============================================================
-   FINAL HEADER / HERO / BOTTOM CARD SIZE OVERRIDES
-   ============================================================ */
+/* FINAL HEADER / HERO / BOTTOM CARD SIZE OVERRIDES */
 
 @media (min-width: 1200px) {
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
 }
 
 @media (max-width: 950px) {
-    
-
-    
-
-    
-
-    
 }
 
 @media (max-width: 650px) {
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
 }
 
-/* ============================================================
-   FINAL HEADER FIX — REMOVE HEADER LINE
-   ============================================================ */
+/* FINAL HEADER FIX — REMOVE HEADER LINE */
 
-
-
-
-/* ============================================================
-   FINAL LANDING OVERLAP FIX
-   Bottom Platform / Products / Resources / About Us frame
-   overlaps the lower portion of the right-side hero image.
-   ============================================================ */
+/* FINAL LANDING OVERLAP FIX Bottom Platform / Products / Resources / About Us frame overlaps the lower portion of the right-side hero image. */
 
 /* Keep the hero as the positioning layer for the overlap. */
 
-
 /* Keep the building/image visible behind the floating info frame. */
-
 
 /* Float the whole four-card frame upward over the hero/image. */
 
-
 /* Compact cards so the overlap looks like the reference design. */
-
-
-
-
-
-
-
-
-
 
 /* Give the hero enough bottom room for the floating frame. */
 
-
 /* Laptop / Windows desktop */
 @media (min-width: 951px) and (max-width: 1399px) {
-    
-
-    
-
-    
 }
 
 /* Large desktop */
 
 /* Slightly larger login form content — frame size stays unchanged */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 @media (min-width: 1400px) {
-    
 }
 
 /* Tablet */
 @media (max-width: 950px) {
-    
 }
 
 /* Mobile */
 @media (max-width: 650px) {
-    
 }
 
-
-/* ============================================================
-   FINAL REFERENCE-MATCH LANDING OVERRIDE
-   Large header + full-height right image + large overlapping cards
-   ============================================================ */
+/* FINAL REFERENCE-MATCH LANDING OVERRIDE Large header + full-height right image + large overlapping cards */
 
 /* HEADER */
 
-
-
-
-
-
-
 /* Make the existing Support / Settings symbols visually stronger. */
 
-
-
-
-
 /* HERO FRAME */
-
-
 
 .eyebrow {
     margin-bottom: 12px !important;
@@ -2208,87 +1441,22 @@
     letter-spacing: 3px !important;
 }
 
-
-
-
-
-
-
-
 /* RIGHT IMAGE: fills the complete right side, no top/bottom white gap */
-
-
-
 
 /* LARGE OVERLAPPING NAV FRAME */
 
-
-
-
-
-
-
-
 /* Standard Windows laptop widths */
 @media (min-width: 951px) and (max-width: 1450px) {
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 }
 
 /* Tablet/mobile: return to stacked layout safely */
 @media (max-width: 950px) {
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 }
 
 @media (max-width: 650px) {
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 }
 
-/* ============================================================
-   FINAL STUDENT LOGIN PAGE
-   Centered overlapping card + back above blue panel
-   ============================================================ */
-
-
-
-
-
-
+/* FINAL STUDENT LOGIN PAGE Centered overlapping card + back above blue panel */
 
 .header-action-icon {
     width: 18px;
@@ -2298,48 +1466,15 @@
     flex-shrink: 0;
 }
 
-
-
-
-
 /* Remaining screen area below the 76px header. */
-
 
 /* Back + card share the same left edge. */
 
-
-
-
-
-
-
-
 /* Card is the centered object. Panels overlap inside it. */
-
 
 /* LEFT / BLUE PANEL */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* RIGHT / WELCOME PANEL - intentionally overlaps blue panel. */
-
-
-
 
 .auth-page .form-heading h2 {
     width: 100% !important;
@@ -2353,77 +1488,18 @@
     transform: translateX(-14px) !important;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* Large desktop */
 @media (min-width: 1451px) {
-    
-    
-    
-    
-    
-    
-    
-    
-    
 }
 
 /* Tablet: stack panels so the form remains usable. */
 @media (max-width: 950px) {
-    
-
-    
-
-    
-    
 }
 
 @media (max-width: 650px) {
-    
-    
-    
 }
 
-/* ============================================================
-   LOGIN PAGE - LARGER FORM CONTENT
-   Keeps the existing blue/cream frame dimensions unchanged
-   ============================================================ */
-
-
+/* LOGIN PAGE - LARGER FORM CONTENT Keeps the existing blue/cream frame dimensions unchanged */
 
 .auth-page .auth-form-panel .form-heading h2 {
     width: 100% !important;
@@ -2434,24 +1510,6 @@
     letter-spacing: -1px !important;
     text-align: center !important;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 .auth-page .input-wrapper .input-icon {
     width: 20px !important;
@@ -2469,14 +1527,6 @@
     transform: translateY(-50%) !important;
 }
 
-
-
-
-
-
-
-
-
 .auth-page .primary-auth-button {
     min-width: 126px !important;
     min-height: 48px !important;
@@ -2486,102 +1536,33 @@
     border-radius: 26px !important;
 }
 
+/* LOGIN PAGE - LARGER + BOLDER FEATURE LABELS */
 
-
-
-
-/* ============================================================
-   LOGIN PAGE - LARGER + BOLDER FEATURE LABELS
-   ============================================================ */
-
-
-
-
-
-/* ============================================================
-   LOGIN PAGE - DIVIDER CENTER + WARMER DIRTY-WHITE PANEL
-   ============================================================ */
-
-
+/* LOGIN PAGE - DIVIDER CENTER + WARMER DIRTY-WHITE PANEL */
 
 /* Center "or use your account" exactly between both lines */
 
-
-
-
-
-
-/* ============================================================
-   WEBPAGE + LOGIN PAGE HOVER ANIMATIONS
-   Smooth, subtle, academic UI motion
-   ============================================================ */
+/* WEBPAGE + LOGIN PAGE HOVER ANIMATIONS Smooth, subtle, academic UI motion */
 
 /* WEBPAGE: Support + Settings */
 
-
-
-
 /* WEBPAGE: Support/Settings icons */
-
-
-
 
 /* WEBPAGE: Log in pill */
 
-
-
-
 /* WEBPAGE: Platform / Products / Resources / About us */
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* LOGIN PAGE: Google + Microsoft */
 
-
-
-
-
-
-
-
 /* LOGIN PAGE: main Log in button */
-
-
-
 
 /* LOGIN PAGE: Forgot password + Create one */
 
-
-
-
 /* LOGIN PAGE: input interaction */
-
-
-
 
 /* LOGIN PAGE: left-side feature rows */
 
-
-
-
-
-
-
-
 /* LOGIN PAGE: Back */
-
-
-
 
 /* Accessibility: respect reduced-motion preference */
 @media (prefers-reduced-motion: reduce) {
@@ -2606,27 +1587,14 @@
     }
 }
 
-/* ============================================================
-   LOGIN PAGE - CENTER STUDENT ROLE PILL
-   Removes/hides the dropdown chevron and centers "Student"
-   ============================================================ */
-
-
-
-
+/* LOGIN PAGE - CENTER STUDENT ROLE PILL Removes/hides the dropdown chevron and centers "Student" */
 
 /* Hide the old v / chevron even if the <b> is still in the HTML */
 .auth-page .auth-role-pill b,
 .auth-page .auth-role-pill::after,
-.auth-page .auth-r/* ============================================================
-   EduMetrics
-   Academic Assessment & Grading System
-   FINAL FULL STYLESHEET
-   ============================================================ */
+.auth-page .auth-r/* EduMetrics Academic Assessment & Grading System FINAL FULL STYLESHEET */
 
-/* ============================================================
-   ROOT
-   ============================================================ */
+/* ROOT */
 
 :root {
     --blue: #004179;
@@ -2670,10 +1638,7 @@
     --radius-large: 18px;
 }
 
-
-/* ============================================================
-   RESET
-   ============================================================ */
+/* RESET */
 
 * {
     margin: 0;
@@ -2747,17 +1712,9 @@ img {
     background: var(--blue);
 }
 
+/* LANDING PAGE - OUTER SHELL */
 
-/* ============================================================
-   LANDING PAGE - OUTER SHELL
-   ============================================================ */
-
-
-
-
-/* ============================================================
-   LANDING HEADER
-   ============================================================ */
+/* LANDING HEADER */
 
 .site-header {
     width: 100%;
@@ -2896,11 +1853,7 @@ img {
     transform: rotate(45deg) translateY(-1px);
 }
 
-
-
-/* ============================================================
-   LOGIN ROLE DROPDOWN
-   ============================================================ */
+/* LOGIN ROLE DROPDOWN */
 
 .login-dropdown {
     position: relative;
@@ -2987,9 +1940,7 @@ img {
     transition: transform 0.2s ease;
 }
 
-/* ============================================================
-   LANDING MAIN / HERO
-   ============================================================ */
+/* LANDING MAIN / HERO */
 
 .landing-main {
     width: 100%;
@@ -3072,11 +2023,7 @@ img {
     background: var(--gold-bright);
 }
 
-
-/* ============================================================
-   MAIN FOUR FEATURES
-   IMAGE ON TOP / LABEL BELOW
-   ============================================================ */
+/* MAIN FOUR FEATURES IMAGE ON TOP / LABEL BELOW */
 
 .feature-grid {
     width: 100%;
@@ -3102,7 +2049,6 @@ img {
 
 /* Your uploaded top-row PNG icons */
 
-
 .feature-item span {
     display: block;
     color: var(--blue);
@@ -3113,8 +2059,7 @@ img {
     text-align: center;
     width: 100%;}
 
-/* Backward-compatible styling if an older HTML version
-   still contains .feature-icon text instead of .feature-image */
+/* Backward-compatible styling if an older HTML version still contains .feature-icon text instead of .feature-image */
 .feature-icon {
     width: 50px;
     height: 50px;
@@ -3139,12 +2084,7 @@ img {
     font-size: 29px;
 }
 
-
-/* ============================================================
-   HERO IMAGE
-   ============================================================ */
-
-
+/* HERO IMAGE */
 
 .hero-image img {
     width: 100%;
@@ -3173,21 +2113,9 @@ img {
     pointer-events: none;
 }
 
-
-/* ============================================================
-   BOTTOM INFO CARDS
-   ============================================================ */
-
-
-
-
-
-
-
-
+/* BOTTOM INFO CARDS */
 
 /* Your uploaded bottom-row PNG icons */
-
 
 /* Backward-compatible fallback if .info-icon is still text */
 b.info-icon {
@@ -3215,18 +2143,7 @@ b.info-icon.gold-circle {
     color: #BA8900;
 }
 
-
-
-
-
-
-
-
-
-
-/* ============================================================
-   SIMPLE MODAL
-   ============================================================ */
+/* SIMPLE MODAL */
 
 .simple-modal {
     position: fixed;
@@ -3334,10 +2251,7 @@ b.info-icon.gold-circle {
     font-weight: 700;
 }
 
-
-/* ============================================================
-   AUTH PAGE
-   ============================================================ */
+/* AUTH PAGE */
 
 .auth-page {
     min-height: 100vh;
@@ -3392,10 +2306,7 @@ b.info-icon.gold-circle {
     font-size: 29px;
 }
 
-
-/* ============================================================
-   ROLE SELECTOR
-   ============================================================ */
+/* ROLE SELECTOR */
 
 .role-selector-wrapper {
     position: absolute;
@@ -3449,10 +2360,7 @@ b.info-icon.gold-circle {
         0 0 0 3px rgba(18, 59, 104, 0.12);
 }
 
-
-/* ============================================================
-   AUTH CARD
-   ============================================================ */
+/* AUTH CARD */
 
 .auth-card {
     width: 100%;
@@ -3666,10 +2574,7 @@ b.info-icon.gold-circle {
     font-size: 23px;
 }
 
-
-/* ============================================================
-   SOCIAL LOGIN / DIVIDER
-   ============================================================ */
+/* SOCIAL LOGIN / DIVIDER */
 
 .social-login {
     display: grid;
@@ -3750,10 +2655,7 @@ b.info-icon.gold-circle {
     white-space: nowrap;
 }
 
-
-/* ============================================================
-   FORM
-   ============================================================ */
+/* FORM */
 
 .auth-form {
     display: flex;
@@ -3880,10 +2782,7 @@ b.info-icon.gold-circle {
     line-height: 1.3;
 }
 
-
-/* ============================================================
-   LOGIN OPTIONS
-   ============================================================ */
+/* LOGIN OPTIONS */
 
 .login-options {
     display: flex;
@@ -3927,10 +2826,7 @@ b.info-icon.gold-circle {
     color: var(--gold-dark);
 }
 
-
-/* ============================================================
-   PRIMARY / SECONDARY AUTH BUTTONS
-   ============================================================ */
+/* PRIMARY / SECONDARY AUTH BUTTONS */
 
 .primary-auth-button {
     width: 100%;
@@ -4014,10 +2910,7 @@ b.info-icon.gold-circle {
     background: var(--blue-soft);
 }
 
-
-/* ============================================================
-   REGISTRATION
-   ============================================================ */
+/* REGISTRATION */
 
 .two-column-inputs {
     display: grid;
@@ -4097,26 +2990,7 @@ b.info-icon.gold-circle {
 .terms-row .form-error {
     margin-left: 22px;
 }
-
-
-/* ============================================================
-   REGISTRATION - FINAL FIXED
-   SAME CENTERING FEEL AS LOGIN
-   ============================================================ */
-
-
-/* ============================================================
-   PAGE
-   ============================================================ */
-
-
-
-
-/* ============================================================
-   MAIN AREA
-   CENTER EVERYTHING BELOW HEADER
-   ============================================================ */
-
+/* MAIN AREA CENTER EVERYTHING BELOW HEADER */
 .registration-page .auth-container {
     width: 100%;
 
@@ -4139,21 +3013,9 @@ b.info-icon.gold-circle {
     background: #FFFFFF;
 }
 
+/* REGISTRATION STAGE SAME IDEA AS LOGIN STAGE */
 
-/* ============================================================
-   REGISTRATION STAGE
-   SAME IDEA AS LOGIN STAGE
-   ============================================================ */
-
-
-
-
-/* ============================================================
-   BACK BUTTON
-   ============================================================ */
-
-
-
+/* BACK BUTTON */
 
 .registration-page .registration-back {
     display: inline-flex;
@@ -4179,38 +3041,21 @@ b.info-icon.gold-circle {
         transform 0.2s ease;
 }
 
-
 .registration-page .registration-back:hover {
     color: #004179;
 
     transform: translateX(-3px);
 }
 
-
-
-
-
-/* ============================================================
-   HIDE OLD YELLOW ROLE DROPDOWN
-   ============================================================ */
+/* HIDE OLD YELLOW ROLE DROPDOWN */
 
 .registration-page .registration-role-wrapper {
     display: none;
 }
 
+/* WHOLE REGISTRATION CARD SAME CENTERED OBJECT CONCEPT AS LOGIN */
 
-/* ============================================================
-   WHOLE REGISTRATION CARD
-
-   SAME CENTERED OBJECT CONCEPT AS LOGIN
-   ============================================================ */
-
-
-
-
-/* ============================================================
-   LEFT BLUE CREATE ACCOUNT PANEL
-   ============================================================ */
+/* LEFT BLUE CREATE ACCOUNT PANEL */
 
 .registration-page .registration-form-panel {
     width: 69%;
@@ -4252,16 +3097,7 @@ b.info-icon.gold-circle {
         rgba(18, 59, 104, 0.11);
 }
 
-
-/* ============================================================
-   CREATE ACCOUNT HEADING
-   ============================================================ */
-
-
-
-
-
-
+/* CREATE ACCOUNT HEADING */
 
 .registration-page
 .registration-form-panel
@@ -4269,10 +3105,7 @@ b.info-icon.gold-circle {
     display: none;
 }
 
-
-/* ============================================================
-   HIDE SOCIAL SIGNUP
-   ============================================================ */
+/* HIDE SOCIAL SIGNUP */
 
 .registration-page .social-login-icons,
 
@@ -4282,10 +3115,7 @@ b.info-icon.gold-circle {
     display: none;
 }
 
-
-/* ============================================================
-   FORM
-   ============================================================ */
+/* FORM */
 
 .registration-page
 .registration-form-panel
@@ -4303,10 +3133,7 @@ b.info-icon.gold-circle {
     gap: 8px;
 }
 
-
-/* ============================================================
-   FIRST + LAST NAME
-   ============================================================ */
+/* FIRST + LAST NAME */
 
 .registration-page
 .two-column-inputs {
@@ -4321,10 +3148,7 @@ b.info-icon.gold-circle {
     gap: 9px;
 }
 
-
-/* ============================================================
-   FORM GROUP
-   ============================================================ */
+/* FORM GROUP */
 
 .registration-page
 .registration-form-panel
@@ -4334,10 +3158,7 @@ b.info-icon.gold-circle {
     margin: 0;
 }
 
-
-/* ============================================================
-   INPUT WRAPPER
-   ============================================================ */
+/* INPUT WRAPPER */
 
 .registration-page
 .registration-form-panel
@@ -4369,14 +3190,12 @@ b.info-icon.gold-circle {
         box-shadow 0.2s ease;
 }
 
-
 .registration-page
 .registration-form-panel
 .input-wrapper:hover {
     border-color:
         rgba(255, 255, 255, 0.90);
 }
-
 
 .registration-page
 .registration-form-panel
@@ -4391,13 +3210,7 @@ b.info-icon.gold-circle {
         rgba(244, 195, 0, 0.08);
 }
 
-
-/* ============================================================
-   INPUT ICON
-   ============================================================ */
-
-
-
+/* INPUT ICON */
 
 .registration-page
 .registration-form-panel
@@ -4419,10 +3232,7 @@ b.info-icon.gold-circle {
     stroke-linejoin: round;
 }
 
-
-/* ============================================================
-   INPUT
-   ============================================================ */
+/* INPUT */
 
 .registration-page
 .registration-form-panel
@@ -4456,13 +3266,7 @@ b.info-icon.gold-circle {
     box-shadow: none;
 }
 
-
-
-
-
-/* ============================================================
-   PASSWORD EYE
-   ============================================================ */
+/* PASSWORD EYE */
 
 .registration-page
 .registration-form-panel
@@ -4496,7 +3300,6 @@ b.info-icon.gold-circle {
     cursor: pointer;
 }
 
-
 .registration-page
 .registration-form-panel
 .password-toggle svg {
@@ -4515,17 +3318,13 @@ b.info-icon.gold-circle {
     stroke-linejoin: round;
 }
 
-
 .registration-page
 .registration-form-panel
 .password-toggle:hover {
     color: #F4C300;
 }
 
-
-/* ============================================================
-   PASSWORD REQUIREMENTS
-   ============================================================ */
+/* PASSWORD REQUIREMENTS */
 
 .registration-page
 .password-requirements {
@@ -4546,7 +3345,6 @@ b.info-icon.gold-circle {
     row-gap: 1px;
 }
 
-
 .registration-page
 .password-requirements p {
     grid-column: 1 / -1;
@@ -4566,7 +3364,6 @@ b.info-icon.gold-circle {
     font-weight: 650;
 }
 
-
 .registration-page
 .password-requirements span {
     color:
@@ -4577,7 +3374,6 @@ b.info-icon.gold-circle {
     line-height: 1.35;
 }
 
-
 .registration-page
 .password-requirements
 span.requirement-passed {
@@ -4586,10 +3382,7 @@ span.requirement-passed {
     font-weight: 700;
 }
 
-
-/* ============================================================
-   ERRORS
-   ============================================================ */
+/* ERRORS */
 
 .registration-page
 .registration-form-panel
@@ -4610,10 +3403,7 @@ span.requirement-passed {
     line-height: 1.2;
 }
 
-
-/* ============================================================
-   TERMS
-   ============================================================ */
+/* TERMS */
 
 .registration-page
 .terms-row {
@@ -4625,7 +3415,6 @@ span.requirement-passed {
 
     gap: 2px;
 }
-
 
 .registration-page
 .terms-option,
@@ -4651,7 +3440,6 @@ span.requirement-passed {
     cursor: pointer;
 }
 
-
 .registration-page
 .terms-option input,
 
@@ -4669,7 +3457,6 @@ span.requirement-passed {
     accent-color: #F4C300;
 }
 
-
 .registration-page
 .terms-option a,
 
@@ -4685,10 +3472,7 @@ span.requirement-passed {
     text-underline-offset: 2px;
 }
 
-
-/* ============================================================
-   SIGN UP BUTTON
-   ============================================================ */
+/* SIGN UP BUTTON */
 
 .registration-page
 .registration-form-panel
@@ -4732,7 +3516,6 @@ span.requirement-passed {
         box-shadow 0.2s ease;
 }
 
-
 .registration-page
 .registration-form-panel
 .primary-auth-button:hover {
@@ -4747,23 +3530,14 @@ span.requirement-passed {
         rgba(0, 0, 0, 0.10);
 }
 
-
-/* ============================================================
-   HIDE OLD REGISTER PROMPT
-   ============================================================ */
+/* HIDE OLD REGISTER PROMPT */
 
 .registration-page
 .register-prompt {
     display: none;
 }
 
-
-/* ============================================================
-   RIGHT DIRTY-WHITE PANEL
-
-   POSITIONED ABSOLUTELY LIKE LOGIN.
-   THIS IS WHAT CREATES THE CLEAN OVERLAP.
-   ============================================================ */
+/* RIGHT DIRTY-WHITE PANEL POSITIONED ABSOLUTELY LIKE LOGIN. THIS IS WHAT CREATES THE CLEAN OVERLAP. */
 
 .registration-page
 .registration-brand-panel {
@@ -4779,11 +3553,7 @@ span.requirement-passed {
 
     top: 22px;
 
-    /*
-       BLUE PANEL ENDS AT 69%.
-       RIGHT PANEL STARTS AT 67%.
-       = SMALL OVERLAP.
-    */
+    /* BLUE PANEL ENDS AT 69%. RIGHT PANEL STARTS AT 67%. SMALL OVERLAP. */
     left: auto;
 
     z-index: 3;
@@ -4815,17 +3585,9 @@ span.requirement-passed {
         rgba(18, 59, 104, 0.12);
 }
 
+/* REMOVE OLD DECORATIVE CIRCLES */
 
-/* ============================================================
-   REMOVE OLD DECORATIVE CIRCLES
-   ============================================================ */
-
-
-
-
-/* ============================================================
-   RIGHT LOGO
-   ============================================================ */
+/* RIGHT LOGO */
 
 .registration-page
 .registration-brand-panel
@@ -4847,17 +3609,13 @@ span.requirement-passed {
     letter-spacing: -1px;
 }
 
-
 .registration-page
 .registration-brand-panel
 .gold-text {
     color: #F4B400;
 }
 
-
-/* ============================================================
-   RIGHT SUBTITLE
-   ============================================================ */
+/* RIGHT SUBTITLE */
 
 .registration-page
 .registration-brand-panel
@@ -4880,17 +3638,9 @@ span.requirement-passed {
     white-space: nowrap;
 }
 
+/* GOLD LINE */
 
-/* ============================================================
-   GOLD LINE
-   ============================================================ */
-
-
-
-
-/* ============================================================
-   MEASURE LEARNING
-   ============================================================ */
+/* MEASURE LEARNING */
 
 .registration-page
 .registration-brand-panel
@@ -4912,10 +3662,7 @@ span.requirement-passed {
     letter-spacing: -0.4px;
 }
 
-
-/* ============================================================
-   FEATURES
-   ============================================================ */
+/* FEATURES */
 
 .registration-page
 .registration-brand-panel
@@ -4933,16 +3680,7 @@ span.requirement-passed {
     gap: 19px;
 }
 
-
-
-
-
-
-
-
-/* ============================================================
-   HEADER ROLE PILL
-   ============================================================ */
+/* HEADER ROLE PILL */
 
 .registration-page
 .auth-role-pill {
@@ -4963,7 +3701,6 @@ span.requirement-passed {
     white-space: nowrap;
 }
 
-
 .registration-page
 .auth-role-pill span {
     width: 100%;
@@ -4973,10 +3710,7 @@ span.requirement-passed {
     text-align: center;
 }
 
-
-/* ============================================================
-   REGISTRATION MODAL
-   ============================================================ */
+/* REGISTRATION MODAL */
 
 .registration-modal {
     position: fixed;
@@ -4997,11 +3731,9 @@ span.requirement-passed {
         rgba(0, 30, 60, 0.45);
 }
 
-
 .registration-modal.show {
     display: flex;
 }
-
 
 .registration-modal-box {
     width: min(400px, 100%);
@@ -5025,7 +3757,6 @@ span.requirement-passed {
         rgba(0, 0, 0, 0.18);
 }
 
-
 .registration-modal-box h2 {
     margin:
         0
@@ -5037,7 +3768,6 @@ span.requirement-passed {
     font-size: 31px;
 }
 
-
 .registration-modal-box p {
     margin: 0;
 
@@ -5047,7 +3777,6 @@ span.requirement-passed {
 
     line-height: 1.65;
 }
-
 
 .registration-modal-close {
     position: absolute;
@@ -5066,7 +3795,6 @@ span.requirement-passed {
 
     cursor: pointer;
 }
-
 
 .registration-modal-button {
     margin-top: 18px;
@@ -5092,13 +3820,9 @@ span.requirement-passed {
     cursor: pointer;
 }
 
-
-/* ============================================================
-   TABLET
-   ============================================================ */
+/* TABLET */
 
 @media (max-width: 900px) {
-
     .registration-page
     .auth-container {
         height: auto;
@@ -5114,14 +3838,12 @@ span.requirement-passed {
         align-items: flex-start;
     }
 
-
     .registration-page
     .registration-stage {
         width: min(700px, 100%);
 
         height: auto;
     }
-
 
     .registration-page
     .registration-card {
@@ -5133,7 +3855,6 @@ span.requirement-passed {
 
         align-items: center;
     }
-
 
     .registration-page
     .registration-form-panel {
@@ -5156,7 +3877,6 @@ span.requirement-passed {
 
         border-radius: 14px;
     }
-
 
     .registration-page
     .registration-brand-panel {
@@ -5185,7 +3905,6 @@ span.requirement-passed {
         justify-content: center;
 }
 
-
     .registration-page
     .registration-brand-panel
     .brand-features {
@@ -5198,16 +3917,11 @@ span.requirement-passed {
             20px
             25px;
     }
-
 }
 
-
-/* ============================================================
-   MOBILE
-   ============================================================ */
+/* MOBILE */
 
 @media (max-width: 600px) {
-
     .registration-page
     .auth-container {
         padding:
@@ -5216,12 +3930,10 @@ span.requirement-passed {
             40px;
     }
 
-
     .registration-page
     .registration-top-row {
         top: -35px;
     }
-
 
     .registration-page
     .registration-form-panel {
@@ -5233,25 +3945,21 @@ span.requirement-passed {
             48px;
     }
 
-
     .registration-page
     .registration-form-panel
     .form-heading h2 {
         font-size: 40px;
     }
 
-
     .registration-page
     .two-column-inputs {
         grid-template-columns: 1fr;
     }
 
-
     .registration-page
     .password-requirements {
         grid-template-columns: 1fr;
     }
-
 
     .registration-page
     .registration-brand-panel {
@@ -5270,20 +3978,17 @@ span.requirement-passed {
         justify-content: center;
 }
 
-
     .registration-page
     .registration-brand-panel
     .auth-logo {
         font-size: 55px;
     }
 
-
     .registration-page
     .registration-brand-panel
     .brand-heading {
         font-size: 44px;
     }
-
 
     .registration-page
     .registration-brand-panel
@@ -5292,12 +3997,9 @@ span.requirement-passed {
 
         gap: 18px;
     }
-
 }
 
-/* ============================================================
-   VERIFICATION PAGES
-   ============================================================ */
+/* VERIFICATION PAGES */
 
 .verification-container {
     width: min(550px, 100%);
@@ -5425,10 +4127,7 @@ span.requirement-passed {
     font-weight: 650;
 }
 
-
-/* ============================================================
-   OTP
-   ============================================================ */
+/* OTP */
 
 .otp-container {
     display: flex;
@@ -5491,10 +4190,7 @@ span.requirement-passed {
     margin-top: 10px;
 }
 
-
-/* ============================================================
-   RESEND
-   ============================================================ */
+/* RESEND */
 
 .resend-section {
     margin-top: 20px;
@@ -5611,10 +4307,7 @@ span.requirement-passed {
     color: var(--gold-dark);
 }
 
-
-/* ============================================================
-   SUCCESS
-   ============================================================ */
+/* SUCCESS */
 
 .success-card {
     padding: 55px;
@@ -5733,10 +4426,7 @@ span.requirement-passed {
     text-align: right;
 }
 
-
-/* ============================================================
-   TABLET
-   ============================================================ */
+/* TABLET */
 
 @media (max-width: 950px) {
    .page-shell {
@@ -5746,10 +4436,6 @@ span.requirement-passed {
 
         margin: 11px auto 18px;
     }
-
-    
-
-    
 
     .landing-hero {
         height: auto;
@@ -5762,8 +4448,6 @@ span.requirement-passed {
         gap: 34px;
     }
 
-    
-
     .feature-grid {
         grid-template-columns:
             repeat(2, minmax(160px, 1fr));
@@ -5773,14 +4457,8 @@ span.requirement-passed {
 
     .feature-item {
         align-items: center;
-    
+
     text-align: center;}
-
-    
-
-    
-
-    
 
     .auth-card {
         grid-template-columns: 1fr;
@@ -5804,10 +4482,7 @@ span.requirement-passed {
 }
 }
 
-
-/* ============================================================
-   MOBILE
-   ============================================================ */
+/* MOBILE */
 
 @media (max-width: 650px) {
     .login-dropdown-menu {
@@ -5830,17 +4505,9 @@ span.requirement-passed {
         border-radius: 14px;
     }
 
-    
-
-    
-
-    
-
     .top-actions {
         gap: 7px;
     }
-
-    
 
     .login-pill {
         min-width: 84px;
@@ -5850,10 +4517,6 @@ span.requirement-passed {
 
         font-size: 20px;
     }
-
-    
-
-    
 
     .hero-copy h1 {
         font-size: 54px;
@@ -5873,27 +4536,9 @@ span.requirement-passed {
 
     .feature-item {
         font-size: 22px;
-    
+
     align-items: center;
     text-align: center;}
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
 
     .two-column-inputs {
         grid-template-columns: 1fr;
@@ -5952,10 +4597,7 @@ span.requirement-passed {
     }
 }
 
-
-/* ============================================================
-   VERY SMALL DEVICES
-   ============================================================ */
+/* VERY SMALL DEVICES */
 
 @media (max-width: 380px) {
     .auth-form-panel {
@@ -5990,10 +4632,7 @@ span.requirement-passed {
     }
 }
 
-
-/* ============================================================
-   FINAL WHITE BACKGROUND + ICON SIZE OVERRIDE
-   ============================================================ */
+/* FINAL WHITE BACKGROUND + ICON SIZE OVERRIDE */
 
 body,
 .page-shell,
@@ -6011,54 +4650,21 @@ body,
 
     .feature-item span {
         font-size: 27px;
-    
+
     text-align: center;
     width: 100%;}
 
     .feature-grid {
         column-gap: 52px;
     }
-
-    
 }
 
 @media (max-width: 950px) {
-    
-
-    
-
-    
-
-    
-
-    
-
-    
 }
 
 @media (max-width: 650px) {
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
 }
-/* ============================================================
-   FINAL LANDING PAGE POLISH
-   PURE WHITE BACKGROUND + LARGER COMPACT INFO CARDS
-   ============================================================ */
+/* FINAL LANDING PAGE POLISH PURE WHITE BACKGROUND + LARGER COMPACT INFO CARDS */
 
 html,
 body {
@@ -6097,10 +4703,7 @@ body {
     background: #FFFFFF;
 }
 
-
-
 /* Four feature icons: icon above, label below, larger. */
-
 
 .feature-item {
     gap: 13px;
@@ -6125,8 +4728,7 @@ body {
     text-align: center;
     width: 100%;}
 
-/* Bottom info cards: compact in height but larger in content,
-   raised enough to overlap the image. */
+/* Bottom info cards: compact in height but larger in content, raised enough to overlap the image. */
 .info-row {
     width: calc(100% - 5%);
     min-height: 148px;
@@ -6168,8 +4770,6 @@ body {
 .info-card + .info-card {
     border-left: 1px solid #D2DCE7;
 }
-
-
 
 .info-card .info-icon {
     width: 81px;
@@ -6221,9 +4821,6 @@ body {
 
     transform: translateX(-50%);}
 
-/* Keep the image large enough that the info row can overlap it. */
-
-
 /* Large desktop */
 @media (min-width: 1500px) {
     .site-header {
@@ -6256,7 +4853,7 @@ body {
 
     .feature-item span {
         font-size: 27px;
-    
+
     text-align: center;
     width: 100%;}
 
@@ -6274,7 +4871,7 @@ body {
         width: 87px;
         height: 87px;
         min-width: 87px;
-    
+
     transform: translateY(-10px);}
 
     .info-content strong {
@@ -6284,10 +4881,6 @@ body {
 
 /* Tablet */
 @media (max-width: 950px) {
-    
-
-    
-
     .landing-hero {
         height: auto;
         min-height: 0;
@@ -6312,10 +4905,6 @@ body {
         max-height: none;
     }
 
-    
-
-    
-
     .info-card:nth-child(odd) {
         border-left: none;
     }
@@ -6327,8 +4916,6 @@ body {
 
 /* Mobile */
 @media (max-width: 650px) {
-    
-
     .landing-main {
         padding: 0 10px 20px;
     }
@@ -6353,32 +4940,17 @@ body {
 
     .feature-item span {
         font-size: 23px;
-    
+
     text-align: center;
     width: 100%;}
-
-    
-
-    
-
-    
 
     .info-card + .info-card {
         border-left: none;
         border-top: 1px solid #D2DCE7;
     }
-
-    
-
-    
-
-    
 }
 
-
-/* ============================================================
-   FINAL HEADER / HERO / BOTTOM CARD SIZE OVERRIDES
-   ============================================================ */
+/* FINAL HEADER / HERO / BOTTOM CARD SIZE OVERRIDES */
 
 @media (min-width: 1200px) {
     .site-header {
@@ -6414,7 +4986,7 @@ body {
         width: 89px;
         height: 89px;
         min-width: 89px;
-    
+
     transform: translateY(-10px);}
 
     .info-content strong {
@@ -6423,20 +4995,9 @@ body {
 }
 
 @media (max-width: 950px) {
-    
-
-    
-
-    
-
-    
 }
 
 @media (max-width: 650px) {
-    
-
-    
-
     .brand-area p {
         font-size: 18.5px;
     }
@@ -6452,13 +5013,9 @@ body {
     .info-row {
         min-height: auto;
     }
-
-    
 }
 
-/* ============================================================
-   FINAL HEADER FIX — REMOVE HEADER LINE
-   ============================================================ */
+/* FINAL HEADER FIX — REMOVE HEADER LINE */
 .site-header {
     border: none !important;
     border-top: none !important;
@@ -6474,37 +5031,12 @@ body {
     content: none !important;
     display: none !important;
 }
-
-/* ============================================================
-   FINAL LANDING OVERLAP FIX
-   Bottom Platform / Products / Resources / About Us frame
-   overlaps the lower portion of the right-side hero image.
-   ============================================================ */
-
 /* Keep the hero as the positioning layer for the overlap. */
 .landing-hero {
     position: relative;
     z-index: 1;
     overflow: visible;
 }
-
-/* Keep the building/image visible behind the floating info frame. */
-
-
-/* Float the whole four-card frame upward over the hero/image. */
-
-
-/* Compact cards so the overlap looks like the reference design. */
-
-
-
-
-
-
-
-
-
-
 /* Give the hero enough bottom room for the floating frame. */
 .landing-main {
     padding-bottom: 42px;
@@ -6526,32 +5058,13 @@ body {
         width: 69px;
         height: 69px;
         min-width: 69px;
-    
+
     transform: translateY(-10px);}
 }
 
 /* Large desktop */
 
 /* Slightly larger login form content — frame size stays unchanged */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 @media (min-width: 1400px) {
     .info-row {
@@ -6562,19 +5075,13 @@ body {
 
 /* Tablet */
 @media (max-width: 950px) {
-    
 }
 
 /* Mobile */
 @media (max-width: 650px) {
-    
 }
 
-
-/* ============================================================
-   FINAL REFERENCE-MATCH LANDING OVERRIDE
-   Large header + full-height right image + large overlapping cards
-   ============================================================ */
+/* FINAL REFERENCE-MATCH LANDING OVERRIDE Large header + full-height right image + large overlapping cards */
 
 /* HEADER */
 .site-header {
@@ -6815,7 +5322,7 @@ body {
         width: 78px !important;
         height: 78px !important;
     }
-    .feature-item span { font-size: 23.5px !important; 
+    .feature-item span { font-size: 23.5px !important;
     text-align: center;
     width: 100%;}
     .info-row {
@@ -6832,7 +5339,7 @@ body {
         width: 81px !important;
         height: 81px !important;
         min-width: 81px !important;
-    
+
     transform: translateY(-10px);}
     .info-content strong { font-size: 28px !important; }
     .info-content small { font-size: 20.5px !important; }
@@ -6840,7 +5347,7 @@ body {
         left: 50%;
         bottom: 11px !important;
         font-size: 33px !important;
-    
+
     transform: translateX(-50%);}
 }
 
@@ -6906,16 +5413,13 @@ body {
         width: 69px !important;
         height: 69px !important;
         min-width: 69px !important;
-    
+
     transform: translateY(-10px);}
     .info-content strong { font-size: 26px !important; }
     .info-content small { font-size: 20px !important; }
 }
 
-/* ============================================================
-   FINAL STUDENT LOGIN PAGE
-   Centered overlapping card + back above blue panel
-   ============================================================ */
+/* FINAL STUDENT LOGIN PAGE Centered overlapping card + back above blue panel */
 
 .auth-page {
     min-height: 100vh !important;
@@ -7172,8 +5676,6 @@ body {
     background: #FFFFFF !important;
 }
 
-
-
 .auth-page .divider {
     width: min(500px, 100%) !important;
     margin: 14px auto !important;
@@ -7188,7 +5690,6 @@ body {
     margin: 0 auto !important;
     gap: 8px !important;
 }
-
 
 .auth-page .form-group > label { display: none !important; }
 
@@ -7219,10 +5720,7 @@ body {
     stroke-linejoin: round !important;
 }
 
-
-
 .auth-page .form-error { min-height: 8px !important; font-size: 19px !important; }
-
 
 .auth-page .forgot-password { color: #E6A900 !important; }
 
@@ -7234,12 +5732,10 @@ body {
     font-size: 24px !important;
 }
 
-
 .auth-page .register-prompt a { color: #E6A900 !important; text-decoration: underline !important; }
 
 /* Large desktop */
 @media (min-width: 1451px) {
-    
     .auth-page .auth-card { height: 640px !important; }
     .auth-page .auth-brand-panel { width: 48% !important; padding: 48px 48px !important; }
     .auth-page .auth-form-panel {
@@ -7323,10 +5819,7 @@ body {
     .auth-page .form-heading h2 { font-size: 48px !important; }
 }
 
-/* ============================================================
-   LOGIN PAGE - LARGER FORM CONTENT
-   Keeps the existing blue/cream frame dimensions unchanged
-   ============================================================ */
+/* LOGIN PAGE - LARGER FORM CONTENT Keeps the existing blue/cream frame dimensions unchanged */
 
 .auth-page .auth-form-panel .form-heading {
     margin-bottom: 28px !important;
@@ -7432,9 +5925,7 @@ body {
     font-size: 20px !important;
 }
 
-/* ============================================================
-   LOGIN PAGE - LARGER + BOLDER FEATURE LABELS
-   ============================================================ */
+/* LOGIN PAGE - LARGER + BOLDER FEATURE LABELS */
 
 .auth-page .auth-brand-panel .brand-feature {
     font-size: 20px !important;
@@ -7450,9 +5941,7 @@ body {
     color: #FFFFFF !important;
 }
 
-/* ============================================================
-   LOGIN PAGE - DIVIDER CENTER + WARMER DIRTY-WHITE PANEL
-   ============================================================ */
+/* LOGIN PAGE - DIVIDER CENTER + WARMER DIRTY-WHITE PANEL */
 
 .auth-page .auth-form-panel {
     background: #F1EDE7 !important;
@@ -7478,10 +5967,7 @@ body {
     width: 100% !important;
 }
 
-/* ============================================================
-   WEBPAGE + LOGIN PAGE HOVER ANIMATIONS
-   Smooth, subtle, academic UI motion
-   ============================================================ */
+/* WEBPAGE + LOGIN PAGE HOVER ANIMATIONS Smooth, subtle, academic UI motion */
 
 /* WEBPAGE: Support + Settings */
 .site-header .text-btn,
@@ -7543,7 +6029,6 @@ body {
 .info-card:hover .info-arrow {
     transform: translateX(-50%) translateY(-2px);
 }
-
 
 /* LOGIN PAGE: Google + Microsoft */
 .auth-page .social-icon-button {
@@ -7643,10 +6128,7 @@ body {
 }
 }
 
-/* ============================================================
-   LOGIN PAGE - CENTER STUDENT ROLE PILL
-   Removes/hides the dropdown chevron and centers "Student"
-   ============================================================ */
+/* LOGIN PAGE - CENTER STUDENT ROLE PILL Removes/hides the dropdown chevron and centers "Student" */
 
 .auth-page .auth-role-pill {
     display: flex !important;
@@ -7670,10 +6152,7 @@ body {
     content: none !important;
 }
 
-/* ============================================================
-   FINAL DIRTY-WHITE CONSISTENCY FIX
-   Registration right panel + Login right panel use same color
-   ============================================================ */
+/* FINAL DIRTY-WHITE CONSISTENCY FIX Registration right panel + Login right panel use same color */
 
 /* Registration: supports both the original class and the newer compact HTML class */
 .registration-page .registration-brand-panel,
@@ -7690,10 +6169,7 @@ ole-pill span::after {
     content: none !important;
 }
 
-/* ============================================================
-   REGISTRATION — CLEAN FINAL LAYOUT
-   One definitive registration override only.
-   ============================================================ */
+/* REGISTRATION — CLEAN FINAL LAYOUT One definitive registration override only. */
 
 /* Registration page uses the exact same centered viewport geometry as login. */
 .registration-page {
@@ -8086,8 +6562,6 @@ z-index: 10 !important;
 
 /* Large desktop: mirrors login's 1240 × 610 stage and 21px inset. */
 @media (min-width: 1451px) {
-    
-
     .registration-page .registration-card {
         height: 690px !important;
     }
@@ -8105,14 +6579,6 @@ z-index: 10 !important;
         padding-right: 30px !important;
         justify-content: center;
 }
-
-    
-
-    
-
-    
-
-    
 }
 
 @media (max-width: 950px) {
@@ -8160,16 +6626,10 @@ z-index: 10 !important;
     }
 }
 
-/* ============================================================
-   REGISTRATION — FINAL BEIGE CONTENT POSITION
-   Keep frame/panels unchanged. Center the content in the VISIBLE
-   beige area (the beige portion hidden under blue is excluded).
-   ============================================================ */
+/* REGISTRATION — FINAL BEIGE CONTENT POSITION Keep frame/panels unchanged. Center the content in the VISIBLE beige area (the beige portion hidden under blue is excluded). */
 @media (min-width: 951px) {
     .registration-page .registration-brand-panel {
-        /* IMPORTANT: fixed safe area for the part hidden under blue.
-           Do not use percentage padding here: percentage padding is
-           what pushed the content too far to the right. */
+        /* IMPORTANT: fixed safe area for the part hidden under blue. Do not use percentage padding here: percentage padding is what pushed the content too far to the right. */
         padding: 34px 24px 34px 86px !important;
         align-items: stretch !important;
         justify-content: center;
@@ -8270,68 +6730,39 @@ z-index: 10 !important;
     }
 }
 
-/* ============================================================
-   REGISTRATION — BEIGE CONTENT FINAL TUNING
-   Bigger typography + compact spacing + slightly higher
-   Does NOT change card/frame/overlap/back-button geometry
-   ============================================================ */
-
-
+/* REGISTRATION — BEIGE CONTENT FINAL TUNING Bigger typography + compact spacing + slightly higher Does NOT change card/frame/overlap/back-button geometry */
 
 /* EduMetrics logo */
 
-
 /* Subtitle */
 
-
 /* Gold divider */
-
 
 /* Measure Learning / Improve Outcomes */
 
-
 /* Feature group */
-
 
 /* Feature rows */
 
-
 /* Feature icons */
 
-
-/* ============================================================
-   REGISTRATION — BEIGE CONTENT LARGE + TIGHT FINAL TUNING
-   Larger logo/text/icons, tighter gaps, stays inside beige panel
-   ============================================================ */
-
-
+/* REGISTRATION — BEIGE CONTENT LARGE + TIGHT FINAL TUNING Larger logo/text/icons, tighter gaps, stays inside beige panel */
 
 /* EduMetrics */
 
-
 /* Academic Assessment & Grading System */
-
 
 /* Gold divider */
 
-
 /* Main beige heading */
-
 
 /* Feature list — tighter */
 
-
 /* Feature row */
-
 
 /* Larger feature icons */
 
-
-/* ============================================================
-   REGISTRATION — BEIGE CONTENT XL + TIGHT
-   Fill the visible beige area with minimal spacing.
-   Frame/overlap/back button remain unchanged.
-   ============================================================ */
+/* REGISTRATION — BEIGE CONTENT XL + TIGHT Fill the visible beige area with minimal spacing. Frame/overlap/back button remain unchanged. */
 
 .registration-page .registration-brand-panel {
     justify-content: center;
@@ -8341,43 +6772,25 @@ z-index: 10 !important;
 
 /* EduMetrics logo */
 
-
 /* Subtitle */
-
 
 /* Gold line */
 
-
 /* Measure Learning / Improve Outcomes */
-
 
 /* Feature list */
 
-
 /* Feature rows */
-
 
 /* Bigger icons */
 
+/* REGISTRATION — FINAL REFINED TUNING Keep current frame/overlap geometry Beige content large but with breathing room Slight spacing between beige items Create Account title slightly higher More gap between title and first-name row */
 
-/* ============================================================
-   REGISTRATION — FINAL REFINED TUNING
-   - Keep current frame/overlap geometry
-   - Beige content large but with breathing room
-   - Slight spacing between beige items
-   - Create Account title slightly higher
-   - More gap between title and first-name row
-   ============================================================ */
-
-/* CREATE ACCOUNT TITLE:
-   move slightly upward while preserving the form/card geometry */
-
+/* CREATE ACCOUNT TITLE: move slightly upward while preserving the form/card geometry */
 
 /* If the first form row follows the heading, preserve a clean title-to-fields gap */
 
-
-/* BEIGE PANEL:
-   keep it centered, but give the content a little top/bottom breathing room */
+/* BEIGE PANEL: keep it centered, but give the content a little top/bottom breathing room */
 .registration-page .registration-brand-panel,
 .registration-page .registration-brand-side {
     justify-content: center;
@@ -8404,7 +6817,6 @@ z-index: 10 !important;
 
 /* Gold divider — add a little breathing room */
 
-
 /* Main beige heading */
 .registration-page .registration-brand-panel .brand-heading {
     font-size: 44px !important;
@@ -8415,9 +6827,7 @@ z-index: 10 !important;
     white-space: nowrap !important;
 }
 
-/* Feature list:
-   compact, but no longer cramped */
-
+/* Feature list: compact, but no longer cramped */
 
 /* Feature rows */
 .registration-page .registration-brand-panel .brand-feature {
@@ -8437,12 +6847,7 @@ z-index: 10 !important;
     object-fit: contain !important;
 }
 
-/* ============================================================
-   REGISTRATION — CREATE ACCOUNT / SIGN UP POSITION FINAL
-   Only adjusts the vertical position of the title and button.
-   All frame, beige panel, overlap, fields, icons and branding
-   remain unchanged.
-   ============================================================ */
+/* REGISTRATION — CREATE ACCOUNT / SIGN UP POSITION FINAL Only adjusts the vertical position of the title and button. All frame, beige panel, overlap, fields, icons and branding remain unchanged. */
 
 /* Move CREATE ACCOUNT slightly higher */
 .registration-page .registration-form-panel .auth-form-title,
@@ -8467,10 +6872,7 @@ z-index: 10 !important;
     top: 10px !important;
 }
 
-/* ============================================================
-   VERIFICATION SUCCESS — TARGET MATCH
-   Only this page is affected.
-   ============================================================ */
+/* VERIFICATION SUCCESS — TARGET MATCH Only this page is affected. */
 
 .verification-success-page {
     min-height: 100vh !important;
@@ -8809,10 +7211,6 @@ z-index: 10 !important;
 
 /* Large desktop — preserve the same proportions */
 @media (min-width: 1451px) {
-    
-
-    
-
     .verification-success-page .verification-success-brand-panel {
         height: calc(100% - 42px) !important;
         top: 21px !important;
@@ -8855,13 +7253,6 @@ z-index: 10 !important;
     /* ito ang magpapagitna visually sa white check */
     transform: translate(-4px, 5px) scale(1.08) !important;
 }
-    
-
-    
-
-    
-
-    
 }
 
 /* Tablet */
@@ -8964,11 +7355,7 @@ z-index: 10 !important;
     }
 }
 
-/* ============================================================
-   VERIFICATION GMAIL LOGIN
-   SAME FRAME / PANEL SIZE AS BEFORE.
-   Only Gmail verification CONTENT is enlarged and balanced.
-   ============================================================ */
+/* VERIFICATION GMAIL LOGIN SAME FRAME / PANEL SIZE AS BEFORE. Only Gmail verification CONTENT is enlarged and balanced. */
 
 .verification-gmail-page .gmail-verification-panel {
     text-align: center !important;
@@ -9020,8 +7407,7 @@ z-index: 10 !important;
     line-height: 1.35 !important;
 }
 
-/* Selected Google account
-   Move ONLY this section and everything below it slightly downward. */
+/* Selected Google account Move ONLY this section and everything below it slightly downward. */
 .verification-gmail-page .gmail-account-box {
     width: min(370px, 100%) !important;
     min-height: 78px !important;
@@ -9126,21 +7512,6 @@ z-index: 10 !important;
 
 /* Large desktop: only a small proportional increase */
 @media (min-width: 1451px) {
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
 }
 
 @media (max-width: 600px) {
@@ -9172,10 +7543,7 @@ z-index: 10 !important;
     }
 }
 
-/* ============================================================
-   GLOBAL TRANSITIONS + LOGIN-STYLE ENTRANCE
-   Same entrance motion as the original Login page.
-   ============================================================ */
+/* GLOBAL TRANSITIONS + LOGIN-STYLE ENTRANCE Same entrance motion as the original Login page. */
 
 :root {
     --motion-fast: 180ms;
@@ -9279,9 +7647,7 @@ button:active,
     transform: scale(1.05);
 }
 
-/* ============================================================
-   EXACT LOGIN ENTRANCE KEYFRAMES
-   ============================================================ */
+/* EXACT LOGIN ENTRANCE KEYFRAMES */
 
 @keyframes loginBackIn {
     from {
@@ -9332,9 +7698,7 @@ button:active,
     animation: loginFormIn 0.55s ease both;
 }
 
-/* REGISTRATION VERIFICATION SUCCESS:
-   Blue success panel from LEFT, beige branding from RIGHT.
-*/
+/* REGISTRATION VERIFICATION SUCCESS: Blue success panel from LEFT, beige branding from RIGHT. */
 .verification-success-page:not(.login-success-mode)
 .verification-success-panel {
     animation: loginBrandIn 0.55s ease both !important;
@@ -9345,9 +7709,7 @@ button:active,
     animation: loginFormIn 0.55s ease both !important;
 }
 
-/* LOGIN VERIFICATION SUCCESS:
-   Blue branding panel from LEFT, beige success panel from RIGHT.
-*/
+/* LOGIN VERIFICATION SUCCESS: Blue branding panel from LEFT, beige success panel from RIGHT. */
 .verification-success-page.login-success-mode
 .verification-success-brand-panel {
     animation: loginBrandIn 0.55s ease both !important;
@@ -9386,11 +7748,7 @@ button:active,
     animation: eduModalPop 0.32s ease both;
 }
 
-
-/* ============================================================
-   REGISTRATION + VERIFICATION-SIGNUP
-   EXACT SAME ENTRANCE AS "ACCOUNT VERIFIED"
-   ============================================================ */
+/* REGISTRATION + VERIFICATION-SIGNUP EXACT SAME ENTRANCE AS "ACCOUNT VERIFIED" */
 
 /* Back */
 body.registration-page:not(.verification-success-page) .registration-back {
@@ -9419,11 +7777,7 @@ body.registration-page:not(.verification-success-page) .registration-brand-side 
     }
 }
 
-
-/* ============================================================
-   FINAL REQUESTED FIXES ONLY
-   Landing alignment + auth/registration/all verification frames
-   ============================================================ */
+/* FINAL REQUESTED FIXES ONLY Landing alignment + auth/registration/all verification frames */
 
 /* LANDING: Welcome +15px, lighter weight */
 .eyebrow {
@@ -9518,12 +7872,12 @@ body.registration-page:not(.verification-success-page) .registration-brand-side 
     }
 
     /* ACCOUNT VERIFIED / SUCCESS VERIFICATION */
-    
+
     .verification-success-page .verification-success-card,
     .verification-success-page .verification-success-panel {
         height: 640px !important;
     }
-    
+
     .verification-success-page .back-button {
         left: 0 !important;
     }
@@ -9561,18 +7915,13 @@ body.registration-page:not(.verification-success-page) .registration-brand-side 
         top: 22px !important;
     }
 
-    
     .verification-success-page .verification-success-card,
     .verification-success-page .verification-success-panel {
         height: 690px !important;
     }
-    
 }
 
-
-/* ============================================================
-   WIDER REGISTRATION + VERIFICATION PANELS — FIXED
-   ============================================================ */
+/* WIDER REGISTRATION + VERIFICATION PANELS — FIXED */
 @media (min-width: 951px) and (max-width: 1450px) {
     .registration-page .registration-stage {
         width: min(1280px, 100%) !important;
@@ -9615,9 +7964,7 @@ body.registration-page:not(.verification-success-page) .registration-brand-side 
     }
 }
 
-/* ============================================================
-   REGISTRATION BEIGE PANEL - MATCH LOGIN TYPOGRAPHY
-   ============================================================ */
+/* REGISTRATION BEIGE PANEL - MATCH LOGIN TYPOGRAPHY */
 .registration-page .registration-brand-panel,
 .registration-page .registration-brand-panel * {
     font-family: Arial, Helvetica, sans-serif !important;
@@ -9679,10 +8026,7 @@ body.registration-page:not(.verification-success-page) .registration-brand-side 
     min-width: 48px !important;
 }
 
-/* ============================================================
-   FINAL — VERIFICATION SUCCESS BEIGE PANEL = REGISTRATION BEIGE
-   Exact desktop geometry/content styling copied from registration.
-   ============================================================ */
+/* FINAL — VERIFICATION SUCCESS BEIGE PANEL = REGISTRATION BEIGE Exact desktop geometry/content styling copied from registration. */
 @media (min-width: 951px) {
   .verification-success-page .verification-success-stage {
     width: min(1280px, 94vw) !important;
@@ -9808,11 +8152,7 @@ body.registration-page:not(.verification-success-page) .registration-brand-side 
   }
 }
 
-n/* ============================================================
-   FINAL FIX — REGISTRATION VERIFICATION SUCCESS ONLY
-   Match the Registration panel geometry/content exactly.
-   Login-success mode is intentionally excluded.
-   ============================================================ */
+n/* FINAL FIX — REGISTRATION VERIFICATION SUCCESS ONLY Match the Registration panel geometry/content exactly. Login-success mode is intentionally excluded. */
 
 /* The verification modal must never render as raw page content. */
 .verification-success-page .auth-modal {
@@ -9906,21 +8246,15 @@ n/* ============================================================
         right: auto !important;
         z-index: 20 !important;
     }
-    
-    
-    
+
     body.verification-success-page:not(.login-success-mode) .verification-success-logo span {
         color: #F4B400 !important;
     }
-    
-    
-    
+
     body.verification-success-page:not(.login-success-mode) .verification-success-brand-heading span {
         color: #F4B400 !important;
     }
-    
-    
-    
+
     body.verification-success-page:not(.login-success-mode) .verification-success-feature-icon {
         width: 48px !important;
         height: 48px !important;
@@ -9952,20 +8286,10 @@ n/* ============================================================
     }
 }
 
-
-/* ============================================================
-   FINAL OVERRIDE — SEPARATE SUCCESS DESIGNS
-   1) Registration success = Registration beige brand panel/content
-   2) Login success        = Login blue brand panel/content
-   Keep this block LAST in the stylesheet.
-   ============================================================ */
+/* FINAL OVERRIDE — SEPARATE SUCCESS DESIGNS 1) Registration success = Registration beige brand panel/content 2) Login success        = Login blue brand panel/content Keep this block LAST in the stylesheet. */
 
 @media (min-width: 951px) {
-
-    /* ========================================================
-       REGISTRATION VERIFICATION SUCCESS
-       Beige panel = exact Registration beige panel
-       ======================================================== */
+    /* REGISTRATION VERIFICATION SUCCESS Beige panel = exact Registration beige panel */
 
     body.verification-success-page:not(.login-success-mode)
     .verification-success-brand-panel {
@@ -10147,11 +8471,7 @@ n/* ============================================================
         border: 0 !important;
     }
 
-
-    /* ========================================================
-       LOGIN VERIFICATION SUCCESS
-       Blue panel = exact Login blue panel + content
-       ======================================================== */
+    /* LOGIN VERIFICATION SUCCESS Blue panel = exact Login blue panel + content */
 
     body.verification-success-page.login-success-mode
     .verification-success-brand-panel {
@@ -10346,9 +8666,7 @@ n/* ============================================================
         border: 0 !important;
     }
 
-    /* Login success's actual success card stays on the right,
-       like the Login dirty-white form panel. */
-    
+    /* Login success's actual success card stays on the right, like the Login dirty-white form panel. */
 
     body.verification-success-page.login-success-mode
     .verification-success-heading h1,
@@ -10372,10 +8690,8 @@ n/* ============================================================
     }
 }
 
-
 /* LARGE DESKTOP */
 @media (min-width: 1451px) {
-
     body.verification-success-page:not(.login-success-mode)
     .verification-success-brand-panel {
         height: 646px !important;
@@ -10390,20 +8706,11 @@ n/* ============================================================
         min-height: 690px !important;
         padding: 48px 48px !important;
     }
-
-    
 }
 
-
-/* ============================================================
-   ABSOLUTE FINAL FIX
-   REGISTRATION VERIFICATION SUCCESS:
-   RIGHT BEIGE PANEL = ACTUAL REGISTRATION BEIGE PANEL
-   IMPORTANT: keep this block at the VERY END of style.css.
-   ============================================================ */
+/* ABSOLUTE FINAL FIX REGISTRATION VERIFICATION SUCCESS: RIGHT BEIGE PANEL = ACTUAL REGISTRATION BEIGE PANEL IMPORTANT: keep this block at the VERY END of style.css. */
 
 @media (min-width: 951px) {
-
     /* Same beige frame as Registration */
     body.verification-success-page:not(.login-success-mode)
     .verification-success-brand-panel.registration-brand-panel {
@@ -10613,7 +8920,6 @@ n/* ============================================================
     }
 }
 
-
 /* Same large-desktop frame/padding used by Registration */
 @media (min-width: 1451px) {
     body.verification-success-page:not(.login-success-mode)
@@ -10630,22 +8936,12 @@ n/* ============================================================
     }
 }
 
-
-/* ============================================================
-   ABSOLUTE FINAL FIX — LOGIN VERIFICATION SUCCESS ONLY
-   LEFT BLUE PANEL = EXACT LOGIN BLUE PANEL
-   Keep this block at the VERY END of style.css.
-   ============================================================ */
+/* ABSOLUTE FINAL FIX — LOGIN VERIFICATION SUCCESS ONLY LEFT BLUE PANEL = EXACT LOGIN BLUE PANEL Keep this block at the VERY END of style.css. */
 
 @media (min-width: 951px) {
-
     /* Match the Login page stage/card dimensions */
-    
-
-    
 
     /* LEFT BLUE = Login .auth-brand-panel */
-    
 
     body.verification-success-page.login-success-mode
     .verification-success-brand-panel.registration-brand-panel::before,
@@ -10821,19 +9117,10 @@ n/* ============================================================
     }
 
     /* Right success panel follows the Login form-panel overlap */
-    
 }
-
 
 /* Exact large-desktop Login geometry */
 @media (min-width: 1451px) {
-
-    
-
-    
-
-    
-
     body.verification-success-page.login-success-mode
     .verification-success-brand-panel .auth-logo {
         font-size: 56px !important;
@@ -10858,20 +9145,12 @@ n/* ============================================================
         min-height: 50px !important;
         flex-basis: 50px !important;
     }
-
-    
 }
 
-
-/* ============================================================
-   ABSOLUTE FINAL FIX
-   LOGIN VERIFICATION SUCCESS = EXACT SAME FRAME AS LOGIN
-   This block MUST stay at the very end of style.css.
-   ============================================================ */
+/* ABSOLUTE FINAL FIX LOGIN VERIFICATION SUCCESS = EXACT SAME FRAME AS LOGIN This block MUST stay at the very end of style.css. */
 
 /* DESKTOP — copy the FINAL Login frame geometry */
 @media (min-width: 951px) {
-
     body.verification-success-page.login-success-mode
     .verification-success-stage {
         width: min(1280px, 100%) !important;
@@ -10964,10 +9243,8 @@ n/* ============================================================
     }
 }
 
-
 /* LARGE DESKTOP — copy the FINAL Login frame geometry */
 @media (min-width: 1451px) {
-
     body.verification-success-page.login-success-mode
     .verification-success-stage {
         width: min(1360px, 100%) !important;
@@ -11003,16 +9280,9 @@ n/* ============================================================
     }
 }
 
-
-/* ============================================================
-   ABSOLUTE FINAL FIX
-   LOGIN GOOGLE + MICROSOFT VERIFICATION CONTENT
-   Keep the Login-sized frame, but fit ALL content inside it.
-   MUST remain at the very end of style.css.
-   ============================================================ */
+/* ABSOLUTE FINAL FIX LOGIN GOOGLE + MICROSOFT VERIFICATION CONTENT Keep the Login-sized frame, but fit ALL content inside it. MUST remain at the very end of style.css. */
 
 @media (min-width: 951px) {
-
     /* Content wrapper: vertically centered and safely contained */
     .verification-gmail-page .gmail-verification-content {
         width: min(430px, calc(100% - 70px)) !important;
@@ -11176,13 +9446,8 @@ n/* ============================================================
     }
 }
 
-
-/* LARGE DESKTOP
-   Do NOT enlarge the provider content again.
-   The old CSS enlarged it to 110px / 46px / 390px etc.,
-   which is what caused the bottom content to overflow. */
+/* LARGE DESKTOP Do NOT enlarge the provider content again. The old CSS enlarged it to 110px / 46px / 390px etc., which is what caused the bottom content to overflow. */
 @media (min-width: 1451px) {
-
     .verification-gmail-page .gmail-verification-content {
         width: min(430px, calc(100% - 80px)) !important;
         max-width: 430px !important;
@@ -11255,12 +9520,7 @@ n/* ============================================================
     }
 }
 
-/* ============================================================
-   SO STUDENT + SO FACULTY — CLEANED
-   Duplicate exact selectors removed.
-   Later declarations preserved as the winning values.
-   Other project CSS above this section was left unchanged.
-   ============================================================ */
+/* SO STUDENT + SO FACULTY — CLEANED Duplicate exact selectors removed. Later declarations preserved as the winning values. Other project CSS above this section was left unchanged. */
 
 .so-student-page .so-user-info span {
     color: var(--so-blue);
@@ -11807,8 +10067,6 @@ n/* ============================================================
     font-size: 9px;
 }
 
-
-
 .so-faculty-page .sof-file-info {
     min-width: 0;
     display: flex;
@@ -11856,8 +10114,6 @@ n/* ============================================================
     font-size: 8px;
 }
 
-
-
 .so-faculty-page .sof-view-btn, .so-faculty-page .sof-download-btn {
     height: 39px;
     padding: 0 19px;
@@ -11882,8 +10138,6 @@ n/* ============================================================
     background: #FFBD00;
     color: #003F73;
 }
-
-
 
 .so-faculty-page .sof-empty-state {
     min-height: 170px;
@@ -12382,31 +10636,9 @@ n/* ============================================================
     scrollbar-width: thin;
 }
 
-
-
 .so-faculty-page *, .so-faculty-page *::before, .so-faculty-page *::after {
     box-sizing: border-box;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 .so-faculty-page .sof-page-heading {
     margin: 0 !important;
@@ -12428,10 +10660,6 @@ n/* ============================================================
     font-size: 14px !important;
 }
 
-
-
-
-
 .so-faculty-page .sof-workflow-active {
     background: #F4C300 !important;
     color: #003F73 !important;
@@ -12439,32 +10667,6 @@ n/* ============================================================
     min-height: 42px !important;
     border-radius: 18px !important;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 .so-faculty-page .sof-nav-item span {
     color: inherit !important;
@@ -12497,24 +10699,6 @@ n/* ============================================================
     font-size: 18px !important;
     font-weight: 700 !important;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 .so-faculty-page .sof-panel-toolbar {
     min-height: 70px !important;
@@ -12797,11 +10981,7 @@ n/* ============================================================
                 45px !important;
     }
 }
-/* ============================================================
-   FACULTY SYLLABUS
-   THREE DOTS / DELETE FILE DROPDOWN - FINAL FIX
-   ============================================================ */
-
+/* FACULTY SYLLABUS THREE DOTS / DELETE FILE DROPDOWN - FINAL FIX */
 
 /* Allow dropdown to appear outside the action row */
 .so-faculty-page .sof-file-row {
@@ -12824,7 +11004,6 @@ n/* ============================================================
     overflow: visible !important;
 }
 
-
 /* Wrapper becomes the anchor of the dropdown */
 .so-faculty-page .sof-more-wrapper {
     position: relative !important;
@@ -12838,10 +11017,7 @@ n/* ============================================================
     overflow: visible !important;
 }
 
-
-/* ============================================================
-   THREE DOT BUTTON
-   ============================================================ */
+/* THREE DOT BUTTON */
 
 .so-faculty-page .sof-more-btn {
     width: 32px !important;
@@ -12862,18 +11038,13 @@ n/* ============================================================
         color 0.18s ease;
 }
 
-
 .so-faculty-page .sof-more-btn:hover,
 .so-faculty-page .sof-more-btn[aria-expanded="true"] {
     background: #EAF2FA !important;
     color: #00345F !important;
 }
 
-
-/* ============================================================
-   DROPDOWN
-   DIRECTLY BELOW THE THREE DOTS
-   ============================================================ */
+/* DROPDOWN DIRECTLY BELOW THE THREE DOTS */
 
 .so-faculty-page .sof-file-menu {
     position: absolute !important;
@@ -12907,21 +11078,13 @@ n/* ============================================================
     z-index: 99999 !important;
 }
 
-
-/* VERY IMPORTANT:
-   hide dropdown until dots are clicked */
+/* VERY IMPORTANT: hide dropdown until dots are clicked */
 
 .so-faculty-page .sof-file-menu[hidden] {
     display: none !important;
 }
 
-
-/* ============================================================
-   DELETE FILE OPTION
-   ============================================================ */
-
-
-
+/* DELETE FILE OPTION */
 
 /* DELETE HOVER */
 
@@ -12930,10 +11093,7 @@ n/* ============================================================
     color: #A91F1F !important;
 }
 
-
-/* ============================================================
-   DELETE ICON
-   ============================================================ */
+/* DELETE ICON */
 
 .so-faculty-page .sof-delete-icon {
     width: 18px;
@@ -12951,10 +11111,7 @@ n/* ============================================================
     line-height: 1;
 }
 
-
-/* ============================================================
-   SMALL ARROW ABOVE DROPDOWN
-   ============================================================ */
+/* SMALL ARROW ABOVE DROPDOWN */
 
 .so-faculty-page .sof-file-menu::before {
     content: "";
@@ -12974,7 +11131,6 @@ n/* ============================================================
 
     transform: rotate(45deg);
 }
-
 
 /* Keep the delete button above the little arrow */
 .so-faculty-page .sof-delete-file-option {
@@ -13008,15 +11164,9 @@ n/* ============================================================
     position: relative;
     z-index: 2;
 }
-/* ============================================================
-   FACULTY HEADER + SIDEBAR
-   EXACT STUDENT MATCH - FINAL OVERRIDE
-   ============================================================ */
+/* FACULTY HEADER + SIDEBAR EXACT STUDENT MATCH - FINAL OVERRIDE */
 
-
-/* ============================================================
-   PAGE SHELL
-   ============================================================ */
+/* PAGE SHELL */
 
 .so-faculty-page {
     margin: 0 !important;
@@ -13032,107 +11182,31 @@ n/* ============================================================
     padding: 0 !important;
 }
 
+/* HEADER */
 
-/* ============================================================
-   HEADER
-   ============================================================ */
+/* HEADER BRAND */
 
+/* HEADER RIGHT IMPORTANT: Bell is intentionally farther from Faculty/profile, matching the Student header. */
 
-
-
-/* ============================================================
-   HEADER BRAND
-   ============================================================ */
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* ============================================================
-   HEADER RIGHT
-   IMPORTANT:
-   Bell is intentionally farther from Faculty/profile,
-   matching the Student header.
-   ============================================================ */
-
-
-
-
-/* ============================================================
-   NOTIFICATION BELL
-   ============================================================ */
-
-
-
-
-
-
+/* NOTIFICATION BELL */
 
 /* YELLOW DOT ABOVE BELL */
 
-
-
-
-/* ============================================================
-   LARGE SPACE BETWEEN BELL AND FACULTY
-   ============================================================ */
-
-
-
-
-
-
+/* LARGE SPACE BETWEEN BELL AND FACULTY */
 
 /* Hide extra small text if Faculty header has one */
 
-
-
-/* ============================================================
-   PROFILE CIRCLE
-   ============================================================ */
-
-
-
+/* PROFILE CIRCLE */
 
 /* GREEN ONLINE DOT */
 
+/* YELLOW LINE BELOW HEADER SAME THICKNESS AS STUDENT */
 
+/* MAIN SHELL */
 
+/* SIDEBAR EXACT WIDTH / DENSITY LIKE STUDENT */
 
-/* ============================================================
-   YELLOW LINE BELOW HEADER
-   SAME THICKNESS AS STUDENT
-   ============================================================ */
-
-
-
-
-/* ============================================================
-   MAIN SHELL
-   ============================================================ */
-
-
-
-
-/* ============================================================
-   SIDEBAR
-   EXACT WIDTH / DENSITY LIKE STUDENT
-   ============================================================ */
-
-
-
-
-/* ============================================================
-   PAGES BAR
-   ============================================================ */
+/* PAGES BAR */
 
 .so-faculty-page .sof-pages-label {
     height: 43px !important;
@@ -13160,7 +11234,6 @@ n/* ============================================================
     margin: 0 !important;
 }
 
-
 /* PAGES ICON */
 
 .so-faculty-page .sof-pages-icon-wrap {
@@ -13173,7 +11246,6 @@ n/* ============================================================
     min-width: 22px !important;
 }
 
-
 .so-faculty-page .sof-pages-icon {
     width: 22px !important;
     height: 22px !important;
@@ -13182,10 +11254,7 @@ n/* ============================================================
     object-position: center !important;
 }
 
-
-/* ============================================================
-   NAVIGATION AREA
-   ============================================================ */
+/* NAVIGATION AREA */
 
 .so-faculty-page .sof-nav {
     padding-top: 22px;
@@ -13199,11 +11268,7 @@ n/* ============================================================
     margin: 0 !important;
 }
 
-
-/* ============================================================
-   HOME / MY COURSES / PLATFORM
-   RESOURCES / ABOUT US
-   ============================================================ */
+/* HOME / MY COURSES / PLATFORM RESOURCES / ABOUT US */
 
 .so-faculty-page .sof-nav-item {
     width: calc(
@@ -13233,11 +11298,7 @@ n/* ============================================================
     white-space: nowrap !important;
 }
 
-
-/* ============================================================
-   MAIN ICONS
-   Same visual size as Student screenshot
-   ============================================================ */
+/* MAIN ICONS Same visual size as Student screenshot */
 
 .so-faculty-page .sof-nav-item > img {
     width: 25px !important;
@@ -13252,7 +11313,6 @@ n/* ============================================================
     display: block !important;
 }
 
-
 /* NAV LABEL */
 
 .so-faculty-page .sof-nav-item > span {
@@ -13264,11 +11324,7 @@ n/* ============================================================
     padding: 0 !important;
 }
 
-
-/* ============================================================
-   WORKFLOW
-   SAME THICK YELLOW PILL AS STUDENT
-   ============================================================ */
+/* WORKFLOW SAME THICK YELLOW PILL AS STUDENT */
 
 .so-faculty-page .sof-workflow-active,
 .so-faculty-page .sof-nav-item.sof-workflow-active {
@@ -13305,7 +11361,6 @@ n/* ============================================================
     box-shadow: none !important;
 }
 
-
 /* WORKFLOW ICON */
 
 .so-faculty-page
@@ -13324,7 +11379,6 @@ n/* ============================================================
     object-fit: contain !important;
 }
 
-
 /* WORKFLOW TEXT */
 
 .so-faculty-page
@@ -13335,10 +11389,7 @@ n/* ============================================================
     font-weight: 700 !important;
 }
 
-
-/* ============================================================
-   WORKFLOW SUBMENU
-   ============================================================ */
+/* WORKFLOW SUBMENU */
 
 .so-faculty-page .sof-subnav {
     margin: 7px
@@ -13354,7 +11405,6 @@ n/* ============================================================
     padding: 0 !important;
     gap: 0 !important;
 }
-
 
 .so-faculty-page .sof-subnav a {
     position: relative !important;
@@ -13381,11 +11431,7 @@ n/* ============================================================
     white-space: nowrap !important;
 }
 
-
-/* ============================================================
-   ACTIVE SUBMENU
-   YELLOW VERTICAL LINE
-   ============================================================ */
+/* ACTIVE SUBMENU YELLOW VERTICAL LINE */
 
 .so-faculty-page .sof-subnav a.active {
     padding-left: 12px !important;
@@ -13393,7 +11439,6 @@ n/* ============================================================
     font-size: 12px !important;
     font-weight: 700 !important;
 }
-
 
 .so-faculty-page
 .sof-subnav
@@ -13408,26 +11453,19 @@ a.active::before {
     background: #F4C300 !important;
 }
 
-
-/* ============================================================
-   RESOURCES / ABOUT US SPACING
-   ============================================================ */
+/* RESOURCES / ABOUT US SPACING */
 
 .so-faculty-page
 .sof-nav-item.sof-resources {
     margin-top: 14px !important;
 }
 
-
 .so-faculty-page
 .sof-nav-item.sof-about {
     margin-top: 0 !important;
 }
 
-
-/* ============================================================
-   SIDEBAR BOTTOM LOGO
-   ============================================================ */
+/* SIDEBAR BOTTOM LOGO */
 
 .so-faculty-page .sof-sidebar-brand {
     position: absolute !important;
@@ -13443,7 +11481,6 @@ a.active::before {
     z-index: 20 !important;
 }
 
-
 .so-faculty-page
 .sof-sidebar-brand
 > div {
@@ -13454,14 +11491,12 @@ a.active::before {
     margin: 0 !important;
 }
 
-
 .so-faculty-page
 .sof-sidebar-brand
 > div
 span {
     color: #FFFFFF !important;
 }
-
 
 .so-faculty-page
 .sof-sidebar-brand
@@ -13475,10 +11510,7 @@ small {
     font-weight: 400 !important;
 }
 
-
-/* ============================================================
-   FACULTY MAIN CONTENT
-   ============================================================ */
+/* FACULTY MAIN CONTENT */
 
 .so-faculty-page .sof-main {
     min-width: 0 !important;
@@ -13496,10 +11528,7 @@ small {
     margin: 0 !important;
 }
 
-
-/* ============================================================
-   HOVER
-   ============================================================ */
+/* HOVER */
 
 .so-faculty-page
 .sof-nav-item:not(.sof-workflow-active):hover {
@@ -13512,16 +11541,12 @@ small {
         ) !important;
 }
 
-
 .so-faculty-page
 .sof-subnav
 a:hover {
     color: #F4C300 !important;
 }
-/* ============================================================
-   FACULTY HEADER
-   EXACT SAME SIZE AS STUDENT HEADER
-   ============================================================ */
+/* FACULTY HEADER EXACT SAME SIZE AS STUDENT HEADER */
 
 .so-faculty-page .sof-header {
     width: 100% !important;
@@ -13547,10 +11572,7 @@ a:hover {
     box-sizing: border-box !important;
 }
 
-
-/* ============================================================
-   EDUMETRICS BRAND
-   ============================================================ */
+/* EDUMETRICS BRAND */
 
 .so-faculty-page .sof-brand {
     display: flex !important;
@@ -13562,7 +11584,6 @@ a:hover {
     height: 100% !important;
 }
 
-
 .so-faculty-page .sof-logo {
     color: #F4B400 !important;
     font-size: 42px !important;
@@ -13573,11 +11594,9 @@ a:hover {
     padding: 0 !important;
 }
 
-
 .so-faculty-page .sof-logo span {
     color: #004179 !important;
 }
-
 
 .so-faculty-page .sof-tagline {
     margin-top: 8px !important;
@@ -13591,11 +11610,7 @@ a:hover {
     padding: 0 !important;
 }
 
-
-/* ============================================================
-   RIGHT SIDE
-   BELL ---------- FACULTY -- AVATAR
-   ============================================================ */
+/* RIGHT SIDE BELL ---------- FACULTY -- AVATAR */
 
 .so-faculty-page .sof-header-user {
     position: relative !important;
@@ -13613,10 +11628,7 @@ a:hover {
     justify-content: flex-end !important;
 }
 
-
-/* ============================================================
-   NOTIFICATION
-   ============================================================ */
+/* NOTIFICATION */
 
 .so-faculty-page .sof-notification-btn {
     position: relative !important;
@@ -13640,7 +11652,6 @@ a:hover {
         38px !important;
 }
 
-
 .so-faculty-page .sof-notification-image {
     width: 25px !important;
     height: 25px !important;
@@ -13650,7 +11661,6 @@ a:hover {
     margin: 0 !important;
     padding: 0 !important;
 }
-
 
 /* NOTIFICATION YELLOW DOT */
 
@@ -13665,10 +11675,7 @@ a:hover {
     border: none !important;
 }
 
-
-/* ============================================================
-   FACULTY TEXT
-   ============================================================ */
+/* FACULTY TEXT */
 
 .so-faculty-page .sof-user-copy {
     display: flex !important;
@@ -13686,7 +11693,6 @@ a:hover {
     text-align: right !important;
 }
 
-
 .so-faculty-page .sof-user-copy strong {
     color: #004179 !important;
     font-size: 16px !important;
@@ -13695,7 +11701,6 @@ a:hover {
     line-height: 1 !important;
     padding: 0 !important;
 }
-
 
 /* DON'T SHOW SECOND LINE */
 
@@ -13706,10 +11711,7 @@ a:hover {
     display: none !important;
 }
 
-
-/* ============================================================
-   PROFILE CIRCLE
-   ============================================================ */
+/* PROFILE CIRCLE */
 
 .so-faculty-page .sof-avatar {
     width: 58px !important;
@@ -13732,7 +11734,6 @@ a:hover {
     padding: 0 !important;
 }
 
-
 /* ONLINE GREEN DOT */
 
 .so-faculty-page .sof-online-dot {
@@ -13748,11 +11749,7 @@ a:hover {
     background: #70B900 !important;
 }
 
-
-/* ============================================================
-   YELLOW LINE
-   SAME THICKNESS AS STUDENT
-   ============================================================ */
+/* YELLOW LINE SAME THICKNESS AS STUDENT */
 
 .so-faculty-page .sof-gold-line {
     height: 15px !important;
@@ -13769,10 +11766,7 @@ a:hover {
     box-sizing: border-box !important;
 }
 
-
-/* ============================================================
-   UPDATE SHELL HEIGHT BECAUSE HEADER IS NOW 123 + 15
-   ============================================================ */
+/* UPDATE SHELL HEIGHT BECAUSE HEADER IS NOW 123 + 15 */
 
 .so-faculty-page .sof-shell {
     min-height: calc(
@@ -13789,7 +11783,6 @@ a:hover {
     padding: 0 !important;
     background: #FFFFFF !important;
 }
-
 
 .so-faculty-page .sof-sidebar {
     position: relative !important;
@@ -13812,25 +11805,19 @@ a:hover {
         4px
         rgba(0, 0, 0, 0.14) !important;
 }
-/* ============================================================
-   SO FACULTY — DELETE SYLLABUS MODAL
-   ============================================================ */
+/* SO FACULTY — DELETE SYLLABUS MODAL */
 
 /* Lock background while modal is open */
 body.sof-modal-open {
     overflow: hidden !important;
 }
 
-/* IMPORTANT:
-   Browser [hidden] must actually hide the modal */
+/* IMPORTANT: Browser [hidden] must actually hide the modal */
 .so-faculty-page .sof-delete-modal[hidden] {
     display: none !important;
 }
 
-
-/* ============================================================
-   MODAL WRAPPER
-   ============================================================ */
+/* MODAL WRAPPER */
 
 .so-faculty-page .sof-delete-modal {
     position: fixed !important;
@@ -13845,10 +11832,7 @@ body.sof-modal-open {
     padding: 24px !important;
 }
 
-
-/* ============================================================
-   DARK BACKDROP
-   ============================================================ */
+/* DARK BACKDROP */
 
 .so-faculty-page .sof-delete-modal-backdrop {
     position: absolute !important;
@@ -13860,10 +11844,7 @@ body.sof-modal-open {
     -webkit-backdrop-filter: blur(2px);
 }
 
-
-/* ============================================================
-   SMALL POP-UP CARD
-   ============================================================ */
+/* SMALL POP-UP CARD */
 
 .so-faculty-page .sof-delete-dialog {
     position: relative !important;
@@ -13889,10 +11870,7 @@ body.sof-modal-open {
     animation: sofDeleteModalIn 0.18s ease-out;
 }
 
-
-/* ============================================================
-   DELETE ICON
-   ============================================================ */
+/* DELETE ICON */
 
 .so-faculty-page .sof-delete-dialog-icon {
     width: 54px !important;
@@ -13912,10 +11890,7 @@ body.sof-modal-open {
     line-height: 1 !important;
 }
 
-
-/* ============================================================
-   TITLE
-   ============================================================ */
+/* TITLE */
 
 .so-faculty-page .sof-delete-dialog h2 {
     margin: 0 0 11px !important;
@@ -13927,10 +11902,7 @@ body.sof-modal-open {
     line-height: 1.2 !important;
 }
 
-
-/* ============================================================
-   MESSAGE
-   ============================================================ */
+/* MESSAGE */
 
 .so-faculty-page .sof-delete-dialog > p {
     margin: 0 auto !important;
@@ -13944,7 +11916,6 @@ body.sof-modal-open {
     line-height: 1.55 !important;
 }
 
-
 /* File name */
 
 .so-faculty-page .sof-delete-dialog > p strong {
@@ -13954,7 +11925,6 @@ body.sof-modal-open {
 
     overflow-wrap: anywhere !important;
 }
-
 
 /* Warning text */
 
@@ -13966,10 +11936,7 @@ body.sof-modal-open {
     font-size: 12px !important;
 }
 
-
-/* ============================================================
-   ACTION BUTTONS
-   ============================================================ */
+/* ACTION BUTTONS */
 
 .so-faculty-page .sof-delete-dialog-actions {
     width: 100% !important;
@@ -13982,7 +11949,6 @@ body.sof-modal-open {
 
     gap: 10px !important;
 }
-
 
 /* CANCEL */
 
@@ -14015,7 +11981,6 @@ body.sof-modal-open {
     border-color: #004179 !important;
 }
 
-
 /* DELETE */
 
 .so-faculty-page .sof-delete-confirm-btn {
@@ -14047,14 +12012,12 @@ body.sof-modal-open {
     border-color: #A91F1F !important;
 }
 
-
 /* Small click effect */
 
 .so-faculty-page .sof-delete-cancel-btn:active,
 .so-faculty-page .sof-delete-confirm-btn:active {
     transform: translateY(1px) !important;
 }
-
 
 /* Keyboard focus */
 
@@ -14064,13 +12027,9 @@ body.sof-modal-open {
     outline-offset: 2px !important;
 }
 
-
-/* ============================================================
-   OPEN ANIMATION
-   ============================================================ */
+/* OPEN ANIMATION */
 
 @keyframes sofDeleteModalIn {
-
     from {
         opacity: 0;
         transform: translateY(8px) scale(0.97);
@@ -14080,16 +12039,11 @@ body.sof-modal-open {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
-
 }
 
-
-/* ============================================================
-   MOBILE
-   ============================================================ */
+/* MOBILE */
 
 @media (max-width: 520px) {
-
     .so-faculty-page .sof-delete-dialog {
         width: 100% !important;
 
@@ -14108,9 +12062,7 @@ body.sof-modal-open {
         width: 100% !important;
     }
 }
-/* ============================================================
-   SO STUDENT — PAGE TITLE SAME SIZE AS FACULTY
-   ============================================================ */
+/* SO STUDENT — PAGE TITLE SAME SIZE AS FACULTY */
 
 .so-student-page .so-page-heading h1 {
     font-size: 37px !important;
@@ -14118,41 +12070,26 @@ body.sof-modal-open {
     line-height: 1.1 !important;
     letter-spacing: normal !important;
 }
-/* ============================================================
-   SO FACULTY — FONT SIZE INCREASE
-   ============================================================ */
+/* SO FACULTY — FONT SIZE INCREASE */
 
-/* Course Syllabus / Course Outcomes / Student Outcomes
-   +5px */
+/* Course Syllabus / Course Outcomes / Student Outcomes +5px */
 .so-faculty-page .sof-tab {
     font-size: calc(1em + 5px) !important;
 }
 
-
-/* Select Course / Section / Academic Term / School Year
-   +5px */
+/* Select Course / Section / Academic Term / School Year +5px */
 .so-faculty-page .sof-filter-group label {
     font-size: calc(1em + 5px) !important;
 }
 
-
-/* Upload, view, update the course syllabus.
-   +3px */
+/* Upload, view, update the course syllabus. +3px */
 .so-faculty-page .sof-panel-toolbar > p {
     font-size: calc(1em + 3px) !important;
 }
 
+/* FINAL FIX — SO FACULTY / SYLLABUS & OUTCOMES Requested changes only. */
 
-/* ============================================================
-   FINAL FIX — SO FACULTY / SYLLABUS & OUTCOMES
-   Requested changes only.
-   ============================================================ */
-
-/* Filter row:
-   - Select Course about 5% narrower
-   - Section / Academic Term / School Year move left naturally
-   - View Course Details gets a little more width
-*/
+/* Filter row: Select Course about 5% narrower Section / Academic Term / School Year move left naturally View Course Details gets a little more width */
 .so-faculty-page .sof-filter-card {
     grid-template-columns:
         minmax(210px, 1.71fr)
@@ -14170,9 +12107,7 @@ body.sof-modal-open {
     white-space: nowrap !important;
 }
 
-/* "Upload, view, update the course syllabus."
-   Same font family / size / color as the PDF helper line.
-*/
+/* "Upload, view, update the course syllabus." Same font family / size / color as the PDF helper line. */
 .so-faculty-page .sof-panel-toolbar > p {
     font-family: inherit !important;
     font-size: 16px !important;
@@ -14181,11 +12116,7 @@ body.sof-modal-open {
     color: #004179 !important;
 }
 
-/* Faculty empty syllabus message:
-   Match Student:
-   "No courses yet"
-   "Your course syllabus will appear here once you are added to a course."
-*/
+/* Faculty empty syllabus message: Match Student: "No courses yet" "Your course syllabus will appear here once you are added to a course." */
 .so-faculty-page .sof-empty-state h3 {
     margin: 0 !important;
     color: #004179 !important;
@@ -14204,8 +12135,7 @@ body.sof-modal-open {
     line-height: 1.35 !important;
 }
 
-/* Keep the helper sentence in the toolbar and the empty-state
-   description visually identical. */
+/* Keep the helper sentence in the toolbar and the empty-state description visually identical. */
 .so-faculty-page .sof-panel-toolbar > p,
 .so-faculty-page .sof-empty-state p {
     font-size: 16px !important;
@@ -14232,10 +12162,7 @@ body.sof-modal-open {
     }
 }
 
-/* ============================================================
-   WORKFLOW PAGE — SCREEN REFERENCE MATCH
-   Scoped under .workflow-page to avoid affecting other pages.
-   ============================================================ */
+/* WORKFLOW PAGE — SCREEN REFERENCE MATCH Scoped under .workflow-page to avoid affecting other pages. */
 .workflow-page {
     min-height: 100vh;
     margin: 0;
@@ -14336,9 +12263,7 @@ body.sof-modal-open {
     .workflow-page .wf-intro p { width: 100%; }
 }
 
-/* ============================================================
-   WORKFLOW PAGE — FINAL LAPTOP LAYOUT
-   ============================================================ */
+/* WORKFLOW PAGE — FINAL LAPTOP LAYOUT */
 
 .workflow-page {
     width: 100%;
@@ -14357,11 +12282,7 @@ body.sof-modal-open {
     box-sizing: border-box;
 }
 
-
-/* ============================================================
-   HEADER
-   Uses the SAME header structure as Login
-   ============================================================ */
+/* HEADER Uses the SAME header structure as Login */
 
 .workflow-page .workflow-site-header {
     width: 100%;
@@ -14371,18 +12292,13 @@ body.sof-modal-open {
     /* same login header stays untouched */
 }
 
-
 /* Blue divider below header */
 
 .workflow-page .workflow-site-header {
     border-bottom: 1px solid #17679E !important;
 }
 
-
-/* ============================================================
-   MAIN
-   Wider and fitted to laptop
-   ============================================================ */
+/* MAIN Wider and fitted to laptop */
 
 .workflow-page .workflow-main {
     width: calc(100% - 100px);
@@ -14396,10 +12312,7 @@ body.sof-modal-open {
         35px;
 }
 
-
-/* ============================================================
-   BREADCRUMB
-   ============================================================ */
+/* BREADCRUMB */
 
 .workflow-page .workflow-breadcrumb {
     display: flex;
@@ -14424,7 +12337,6 @@ body.sof-modal-open {
     color: #D39F00;
 }
 
-
 /* Yellow line below breadcrumb */
 
 .workflow-page .workflow-breadcrumb-line {
@@ -14438,10 +12350,7 @@ body.sof-modal-open {
     background: #F4C300;
 }
 
-
-/* ============================================================
-   INTRO
-   ============================================================ */
+/* INTRO */
 
 .workflow-page .workflow-intro {
     margin-top: 28px;
@@ -14475,10 +12384,7 @@ body.sof-modal-open {
     line-height: 1.25;
 }
 
-
-/* ============================================================
-   WORKFLOW PANEL
-   ============================================================ */
+/* WORKFLOW PANEL */
 
 .workflow-page .workflow-tools-panel {
     width: 100%;
@@ -14495,10 +12401,7 @@ body.sof-modal-open {
     background: #F8F7F5;
 }
 
-
-/* ============================================================
-   WORKFLOW TITLE
-   ============================================================ */
+/* WORKFLOW TITLE */
 
 .workflow-page .workflow-section-title {
     margin:
@@ -14537,10 +12440,7 @@ body.sof-modal-open {
     line-height: 1;
 }
 
-
-/* ============================================================
-   4 × 2 GRID
-   ============================================================ */
+/* 4 × 2 GRID */
 
 .workflow-page .workflow-grid {
     width: 100%;
@@ -14555,10 +12455,7 @@ body.sof-modal-open {
         18px;
 }
 
-
-/* ============================================================
-   CARDS
-   ============================================================ */
+/* CARDS */
 
 .workflow-page .workflow-card {
     position: relative;
@@ -14611,10 +12508,7 @@ body.sof-modal-open {
         rgba(0, 45, 85, .15);
 }
 
-
-/* ============================================================
-   ICON CIRCLES
-   ============================================================ */
+/* ICON CIRCLES */
 
 .workflow-page .workflow-card-icon {
     width: 52px;
@@ -14647,10 +12541,7 @@ body.sof-modal-open {
     color: #17679E;
 }
 
-
-/* ============================================================
-   CARD TEXT
-   ============================================================ */
+/* CARD TEXT */
 
 .workflow-page .workflow-card-content {
     min-width: 0;
@@ -14685,10 +12576,7 @@ body.sof-modal-open {
     line-height: 1.18;
 }
 
-
-/* ============================================================
-   CARD ARROW
-   ============================================================ */
+/* CARD ARROW */
 
 .workflow-page .workflow-card-arrow {
     position: absolute;
@@ -14704,13 +12592,9 @@ body.sof-modal-open {
     line-height: 1;
 }
 
-
-/* ============================================================
-   NORMAL LAPTOP — 1366 / 1440
-   ============================================================ */
+/* NORMAL LAPTOP — 1366 / 1440 */
 
 @media (min-width: 1000px) and (max-width: 1450px) {
-
     .workflow-page .workflow-main {
         width: calc(100% - 70px);
     }
@@ -14750,13 +12634,9 @@ body.sof-modal-open {
     }
 }
 
-
-/* ============================================================
-   TABLET
-   ============================================================ */
+/* TABLET */
 
 @media (max-width: 999px) {
-
     .workflow-page .workflow-main {
         width: calc(100% - 40px);
     }
@@ -14767,13 +12647,9 @@ body.sof-modal-open {
     }
 }
 
-
-/* ============================================================
-   MOBILE
-   ============================================================ */
+/* MOBILE */
 
 @media (max-width: 620px) {
-
     .workflow-page .workflow-main {
         width: calc(100% - 30px);
 
@@ -14799,15 +12675,9 @@ body.sof-modal-open {
             20px;
     }
 }
-/* ============================================================
-   WORKFLOW — LARGE LAPTOP FINAL SCALE
-   HEADER NOT AFFECTED
-   ============================================================ */
+/* WORKFLOW — LARGE LAPTOP FINAL SCALE HEADER NOT AFFECTED */
 
-
-/* ============================================================
-   MAIN CONTENT
-   ============================================================ */
+/* MAIN CONTENT */
 
 .workflow-page .workflow-main {
     width: 94% !important;
@@ -14821,10 +12691,7 @@ body.sof-modal-open {
         45px !important;
 }
 
-
-/* ============================================================
-   BREADCRUMB
-   ============================================================ */
+/* BREADCRUMB */
 
 .workflow-page .workflow-breadcrumb {
     font-size: 15px !important;
@@ -14840,10 +12707,7 @@ body.sof-modal-open {
     border-radius: 20px !important;
 }
 
-
-/* ============================================================
-   INTRO
-   ============================================================ */
+/* INTRO */
 
 .workflow-page .workflow-intro {
     margin-top: 31px !important;
@@ -14877,10 +12741,7 @@ body.sof-modal-open {
     line-height: 1.28 !important;
 }
 
-
-/* ============================================================
-   WORKFLOW PANEL
-   ============================================================ */
+/* WORKFLOW PANEL */
 
 .workflow-page .workflow-tools-panel {
     width: 100% !important;
@@ -14897,10 +12758,7 @@ body.sof-modal-open {
     background: #F8F7F5 !important;
 }
 
-
-/* ============================================================
-   WORKFLOW HEADING
-   ============================================================ */
+/* WORKFLOW HEADING */
 
 .workflow-page .workflow-section-title {
     margin:
@@ -14939,10 +12797,7 @@ body.sof-modal-open {
     line-height: 1 !important;
 }
 
-
-/* ============================================================
-   GRID
-   ============================================================ */
+/* GRID */
 
 .workflow-page .workflow-grid {
     width: 100% !important;
@@ -14956,10 +12811,7 @@ body.sof-modal-open {
     row-gap: 20px !important;
 }
 
-
-/* ============================================================
-   CARDS
-   ============================================================ */
+/* CARDS */
 
 .workflow-page .workflow-card {
     position: relative !important;
@@ -14997,10 +12849,7 @@ body.sof-modal-open {
         rgba(0, 0, 0, .16) !important;
 }
 
-
-/* ============================================================
-   CARD ICONS
-   ============================================================ */
+/* CARD ICONS */
 
 .workflow-page .workflow-card-icon {
     width: 64px !important;
@@ -15023,10 +12872,7 @@ body.sof-modal-open {
     font-weight: 700 !important;
 }
 
-
-/* ============================================================
-   CARD CONTENT
-   ============================================================ */
+/* CARD CONTENT */
 
 .workflow-page .workflow-card-content {
     min-width: 0 !important;
@@ -15035,7 +12881,6 @@ body.sof-modal-open {
     flex-direction: column !important;
     justify-content: center !important;
 }
-
 
 /* CARD TITLE */
 
@@ -15049,7 +12894,6 @@ body.sof-modal-open {
 
     line-height: 1.04 !important;
 }
-
 
 /* CARD DESCRIPTION */
 
@@ -15067,10 +12911,7 @@ body.sof-modal-open {
     line-height: 1.2 !important;
 }
 
-
-/* ============================================================
-   ARROW
-   ============================================================ */
+/* ARROW */
 
 .workflow-page .workflow-card-arrow {
     position: absolute !important;
@@ -15086,10 +12927,7 @@ body.sof-modal-open {
     line-height: 1 !important;
 }
 
-
-/* ============================================================
-   HOVER
-   ============================================================ */
+/* HOVER */
 
 .workflow-page .workflow-card:hover {
     transform: translateY(-2px) !important;
@@ -15099,14 +12937,9 @@ body.sof-modal-open {
         rgba(0, 45, 85, .15) !important;
 }
 
-
-/* ============================================================
-   NORMAL LAPTOP
-   1280px - 1500px
-   ============================================================ */
+/* NORMAL LAPTOP 1280px - 1500px */
 
 @media (min-width: 1100px) and (max-width: 1500px) {
-
     .workflow-page .workflow-main {
         width: 95% !important;
     }
@@ -15159,13 +12992,9 @@ body.sof-modal-open {
     }
 }
 
-
-/* ============================================================
-   TABLET
-   ============================================================ */
+/* TABLET */
 
 @media (max-width: 1099px) {
-
     .workflow-page .workflow-main {
         width: calc(100% - 40px) !important;
     }
@@ -15174,16 +13003,11 @@ body.sof-modal-open {
         grid-template-columns:
             repeat(2, minmax(0, 1fr)) !important;
     }
-
 }
 
-
-/* ============================================================
-   MOBILE
-   ============================================================ */
+/* MOBILE */
 
 @media (max-width: 620px) {
-
     .workflow-page .workflow-main {
         width: calc(100% - 30px) !important;
     }
@@ -15200,11 +13024,8 @@ body.sof-modal-open {
         height: 120px !important;
         min-height: 120px !important;
     }
-
 }
-/* ============================================================
-   WORKFLOW — EXTRA LARGE LAPTOP OVERRIDE
-   ============================================================ */
+/* WORKFLOW — EXTRA LARGE LAPTOP OVERRIDE */
 
 /* BUONG CONTENT AREA */
 .workflow-page .workflow-main {
@@ -15215,7 +13036,6 @@ body.sof-modal-open {
 
     padding-top: 30px !important;
 }
-
 
 /* BREADCRUMB */
 .workflow-page .workflow-breadcrumb {
@@ -15229,10 +13049,7 @@ body.sof-modal-open {
     margin-top: 18px !important;
 }
 
-
-/* ============================================================
-   MAIN TITLE
-   ============================================================ */
+/* MAIN TITLE */
 
 .workflow-page .workflow-intro {
     margin-top: 34px !important;
@@ -15246,7 +13063,6 @@ body.sof-modal-open {
     letter-spacing: -1.2px !important;
 }
 
-
 /* DESCRIPTION */
 .workflow-page .workflow-intro p {
     max-width: 700px !important;
@@ -15257,10 +13073,7 @@ body.sof-modal-open {
     line-height: 1.3 !important;
 }
 
-
-/* ============================================================
-   WORKFLOW PANEL
-   ============================================================ */
+/* WORKFLOW PANEL */
 
 .workflow-page .workflow-tools-panel {
     margin-top: 36px !important;
@@ -15272,7 +13085,6 @@ body.sof-modal-open {
 
     border-radius: 16px !important;
 }
-
 
 /* WORKFLOW HEADING */
 .workflow-page .workflow-section-title {
@@ -15292,20 +13104,14 @@ body.sof-modal-open {
     font-size: 34px !important;
 }
 
-
-/* ============================================================
-   GRID
-   ============================================================ */
+/* GRID */
 
 .workflow-page .workflow-grid {
     column-gap: 22px !important;
     row-gap: 22px !important;
 }
 
-
-/* ============================================================
-   CARDS
-   ============================================================ */
+/* CARDS */
 
 .workflow-page .workflow-card {
     height: 160px !important;
@@ -15322,10 +13128,7 @@ body.sof-modal-open {
     border-radius: 15px !important;
 }
 
-
-/* ============================================================
-   ICONS
-   ============================================================ */
+/* ICONS */
 
 .workflow-page .workflow-card-icon {
     width: 72px !important;
@@ -15341,10 +13144,7 @@ body.sof-modal-open {
     font-size: 29px !important;
 }
 
-
-/* ============================================================
-   CARD TITLES
-   ============================================================ */
+/* CARD TITLES */
 
 .workflow-page .workflow-card-content h3 {
     font-size: 26px !important;
@@ -15353,10 +13153,7 @@ body.sof-modal-open {
     line-height: 1.02 !important;
 }
 
-
-/* ============================================================
-   CARD DESCRIPTION
-   ============================================================ */
+/* CARD DESCRIPTION */
 
 .workflow-page .workflow-card-content p {
     margin-top: 11px !important;
@@ -15366,10 +13163,7 @@ body.sof-modal-open {
     line-height: 1.22 !important;
 }
 
-
-/* ============================================================
-   ARROWS
-   ============================================================ */
+/* ARROWS */
 
 .workflow-page .workflow-card-arrow {
     right: 19px !important;
@@ -15378,13 +13172,9 @@ body.sof-modal-open {
     font-size: 34px !important;
 }
 
-
-/* ============================================================
-   LAPTOP — 1366px to 1600px
-   ============================================================ */
+/* LAPTOP — 1366px to 1600px */
 
 @media (min-width: 1100px) and (max-width: 1600px) {
-
     .workflow-page .workflow-main {
         width: 95% !important;
     }
@@ -15425,16 +13215,11 @@ body.sof-modal-open {
     .workflow-page .workflow-card-content p {
         font-size: 12px !important;
     }
-
 }
 
-
-/* ============================================================
-   TABLET
-   ============================================================ */
+/* TABLET */
 
 @media (max-width: 1099px) {
-
     .workflow-page .workflow-main {
         width: calc(100% - 40px) !important;
     }
@@ -15443,16 +13228,11 @@ body.sof-modal-open {
         grid-template-columns:
             repeat(2, minmax(0, 1fr)) !important;
     }
-
 }
 
-
-/* ============================================================
-   MOBILE
-   ============================================================ */
+/* MOBILE */
 
 @media (max-width: 620px) {
-
     .workflow-page .workflow-main {
         width: calc(100% - 30px) !important;
     }
@@ -15473,11 +13253,8 @@ body.sof-modal-open {
         height: 125px !important;
         min-height: 125px !important;
     }
-
 }
-/* ============================================================
-   WORKFLOW — FINAL LITTLE SIZE BOOST
-   ============================================================ */
+/* WORKFLOW — FINAL LITTLE SIZE BOOST */
 
 /* Slightly bigger overall content */
 .workflow-page .workflow-main {
@@ -15488,19 +13265,16 @@ body.sof-modal-open {
     padding-bottom: 22px !important;
 }
 
-
 /* MAIN TITLE — slight increase */
 .workflow-page .workflow-intro h1 {
     font-size: 57px !important;
 }
-
 
 /* Intro description */
 .workflow-page .workflow-intro p {
     font-size: 17px !important;
     line-height: 1.3 !important;
 }
-
 
 /* Give a little more vertical space before panel */
 .workflow-page .workflow-tools-panel {
@@ -15512,7 +13286,6 @@ body.sof-modal-open {
         31px !important;
 }
 
-
 /* Workflow title */
 .workflow-page .workflow-section-title {
     margin-bottom: 26px !important;
@@ -15521,7 +13294,6 @@ body.sof-modal-open {
 .workflow-page .workflow-section-title h2 {
     font-size: 36px !important;
 }
-
 
 /* Slightly larger cards */
 .workflow-page .workflow-card {
@@ -15536,7 +13308,6 @@ body.sof-modal-open {
 
     gap: 21px !important;
 }
-
 
 /* Slightly bigger circles */
 .workflow-page .workflow-card-icon {
@@ -15553,12 +13324,10 @@ body.sof-modal-open {
     font-size: 30px !important;
 }
 
-
 /* Card titles */
 .workflow-page .workflow-card-content h3 {
     font-size: 27px !important;
 }
-
 
 /* Card descriptions */
 .workflow-page .workflow-card-content p {
@@ -15566,7 +13335,6 @@ body.sof-modal-open {
 
     font-size: 14px !important;
 }
-
 
 /* Arrow */
 .workflow-page .workflow-card-arrow {
@@ -15576,16 +13344,12 @@ body.sof-modal-open {
     font-size: 35px !important;
 }
 
-
 /* Space between cards */
 .workflow-page .workflow-grid {
     column-gap: 23px !important;
     row-gap: 23px !important;
 }
-/* ============================================================
-   WORKFLOW — LOGIN REQUIRED MODAL
-   ============================================================ */
-
+/* WORKFLOW — LOGIN REQUIRED MODAL */
 
 /* Prevent background scrolling */
 
@@ -15593,17 +13357,13 @@ body.workflow-modal-open {
     overflow: hidden !important;
 }
 
-
 /* IMPORTANT — actually hide when [hidden] exists */
 
 .workflow-page .workflow-login-modal[hidden] {
     display: none !important;
 }
 
-
-/* ============================================================
-   MODAL WRAPPER
-   ============================================================ */
+/* MODAL WRAPPER */
 
 .workflow-page .workflow-login-modal {
     position: fixed !important;
@@ -15619,10 +13379,7 @@ body.workflow-modal-open {
     padding: 25px !important;
 }
 
-
-/* ============================================================
-   BACKDROP
-   ============================================================ */
+/* BACKDROP */
 
 .workflow-page .workflow-login-backdrop {
     position: absolute !important;
@@ -15636,10 +13393,7 @@ body.workflow-modal-open {
     -webkit-backdrop-filter: blur(2px);
 }
 
-
-/* ============================================================
-   POPUP CARD
-   ============================================================ */
+/* POPUP CARD */
 
 .workflow-page .workflow-login-dialog {
     position: relative !important;
@@ -15676,10 +13430,7 @@ body.workflow-modal-open {
         workflowLoginPopup .18s ease-out;
 }
 
-
-/* ============================================================
-   ICON
-   ============================================================ */
+/* ICON */
 
 .workflow-page .workflow-login-icon {
     width: 62px !important;
@@ -15706,10 +13457,7 @@ body.workflow-modal-open {
     font-weight: 700 !important;
 }
 
-
-/* ============================================================
-   TITLE
-   ============================================================ */
+/* TITLE */
 
 .workflow-page .workflow-login-dialog h2 {
     margin:
@@ -15726,10 +13474,7 @@ body.workflow-modal-open {
     line-height: 1.15 !important;
 }
 
-
-/* ============================================================
-   MESSAGE
-   ============================================================ */
+/* MESSAGE */
 
 .workflow-page .workflow-login-dialog > p {
     max-width: 390px !important;
@@ -15747,14 +13492,12 @@ body.workflow-modal-open {
     line-height: 1.55 !important;
 }
 
-
 .workflow-page .workflow-login-dialog > p strong {
     color:
         #004179 !important;
 
     font-weight: 800 !important;
 }
-
 
 /* Small secondary note */
 
@@ -15772,10 +13515,7 @@ body.workflow-modal-open {
         1.4 !important;
 }
 
-
-/* ============================================================
-   BUTTON AREA
-   ============================================================ */
+/* BUTTON AREA */
 
 .workflow-page .workflow-login-actions {
     width: 100% !important;
@@ -15791,10 +13531,7 @@ body.workflow-modal-open {
         11px !important;
 }
 
-
-/* ============================================================
-   NOT NOW
-   ============================================================ */
+/* NOT NOW */
 
 .workflow-page .workflow-login-cancel {
     min-width:
@@ -15835,7 +13572,6 @@ body.workflow-modal-open {
         transform .15s ease !important;
 }
 
-
 .workflow-page .workflow-login-cancel:hover {
     background:
         #F3F7FA !important;
@@ -15844,10 +13580,7 @@ body.workflow-modal-open {
         #004179 !important;
 }
 
-
-/* ============================================================
-   GO TO LOGIN
-   ============================================================ */
+/* GO TO LOGIN */
 
 .workflow-page .workflow-login-button {
     min-width:
@@ -15902,12 +13635,10 @@ body.workflow-modal-open {
         transform .15s ease !important;
 }
 
-
 .workflow-page .workflow-login-button:hover {
     background:
         #00345F !important;
 }
-
 
 .workflow-page .workflow-login-button span {
     color:
@@ -15920,10 +13651,7 @@ body.workflow-modal-open {
         1 !important;
 }
 
-
-/* ============================================================
-   BUTTON CLICK
-   ============================================================ */
+/* BUTTON CLICK */
 
 .workflow-page .workflow-login-cancel:active,
 .workflow-page .workflow-login-button:active {
@@ -15931,10 +13659,7 @@ body.workflow-modal-open {
         translateY(1px) !important;
 }
 
-
-/* ============================================================
-   KEYBOARD FOCUS
-   ============================================================ */
+/* KEYBOARD FOCUS */
 
 .workflow-page .workflow-login-cancel:focus-visible,
 .workflow-page .workflow-login-button:focus-visible {
@@ -15946,13 +13671,9 @@ body.workflow-modal-open {
         2px !important;
 }
 
-
-/* ============================================================
-   POPUP ANIMATION
-   ============================================================ */
+/* POPUP ANIMATION */
 
 @keyframes workflowLoginPopup {
-
     from {
         opacity: 0;
 
@@ -15968,16 +13689,11 @@ body.workflow-modal-open {
             translateY(0)
             scale(1);
     }
-
 }
 
-
-/* ============================================================
-   MOBILE
-   ============================================================ */
+/* MOBILE */
 
 @media (max-width: 520px) {
-
     .workflow-page .workflow-login-dialog {
         width:
             100% !important;
@@ -15988,34 +13704,26 @@ body.workflow-modal-open {
             23px !important;
     }
 
-
     .workflow-page .workflow-login-actions {
         flex-direction:
             column-reverse !important;
     }
-
 
     .workflow-page .workflow-login-cancel,
     .workflow-page .workflow-login-button {
         width:
             100% !important;
     }
-
 }
-/* ============================================================
-   PAGE TRANSITION
-   Workflow / Resources / About Us
-   ============================================================ */
+/* PAGE TRANSITION Workflow / Resources / About Us */
 
 .page-enter-animation {
     animation: eduPageEnter 0.48s cubic-bezier(.22, .61, .36, 1) both;
 }
 
-
 /* Smooth fade + slight upward movement */
 
 @keyframes eduPageEnter {
-
     from {
         opacity: 0;
         transform: translateY(16px);
@@ -16025,13 +13733,9 @@ body.workflow-modal-open {
         opacity: 1;
         transform: translateY(0);
     }
-
 }
 
-
-/* ============================================================
-   WORKFLOW CARDS — STAGGERED ENTRANCE
-   ============================================================ */
+/* WORKFLOW CARDS — STAGGERED ENTRANCE */
 
 .workflow-page .workflow-card {
     opacity: 0;
@@ -16042,7 +13746,6 @@ body.workflow-modal-open {
         cubic-bezier(.22, .61, .36, 1)
         forwards;
 }
-
 
 /* One-by-one appearance */
 
@@ -16078,9 +13781,7 @@ body.workflow-modal-open {
     animation-delay: 0.36s;
 }
 
-
 @keyframes eduCardEnter {
-
     from {
         opacity: 0;
         transform: translateY(12px) scale(.985);
@@ -16090,13 +13791,9 @@ body.workflow-modal-open {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
-
 }
 
-
-/* ============================================================
-   CARD HOVER
-   ============================================================ */
+/* CARD HOVER */
 
 .workflow-page .workflow-card:hover {
     transform: translateY(-4px) !important;
@@ -16109,7 +13806,6 @@ body.workflow-modal-open {
         rgba(0, 65, 121, 0.20) !important;
 }
 
-
 /* Icon reacts slightly on hover */
 
 .workflow-page .workflow-card:hover .workflow-card-icon {
@@ -16120,7 +13816,6 @@ body.workflow-modal-open {
     transition:
         transform .20s ease !important;
 }
-
 
 /* Arrow moves slightly */
 
@@ -16134,14 +13829,9 @@ body.workflow-modal-open {
     transform: translateX(4px);
 }
 
-
-/* ============================================================
-   ACCESSIBILITY
-   Disable motion when user requests reduced motion
-   ============================================================ */
+/* ACCESSIBILITY Disable motion when user requests reduced motion */
 
 @media (prefers-reduced-motion: reduce) {
-
     .page-enter-animation,
     .workflow-page .workflow-card {
         animation: none !important;
@@ -16154,11 +13844,8 @@ body.workflow-modal-open {
     .workflow-page .workflow-card-arrow {
         transition: none !important;
     }
-
 }
-/* ============================================================
-   SO FACULTY — COURSE OUTCOMES
-   ============================================================ */
+/* SO FACULTY — COURSE OUTCOMES */
 
 .so-faculty-page .sof-co-empty-state {
     width: 100%;
@@ -16261,10 +13948,7 @@ body.workflow-modal-open {
         rgba(0, 65, 121, .16);
 }
 
-
-/* ============================================================
-   FILLED STATE
-   ============================================================ */
+/* FILLED STATE */
 
 .so-faculty-page .sof-co-content {
     width: 100%;
@@ -16274,7 +13958,6 @@ body.workflow-modal-open {
 .so-faculty-page .sof-co-empty-state[hidden] {
     display: none !important;
 }
-
 
 /* HEADER */
 
@@ -16298,7 +13981,6 @@ body.workflow-modal-open {
     font-size: 12px;
     font-weight: 400;
 }
-
 
 /* ADD BUTTON */
 
@@ -16339,10 +14021,7 @@ body.workflow-modal-open {
     color: inherit;
 }
 
-
-/* ============================================================
-   TABLE
-   ============================================================ */
+/* TABLE */
 
 .so-faculty-page .sof-co-table-wrap {
     width: 100%;
@@ -16394,14 +14073,12 @@ body.workflow-modal-open {
     vertical-align: middle;
 }
 
-
 /* CO NUMBER */
 
 .so-faculty-page .sof-co-table th:first-child,
 .so-faculty-page .sof-co-table td:first-child {
     width: 90px;
 }
-
 
 /* ACTIONS */
 
@@ -16411,7 +14088,6 @@ body.workflow-modal-open {
 
     text-align: center;
 }
-
 
 /* SO TAG */
 
@@ -16437,9 +14113,7 @@ body.workflow-modal-open {
 
     line-height: 1;
 }
-/* ============================================================
-   FACULTY — COURSE OUTCOMES EMPTY STATE
-   ============================================================ */
+/* FACULTY — COURSE OUTCOMES EMPTY STATE */
 
 .so-faculty-page .sof-co-empty-state {
     width: 100%;
@@ -16456,7 +14130,6 @@ body.workflow-modal-open {
 
     background: #FFFFFF;
 }
-
 
 /* CO ICON */
 
@@ -16480,7 +14153,6 @@ body.workflow-modal-open {
     font-weight: 800;
 }
 
-
 /* TITLE */
 
 .so-faculty-page .sof-co-empty-state h3 {
@@ -16493,7 +14165,6 @@ body.workflow-modal-open {
 
     line-height: 1.2;
 }
-
 
 /* DESCRIPTION */
 
@@ -16511,10 +14182,7 @@ body.workflow-modal-open {
     line-height: 1.5;
 }
 
-
-/* ============================================================
-   UPLOAD SYLLABUS BUTTON
-   ============================================================ */
+/* UPLOAD SYLLABUS BUTTON */
 
 .so-faculty-page .sof-co-upload-btn {
     min-height: 38px;
@@ -16545,7 +14213,6 @@ body.workflow-modal-open {
         box-shadow .18s ease;
 }
 
-
 .so-faculty-page .sof-co-upload-btn img {
     width: 17px;
     height: 17px;
@@ -16554,7 +14221,6 @@ body.workflow-modal-open {
 
     object-fit: contain;
 }
-
 
 .so-faculty-page .sof-co-upload-btn:hover {
     background: #00345F;
@@ -16566,15 +14232,11 @@ body.workflow-modal-open {
         rgba(0, 65, 121, .16);
 }
 
-
-/* ============================================================
-   COURSE OUTCOMES CONTENT
-   ============================================================ */
+/* COURSE OUTCOMES CONTENT */
 
 .so-faculty-page .sof-co-content {
     width: 100%;
 }
-
 
 /* VERY IMPORTANT */
 
@@ -16583,10 +14245,7 @@ body.workflow-modal-open {
     display: none !important;
 }
 
-
-/* ============================================================
-   CO TOOLBAR
-   ============================================================ */
+/* CO TOOLBAR */
 
 .so-faculty-page .sof-co-toolbar {
     width: 100%;
@@ -16600,7 +14259,6 @@ body.workflow-modal-open {
     gap: 20px;
 }
 
-
 .so-faculty-page .sof-co-toolbar p {
     margin: 0;
 
@@ -16609,7 +14267,6 @@ body.workflow-modal-open {
     font-size: 12px;
     font-weight: 400;
 }
-
 
 /* ADD COURSE OUTCOMES */
 
@@ -16636,22 +14293,17 @@ body.workflow-modal-open {
     cursor: pointer;
 }
 
-
 .so-faculty-page .sof-add-co-btn:hover {
     background: #00345F;
 }
 
-
-/* ============================================================
-   TABLE
-   ============================================================ */
+/* TABLE */
 
 .so-faculty-page .sof-co-table-wrapper {
     width: 100%;
 
     overflow-x: auto;
 }
-
 
 .so-faculty-page .sof-co-table {
     width: 100%;
@@ -16661,11 +14313,9 @@ body.workflow-modal-open {
     color: #004179;
 }
 
-
 .so-faculty-page .sof-co-table thead {
     background: #FFF0AE;
 }
-
 
 .so-faculty-page .sof-co-table th {
     padding: 9px 12px;
@@ -16677,7 +14327,6 @@ body.workflow-modal-open {
 
     text-align: left;
 }
-
 
 .so-faculty-page .sof-co-table td {
     padding: 10px 12px;
@@ -16692,12 +14341,10 @@ body.workflow-modal-open {
     vertical-align: middle;
 }
 
-
 .so-faculty-page .sof-co-table th:first-child,
 .so-faculty-page .sof-co-table td:first-child {
     width: 90px;
 }
-
 
 .so-faculty-page .sof-co-table th:last-child,
 .so-faculty-page .sof-co-table td:last-child {
@@ -16705,18 +14352,13 @@ body.workflow-modal-open {
 
     text-align: center;
 }
-/* ============================================================
-   FACULTY — STUDENT OUTCOMES
-   ============================================================ */
+/* FACULTY — STUDENT OUTCOMES */
 
 .so-faculty-page #student-outcomes {
     width: 100%;
 }
 
-
-/* ============================================================
-   TOOLBAR
-   ============================================================ */
+/* TOOLBAR */
 
 .so-faculty-page .sof-so-toolbar {
     width: 100%;
@@ -16736,7 +14378,6 @@ body.workflow-modal-open {
     background: #FFFFFF;
 }
 
-
 .so-faculty-page .sof-so-toolbar p {
     margin: 0;
 
@@ -16748,10 +14389,7 @@ body.workflow-modal-open {
     line-height: 1.3;
 }
 
-
-/* ============================================================
-   ADD STUDENT OUTCOMES BUTTON
-   ============================================================ */
+/* ADD STUDENT OUTCOMES BUTTON */
 
 .so-faculty-page .sof-add-so-btn {
     min-width: 190px;
@@ -16789,7 +14427,6 @@ body.workflow-modal-open {
         box-shadow .18s ease;
 }
 
-
 .so-faculty-page .sof-add-so-btn:hover {
     background: #00345F;
 
@@ -16799,7 +14436,6 @@ body.workflow-modal-open {
         0 4px 10px
         rgba(0, 65, 121, .15);
 }
-
 
 .so-faculty-page .sof-add-so-plus {
     display: inline-flex;
@@ -16814,10 +14450,7 @@ body.workflow-modal-open {
     line-height: 1;
 }
 
-
-/* ============================================================
-   TABLE WRAPPER
-   ============================================================ */
+/* TABLE WRAPPER */
 
 .so-faculty-page .sof-so-table-wrap {
     width: 100%;
@@ -16829,10 +14462,7 @@ body.workflow-modal-open {
     background: #FFFFFF;
 }
 
-
-/* ============================================================
-   TABLE
-   ============================================================ */
+/* TABLE */
 
 .so-faculty-page .sof-so-table {
     width: 100%;
@@ -16845,15 +14475,11 @@ body.workflow-modal-open {
     color: #004179;
 }
 
-
-/* ============================================================
-   TABLE HEADER
-   ============================================================ */
+/* TABLE HEADER */
 
 .so-faculty-page .sof-so-table thead {
     background: #FFF0AE;
 }
-
 
 .so-faculty-page .sof-so-table th {
     height: 34px;
@@ -16870,7 +14496,6 @@ body.workflow-modal-open {
     text-align: left;
     vertical-align: middle;
 }
-
 
 /* COLUMN WIDTHS */
 
@@ -16897,11 +14522,7 @@ body.workflow-modal-open {
     text-align: center;
 }
 
-
-/* ============================================================
-   TABLE BODY
-   FOR FUTURE BACKEND DATA
-   ============================================================ */
+/* TABLE BODY FOR FUTURE BACKEND DATA */
 
 .so-faculty-page .sof-so-table td {
     height: 43px;
@@ -16920,30 +14541,22 @@ body.workflow-modal-open {
     vertical-align: middle;
 }
 
-
 .so-faculty-page .sof-so-table td:nth-child(3),
 .so-faculty-page .sof-so-table td:nth-child(4),
 .so-faculty-page .sof-so-table td:nth-child(5) {
     text-align: center;
 }
 
-
-/* ============================================================
-   EMPTY TBODY
-   Keep it completely blank for now
-   ============================================================ */
+/* EMPTY TBODY Keep it completely blank for now */
 
 .so-faculty-page
 .sof-so-table
 tbody:empty {
     display: table-row-group;
 }
-/* ============================================================
-   STUDENT OUTCOMES — FINAL SIZE FIX
-   ============================================================ */
+/* STUDENT OUTCOMES — FINAL SIZE FIX */
 
-/* Add, edit, delete student outcomes
-   SAME SIZE AS COURSE OUTCOME TEXT */
+/* Add, edit, delete student outcomes SAME SIZE AS COURSE OUTCOME TEXT */
 .so-faculty-page .sof-so-toolbar > p {
     margin: 0 !important;
 
@@ -16955,11 +14568,7 @@ tbody:empty {
     line-height: 1.35 !important;
 }
 
-
-/* ============================================================
-   ADD / UPLOAD STUDENT OUTCOME BUTTON
-   SAME SIZE AS COURSE OUTCOME BUTTON
-   ============================================================ */
+/* ADD / UPLOAD STUDENT OUTCOME BUTTON SAME SIZE AS COURSE OUTCOME BUTTON */
 
 .so-faculty-page .sof-add-so-btn {
     min-width: 205px !important;
@@ -16991,7 +14600,6 @@ tbody:empty {
     cursor: pointer !important;
 }
 
-
 /* PLUS ICON */
 
 .so-faculty-page .sof-add-so-plus {
@@ -17000,11 +14608,7 @@ tbody:empty {
     line-height: 1 !important;
 }
 
-
-/* ============================================================
-   STUDENT OUTCOME TABLE HEADER
-   Student Outcome / Due Date / Responses / Status / Actions
-   ============================================================ */
+/* STUDENT OUTCOME TABLE HEADER Student Outcome / Due Date / Responses / Status / Actions */
 
 .so-faculty-page .sof-so-table th {
     height: 42px !important;
@@ -17021,10 +14625,7 @@ tbody:empty {
     vertical-align: middle !important;
 }
 
-
-/* ============================================================
-   STUDENT OUTCOME TABLE CONTENT
-   ============================================================ */
+/* STUDENT OUTCOME TABLE CONTENT */
 
 .so-faculty-page .sof-so-table td {
     height: 50px !important;
@@ -17041,10 +14642,7 @@ tbody:empty {
     vertical-align: middle !important;
 }
 
-
-/* ============================================================
-   FUTURE EDIT BUTTON
-   ============================================================ */
+/* FUTURE EDIT BUTTON */
 
 .so-faculty-page .sof-so-edit-btn {
     min-width: 74px !important;
@@ -17071,10 +14669,7 @@ tbody:empty {
     cursor: pointer !important;
 }
 
-
-/* ============================================================
-   FUTURE DELETE BUTTON
-   ============================================================ */
+/* FUTURE DELETE BUTTON */
 
 .so-faculty-page .sof-so-delete-btn {
     min-width: 82px !important;
@@ -17101,10 +14696,7 @@ tbody:empty {
     cursor: pointer !important;
 }
 
-
-/* ============================================================
-   STATUS PILLS — FOR FUTURE DATA
-   ============================================================ */
+/* STATUS PILLS — FOR FUTURE DATA */
 
 .so-faculty-page .sof-so-status {
     min-width: 82px !important;
@@ -17122,10 +14714,7 @@ tbody:empty {
     font-weight: 600 !important;
 }
 
-
-/* ============================================================
-   COLUMN ALIGNMENT
-   ============================================================ */
+/* COLUMN ALIGNMENT */
 
 .so-faculty-page .sof-so-table th:nth-child(1),
 .so-faculty-page .sof-so-table td:nth-child(1) {
@@ -17156,18 +14745,9 @@ tbody:empty {
     width: 17% !important;
     text-align: center !important;
 }
-/* ============================================================
-   FACULTY — UNIFIED TEXT + BUTTON SIZES
-   ============================================================ */
+/* FACULTY — UNIFIED TEXT + BUTTON SIZES */
 
-
-/* ============================================================
-   1. DESCRIPTION / DEFINITION TEXT
-   SAME SIZE:
-   - Upload, view, update the course syllabus.
-   - Add, edit, delete course outcomes.
-   - Add, edit, delete student outcomes.
-   ============================================================ */
+/* 1. DESCRIPTION / DEFINITION TEXT SAME SIZE: Upload, view, update the course syllabus. Add, edit, delete course outcomes. Add, edit, delete student outcomes. */
 
 .so-faculty-page
 #syllabus
@@ -17180,7 +14760,6 @@ tbody:empty {
 .so-faculty-page
 #student-outcomes
 .sof-so-toolbar > p {
-
     margin: 0 !important;
 
     color: #004179 !important;
@@ -17193,15 +14772,7 @@ tbody:empty {
     line-height: 1.35 !important;
 }
 
-
-/* ============================================================
-   2. ALL BLUE ACTION BUTTONS
-   SAME HEIGHT / FONT SIZE
-
-   - New File
-   - Upload Course Outcome
-   - Add Student Outcomes
-   ============================================================ */
+/* 2. ALL BLUE ACTION BUTTONS SAME HEIGHT / FONT SIZE New File Upload Course Outcome Add Student Outcomes */
 
 .so-faculty-page
 #syllabus
@@ -17214,7 +14785,6 @@ tbody:empty {
 .so-faculty-page
 #student-outcomes
 .sof-add-so-btn {
-
     height: 38px !important;
     min-height: 38px !important;
 
@@ -17246,11 +14816,7 @@ tbody:empty {
     box-sizing: border-box !important;
 }
 
-
-/* ============================================================
-   3. BUTTON TEXT
-   SAME SIZE FOR ALL THREE
-   ============================================================ */
+/* 3. BUTTON TEXT SAME SIZE FOR ALL THREE */
 
 .so-faculty-page
 #syllabus
@@ -17263,7 +14829,6 @@ tbody:empty {
 .so-faculty-page
 #student-outcomes
 .sof-add-so-btn > span {
-
     color: #FFFFFF !important;
 
     font-size: 12px !important;
@@ -17272,11 +14837,7 @@ tbody:empty {
     line-height: 1 !important;
 }
 
-
-/* ============================================================
-   4. UPLOAD ICONS
-   SAME SIZE FOR ALL THREE BUTTONS
-   ============================================================ */
+/* 4. UPLOAD ICONS SAME SIZE FOR ALL THREE BUTTONS */
 
 .so-faculty-page
 #syllabus
@@ -17292,7 +14853,6 @@ tbody:empty {
 #student-outcomes
 .sof-add-so-btn
 .sof-add-so-upload-icon {
-
     width: 18px !important;
     height: 18px !important;
 
@@ -17306,23 +14866,14 @@ tbody:empty {
     object-position: center !important;
 }
 
-
-/* ============================================================
-   5. STUDENT OUTCOME BUTTON
-   REMOVE OLD PLUS ICON
-   ============================================================ */
+/* 5. STUDENT OUTCOME BUTTON REMOVE OLD PLUS ICON */
 
 .so-faculty-page
 .sof-add-so-plus {
-
     display: none !important;
 }
 
-
-/* ============================================================
-   6. KEEP BUTTON WIDTH BASED ON TEXT
-   HINDI PARE-PAREHO ANG WIDTH
-   ============================================================ */
+/* 6. KEEP BUTTON WIDTH BASED ON TEXT HINDI PARE-PAREHO ANG WIDTH */
 
 .so-faculty-page
 #syllabus
@@ -17335,17 +14886,13 @@ tbody:empty {
 .so-faculty-page
 #student-outcomes
 .sof-add-so-btn {
-
     width: auto !important;
     min-width: 0 !important;
 
     flex: 0 0 auto !important;
 }
 
-
-/* ============================================================
-   7. HOVER — SAME FOR ALL
-   ============================================================ */
+/* 7. HOVER — SAME FOR ALL */
 
 .so-faculty-page
 #syllabus
@@ -17358,7 +14905,6 @@ tbody:empty {
 .so-faculty-page
 #student-outcomes
 .sof-add-so-btn:hover {
-
     background: #00345F !important;
 
     transform: translateY(-1px);
@@ -17367,18 +14913,9 @@ tbody:empty {
         0 4px 10px
         rgba(0, 65, 121, 0.15) !important;
 }
-/* ============================================================
-   FACULTY — UNIFIED TEXT + BUTTON SIZES
-   ============================================================ */
+/* FACULTY — UNIFIED TEXT + BUTTON SIZES */
 
-
-/* ============================================================
-   1. DESCRIPTION / DEFINITION TEXT
-   SAME SIZE:
-   - Upload, view, update the course syllabus.
-   - Add, edit, delete course outcomes.
-   - Add, edit, delete student outcomes.
-   ============================================================ */
+/* 1. DESCRIPTION / DEFINITION TEXT SAME SIZE: Upload, view, update the course syllabus. Add, edit, delete course outcomes. Add, edit, delete student outcomes. */
 
 .so-faculty-page
 #syllabus
@@ -17391,7 +14928,6 @@ tbody:empty {
 .so-faculty-page
 #student-outcomes
 .sof-so-toolbar > p {
-
     margin: 0 !important;
 
     color: #004179 !important;
@@ -17404,15 +14940,7 @@ tbody:empty {
     line-height: 1.35 !important;
 }
 
-
-/* ============================================================
-   2. ALL BLUE ACTION BUTTONS
-   SAME HEIGHT / FONT SIZE
-
-   - New File
-   - Upload Course Outcome
-   - Add Student Outcomes
-   ============================================================ */
+/* 2. ALL BLUE ACTION BUTTONS SAME HEIGHT / FONT SIZE New File Upload Course Outcome Add Student Outcomes */
 
 .so-faculty-page
 #syllabus
@@ -17425,7 +14953,6 @@ tbody:empty {
 .so-faculty-page
 #student-outcomes
 .sof-add-so-btn {
-
     height: 38px !important;
     min-height: 38px !important;
 
@@ -17457,11 +14984,7 @@ tbody:empty {
     box-sizing: border-box !important;
 }
 
-
-/* ============================================================
-   3. BUTTON TEXT
-   SAME SIZE FOR ALL THREE
-   ============================================================ */
+/* 3. BUTTON TEXT SAME SIZE FOR ALL THREE */
 
 .so-faculty-page
 #syllabus
@@ -17474,7 +14997,6 @@ tbody:empty {
 .so-faculty-page
 #student-outcomes
 .sof-add-so-btn > span {
-
     color: #FFFFFF !important;
 
     font-size: 12px !important;
@@ -17483,11 +15005,7 @@ tbody:empty {
     line-height: 1 !important;
 }
 
-
-/* ============================================================
-   4. UPLOAD ICONS
-   SAME SIZE FOR ALL THREE BUTTONS
-   ============================================================ */
+/* 4. UPLOAD ICONS SAME SIZE FOR ALL THREE BUTTONS */
 
 .so-faculty-page
 #syllabus
@@ -17503,7 +15021,6 @@ tbody:empty {
 #student-outcomes
 .sof-add-so-btn
 .sof-add-so-upload-icon {
-
     width: 18px !important;
     height: 18px !important;
 
@@ -17517,23 +15034,14 @@ tbody:empty {
     object-position: center !important;
 }
 
-
-/* ============================================================
-   5. STUDENT OUTCOME BUTTON
-   REMOVE OLD PLUS ICON
-   ============================================================ */
+/* 5. STUDENT OUTCOME BUTTON REMOVE OLD PLUS ICON */
 
 .so-faculty-page
 .sof-add-so-plus {
-
     display: none !important;
 }
 
-
-/* ============================================================
-   6. KEEP BUTTON WIDTH BASED ON TEXT
-   HINDI PARE-PAREHO ANG WIDTH
-   ============================================================ */
+/* 6. KEEP BUTTON WIDTH BASED ON TEXT HINDI PARE-PAREHO ANG WIDTH */
 
 .so-faculty-page
 #syllabus
@@ -17546,17 +15054,13 @@ tbody:empty {
 .so-faculty-page
 #student-outcomes
 .sof-add-so-btn {
-
     width: auto !important;
     min-width: 0 !important;
 
     flex: 0 0 auto !important;
 }
 
-
-/* ============================================================
-   7. HOVER — SAME FOR ALL
-   ============================================================ */
+/* 7. HOVER — SAME FOR ALL */
 
 .so-faculty-page
 #syllabus
@@ -17569,7 +15073,6 @@ tbody:empty {
 .so-faculty-page
 #student-outcomes
 .sof-add-so-btn:hover {
-
     background: #00345F !important;
 
     transform: translateY(-1px);
@@ -17578,9 +15081,7 @@ tbody:empty {
         0 4px 10px
         rgba(0, 65, 121, 0.15) !important;
 }
-/* ============================================================
-   STUDENT OUTCOMES — MOVE DOWN 0.5PX ONLY
-   ============================================================ */
+/* STUDENT OUTCOMES — MOVE DOWN 0.5PX ONLY */
 
 /* Description text */
 .so-faculty-page
@@ -17589,14 +15090,12 @@ tbody:empty {
     transform: translateY(0.5px) !important;
 }
 
-
 /* Add Student Outcomes button */
 .so-faculty-page
 #student-outcomes
 .sof-add-so-btn {
     transform: translateY(0.5px) !important;
 }
-
 
 /* Yellow line */
 .so-faculty-page
@@ -17605,7 +15104,6 @@ tbody:empty {
     border-bottom: none !important;
     position: relative !important;
 }
-
 
 /* Recreate line and move it 0.5px lower */
 .so-faculty-page
@@ -17648,9 +15146,6 @@ tbody:empty {
 
     pointer-events: none !important;
 }
-/* ============================================================
-   STUDENT OUTCOMES — MATCH CO YELLOW LINE EXACTLY
-   ============================================================ */
 
 /* Same exact toolbar dimensions as Course Outcomes */
 .so-faculty-page #student-outcomes .sof-so-toolbar {
@@ -17675,13 +15170,11 @@ tbody:empty {
     background: #FFFFFF !important;
 }
 
-
 /* REMOVE THE CUSTOM LINE WE ADDED BEFORE */
 .so-faculty-page #student-outcomes .sof-so-toolbar::after {
     content: none !important;
     display: none !important;
 }
-
 
 /* Keep description centered correctly */
 .so-faculty-page #student-outcomes .sof-so-toolbar > p {
@@ -17693,7 +15186,6 @@ tbody:empty {
     transform: none !important;
 }
 
-
 /* Keep Add Student Outcomes button centered */
 .so-faculty-page #student-outcomes .sof-add-so-btn {
     margin: 0 !important;
@@ -17702,14 +15194,11 @@ tbody:empty {
 
     transform: none !important;
 }
-/* ============================================================
-   OUTCOME FORM
-   ============================================================ */
+/* OUTCOME FORM */
 
 .so-faculty-page .sof-outcome-form-dialog {
     width: min(500px, calc(100% - 32px)) !important;
 }
-
 
 .so-faculty-page .sof-outcome-form-group {
     width: 100% !important;
@@ -17718,7 +15207,6 @@ tbody:empty {
 
     text-align: left !important;
 }
-
 
 .so-faculty-page .sof-outcome-form-group label {
     display: block !important;
@@ -17730,7 +15218,6 @@ tbody:empty {
     font-size: 13px !important;
     font-weight: 700 !important;
 }
-
 
 .so-faculty-page .sof-outcome-form-group input,
 .so-faculty-page .sof-outcome-form-group textarea {
@@ -17757,15 +15244,12 @@ tbody:empty {
     resize: vertical !important;
 }
 
-
 .so-faculty-page .sof-outcome-form-group input:focus,
 .so-faculty-page .sof-outcome-form-group textarea:focus {
     border-color: #004179 !important;
 }
 
-/* ============================================================
-   FACULTY OUTCOME MODALS — FINAL CLICK + PICKER FIX
-   ============================================================ */
+/* FACULTY OUTCOME MODALS — FINAL CLICK + PICKER FIX */
 .so-faculty-page .sof-outcome-modal { position: fixed !important; inset: 0 !important; z-index: 10000 !important; pointer-events: auto !important; }
 .so-faculty-page .sof-outcome-modal-backdrop { position: absolute !important; inset: 0 !important; z-index: 0 !important; pointer-events: auto !important; }
 .so-faculty-page .sof-outcome-dialog { position: relative !important; z-index: 2 !important; pointer-events: auto !important; }
@@ -17783,15 +15267,9 @@ tbody:empty {
 .so-faculty-page .sof-file-upload-title { font-size: 14px; font-weight: 800; }
 .so-faculty-page .sof-file-upload-name { max-width: 100%; font-size: 12px; font-weight: 500; color: #60788C; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* ============================================================
-   FACULTY — COURSE OUTCOMES + STUDENT OUTCOMES
-   FINAL UI FIX
-   ============================================================ */
+/* FACULTY — COURSE OUTCOMES + STUDENT OUTCOMES FINAL UI FIX */
 
-
-/* ============================================================
-   OUTCOME PANEL
-   ============================================================ */
+/* OUTCOME PANEL */
 
 .so-faculty-page #course-outcomes,
 .so-faculty-page #student-outcomes {
@@ -17806,10 +15284,7 @@ tbody:empty {
     box-sizing: border-box !important;
 }
 
-
-/* ============================================================
-   TOP TOOLBAR
-   ============================================================ */
+/* TOP TOOLBAR */
 
 .so-faculty-page .sof-outcome-toolbar {
     width: 100% !important;
@@ -17830,7 +15305,6 @@ tbody:empty {
     box-sizing: border-box !important;
 }
 
-
 /* Toolbar description */
 
 .so-faculty-page .sof-outcome-toolbar > p {
@@ -17844,10 +15318,7 @@ tbody:empty {
     line-height: 1.4 !important;
 }
 
-
-/* ============================================================
-   ADD / UPLOAD BUTTON
-   ============================================================ */
+/* ADD / UPLOAD BUTTON */
 
 .so-faculty-page .sof-add-outcome-btn {
     width: auto !important;
@@ -17889,16 +15360,13 @@ tbody:empty {
         transform 0.15s ease !important;
 }
 
-
 .so-faculty-page .sof-add-outcome-btn:hover {
     background: #00345F !important;
 }
 
-
 .so-faculty-page .sof-add-outcome-btn:active {
     transform: translateY(1px) !important;
 }
-
 
 /* + icon */
 
@@ -17920,11 +15388,7 @@ tbody:empty {
     line-height: 1 !important;
 }
 
-
-/* ============================================================
-   STUDENT OUTCOME UPLOAD ICON
-   IMPORTANT: FIXES THE GIANT ICON
-   ============================================================ */
+/* STUDENT OUTCOME UPLOAD ICON IMPORTANT: FIXES THE GIANT ICON */
 
 .so-faculty-page .sof-add-outcome-upload-icon {
     width: 15px !important;
@@ -17946,10 +15410,7 @@ tbody:empty {
     flex: 0 0 15px !important;
 }
 
-
-/* ============================================================
-   TABLE WRAPPER
-   ============================================================ */
+/* TABLE WRAPPER */
 
 .so-faculty-page .sof-outcome-table-wrap {
     width: 100% !important;
@@ -17964,10 +15425,7 @@ tbody:empty {
     box-sizing: border-box !important;
 }
 
-
-/* ============================================================
-   TABLE
-   ============================================================ */
+/* TABLE */
 
 .so-faculty-page .sof-outcome-table {
     width: 100% !important;
@@ -17988,22 +15446,17 @@ tbody:empty {
     box-sizing: border-box !important;
 }
 
-
-/* ============================================================
-   TABLE HEADER
-   ============================================================ */
+/* TABLE HEADER */
 
 .so-faculty-page .sof-outcome-table thead {
     background: #FFF0AE !important;
 }
-
 
 .so-faculty-page .sof-outcome-table thead tr {
     height: 43px !important;
 
     background: #FFF0AE !important;
 }
-
 
 .so-faculty-page .sof-outcome-table th {
     height: 43px !important;
@@ -18029,15 +15482,11 @@ tbody:empty {
     box-sizing: border-box !important;
 }
 
-
-/* ============================================================
-   TABLE BODY
-   ============================================================ */
+/* TABLE BODY */
 
 .so-faculty-page .sof-outcome-table tbody {
     background: #FFFFFF !important;
 }
-
 
 .so-faculty-page .sof-outcome-table tbody tr {
     min-height: 54px !important;
@@ -18047,11 +15496,9 @@ tbody:empty {
     transition: background 0.15s ease !important;
 }
 
-
 .so-faculty-page .sof-outcome-table tbody tr:hover {
     background: #F8FBFD !important;
 }
-
 
 .so-faculty-page .sof-outcome-table td {
     padding: 12px 14px !important;
@@ -18075,10 +15522,7 @@ tbody:empty {
     box-sizing: border-box !important;
 }
 
-
-/* ============================================================
-   COURSE OUTCOME COLUMN WIDTHS
-   ============================================================ */
+/* COURSE OUTCOME COLUMN WIDTHS */
 
 .so-faculty-page #course-outcomes
 .sof-outcome-table th:nth-child(1),
@@ -18087,14 +15531,12 @@ tbody:empty {
     width: 12% !important;
 }
 
-
 .so-faculty-page #course-outcomes
 .sof-outcome-table th:nth-child(2),
 .so-faculty-page #course-outcomes
 .sof-outcome-table td:nth-child(2) {
     width: 48% !important;
 }
-
 
 .so-faculty-page #course-outcomes
 .sof-outcome-table th:nth-child(3),
@@ -18103,7 +15545,6 @@ tbody:empty {
     width: 22% !important;
 }
 
-
 .so-faculty-page #course-outcomes
 .sof-outcome-table th:nth-child(4),
 .so-faculty-page #course-outcomes
@@ -18111,10 +15552,7 @@ tbody:empty {
     width: 18% !important;
 }
 
-
-/* ============================================================
-   STUDENT OUTCOME COLUMN WIDTHS
-   ============================================================ */
+/* STUDENT OUTCOME COLUMN WIDTHS */
 
 .so-faculty-page #student-outcomes
 .sof-outcome-table th:nth-child(1),
@@ -18123,14 +15561,12 @@ tbody:empty {
     width: 34% !important;
 }
 
-
 .so-faculty-page #student-outcomes
 .sof-outcome-table th:nth-child(2),
 .so-faculty-page #student-outcomes
 .sof-outcome-table td:nth-child(2) {
     width: 18% !important;
 }
-
 
 .so-faculty-page #student-outcomes
 .sof-outcome-table th:nth-child(3),
@@ -18139,14 +15575,12 @@ tbody:empty {
     width: 16% !important;
 }
 
-
 .so-faculty-page #student-outcomes
 .sof-outcome-table th:nth-child(4),
 .so-faculty-page #student-outcomes
 .sof-outcome-table td:nth-child(4) {
     width: 15% !important;
 }
-
 
 .so-faculty-page #student-outcomes
 .sof-outcome-table th:nth-child(5),
@@ -18155,10 +15589,7 @@ tbody:empty {
     width: 17% !important;
 }
 
-
-/* ============================================================
-   EMPTY TABLE
-   ============================================================ */
+/* EMPTY TABLE */
 
 .so-faculty-page .sof-outcome-table tbody:empty::after {
     content: "No records yet";
@@ -18178,11 +15609,7 @@ tbody:empty {
     background: #FFFFFF;
 }
 
-
-/* ============================================================
-   ACTION BUTTONS INSIDE TABLE
-   Works with dynamically-created edit/delete buttons
-   ============================================================ */
+/* ACTION BUTTONS INSIDE TABLE Works with dynamically-created edit/delete buttons */
 
 .so-faculty-page .sof-outcome-table td button {
     min-height: 30px !important;
@@ -18206,11 +15633,9 @@ tbody:empty {
     box-shadow: none !important;
 }
 
-
 .so-faculty-page .sof-outcome-table td button:hover {
     background: #EEF5FA !important;
 }
-
 
 /* Delete button if class/name contains delete */
 
@@ -18220,17 +15645,13 @@ tbody:empty {
     color: #C62828 !important;
 }
 
-
 .so-faculty-page
 .sof-outcome-table
 td button[class*="delete"]:hover {
     background: #FDECEC !important;
 }
 
-
-/* ============================================================
-   STATUS PILLS
-   ============================================================ */
+/* STATUS PILLS */
 
 .so-faculty-page .sof-status-pill {
     min-width: 67px !important;
@@ -18248,56 +15669,43 @@ td button[class*="delete"]:hover {
     line-height: 1 !important;
 }
 
-
 .so-faculty-page .sof-status-draft {
     background: #EEF1F4 !important;
     color: #637487 !important;
 }
-
 
 .so-faculty-page .sof-status-active {
     background: #EAF7F0 !important;
     color: #228B57 !important;
 }
 
-
 .so-faculty-page .sof-status-closed {
     background: #FDECEC !important;
     color: #C62828 !important;
 }
-
 
 .so-faculty-page .sof-status-archived {
     background: #FFF6DC !important;
     color: #A56B00 !important;
 }
 
-
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
+/* RESPONSIVE */
 
 @media (max-width: 900px) {
-
     .so-faculty-page .sof-outcome-toolbar {
         align-items: flex-start !important;
         flex-direction: column !important;
     }
 
-
     .so-faculty-page .sof-add-outcome-btn {
         min-width: 0 !important;
     }
-
 
     .so-faculty-page .sof-outcome-table {
         min-width: 720px !important;
     }
 }
-/* ============================================================
-   COURSE OUTCOME MODAL
-   STUDENT OUTCOME & REFLECTION PILLS
-   ============================================================ */
+/* COURSE OUTCOME MODAL STUDENT OUTCOME & REFLECTION PILLS */
 
 .so-faculty-page .sof-so-options {
     width: 100% !important;
@@ -18313,7 +15721,6 @@ td button[class*="delete"]:hover {
     border: none !important;
     background: transparent !important;
 }
-
 
 /* INDIVIDUAL SO */
 
@@ -18354,12 +15761,10 @@ td button[class*="delete"]:hover {
         color 0.15s ease !important;
 }
 
-
 .so-faculty-page .sof-so-option:hover {
     border-color: #004179 !important;
     background: #F2F7FB !important;
 }
-
 
 /* SELECTED */
 
@@ -18371,7 +15776,6 @@ td button[class*="delete"]:hover {
     background: #004179 !important;
     color: #FFFFFF !important;
 }
-
 
 /* Remove any old nested pill styling */
 
@@ -18391,7 +15795,6 @@ td button[class*="delete"]:hover {
 
     box-shadow: none !important;
 }
-
 
 /* Smaller screens */
 

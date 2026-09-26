@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Syllabus &amp; Outcomes | EduMetrics Department Head</title>
+    <link
+        rel="stylesheet"
+        href="../Static/style.css"
+    >
+
+    <style>
+
+        /*  DEPARTMENT HEAD — SYLLABUS & OUTCOMES*/
+        /* MAIN CONTENT*/
+        .sodh-main {
+            flex: 1;
+            min-width: 0;
+
+            padding:
+                24px
+                28px
+                36px;
+
+            background: #F7F8FA;
+        }
+
+        .sodh-main .so-page-heading {
+            margin-bottom: 16px;
+        }
+
+        /*SUMMARY CARDS*/
+        .sodh-summary-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(
+                    4,
+                    minmax(0, 1fr)
+                );
+
+            gap: 18px;
+
+            margin-bottom: 18px;
+        }
+
+        .sodh-summary-card {
+            position: relative;
+            min-height: 82px;
+            padding:
+                13px
+                18px
+                12px
+                28px;
+            box-sizing: border-box;
+            overflow: hidden;
+            border-radius: 11px;
+            background: #FFFFFF;
+            box-shadow:
+                0
+                2px
+                5px
+                rgba(
+                    0,
+                    45,
+                    114,
+                    0.16
+                );
+        }
+
+
+        .sodh-summary-accent {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: 9px;
+            background: #F4C300;
+        }
+
+        .sodh-summary-label {
+            display: block;
+            margin-bottom: 2px;
+            color: #365A78;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .sodh-summary-number {
+            display: block;
+            color: #004179;
+            font-size: 30px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        /* FILTER BAR*/
+        .sodh-filter-card {
+            display: grid;
+            grid-template-columns:
+                repeat(
+                    5,
+                    minmax(0, 1fr)
+                );
+            gap: 14px;
+            padding:
+                13px
+                14px;
+            margin-bottom: 18px;
+            border-radius: 9px;
+            background: #FFFFFF;
+            box-shadow:
+                0
+                1px
+                4px
+                rgba(
+                    0,
+                    45,
+                    114,
+                    0.08
+                );
+        }
+
+        .sodh-filter-group {
+            min-width: 0;
+        }
+
+        .sodh-filter-group label {
+            display: block;
+            margin:
+                0
+                0
+                5px;
+
+            color: #004179;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .sodh-filter-group select {
+            width: 100%;
+            height: 34px;
+            padding:
+                0
+                10px;
+
+            box-sizing: border-box;
+            border:
+                1px solid
+                #91B8D7;
+            border-radius: 6px;
+            outline: none;
+            background: #FFFFFF;
+            color: #41647F;
+            font-family: inherit;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        .sodh-filter-group select:focus {
+            border-color: #004179;
+        }
+
+
+        /* MAIN WHITE CONTENT CARD*/
+        .sodh-content-card {
+            width: 100%;
+            overflow: hidden;
+            border-radius: 8px;
+            background: #FFFFFF;
+            box-shadow:
+                0
+                1px
+                4px
+                rgba(
+                    0,
+                    45,
+                    114,
+                    0.08
+                );
+        }
+
+
+        /* TABS*/
+        .sodh-tabs {
+            width: 100%;
+            display: flex;
+            align-items: stretch;
+            border-bottom:
+                1px solid
+                #D8E2EA;
+            background: #FFFFFF;
+        }
+
+        .sodh-tab {
+            min-width: 150px;
+            height: 43px;
+            padding:
+                0
+                22px;
+            border: none;
+            border-right:
+                1px solid
+                #D8E2EA;
+            border-bottom:
+                3px solid
+                transparent;
+            background: #FFFFFF;
+            color: #004179;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition:
+                background 0.15s ease,
+                border-color 0.15s ease;
+        }
+
+
+        .sodh-tab:hover {
+            background: #F8FAFC;
+        }
+
+
+        .sodh-tab.active {
+            border-bottom-color: #F4C300;
+            background: #FBFCFD;
+        }
+
+        /* TAB PANELS*/
+        .sodh-tab-panel {
+            display: none;
+        }
+
+
+        .sodh-tab-panel.active {
+            display: block;
+        }
+
+        /*TOOLBAR*/
+
+        .sodh-toolbar {
+            min-height: 51px;
+            padding:
+                12px
+                18px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+
+        .sodh-toolbar p {
+            margin: 0;
+            color: #527086;
+            font-size: 11px;
+            font-weight: 400;
+            line-height: 1.4;
+        }
+
+
+        .sodh-toolbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+
+        /* SEARCH BAR*/
+        .sodh-search {
+            width: 235px;
+            height: 31px;
+            padding:
+                0
+                10px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            border:
+                1px solid
+                #A9C5DA;
+            border-radius: 16px;
+            background: #FFFFFF;
+        }
+
+
+        .sodh-search span {
+            margin-right: 6px;
+            color: #004179;
+            font-size: 14px;
+            line-height: 1;
+        }
+
+
+        .sodh-search input {
+            width: 100%;
+            min-width: 0;
+            padding: 0;
+            border: none;
+            outline: none;
+            background: transparent;
+            color: #365A78;
+            font-family: inherit;
+            font-size: 10px;
+        }
+
+
+        .sodh-search input::placeholder {
+            color: #91A5B5;
+        }
+
+
+        /* EXPORT BUTTON*/
+        .sodh-export-btn {
+            height: 31px;
+            padding:
+                0
+                15px;
+
+            border: none;
+            border-radius: 16px;
+            background: #004179;
+            color: #FFFFFF;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .sodh-export-btn:hover {
+            background: #00345F;
+        }
+
+        /*GENERAL TABLE*/
+        .sodh-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .sodh-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .sodh-table thead th {
+            padding:
+                10px
+                10px;
+            border-top:
+                1px solid
+                #E1E7EC;
+            border-bottom:
+                1px solid
+                #D8C66C;
+            background: #FFF6C8;
+            color: #004179;
+            font-size: 10px;
+            font-weight: 800;
+            line-height: 1.25;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .sodh-table tbody td {
+            height: 39px;
+            padding:
+                8px
+                10px;
+            box-sizing: border-box;
+            border-bottom:
+                1px solid
+                #EDF1F4;
+            color: #355D7B;
+            font-size: 10px;
+            line-height: 1.3;
+            vertical-align: middle;
+        }
+
+        /* EMPTY TABLE STATE*/
+        .sodh-empty-row td {
+            height: 155px !important;
+            padding:
+                35px
+                20px !important;
+            text-align: center !important;
+            color: #6F8495 !important;
+        }
+
+        .sodh-empty-row strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #004179;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        /* COURSE LIST */
+        .sodh-course-table th:nth-child(1),
+        .sodh-course-table td:nth-child(1) {
+            width: 13%;
+        }
+
+
+        .sodh-course-table th:nth-child(2),
+        .sodh-course-table td:nth-child(2) {
+            width: 18%;
+        }
+
+
+        .sodh-course-table th:nth-child(3),
+        .sodh-course-table td:nth-child(3) {
+            width: 11%;
+        }
+
+
+        .sodh-course-table th:nth-child(4),
+        .sodh-course-table td:nth-child(4) {
+            width: 11%;
+        }
+
+
+        .sodh-course-table th:nth-child(5),
+        .sodh-course-table td:nth-child(5) {
+            width: 19%;
+        }
+
+
+        .sodh-course-table th:nth-child(6),
+        .sodh-course-table td:nth-child(6) {
+            width: 13%;
+        }
+
+
+        .sodh-course-table th:nth-child(7),
+        .sodh-course-table td:nth-child(7) {
+            width: 15%;
+        }
+
+
+        /* COURSE LIST COMPLETION BAR */
+        .sodh-completion {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+
+        .sodh-progress {
+            width: 82px;
+            height: 7px;
+
+            overflow: hidden;
+
+            border:
+                1px solid
+                #8FB4D0;
+
+            border-radius: 10px;
+
+            background: #FFFFFF;
+        }
+
+
+        .sodh-progress-fill {
+            width: 0%;
+            height: 100%;
+            border-radius: inherit;
+            background: #004179;
+        }
+
+
+        .sodh-zero {
+            color: #6C8497;
+            font-size: 9px;
+        }
+
+
+        /* SO SUMMARY*/
+        .sodh-so-summary-table {
+            table-layout: fixed;
+        }
+
+
+        .sodh-so-summary-table th:nth-child(1),
+        .sodh-so-summary-table td:nth-child(1) {
+            width: 21%;
+        }
+
+
+        .sodh-so-summary-table th:nth-child(2),
+        .sodh-so-summary-table td:nth-child(2) {
+            width: 43%;
+        }
+
+
+        .sodh-so-summary-table th:nth-child(3),
+        .sodh-so-summary-table td:nth-child(3) {
+            width: 36%;
+        }
+
+
+        /* SO ATTAINMENT RATE*/
+        .sodh-attainment-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sodh-attainment-bar {
+            width: 72%;
+            height: 9px;
+            overflow: hidden;
+            border:
+                1px solid
+                #3977A5;
+            border-radius: 20px;
+            background: #FFFFFF;
+        }
+
+
+        .sodh-attainment-fill {
+            width: 0%;
+            height: 100%;
+            border-radius: inherit;
+            background: #004179;
+        }
+
+        .sodh-attainment-percent {
+            min-width: 30px;
+            color: #004179;
+            font-size: 9px;
+        }
+
+        /* STUDENT RESPONSES */
+        .sodh-student-response-table {
+            table-layout: fixed;
+        }
+
+        .sodh-student-response-table th:nth-child(1),
+        .sodh-student-response-table td:nth-child(1) {
+            width: 15%;
+        }
+
+        .sodh-student-response-table th:nth-child(2),
+        .sodh-student-response-table td:nth-child(2) {
+            width: 19%;
+        }
+
+        .sodh-student-response-table th:nth-child(3),
+        .sodh-student-response-table td:nth-child(3) {
+            width: 12%;
+        }
+
+        .sodh-student-response-table th:nth-child(4),
+        .sodh-student-response-table td:nth-child(4) {
+            width: 12%;
+        }
+
+        .sodh-student-response-table th:nth-child(5),
+        .sodh-student-response-table td:nth-child(5) {
+            width: 12%;
+        }
+
+        .sodh-student-response-table th:nth-child(6),
+        .sodh-student-response-table td:nth-child(6) {
+            width: 17%;
+        }
+
+        .sodh-student-response-table th:nth-child(7),
+        .sodh-student-response-table td:nth-child(7) {
+            width: 13%;
+        }
+
+        /* STUDENT RESPONSE STATUS*/
+        .sodh-status {
+            display: inline-flex;
+
+            align-items: center;
+            justify-content: center;
+
+            min-width: 70px;
+            height: 24px;
+
+            padding:
+                0
+                12px;
+
+            box-sizing: border-box;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .sodh-status.complete {
+            background: #DDF4A7;
+            color: #668E16;
+        }
+
+        .sodh-status.incomplete {
+            background: #FFD0CB;
+            color: #F05A4F;
+        }
+
+        /* RESPONSIVE*/
+        @media (max-width: 1050px) {
+            .sodh-summary-grid {
+                grid-template-columns:
+                    repeat(
+                        2,
+                        minmax(0, 1fr)
+                    );
+            }
+
+            .sodh-filter-card {
+                grid-template-columns:
+                    repeat(
+                        2,
+                        minmax(0, 1fr)
+                    );
+            }
+        }
+
+        @media (max-width: 720px) {
+            .sodh-main {
+                padding:
+                    18px
+                    14px
+                    28px;
+            }
+
+            .sodh-summary-grid,
+            .sodh-filter-card {
+                grid-template-columns: 1fr;
+            }
+
+            .sodh-tabs {
+                overflow-x: auto;
+            }
+
+            .sodh-tab {
+                flex:
+                    0
+                    0
+                    auto;
+            }
+
+
+            .sodh-toolbar {
+                align-items: flex-start;
+
+                flex-direction: column;
+            }
+
+
+            .sodh-toolbar-actions {
+                width: 100%;
+            }
+
+
+            .sodh-search {
+                flex: 1;
+
+                width: auto;
+            }
+
+        }
+
+    </style>
+</head>
+
+<body class="so-student-page">
+
+    <!--TOP HEADER-->
+    <header class="so-topbar">
+        <div class="so-brand">
+            <div class="so-brand-logo">
+                Edu<span>Metrics</span>
+            </div>
+
+            <div class="so-brand-subtitle">
+                Academic Assessment &amp; Grading System
+            </div>
+
+        </div>
+
+        <div class="so-user-area">
+
+            <!-- NOTIFICATION -->
+            <button
+                class="so-notification-btn"
+                type="button"
+                aria-label="Notifications"
+            >
+
+                <img
+                    src="../Static/images/sidebar/notif.png"
+                    alt="Notifications"
+                    class="so-notification-image"
+                >
+
+                <span class="so-notification-dot"></span>
+            </button>
+
+            <!-- DEPARTMENT HEAD -->
+            <div class="so-user-info">
+                <strong id="departmentHeadName">
+                    /*EMPTY MUNA*/
+                </strong>
+
+                <span>
+                    Department Head
+                </span>
+            </div>
+
+
+            <!-- AVATAR -->
+            <div
+                class="so-avatar"
+                aria-hidden="true"
+            >
+
+                <span class="so-avatar-person">
+                    ●
+                </span>
+
+            </div>
+
+
+            <span
+                class="so-online-dot"
+                aria-hidden="true"
+            ></span>
+
+
+        </div>
+    </header>
+
+    <!-- HEADER LINES-->
+    <div class="so-header-lines">
+        <div class="so-header-blue"></div>
+        <div class="so-header-gold"></div>
+    </div>
+
+    <!-- PAGE SHELL -->
+    <div class="so-shell">
+
+        <!-- SIDEBAR -->
+        <aside class="so-sidebar">
+
+            <!-- PAGES -->
+            <div class="so-pages-title">
+                <span class="so-grid-icon so-pages-image-wrap">
+                    <img
+                        src="../Static/images/sidebar/pages.png"
+                        alt=""
+                        class="so-pages-image"
+                    >
+                </span>
+                <span>Pages</span>
+            </div>
+
+            <!-- NAVIGATION -->
+            <nav
+                class="so-nav"
+                aria-label="Department Head navigation"
+            >
+
+                <!-- HOME -->
+                <a
+                    href="#"
+                    class="so-nav-item"
+                >
+
+                    <span class="so-nav-icon so-nav-image-wrap">
+                        <img
+                            src="../Static/images/sidebar/home-white.png"
+                            alt=""
+                            class="so-nav-image"
+                        >
+                    </span>
+                    <span>Home</span>
+                </a>
+
+                <!-- MY COURSES -->
+                <a
+                    href="#"
+                    class="so-nav-item"
+                >
+
+                    <span class="so-nav-icon so-nav-image-wrap">
+
+                        <img
+                            src="../Static/images/sidebar/course-white.png"
+                            alt=""
+                            class="so-nav-image"
+                        >
+
+                    </span>
+                    <span>My Courses</span>
+                </a>
+
+                <!-- PLATFORM -->
+                <a
+                    href="#"
+                    class="so-nav-item"
+                >
+
+                    <span class="so-nav-icon so-nav-image-wrap">
+                        <img
+                            src="../Static/images/sidebar/pl-white.png"
+                            alt=""
+                            class="so-nav-image"
+                        >
+
+                    </span>
+                    <span>Platform</span>
+                </a>
+
+                <!-- WORKFLOW -->
+                <div class="so-nav-group">
+                    <button
+                        class="so-nav-item so-products active"
+                        type="button"
+                    >
+                        <span class="so-nav-icon so-nav-image-wrap">
+                            <img
+                                src="../Static/images/sidebar/ws-blue.png"
+                                alt=""
+                                class="so-nav-image"
+                            >
+                        </span>
+
+                        <span>Workflow </span>
+                    </button>
+
+                    <!-- WORKFLOW SUBMENU -->
+                    <div class="so-subnav">
+
+                        <a
+                            href="#"
+                            class="active"
+                        >
+                            Syllabus &amp; Outcomes
+                        </a>
+
+
+                        <a href="#">Curriculum Mapping </a>
+                        <a href="#">Class Roster</a>
+                        <a href="#">Assessment Entry</a>
+                        <a href="#">Attainment</a>
+                        <a href="#">CQI Planning</a>
+                        <a href="#">Gradebook</a>
+                        <a href="#">Compliance Report</a>
+                    </div>
+                </div>
+
+                <!-- RESOURCES -->
+                <a
+                    href="#"
+                    class="so-nav-item"
+                >
+
+                    <span class="so-nav-icon so-nav-image-wrap">
+                        <img
+                            src="../Static/images/sidebar/rs-white.png"
+                            alt=""
+                            class="so-nav-image"
+                        >
+                    </span>
+
+                    <span>Resources</span>
+                </a>
+
+                <!-- ABOUT US -->
+                <a
+                    href="#"
+                    class="so-nav-item"
+                >
+                    <span class="so-nav-icon so-nav-image-wrap">
+                        <img
+                            src="../Static/images/sidebar/au-white.png"
+                            alt=""
+                            class="so-nav-image"
+                        >
+                    </span>
+                    <span>About Us</span>
+                </a>
+            </nav>
+
+            <!-- SIDEBAR BRAND -->
+            <div class="so-sidebar-brand">
+                <div class="so-sidebar-logo">
+                    Edu<span>Metrics</span>
+                </div>
+                <small>Academic Assessment &amp; Grading System</small>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT-->
+        <main class="sodh-main">
+
+            <!-- PAGE HEADING-->
+            <section class="so-page-heading">
+                <h1>Syllabus &amp; Outcomes</h1>
+                <p>Manage your course syllabus and CO/SO assessments.</p>
+            </section>
+
+            <!-- SUMMARY CARDS - EMPTY / ZERO UNTIL BACKEND -->
+            <section class="sodh-summary-grid">
+                <article class="sodh-summary-card">
+                    <div class="sodh-summary-accent"></div>
+                    <span class="sodh-summary-label">Total Students </span>
+                    <strong
+                        class="sodh-summary-number"
+                        id="totalStudents"
+                    >
+                        0
+                    </strong>
+                </article>
+
+                <article class="sodh-summary-card">
+                    <div class="sodh-summary-accent"></div>
+                    <span class="sodh-summary-label"> Total Programs </span>
+                    <strong
+                        class="sodh-summary-number"
+                        id="totalPrograms"
+                    >
+                        0
+                    </strong>
+                </article>
+
+                <article class="sodh-summary-card">
+                    <div class="sodh-summary-accent"></div>
+                    <span class="sodh-summary-label">Total Courses </span>
+                    <strong
+                        class="sodh-summary-number"
+                        id="totalCourses"
+                    >
+                        0
+                    </strong>
+                </article>
+
+                <article class="sodh-summary-card">
+                    <div class="sodh-summary-accent"></div>
+                    <span class="sodh-summary-label">Total Sections</span>
+                    <strong
+                        class="sodh-summary-number"
+                        id="totalSections"
+                    >
+                        0
+                    </strong>
+                </article>
+            </section>
+
+            <!-- FILTERS-->
+            <section class="sodh-filter-card">
+
+                <!-- SCHOOL YEAR -->
+                <div class="sodh-filter-group">
+                    <label for="deptSchoolYear">School Year</label>
+                    <select id="deptSchoolYear">
+                        <option value="">Select School Year</option>
+                    </select>
+                </div>
+
+                <!-- DEPARTMENT -->
+                <div class="sodh-filter-group">
+                    <label for="deptDepartment">Department</label>
+                    <select id="deptDepartment">
+                        <option value="">All Departments</option>
+                    </select>
+                </div>
+
+                <!-- PROGRAM -->
+                <div class="sodh-filter-group">
+                    <label for="deptProgram">Program</label>
+                    <select id="deptProgram">
+                        <option value="">All Programs</option>
+                    </select>
+                </div>
+
+                <!-- COURSE -->
+                <div class="sodh-filter-group">
+                    <label for="deptCourse">Course </label>
+                    <select id="deptCourse">
+                        <option value="">All Courses</option>
+                    </select>
+                </div>
+
+                <!-- SECTION -->
+                <div class="sodh-filter-group">
+                    <label for="deptSection">Section</label>
+                    <select id="deptSection">
+                        <option value="">All Sections</option>
+                    </select>
+                </div>
+
+            </section>
+
+            <!-- COURSE / SO CONTENT-->
+            <section class="sodh-content-card">
+
+                <!-- TABS -->
+                <div
+                    class="sodh-tabs"
+                    role="tablist"
+                >
+                    <button
+                        class="sodh-tab active"
+                        type="button"
+                        data-tab="course-list"
+                    >
+                        Course List
+                    </button>
+
+                    <button
+                        class="sodh-tab"
+                        type="button"
+                        data-tab="so-summary"
+                    >
+                        SO Summary
+                    </button>
+
+
+                    <button
+                        class="sodh-tab"
+                        type="button"
+                        data-tab="student-responses"
+                    >
+                        Student Responses
+                    </button>
+                </div>
+
+
+                <!-- COURSE LIST -->
+                <div
+                    class="sodh-tab-panel active"
+                    id="course-list"
+                >
+
+                    <!-- TOOLBAR -->
+                    <div class="sodh-toolbar">
+                        <p>
+                            View course details, assigned faculty,
+                            enrolled students, and SO completion rates.
+                        </p>
+
+                        <div class="sodh-toolbar-actions">
+                            <label class="sodh-search">
+                                <span>
+                                    ⌕
+                                </span>
+
+                                <input
+                                    type="search"
+                                    id="courseSearch"
+                                    placeholder="Search course code/name or faculty"
+                                >
+                            </label>
+
+                            <button
+                                class="sodh-export-btn"
+                                type="button"
+                            >
+                                ⇩&nbsp; Export
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- COURSE LIST TABLE -->
+                    <div class="sodh-table-wrap">
+                        <table class="sodh-table sodh-course-table">
+                            <thead>
+                                <tr>
+                                    <th>Course Code</th>
+                                    <th>Course Name</th>
+                                    <th>rogram</th>
+                                    <th>Section</th>
+                                    <th>Assigned Faculty</th>
+                                    <th>Enrolled Students</th>
+                                    <th>SO Completion Rate</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="departmentCourseTableBody">
+
+                                <!-- EMPTY MUNA -->
+                                <tr class="sodh-empty-row">
+                                    <td colspan="7">
+                                        <strong>No courses yet</strong>
+                                        Course records will appear here
+                                        once backend data is connected.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- SO SUMMARY -->
+                <div
+                    class="sodh-tab-panel"
+                    id="so-summary"
+                >
+
+                    <!-- SO SUMMARY TOOLBAR -->
+                    <div class="sodh-toolbar">
+                        <p>
+                            View course details, assigned faculty,
+                            enrolled students, and SO completion rates.
+                        </p>
+
+                        <div class="sodh-toolbar-actions">
+                            <label class="sodh-search">
+                                <span> ⌕</span>
+                                <input
+                                    type="search"
+                                    id="soSummarySearch"
+                                    placeholder="Search course code/name or faculty"
+                                >
+                            </label>
+                            <button
+                                class="sodh-export-btn"
+                                type="button"
+                            >
+                                ⇩&nbsp; Export
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SO SUMMARY TABLE -->
+                    <div class="sodh-table-wrap">
+
+                        <table class="sodh-table sodh-so-summary-table">
+                            <thead>
+                                <tr>
+                                    <th>Student Outcome (SO)</th>
+                                    <th>Description</th>
+                                    <th>Attainment Rate</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="soSummaryTableBody">
+                                <tr class="sodh-empty-row">
+                                    <td colspan="3">
+                                        <strong>
+                                            No SO results yet
+                                        </strong>
+                                        Student Outcome attainment results
+                                        will appear here once assessment
+                                        data is available.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- STUDENT RESPONSES -->
+                <div
+                    class="sodh-tab-panel"
+                    id="student-responses"
+                >
+                    <!-- STUDENT RESPONSES TOOLBAR -->
+                    <div class="sodh-toolbar">
+                        <p>View student responses and assessment details.</p>
+                        <div class="sodh-toolbar-actions">
+                            <label class="sodh-search">
+                                <span>⌕</span>
+                                <input
+                                    type="search"
+                                    id="studentResponseSearch"
+                                    placeholder="Search student name/no."
+                                >
+                            </label>
+
+                            <button
+                                class="sodh-export-btn"
+                                type="button"
+                            >
+                                ⇩&nbsp; Export
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- STUDENT RESPONSES TABLE -->
+                    <div class="sodh-table-wrap">
+                        <table class="sodh-table sodh-student-response-table">
+                            <thead>
+                                <tr>
+                                    <th>Student No.</th>
+                                    <th>Student Name</th>
+                                    <th>Program</th>
+                                    <th>Course</th>
+                                    <th>Section</th>
+                                    <th>Completion Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="studentResponsesTableBody">
+                                <tr class="sodh-empty-row">
+                                    <td colspan="7">
+                                        <strong>
+                                            No student responses yet
+                                        </strong>
+                                        Student responses will appear here
+                                        once assessment responses are available.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!--TAB FUNCTION-->
+    <script>
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                const tabs =
+                    document.querySelectorAll(
+                        ".sodh-tab"
+                    );
+
+                const panels =
+                    document.querySelectorAll(
+                        ".sodh-tab-panel"
+                    );
+
+                tabs.forEach(
+                    function (tab) {
+
+                        tab.addEventListener(
+                            "click",
+                            function () {
+
+                                const target =
+                                    tab.dataset.tab;
+
+                                /* REMOVE ACTIVE TAB */
+                                tabs.forEach(
+                                    function (item) {
+
+                                        item.classList.remove(
+                                            "active"
+                                        );
+                                    }
+                                );
+
+                                /* HIDE ALL PANELS */
+                                panels.forEach(
+                                    function (panel) {
+                                        panel.classList.remove(
+                                            "active"
+                                        );
+                                    }
+                                );
+
+                                /* ACTIVATE CLICKED TAB */
+                                tab.classList.add(
+                                    "active"
+                                );
+
+                                /* SHOW MATCHING PANEL */
+                                const targetPanel =
+                                    document.getElementById(
+                                        target
+                                    );
+
+                                if (targetPanel) {
+                                    targetPanel.classList.add(
+                                        "active"
+                                    );
+                                }
+                            }
+                        );
+                    }
+                );
+            }
+        );
+    </script>
+</body>
+</html>

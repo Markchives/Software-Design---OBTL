@@ -3258,20 +3258,14 @@ function initFacultySyllabusOutcomes() {
         );
     }
 
-
     if (courseOutcomeBackdrop) {
-
         courseOutcomeBackdrop.addEventListener(
             "pointerdown",
             function (event) {
-
                 event.preventDefault();
-
                 closeCourseOutcomeForm();
-
             }
         );
-
     }
 
     /* SAVE COURSE OUTCOME*/
@@ -4079,21 +4073,17 @@ function initFacultySyllabusOutcomes() {
                             "";
 
                     }
-
                     if (studentOutcomeDueDate) {
-
                         studentOutcomeDueDate.value =
                             row.dataset.dueDate ||
                             "";
 
                     }
 
-
                     if (studentOutcomeStatus) {
                         studentOutcomeStatus.value =
                             row.dataset.status ||
                             "Draft";
-
                     }
                     if (studentOutcomeFile) {
                         studentOutcomeFile.value =
@@ -4112,31 +4102,21 @@ function initFacultySyllabusOutcomes() {
                             false;
                                                 }
 
-
                     if (studentOutcomeModalTitle) {
-
                         studentOutcomeModalTitle.textContent =
                             "Edit Student Outcome";
 
                     }
-
-
                     if (studentOutcomeModalSubtitle) {
-
                         studentOutcomeModalSubtitle.textContent =
                             "Update the student outcome assessment details below.";
 
                     }
-
-
                     if (saveStudentOutcomeButton) {
-
                         saveStudentOutcomeButton.textContent =
                             "Update";
 
                     }
-
-
                     openModal(
                         studentOutcomeModal
                     );
@@ -4146,11 +4126,7 @@ function initFacultySyllabusOutcomes() {
 
                 }
 
-
-
-                /* ============================================
-                   DELETE STUDENT OUTCOME
-                   ============================================ */
+                /* DELETE STUDENT OUTCOME*/
 
                 if (deleteButton) {
 
@@ -4180,122 +4156,78 @@ function initFacultySyllabusOutcomes() {
                             "deleteStudentOutcomeName"
                         );
 
-
                     if (deleteName) {
 
                         deleteName.textContent =
                             row.dataset.description ||
                             "this student outcome";
-
                     }
-
-
                     openModal(
                         deleteModal
                     );
-
                 }
-
             }
         );
-
     }
 
-
-
-    /* ========================================================
-       DELETE STUDENT OUTCOME MODAL
-       ======================================================== */
-
+    /* DELETE STUDENT OUTCOME MODAL*/
     const deleteStudentOutcomeModal =
         document.getElementById(
             "deleteStudentOutcomeModal"
         );
-
-
     const deleteStudentOutcomeBackdrop =
         document.getElementById(
             "deleteStudentOutcomeBackdrop"
         );
-
-
     const cancelDeleteStudentOutcome =
         document.getElementById(
             "cancelDeleteStudentOutcome"
         );
-
-
     const confirmDeleteStudentOutcome =
         document.getElementById(
             "confirmDeleteStudentOutcome"
         );
 
-
     function closeDeleteStudentOutcome() {
-
         deletingStudentOutcomeRow =
             null;
-
-
         closeModal(
             deleteStudentOutcomeModal
         );
-
     }
 
-
     if (cancelDeleteStudentOutcome) {
-
         cancelDeleteStudentOutcome.addEventListener(
             "click",
             closeDeleteStudentOutcome
         );
-
     }
 
-
     if (deleteStudentOutcomeBackdrop) {
-
         deleteStudentOutcomeBackdrop.addEventListener(
             "click",
             closeDeleteStudentOutcome
         );
-
     }
 
-
     if (confirmDeleteStudentOutcome) {
-
         confirmDeleteStudentOutcome.addEventListener(
             "click",
             function () {
-
                 if (deletingStudentOutcomeRow) {
-
                     deletingStudentOutcomeRow.remove();
-
                 }
-
 
                 deletingStudentOutcomeRow =
                     null;
-
-
                 closeModal(
                     deleteStudentOutcomeModal
                 );
-
             }
         );
-
     }
 
-
-
-    /* ========================================================
-       ESCAPE KEY
-       ======================================================== */
-
+    /* ESCAPE KEY */
     document.addEventListener(
         "keydown",
         function (event) {
@@ -4307,18 +4239,13 @@ function initFacultySyllabusOutcomes() {
                 return;
             }
 
-
             if (
                 courseOutcomeModal &&
                 !courseOutcomeModal.hidden
             ) {
-
                 closeCourseOutcomeForm();
-
                 return;
-
             }
-
 
             if (
                 studentOutcomeModal &&
@@ -4331,30 +4258,21 @@ function initFacultySyllabusOutcomes() {
 
             }
 
-
             if (
                 deleteCourseOutcomeModal &&
                 !deleteCourseOutcomeModal.hidden
             ) {
-
                 closeDeleteCourseOutcome();
-
                 return;
-
             }
-
 
             if (
                 deleteStudentOutcomeModal &&
                 !deleteStudentOutcomeModal.hidden
             ) {
-
                 closeDeleteStudentOutcome();
-
                 return;
-
             }
-
 
             if (
                 deleteSyllabusModal &&
@@ -4364,13 +4282,9 @@ function initFacultySyllabusOutcomes() {
                 closeModal(
                     deleteSyllabusModal
                 );
-
             }
-
         }
     );
-
-
 
     /* INITIAL PAGE STATE*/
    tabPanels.forEach(
