@@ -1556,8 +1556,7 @@ function initializeRegistrationBackButton() {
         getSelectedRole() ||
         "student";
 
-    if (
-        !isValidRole(
+    if ( !isValidRole(
             role
         )
     ) {
@@ -3117,7 +3116,7 @@ function initFacultySyllabusOutcomes() {
                         "aria-pressed",
                         "false"
                     );
-                }
+                     }
                 option.addEventListener(
                     "click",
                     function (event) {
@@ -3637,172 +3636,164 @@ function initFacultySyllabusOutcomes() {
         );
     }
 
-    /*STUDENT OUTCOME*/
+    /* STUDENT OUTCOME */
+    const studentOutcomeStorageKey =
+        "eduMetricsStudentOutcomes";
+
     const addStudentOutcomeButton =
         document.getElementById(
             "addStudentOutcomeButton"
         );
+
     const studentOutcomeModal =
         document.getElementById(
             "studentOutcomeModal"
         );
+
     const studentOutcomeBackdrop =
         document.getElementById(
-            "studentOutcomeBackdrop"
+            "studentOutcomeModalBackdrop"
         );
+
     const studentOutcomeModalTitle =
         document.getElementById(
             "studentOutcomeModalTitle"
         );
+
     const studentOutcomeModalSubtitle =
-        document.getElementById(            
+        document.getElementById(
             "studentOutcomeModalSubtitle"
         );
 
-    const studentOutcomeFile =
+    const studentOutcomeSelect =
         document.getElementById(
-            "studentOutcomeFile"
+            "studentOutcomeSelect"
         );
-    const studentOutcomeCurrentFile =
-        document.getElementById(
-            "studentOutcomeCurrentFile"
-        );
-    const studentOutcomeDescription =
-        document.getElementById(
-            "studentOutcomeDescription"
-        );
+
     const studentOutcomeDueDate =
         document.getElementById(
             "studentOutcomeDueDate"
         );
+
     const studentOutcomeStatus =
         document.getElementById(
             "studentOutcomeStatus"
         );
+
     const cancelStudentOutcomeButton =
         document.getElementById(
             "cancelStudentOutcomeButton"
         );
+
     const saveStudentOutcomeButton =
         document.getElementById(
             "saveStudentOutcomeButton"
         );
-    const studentOutcomesTableBody =
+
+    const studentOutcomeTableBody =
         document.getElementById(
-            "studentOutcomesTableBody"
+            "studentOutcomeTableBody"
         );
-    let editingStudentOutcomeRow =
+
+    const studentOutcomeEmptyState =
+        document.getElementById(
+            "studentOutcomeEmptyState"
+        );
+
+    const facultyStudentOutcomeCount =
+        document.getElementById(
+            "facultyStudentOutcomeCount"
+        );
+
+    const facultyActiveOutcomeCount =
+        document.getElementById(
+            "facultyActiveOutcomeCount"
+        );
+
+    const deleteStudentOutcomeModal =
+        document.getElementById(
+            "deleteStudentOutcomeModal"
+        );
+
+    const deleteStudentOutcomeBackdrop =
+        document.getElementById(
+            "deleteStudentOutcomeBackdrop"
+        );
+
+    const deleteStudentOutcomeName =
+        document.getElementById(
+            "deleteStudentOutcomeName"
+        );
+
+    const cancelDeleteStudentOutcome =
+        document.getElementById(
+            "cancelDeleteStudentOutcome"
+        );
+
+    const confirmDeleteStudentOutcome =
+        document.getElementById(
+            "confirmDeleteStudentOutcome"
+        );
+
+    let editingStudentOutcomeId =
         null;
-    let deletingStudentOutcomeRow =
+
+    let deletingStudentOutcomeId =
         null;
 
-
-    /* RESET STUDENT OUTCOME FORM*/
-    function resetStudentOutcomeForm() {
-
-        editingStudentOutcomeRow =
-            null;
-
-        if (studentOutcomeFile) {
-            studentOutcomeFile.value =
-                "";
-
-        }
-
-        if (studentOutcomeCurrentFile) {
-            studentOutcomeCurrentFile.textContent =
-                "";
-            studentOutcomeCurrentFile.hidden =
-                true;
-        }
-
-        if (studentOutcomeDescription) {
-            studentOutcomeDescription.value =
-                "";
-        }
-
-        if (studentOutcomeDueDate) {
-            studentOutcomeDueDate.value =
-                "";
-        }
-
-        if (studentOutcomeStatus) {
-            studentOutcomeStatus.value =
-                "Draft";
-        }
-
-        if (saveStudentOutcomeButton) {
-            saveStudentOutcomeButton.textContent =
-                "Save";
-        }
+    function getStudentOutcomeTitle(code) {
+        return (
+            "SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (" +
+            code +
+            ")"
+        );
     }
 
+    function getStudentOutcomeLink(code) {
+        return (
+            "assessment/so-" +
+            code +
+            ".html"
+        );
+    }
 
-    /* OPEN ADD STUDENT OUTCOME*/
-    if (addStudentOutcomeButton) {
-
-        addStudentOutcomeButton.addEventListener(
-            "click",
-            function () {
-                resetStudentOutcomeForm();
-
-                if (studentOutcomeModalTitle) {
-                    studentOutcomeModalTitle.textContent =
-                        "Upload Student Outcome";
-
-                }
-
-                if (studentOutcomeModalSubtitle) {
-                    studentOutcomeModalSubtitle.textContent =
-                        "Enter the student outcome assessment details below.";
-
-                }
-
-                openModal(
-                    studentOutcomeModal
+    function getStoredStudentOutcomes() {
+        try {
+            const stored =
+                localStorage.getItem(
+                    studentOutcomeStorageKey
                 );
 
+            if(!stored) {
+                return [];
             }
+
+            const parsed =
+                JSON.parse(stored);
+
+            return Array.isArray(parsed)
+                ? parsed
+                : [];
+        }
+        catch(error) {
+            console.error(
+                "Unable to load Student Outcomes:",
+                error
+            );
+
+            return [];
+        }
+    }
+
+    function saveStoredStudentOutcomes(outcomes) {
+        localStorage.setItem(
+            studentOutcomeStorageKey,
+            JSON.stringify(outcomes)
         );
     }
 
-    /* CLOSE STUDENT OUTCOME*/
-    function closeStudentOutcomeForm() {
-        closeModal(
-            studentOutcomeModal
-        );
-        resetStudentOutcomeForm();
-    }
-    if (cancelStudentOutcomeButton) {
-        cancelStudentOutcomeButton.addEventListener(
-            "pointerdown",
-            function (event) {
-
-                event.preventDefault();
-
-                closeStudentOutcomeForm();
-            }
-        );
-    }
-
-    if (studentOutcomeBackdrop) {
-        studentOutcomeBackdrop.addEventListener(
-            "pointerdown",
-            function (event) {
-
-                event.preventDefault();
-
-                closeStudentOutcomeForm();
-            }
-        );
-    }
-
-
-    /* STATUS CLASS*/
-    function getStudentOutcomeStatusClass(
-        status
-    ) {
-        switch (status) {
+    function getStudentOutcomeStatusClass(status) {
+        switch(status) {
             case "Active":
                 return "sof-status-active";
 
@@ -3815,19 +3806,168 @@ function initFacultySyllabusOutcomes() {
             default:
                 return "sof-status-draft";
         }
-
     }
 
-    /* SAVE STUDENT OUTCOME*/
-    if (saveStudentOutcomeButton) {
-        saveStudentOutcomeButton.addEventListener(
-            "pointerdown",
-            function (event) {
-                event.preventDefault();
+    function resetStudentOutcomeForm() {
+        editingStudentOutcomeId =
+            null;
 
-                const description =
-                    studentOutcomeDescription
-                        ? studentOutcomeDescription.value.trim()
+        if(studentOutcomeSelect) {
+            studentOutcomeSelect.value =
+                "";
+            studentOutcomeSelect.disabled =
+                false;
+        }
+
+        if(studentOutcomeDueDate) {
+            studentOutcomeDueDate.value =
+                "";
+        }
+
+        if(studentOutcomeStatus) {
+            studentOutcomeStatus.value =
+                "Active";
+        }
+
+        if(studentOutcomeModalTitle) {
+            studentOutcomeModalTitle.textContent =
+                "Upload Student Outcome";
+        }
+
+        if(studentOutcomeModalSubtitle) {
+            studentOutcomeModalSubtitle.textContent =
+                "Select the Student Outcome to assign, set its due date, and choose its status.";
+        }
+
+        if(saveStudentOutcomeButton) {
+            saveStudentOutcomeButton.textContent =
+                "Upload";
+        }
+    }
+
+    function updateStudentOutcomeSummary(outcomes) {
+        if(facultyStudentOutcomeCount) {
+            facultyStudentOutcomeCount.textContent =
+                outcomes.length;
+        }
+
+        if(facultyActiveOutcomeCount) {
+            facultyActiveOutcomeCount.textContent =
+                outcomes.filter(
+                    function (outcome) {
+                        return (
+                            outcome.status ===
+                            "Active"
+                        );
+                    }
+                ).length;
+        }
+    }
+
+    function renderStoredStudentOutcomes() {
+        if(!studentOutcomeTableBody) {
+            return;
+        }
+
+        const outcomes =
+            getStoredStudentOutcomes();
+
+        studentOutcomeTableBody.innerHTML =
+            "";
+
+        outcomes.forEach(
+            function (outcome) {
+                const row =
+                    document.createElement(
+                        "tr"
+                    );
+
+                row.dataset.id =
+                    outcome.id;
+
+                row.innerHTML = `
+                    <td>
+                        <strong class="sof-outcome-name">
+                            ${escapeHTML(outcome.title)}
+                        </strong>
+                    </td>
+                    <td>${escapeHTML(formatDate(outcome.dueDate))}</td>
+                    <td>${Number(outcome.responses) || 0}</td>
+                    <td>
+                        <span class="sof-status-pill ${getStudentOutcomeStatusClass(outcome.status)}">
+                            ${escapeHTML(outcome.status)}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="sof-row-actions">
+                            <button type="button" class="sof-row-action-btn sof-view-outcome-btn" data-id="${escapeHTML(outcome.id)}">View</button>
+                            <button type="button" class="sof-row-action-btn sof-edit-outcome-btn" data-id="${escapeHTML(outcome.id)}">Edit</button>
+                            <button type="button" class="sof-row-action-btn sof-delete-outcome-btn" data-id="${escapeHTML(outcome.id)}">Delete</button>
+                        </div>
+                    </td>
+                `;
+
+                studentOutcomeTableBody.appendChild(
+                    row
+                );
+            }
+        );
+
+        if(studentOutcomeEmptyState) {
+            studentOutcomeEmptyState.hidden =
+                outcomes.length > 0;
+        }
+
+        updateStudentOutcomeSummary(
+            outcomes
+        );
+    }
+
+    function closeStudentOutcomeForm() {
+        closeModal(
+            studentOutcomeModal
+        );
+
+        resetStudentOutcomeForm();
+    }
+
+    if(addStudentOutcomeButton) {
+        addStudentOutcomeButton.addEventListener(
+            "click",
+            function () {
+                resetStudentOutcomeForm();
+                openModal(
+                    studentOutcomeModal
+                );
+            }
+        );
+    }
+
+    if(cancelStudentOutcomeButton) {
+        cancelStudentOutcomeButton.addEventListener(
+            "click",
+            function () {
+                closeStudentOutcomeForm();
+            }
+        );
+    }
+
+    if(studentOutcomeBackdrop) {
+        studentOutcomeBackdrop.addEventListener(
+            "click",
+            function () {
+                closeStudentOutcomeForm();
+            }
+        );
+    }
+
+    if(saveStudentOutcomeButton) {
+        saveStudentOutcomeButton.addEventListener(
+            "click",
+            function () {
+                const code =
+                    studentOutcomeSelect
+                        ? studentOutcomeSelect.value.trim()
                         : "";
 
                 const dueDate =
@@ -3838,394 +3978,284 @@ function initFacultySyllabusOutcomes() {
                 const status =
                     studentOutcomeStatus
                         ? studentOutcomeStatus.value
-                        : "Draft";
+                        : "Active";
 
-                const uploadedFile =
-                    (
-                        studentOutcomeFile &&
-                        studentOutcomeFile.files &&
-                        studentOutcomeFile.files.length
-                    )
-                        ? studentOutcomeFile.files[0]
-                        : null;
-
-                if (!description) {
+                if(!code) {
                     alert(
-                        "Please enter the Student Outcome or assessment name."
+                        "Please select a Student Outcome."
                     );
                     return;
                 }
 
-                if (!dueDate) {
-
+                if(!dueDate) {
                     alert(
                         "Please select a due date."
                     );
-
                     return;
                 }
 
+                const outcomes =
+                    getStoredStudentOutcomes();
 
-                /* EDIT STUDENT OUTCOME
-                   UPDATE EXISTING ROW ONLY */
-                if (editingStudentOutcomeRow) {
-
-                    const existingFileName =
-                        editingStudentOutcomeRow
-                            .dataset
-                            .fileName ||
-                        "";
-
-                    const fileName =
-                        uploadedFile
-                            ? uploadedFile.name
-                            : existingFileName;
-
-                    editingStudentOutcomeRow.dataset.description =
-                        description;
-                    editingStudentOutcomeRow.dataset.dueDate =
-                        dueDate;
-                    editingStudentOutcomeRow.dataset.status =
-                        status;
-                    editingStudentOutcomeRow.dataset.fileName =
-                        fileName;
-
-                    const cells =
-                        editingStudentOutcomeRow
-                            .querySelectorAll(
-                                "td"
-                            );
-
-                    if (cells.length >= 4) {
-                        cells[0].innerHTML = `
-
-                            <strong>
-                                ${escapeHTML(description)}
-                            </strong>
-
-                            ${
-                                fileName
-                                    ? `
-                                        <small
-                                            style="
-                                                display:block;
-                                                margin-top:4px;
-                                                color:#637487;
-                                                font-size:11px;
-                                            "
-                                        >
-                                            ${escapeHTML(fileName)}
-                                        </small>
-                                      `
-                                : ""
+                if(editingStudentOutcomeId) {
+                    const index =
+                        outcomes.findIndex(
+                            function (outcome) {
+                                return (
+                                    outcome.id ===
+                                    editingStudentOutcomeId
+                                );
                             }
+                        );
 
-                        `;
-
-                        cells[1].textContent =
-                            formatDate(
-                                dueDate
-                            );
-
-                        cells[3].innerHTML = `
-
-                            <span
-                                class="
-                                    sof-status-pill
-                                    ${getStudentOutcomeStatusClass(status)}
-                                "
-                            >
-                                ${escapeHTML(status)}
-                            </span>
-                        `;
-
+                    if(index !== -1) {
+                        outcomes[index].dueDate =
+                            dueDate;
+                        outcomes[index].status =
+                            status;
                     }
-                    closeStudentOutcomeForm();
-                    return;
+                }
+                else {
+                    const duplicate =
+                        outcomes.some(
+                            function (outcome) {
+                                return (
+                                    outcome.code ===
+                                    code
+                                );
+                            }
+                        );
+
+                    if(duplicate) {
+                        alert(
+                            "This Student Outcome has already been added."
+                        );
+                        return;
+                    }
+
+                    outcomes.push({
+                        id:
+                            "so-" +
+                            code +
+                            "-" +
+                            Date.now(),
+                        code: code,
+                        title:
+                            getStudentOutcomeTitle(
+                                code
+                            ),
+                        dueDate: dueDate,
+                        status: status,
+                        responses: 0,
+                        link:
+                            getStudentOutcomeLink(
+                                code
+                            )
+                    });
                 }
 
-                /* NEW STUDENT OUTCOME REQUIRES FILE*/
-                if (!uploadedFile) {
-
-                    alert(
-                        "Please upload a Student Outcome file."
-                    );
-                    return;
-                }
-
-                /* DD STUDENT OUTCOME*/
-                const row =
-                    document.createElement(
-                        "tr"
-                    );
-
-                row.dataset.description =
-                    description;
-                row.dataset.dueDate =
-                    dueDate;
-                row.dataset.status =
-                    status;
-                row.dataset.fileName =
-                    uploadedFile.name;
-                row.dataset.responses =
-                    "0";
-                row.innerHTML = `
-                    <td>
-
-                        <strong>
-                            ${escapeHTML(description)}
-                        </strong>
-
-                        <small
-                            style="
-                                display:block;
-                                margin-top:4px;
-                                color:#637487;
-                                font-size:11px;
-                            "
-                        >
-                            ${escapeHTML(uploadedFile.name)}
-                        </small>
-                    </td>
-
-                    <td>
-                        ${escapeHTML(
-                            formatDate(dueDate)
-                        )}
-                    </td>
-                    <td>0</td>
-
-                    <td>
-                        <span
-                            class="
-                                sof-status-pill
-                                ${getStudentOutcomeStatusClass(status)}
-                            "
-                        >
-                            ${escapeHTML(status)}
-                        </span>
-                    </td>
-
-                    <td>
-                        <div class="sof-row-actions">
-                            <button
-                                type="button"
-                                class="
-                                    sof-edit-outcome-btn
-                                    js-edit-student-outcome
-                                "
-                            >
-                                Edit
-                            </button>
-                            <button
-                                type="button"
-                                class="
-                                    sof-delete-outcome-btn
-                                    js-delete-student-outcome
-                              "
-                            >
-                                Delete
-                            </button>
-                        </div>
-                    </td>
-                `;
-
-                studentOutcomesTableBody.appendChild(
-                    row
+                saveStoredStudentOutcomes(
+                    outcomes
                 );
+
                 closeStudentOutcomeForm();
+                renderStoredStudentOutcomes();
             }
         );
     }
 
-    /* STUDENT OUTCOME TABLE ACTIONS*/
-    if (studentOutcomesTableBody) {
-        studentOutcomesTableBody.addEventListener(
+    if(studentOutcomeTableBody) {
+        studentOutcomeTableBody.addEventListener(
             "click",
             function (event) {
+                const viewButton =
+                    event.target.closest(
+                        ".sof-view-outcome-btn"
+                    );
+
                 const editButton =
                     event.target.closest(
-                        ".js-edit-student-outcome"
+                        ".sof-edit-outcome-btn"
                     );
 
                 const deleteButton =
                     event.target.closest(
-                        ".js-delete-student-outcome"
+                        ".sof-delete-outcome-btn"
                     );
 
-                /* EDIT STUDENT OUTCOME*/
-                if (editButton) {
-                    const row =
-                        editButton.closest(
-                            "tr"
+                const outcomes =
+                    getStoredStudentOutcomes();
+
+                if(viewButton) {
+                    const outcome =
+                        outcomes.find(
+                            function (item) {
+                                return (
+                                    item.id ===
+                                    viewButton.dataset.id
+                                );
+                            }
                         );
 
-                    if (!row) {
+                    if(outcome && outcome.link) {
+                        window.location.href =
+                            outcome.link;
+                    }
+                    return;
+                }
+
+                if(editButton) {
+                    const outcome =
+                        outcomes.find(
+                            function (item) {
+                                return (
+                                    item.id ===
+                                    editButton.dataset.id
+                                );
+                            }
+                        );
+
+                    if(!outcome) {
                         return;
                     }
 
-                    editingStudentOutcomeRow =
-                        row;
+                    editingStudentOutcomeId =
+                        outcome.id;
 
-                    if (studentOutcomeDescription) {
-                        studentOutcomeDescription.value =
-                            row.dataset.description ||
-                            "";
-
+                    if(studentOutcomeSelect) {
+                        studentOutcomeSelect.value =
+                            outcome.code;
+                        studentOutcomeSelect.disabled =
+                            true;
                     }
-                    if (studentOutcomeDueDate) {
+
+                    if(studentOutcomeDueDate) {
                         studentOutcomeDueDate.value =
-                            row.dataset.dueDate ||
-                            "";
-
+                            outcome.dueDate || "";
                     }
 
-                    if (studentOutcomeStatus) {
+                    if(studentOutcomeStatus) {
                         studentOutcomeStatus.value =
-                            row.dataset.status ||
-                            "Draft";
-                    }
-                    if (studentOutcomeFile) {
-                        studentOutcomeFile.value =
-                            "";
+                            outcome.status || "Active";
                     }
 
-                    if (
-                        studentOutcomeCurrentFile &&
-                        row.dataset.fileName
-                    ) {
-                        studentOutcomeCurrentFile.textContent =
-                            "Current file: " +
-                            row.dataset.fileName +
-                            ". Select another file only if you want to replace it.";
-                        studentOutcomeCurrentFile.hidden =
-                            false;
-                                                }
-
-                    if (studentOutcomeModalTitle) {
+                    if(studentOutcomeModalTitle) {
                         studentOutcomeModalTitle.textContent =
                             "Edit Student Outcome";
-
                     }
-                    if (studentOutcomeModalSubtitle) {
+
+                    if(studentOutcomeModalSubtitle) {
                         studentOutcomeModalSubtitle.textContent =
-                            "Update the student outcome assessment details below.";
-
+                            "Update the due date or status of this Student Outcome.";
                     }
-                    if (saveStudentOutcomeButton) {
+
+                    if(saveStudentOutcomeButton) {
                         saveStudentOutcomeButton.textContent =
-                            "Update";
-
+                            "Save Changes";
                     }
+
                     openModal(
                         studentOutcomeModal
                     );
-
-
                     return;
-
                 }
 
-                /* DELETE STUDENT OUTCOME*/
-
-                if (deleteButton) {
-
-                    const row =
-                        deleteButton.closest(
-                            "tr"
+                if(deleteButton) {
+                    const outcome =
+                        outcomes.find(
+                            function (item) {
+                                return (
+                                    item.id ===
+                                    deleteButton.dataset.id
+                                );
+                            }
                         );
 
-
-                    if (!row) {
+                    if(!outcome) {
                         return;
                     }
 
+                    deletingStudentOutcomeId =
+                        outcome.id;
 
-                    deletingStudentOutcomeRow =
-                        row;
-
-
-                    const deleteModal =
-                        document.getElementById(
-                            "deleteStudentOutcomeModal"
-                        );
-
-
-                    const deleteName =
-                        document.getElementById(
-                            "deleteStudentOutcomeName"
-                        );
-
-                    if (deleteName) {
-
-                        deleteName.textContent =
-                            row.dataset.description ||
-                            "this student outcome";
+                    if(deleteStudentOutcomeName) {
+                        deleteStudentOutcomeName.textContent =
+                            outcome.title;
                     }
+
                     openModal(
-                        deleteModal
+                        deleteStudentOutcomeModal
                     );
                 }
             }
         );
     }
 
-    /* DELETE STUDENT OUTCOME MODAL*/
-    const deleteStudentOutcomeModal =
-        document.getElementById(
-            "deleteStudentOutcomeModal"
-        );
-    const deleteStudentOutcomeBackdrop =
-        document.getElementById(
-            "deleteStudentOutcomeBackdrop"
-        );
-    const cancelDeleteStudentOutcome =
-        document.getElementById(
-            "cancelDeleteStudentOutcome"
-        );
-    const confirmDeleteStudentOutcome =
-        document.getElementById(
-            "confirmDeleteStudentOutcome"
-        );
-
     function closeDeleteStudentOutcome() {
-        deletingStudentOutcomeRow =
+        deletingStudentOutcomeId =
             null;
+
         closeModal(
             deleteStudentOutcomeModal
         );
     }
 
-    if (cancelDeleteStudentOutcome) {
+    if(cancelDeleteStudentOutcome) {
         cancelDeleteStudentOutcome.addEventListener(
             "click",
             closeDeleteStudentOutcome
         );
     }
 
-    if (deleteStudentOutcomeBackdrop) {
+    if(deleteStudentOutcomeBackdrop) {
         deleteStudentOutcomeBackdrop.addEventListener(
             "click",
             closeDeleteStudentOutcome
         );
     }
 
-    if (confirmDeleteStudentOutcome) {
+    if(confirmDeleteStudentOutcome) {
         confirmDeleteStudentOutcome.addEventListener(
             "click",
             function () {
-                if (deletingStudentOutcomeRow) {
-                    deletingStudentOutcomeRow.remove();
+                if(!deletingStudentOutcomeId) {
+                    return;
                 }
 
-                deletingStudentOutcomeRow =
-                    null;
-                closeModal(
-                    deleteStudentOutcomeModal
+                const outcomes =
+                    getStoredStudentOutcomes()
+                        .filter(
+                            function (outcome) {
+                                return (
+                                    outcome.id !==
+                                    deletingStudentOutcomeId
+                                );
+                            }
+                        );
+
+                saveStoredStudentOutcomes(
+                    outcomes
                 );
+
+                closeDeleteStudentOutcome();
+                renderStoredStudentOutcomes();
             }
         );
     }
+
+    window.addEventListener(
+        "storage",
+        function (event) {
+            if(
+                event.key ===
+                studentOutcomeStorageKey
+            ) {
+                renderStoredStudentOutcomes();
+            }
+        }
+    );
+
+    renderStoredStudentOutcomes();
 
     /* ESCAPE KEY */
     document.addEventListener(
@@ -4312,3 +4342,903 @@ function initFacultySyllabusOutcomes() {
         }
     );
 }
+
+
+/* STUDENT PENDING STUDENT OUTCOMES */
+document.addEventListener("DOMContentLoaded", function () {
+    const page =
+        document.querySelector(
+            ".so-student-page"
+        );
+
+    const pendingSOList =
+        document.getElementById(
+            "pendingSOList"
+        );
+
+    const pendingSOEmpty =
+        document.getElementById(
+            "pendingSOEmpty"
+        );
+
+    if(!page || !pendingSOList || !pendingSOEmpty) {
+        return;
+    }
+
+    const storageKey =
+        "eduMetricsStudentOutcomes";
+
+    const pendingSOSearch =
+        document.getElementById(
+            "pendingSOSearch"
+        );
+
+    const pendingSOCount =
+        document.getElementById(
+            "pendingSOCount"
+        );
+
+    const dueThisWeekCount =
+        document.getElementById(
+            "dueThisWeekCount"
+        );
+
+    function getStudentOutcomes() {
+        try {
+            const stored =
+                localStorage.getItem(
+                    storageKey
+                );
+
+            if(!stored) {
+                return [];
+            }
+
+            const parsed =
+                JSON.parse(stored);
+
+            return Array.isArray(parsed)
+                ? parsed
+                : [];
+        }
+        catch(error) {
+            console.error(
+                "Unable to load Student Outcomes:",
+                error
+            );
+            return [];
+        }
+    }
+
+    function escapeStudentSOHTML(value) {
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function formatStudentSODueDate(value) {
+        if(!value) {
+            return "No due date";
+        }
+
+        const date =
+            new Date(
+                value + "T00:00:00"
+            );
+
+        return date.toLocaleDateString(
+            "en-US",
+            {
+                month: "short",
+                day: "numeric",
+                year: "numeric"
+            }
+        );
+    }
+
+    function isDueWithinSevenDays(value) {
+        if(!value) {
+            return false;
+        }
+
+        const today =
+            new Date();
+
+        today.setHours(
+            0,
+            0,
+            0,
+            0
+        );
+
+        const dueDate =
+            new Date(
+                value + "T00:00:00"
+            );
+
+        const lastDay =
+            new Date(today);
+
+        lastDay.setDate(
+            lastDay.getDate() + 7
+        );
+
+        return (
+            dueDate >= today &&
+            dueDate <= lastDay
+        );
+    }
+
+    function getActiveStudentOutcomes() {
+        return getStudentOutcomes()
+            .filter(
+                function (outcome) {
+                    return (
+                        outcome.status ===
+                        "Active"
+                    );
+                }
+            );
+    }
+
+    function updateStudentSOSummary(outcomes) {
+        if(pendingSOCount) {
+            pendingSOCount.textContent =
+                outcomes.length;
+        }
+
+        if(dueThisWeekCount) {
+            dueThisWeekCount.textContent =
+                outcomes.filter(
+                    function (outcome) {
+                        return isDueWithinSevenDays(
+                            outcome.dueDate
+                        );
+                    }
+                ).length;
+        }
+    }
+
+    function renderPendingStudentOutcomes() {
+        const searchValue =
+            pendingSOSearch
+                ? pendingSOSearch.value
+                    .trim()
+                    .toLowerCase()
+                : "";
+
+        const activeOutcomes =
+            getActiveStudentOutcomes();
+
+        const filteredOutcomes =
+            activeOutcomes.filter(
+                function (outcome) {
+                    const searchable =
+                        (
+                            (outcome.title || "") +
+                            " " +
+                            (outcome.code || "")
+                        ).toLowerCase();
+
+                    return searchable.includes(
+                        searchValue
+                    );
+                }
+            );
+
+        pendingSOList.innerHTML =
+            "";
+
+        filteredOutcomes.forEach(
+            function (outcome) {
+                const item =
+                    document.createElement(
+                        "article"
+                    );
+
+                item.className =
+                    "so-pending-item";
+
+                item.innerHTML = `
+                    <div class="so-pending-information">
+                        <h3 class="so-pending-title">${escapeStudentSOHTML(outcome.title)}</h3>
+                        <div class="so-pending-meta">
+                            <span class="so-pending-due">Due: ${escapeStudentSOHTML(formatStudentSODueDate(outcome.dueDate))}</span>
+                            <span class="so-pending-status">Pending</span>
+                        </div>
+                    </div>
+                    <button type="button" class="so-start-assessment-btn" data-link="${escapeStudentSOHTML(outcome.link || "")}">
+                        Start Assessment
+                    </button>
+                `;
+
+                pendingSOList.appendChild(
+                    item
+                );
+            }
+        );
+
+        pendingSOList.hidden =
+            filteredOutcomes.length === 0;
+
+        pendingSOEmpty.hidden =
+            filteredOutcomes.length > 0;
+
+        updateStudentSOSummary(
+            activeOutcomes
+        );
+    }
+
+    pendingSOList.addEventListener(
+        "click",
+        function (event) {
+            const button =
+                event.target.closest(
+                    ".so-start-assessment-btn"
+                );
+
+            if(!button) {
+                return;
+            }
+
+            const link =
+                button.dataset.link;
+
+            if(link) {
+                window.location.href =
+                    link;
+            }
+        }
+    );
+
+    if(pendingSOSearch) {
+        pendingSOSearch.addEventListener(
+            "input",
+            renderPendingStudentOutcomes
+        );
+    }
+
+    window.addEventListener(
+        "storage",
+        function (event) {
+            if(event.key === storageKey) {
+                renderPendingStudentOutcomes();
+            }
+        }
+    );
+
+    renderPendingStudentOutcomes();
+});
+
+/* DEPARTMENT HEAD SYLLABUS & OUTCOMES */
+document.addEventListener("DOMContentLoaded", function () {
+    const tabs =
+        document.querySelectorAll(
+            ".sodh-tab"
+        );
+
+    const panels =
+        document.querySelectorAll(
+            ".sodh-tab-panel"
+        );
+
+    if(!tabs.length || !panels.length) {
+        return;
+    }
+
+    tabs.forEach(
+        function (tab) {
+            tab.addEventListener(
+                "click",
+                function () {
+                    const targetId =
+                        this.dataset.tab;
+
+                    if(!targetId) {
+                        return;
+                    }
+
+                    tabs.forEach(
+                        function (item) {
+                            item.classList.remove(
+                                "active"
+                            );
+                        }
+                    );
+
+                    panels.forEach(
+                        function (panel) {
+                            panel.classList.remove(
+                                "active"
+                            );
+                        }
+                    );
+
+                    this.classList.add(
+                        "active"
+                    );
+
+                    const targetPanel =
+                        document.getElementById(
+                            targetId
+                        );
+
+                    if(targetPanel) {
+                        targetPanel.classList.add(
+                            "active"
+                        );
+                    }
+                }
+            );
+        }
+    );
+});
+
+/* STUDENT OUTCOME SELF-ASSESSMENT — SHARED SO(A-L) */
+
+document.addEventListener("DOMContentLoaded", function () {
+    const assessmentPage = document.querySelector("body.soa-page");
+    const nextButton = document.getElementById("soaNextButton");
+
+    if(!assessmentPage || !nextButton) {
+        return;
+    }
+
+    const ratingInputs =
+        document.querySelectorAll(
+            '.soa-rating-option input[type="radio"]'
+        );
+
+    const totalScoreElement =
+        document.getElementById("soaTotalScore");
+
+    const percentageElement =
+        document.getElementById("soaPercentage");
+
+    const message =
+        document.getElementById("soaMessage");
+
+    const indicatorNames =
+        Array.from(ratingInputs)
+            .map(function (input) {
+                return input.name;
+            })
+            .filter(function (name, index, names) {
+                return name && names.indexOf(name) === index;
+            });
+
+    const numberOfIndicators =
+        indicatorNames.length;
+
+    const maximumScore =
+        numberOfIndicators * 3;
+
+    const fileName =
+        window.location.pathname
+            .split("/")
+            .pop()
+            .toLowerCase();
+
+    const soMatch =
+        fileName.match(
+            /^so-(g1|g2|[a-l])\.html$/
+        );
+
+    const currentSO =
+        soMatch
+            ? soMatch[1]
+            : "a";
+
+    function calculateScore() {
+        let total = 0;
+
+        indicatorNames.forEach(function (name) {
+            const selected =
+                document.querySelector(
+                    'input[name="' + name + '"]:checked'
+                );
+
+            if(selected) {
+                total += Number(selected.value);
+            }
+        });
+
+        const percentage =
+            maximumScore > 0
+                ? (total / maximumScore) * 100
+                : 0;
+
+        if(totalScoreElement) {
+            totalScoreElement.textContent =
+                total + " / " + maximumScore;
+        }
+
+        if(percentageElement) {
+            percentageElement.textContent =
+                total === 0
+                    ? "0%"
+                    : percentage.toFixed(2) + "%";
+        }
+
+        return total;
+    }
+
+    function assessmentComplete() {
+        return indicatorNames.every(
+            function (name) {
+                return Boolean(
+                    document.querySelector(
+                        'input[name="' + name + '"]:checked'
+                    )
+                );
+            }
+        );
+    }
+
+    function getStudentInformation() {
+        const fieldIds = [
+            "studentName",
+            "program",
+            "course",
+            "section",
+            "semester",
+            "schoolYear"
+        ];
+
+        const information = {};
+
+        fieldIds.forEach(function (id) {
+            const field =
+                document.getElementById(id);
+
+            if(field) {
+                information[id] =
+                    field.value || field.textContent || "";
+            }
+        });
+
+        return information;
+    }
+
+    ratingInputs.forEach(function (input) {
+        input.addEventListener(
+            "change",
+            function () {
+                calculateScore();
+
+                if(message) {
+                    message.classList.remove("show");
+                }
+            }
+        );
+    });
+
+    nextButton.addEventListener(
+        "click",
+        function () {
+            if(!assessmentComplete()) {
+                if(message) {
+                    message.classList.add("show");
+
+                    message.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center"
+                    });
+                }
+
+                return;
+            }
+
+            const answers = {};
+            let total = 0;
+
+            indicatorNames.forEach(
+                function (name, index) {
+                    const selected =
+                        document.querySelector(
+                            'input[name="' + name + '"]:checked'
+                        );
+
+                    const score =
+                        Number(selected.value);
+
+                    answers[
+                        "indicator" + (index + 1)
+                    ] = score;
+
+                    total += score;
+                }
+            );
+
+            const assessmentData = {
+                studentOutcome: currentSO,
+                studentInformation:
+                    getStudentInformation(),
+                answers: answers,
+                totalScore: total,
+                maximumScore: maximumScore,
+                percentage:
+                    maximumScore > 0
+                        ? Number(
+                            (
+                                (total / maximumScore) *
+                                100
+                            ).toFixed(2)
+                        )
+                        : 0
+            };
+
+            sessionStorage.setItem(
+                "currentSOAssessment",
+                JSON.stringify(
+                    assessmentData
+                )
+            );
+
+            window.location.href =
+                "page-2.html?so=" +
+                encodeURIComponent(currentSO);
+        }
+    );
+
+    calculateScore();
+});
+
+
+/* STUDENT OUTCOME REFLECTION — SHARED PAGE 2 */
+
+document.addEventListener("DOMContentLoaded", function () {
+    const answer1 =
+        document.getElementById("reflectionAnswer1");
+
+    const answer2 =
+        document.getElementById("reflectionAnswer2");
+
+    const submitButton =
+        document.getElementById("reflectionSubmitButton");
+
+    const backButton =
+        document.getElementById("reflectionBackButton");
+
+    if(
+        !answer1 ||
+        !answer2 ||
+        !submitButton ||
+        !backButton
+    ) {
+        return;
+    }
+
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+    const currentSO =
+        params.get("so") || "a";
+
+    const validStudentOutcomes = [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+        "g1",
+        "g2",
+        "h",
+        "i",
+        "j",
+        "k",
+        "l"
+    ];
+
+    const dateInput =
+        document.getElementById("reflectionDate");
+
+    const message =
+        document.getElementById("reflectionMessage");
+
+    const form =
+        document.getElementById("reflectionForm");
+
+    const success =
+        document.getElementById("reflectionSuccess");
+
+    const actions =
+        document.getElementById("reflectionActions");
+
+    const signatureCanvas =
+        document.getElementById("studentSignature");
+
+    const clearSignatureButton =
+        document.getElementById("clearSignatureButton");
+
+    let signatureContext = null;
+    let isDrawing = false;
+    let hasSignature = false;
+
+    backButton.addEventListener(
+        "click",
+        function () {
+            if(
+                currentSO &&
+                validStudentOutcomes.includes(currentSO)
+            ) {
+                window.location.href =
+                    "so-" + currentSO + ".html";
+
+                return;
+            }
+
+            window.location.href =
+                "../so-student.html";
+        }
+    );
+
+    function hideMessage() {
+        const dateComplete =
+            !dateInput || dateInput.value;
+
+        const signatureComplete =
+            !signatureCanvas || hasSignature;
+
+        if(
+            answer1.value.trim() &&
+            answer2.value.trim() &&
+            dateComplete &&
+            signatureComplete &&
+            message
+        ) {
+            message.classList.remove("show");
+        }
+    }
+
+    answer1.addEventListener(
+        "input",
+        hideMessage
+    );
+
+    answer2.addEventListener(
+        "input",
+        hideMessage
+    );
+
+    if(dateInput) {
+        dateInput.addEventListener(
+            "input",
+            hideMessage
+        );
+    }
+
+    if(signatureCanvas) {
+        signatureContext =
+            signatureCanvas.getContext("2d");
+
+        function resizeSignatureCanvas() {
+            const rect =
+                signatureCanvas.getBoundingClientRect();
+
+            const ratio =
+                Math.max(
+                    window.devicePixelRatio || 1,
+                    1
+                );
+
+            signatureCanvas.width =
+                rect.width * ratio;
+
+            signatureCanvas.height =
+                rect.height * ratio;
+
+            signatureContext.setTransform(
+                ratio,
+                0,
+                0,
+                ratio,
+                0,
+                0
+            );
+
+            signatureContext.lineWidth = 2;
+            signatureContext.lineCap = "round";
+            signatureContext.lineJoin = "round";
+            signatureContext.strokeStyle =
+                "#173B5C";
+        }
+
+        function getSignaturePosition(event) {
+            const rect =
+                signatureCanvas.getBoundingClientRect();
+
+            return {
+                x: event.clientX - rect.left,
+                y: event.clientY - rect.top
+            };
+        }
+
+        signatureCanvas.addEventListener(
+            "pointerdown",
+            function (event) {
+                const position =
+                    getSignaturePosition(event);
+
+                isDrawing = true;
+
+                signatureContext.beginPath();
+                signatureContext.moveTo(
+                    position.x,
+                    position.y
+                );
+
+                signatureCanvas.setPointerCapture(
+                    event.pointerId
+                );
+            }
+        );
+
+        signatureCanvas.addEventListener(
+            "pointermove",
+            function (event) {
+                if(!isDrawing) {
+                    return;
+                }
+
+                const position =
+                    getSignaturePosition(event);
+
+                signatureContext.lineTo(
+                    position.x,
+                    position.y
+                );
+
+                signatureContext.stroke();
+
+                hasSignature = true;
+                hideMessage();
+            }
+        );
+
+        signatureCanvas.addEventListener(
+            "pointerup",
+            function (event) {
+                isDrawing = false;
+
+                if(
+                    signatureCanvas.hasPointerCapture(
+                        event.pointerId
+                    )
+                ) {
+                    signatureCanvas.releasePointerCapture(
+                        event.pointerId
+                    );
+                }
+            }
+        );
+
+        signatureCanvas.addEventListener(
+            "pointercancel",
+            function () {
+                isDrawing = false;
+            }
+        );
+
+        if(clearSignatureButton) {
+            clearSignatureButton.addEventListener(
+                "click",
+                function () {
+                    signatureContext.clearRect(
+                        0,
+                        0,
+                        signatureCanvas.width,
+                        signatureCanvas.height
+                    );
+
+                    hasSignature = false;
+                }
+            );
+        }
+
+        resizeSignatureCanvas();
+    }
+
+    submitButton.addEventListener(
+        "click",
+        function () {
+            const firstAnswer =
+                answer1.value.trim();
+
+            const secondAnswer =
+                answer2.value.trim();
+
+            const selectedDate =
+                dateInput
+                    ? dateInput.value
+                    : "";
+
+            const missingDate =
+                dateInput && !selectedDate;
+
+            const missingSignature =
+                signatureCanvas && !hasSignature;
+
+            if(
+                !firstAnswer ||
+                !secondAnswer ||
+                missingDate ||
+                missingSignature
+            ) {
+                if(message) {
+                    message.classList.add("show");
+
+                    message.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center"
+                    });
+                }
+
+                return;
+            }
+
+            let assessmentData = {};
+
+            const storedAssessment =
+                sessionStorage.getItem(
+                    "currentSOAssessment"
+                );
+
+            if(storedAssessment) {
+                try {
+                    assessmentData =
+                        JSON.parse(
+                            storedAssessment
+                        );
+                }
+                catch(error) {
+                    assessmentData = {};
+                }
+            }
+
+            assessmentData.studentOutcome =
+                currentSO;
+
+            assessmentData.reflection = {
+                bestPerformanceIndicator:
+                    firstAnswer,
+                weakestPerformanceIndicator:
+                    secondAnswer,
+                signature:
+                    signatureCanvas
+                        ? signatureCanvas.toDataURL(
+                            "image/png"
+                        )
+                        : "",
+                date: selectedDate,
+                submittedAt:
+                    new Date().toISOString()
+            };
+
+            sessionStorage.setItem(
+                "completedSOAssessment",
+                JSON.stringify(
+                    assessmentData
+                )
+            );
+
+            if(form) {
+                form.style.display = "none";
+            }
+
+            if(actions) {
+                actions.style.display = "none";
+            }
+
+            if(success) {
+                success.classList.add("show");
+            }
+        }
+    );
+});

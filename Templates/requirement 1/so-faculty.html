@@ -10,591 +10,14 @@
     >
 
     <title>Syllabus &amp; Outcomes | EduMetrics Faculty</title>
-
-    <!-- KEEP YOUR EXISTING MAIN CSS -->
-    <link
+<link
         rel="stylesheet"
         href="../../Static/style.css"
     >
-
-    <style>
-
-        /* =========================================================
-           FACULTY SYLLABUS & OUTCOMES
-           FINAL OUTCOME MODAL FIXES
-           ========================================================= */
-
-        .so-faculty-page [hidden] {
-            display: none !important;
-        }
-
-
-        /* =========================================================
-           OUTCOME MODAL
-           ========================================================= */
-
-        .sof-outcome-modal {
-            position: fixed !important;
-            inset: 0 !important;
-
-            z-index: 99999 !important;
-
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-
-            padding: 20px !important;
-
-            box-sizing: border-box !important;
-
-            pointer-events: auto !important;
-        }
-
-
-        .sof-outcome-modal[hidden] {
-            display: none !important;
-        }
-
-
-        .sof-outcome-modal-backdrop {
-            position: absolute !important;
-            inset: 0 !important;
-
-            z-index: 0 !important;
-
-            background:
-                rgba(
-                    0,
-                    31,
-                    77,
-                    0.42
-                ) !important;
-
-            pointer-events: auto !important;
-        }
-
-
-        .sof-outcome-dialog {
-            position: relative !important;
-
-            z-index: 10 !important;
-
-            width: min(
-                540px,
-                calc(100vw - 40px)
-            ) !important;
-
-            max-height:
-                calc(100vh - 40px) !important;
-
-            box-sizing: border-box !important;
-
-            padding: 26px !important;
-
-            overflow-y: auto !important;
-
-            border-radius: 14px !important;
-
-            background: #FFFFFF !important;
-
-            box-shadow:
-                0 20px 60px
-                rgba(
-                    0,
-                    45,
-                    114,
-                    0.22
-                ) !important;
-
-            pointer-events: auto !important;
-        }
-
-
-        .sof-outcome-dialog * {
-            pointer-events: auto !important;
-        }
-
-
-        .sof-outcome-dialog h2 {
-            margin:
-                0
-                0
-                7px !important;
-
-            color: #004179 !important;
-
-            font-size: 22px !important;
-            font-weight: 800 !important;
-
-            line-height: 1.2 !important;
-        }
-
-
-        .sof-outcome-dialog-subtitle {
-            margin:
-                0
-                0
-                22px !important;
-
-            color: #637487 !important;
-
-            font-size: 13px !important;
-            font-weight: 400 !important;
-
-            line-height: 1.45 !important;
-        }
-
-
-        /* =========================================================
-           FORM GROUPS
-           ========================================================= */
-
-        .sof-outcome-form-group {
-            width: 100% !important;
-
-            margin:
-                0
-                0
-                16px !important;
-        }
-
-
-        .sof-outcome-form-group label {
-            display: block !important;
-
-            margin:
-                0
-                0
-                7px !important;
-
-            color: #004179 !important;
-
-            font-size: 13px !important;
-            font-weight: 700 !important;
-        }
-
-
-        .sof-outcome-form-group input,
-        .sof-outcome-form-group textarea,
-        .sof-outcome-form-group select {
-            width: 100% !important;
-
-            box-sizing: border-box !important;
-
-            margin: 0 !important;
-
-            border:
-                1px solid
-                #C7D8E8 !important;
-
-            border-radius: 8px !important;
-
-            background: #FFFFFF !important;
-
-            color: #00345F !important;
-
-            font-family: inherit !important;
-
-            font-size: 13px !important;
-
-            outline: none !important;
-
-            box-shadow: none !important;
-
-            pointer-events: auto !important;
-        }
-
-
-        .sof-outcome-form-group input,
-        .sof-outcome-form-group select {
-            height: 42px !important;
-
-            padding:
-                0
-                12px !important;
-        }
-
-
-        .sof-outcome-form-group textarea {
-            min-height: 96px !important;
-
-            padding:
-                11px
-                12px !important;
-
-            line-height: 1.4 !important;
-
-            resize: vertical !important;
-        }
-
-
-        .sof-outcome-form-group input:focus,
-        .sof-outcome-form-group textarea:focus,
-        .sof-outcome-form-group select:focus {
-            border-color: #004179 !important;
-
-            box-shadow:
-                0 0 0 2px
-                rgba(
-                    0,
-                    65,
-                    121,
-                    0.08
-                ) !important;
-        }
-
-
-        /* =========================================================
-           COURSE OUTCOME EXISTING SELECT
-           ========================================================= */
-
-        #courseOutcomeExistingSelect {
-            cursor: pointer !important;
-        }
-
-
-        /* =========================================================
-           SO CHOICES
-           ========================================================= */
-
-        .sof-so-choice-list {
-            width: 100% !important;
-
-            display: flex !important;
-            flex-wrap: wrap !important;
-
-            gap: 8px !important;
-
-            margin-top: 2px !important;
-        }
-
-
-        .sof-so-choice {
-            position: relative !important;
-
-            display: inline-flex !important;
-        }
-
-
-        .sof-so-choice input {
-            position: absolute !important;
-
-            opacity: 0 !important;
-
-            width: 1px !important;
-            height: 1px !important;
-
-            pointer-events: none !important;
-        }
-
-
-        .sof-so-choice span {
-            min-width: 62px !important;
-
-            height: 36px !important;
-
-            padding:
-                0
-                12px !important;
-
-            box-sizing: border-box !important;
-
-            display: inline-flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-
-            border:
-                1px solid
-                #B9D3E8 !important;
-
-            border-radius: 18px !important;
-
-            background: #FFFFFF !important;
-
-            color: #004179 !important;
-
-            font-size: 12px !important;
-            font-weight: 700 !important;
-
-            cursor: pointer !important;
-
-            user-select: none !important;
-
-            transition:
-                background 0.15s ease,
-                color 0.15s ease,
-                border-color 0.15s ease !important;
-        }
-
-
-        .sof-so-choice input:checked + span {
-            border-color: #004179 !important;
-
-            background: #004179 !important;
-
-            color: #FFFFFF !important;
-        }
-
-
-        /* =========================================================
-           FILE INPUT
-           ========================================================= */
-
-        .sof-student-file-input {
-            height: auto !important;
-
-            padding: 10px 12px !important;
-
-            cursor: pointer !important;
-        }
-
-
-        .sof-current-file {
-            display: block !important;
-
-            margin-top: 6px !important;
-
-            color: #637487 !important;
-
-            font-size: 11px !important;
-            font-weight: 400 !important;
-        }
-
-
-        /* =========================================================
-           MODAL ACTIONS
-           IMPORTANT FIX:
-           BUTTONS ARE ALWAYS CLICKABLE
-           ========================================================= */
-
-        .sof-outcome-modal-actions {
-            position: relative !important;
-
-            z-index: 50 !important;
-
-            width: 100% !important;
-
-            margin:
-                22px
-                0
-                0 !important;
-
-            display: flex !important;
-            align-items: center !important;
-            justify-content: flex-end !important;
-
-            gap: 10px !important;
-
-            pointer-events: auto !important;
-        }
-
-
-        .sof-outcome-cancel-btn,
-        .sof-outcome-save-btn {
-            position: relative !important;
-
-            z-index: 51 !important;
-
-            height: 38px !important;
-
-            min-width: 90px !important;
-
-            padding:
-                0
-                18px !important;
-
-            border-radius: 8px !important;
-
-            font-family: inherit !important;
-
-            font-size: 12px !important;
-            font-weight: 700 !important;
-
-            line-height: 1 !important;
-
-            cursor: pointer !important;
-
-            pointer-events: auto !important;
-
-            touch-action: manipulation !important;
-        }
-
-
-        .sof-outcome-cancel-btn {
-            border:
-                1px solid
-                #B9D3E8 !important;
-
-            background: #FFFFFF !important;
-
-            color: #004179 !important;
-        }
-
-
-        .sof-outcome-save-btn {
-            border: 0 !important;
-
-            background: #004179 !important;
-
-            color: #FFFFFF !important;
-        }
-
-
-        .sof-outcome-save-btn:hover {
-            background: #00345F !important;
-        }
-
-
-        .sof-outcome-cancel-btn:hover {
-            background: #F4F7FB !important;
-        }
-
-
-        /* =========================================================
-           DELETE MODAL
-           ========================================================= */
-
-        .sof-delete-modal {
-            position: fixed !important;
-
-            inset: 0 !important;
-
-            z-index: 100000 !important;
-
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-
-            padding: 20px !important;
-
-            box-sizing: border-box !important;
-
-            pointer-events: auto !important;
-        }
-
-
-        .sof-delete-modal[hidden] {
-            display: none !important;
-        }
-
-
-        .sof-delete-modal-backdrop {
-            position: absolute !important;
-
-            inset: 0 !important;
-
-            background:
-                rgba(
-                    0,
-                    31,
-                    77,
-                    0.42
-                ) !important;
-        }
-
-
-        .sof-delete-dialog {
-            position: relative !important;
-
-            z-index: 5 !important;
-
-            width: min(
-                430px,
-                calc(100vw - 40px)
-            ) !important;
-
-            box-sizing: border-box !important;
-
-            padding: 28px !important;
-
-            border-radius: 14px !important;
-
-            background: #FFFFFF !important;
-
-            text-align: center !important;
-
-            pointer-events: auto !important;
-        }
-
-
-        .sof-delete-dialog-actions {
-            position: relative !important;
-
-            z-index: 10 !important;
-
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-
-            gap: 10px !important;
-
-            margin-top: 22px !important;
-        }
-
-
-        /* =========================================================
-           STATUS
-           ========================================================= */
-
-        .sof-status-pill {
-            min-width: 70px;
-
-            padding:
-                5px
-                10px;
-
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-
-            border-radius: 20px;
-
-            font-size: 11px;
-            font-weight: 700;
-        }
-
-
-        .sof-status-draft {
-            background: #EEF1F4;
-            color: #637487;
-        }
-
-
-        .sof-status-active {
-            background: #EAF7F0;
-            color: #228B57;
-        }
-
-
-        .sof-status-closed {
-            background: #FDECEC;
-            color: #C62828;
-        }
-
-
-        .sof-status-archived {
-            background: #FFF6DC;
-            color: #A56B00;
-        }
-
-
-        body.sof-modal-open {
-            overflow: hidden !important;
-        }
-
-    </style>
-
 </head>
 
-
 <body class="so-student-page so-faculty-page">
-
-
-    <!-- =====================================================
-         HEADER
-         ===================================================== -->
-
-    <header class="so-topbar">
+<header class="so-topbar">
 
         <div class="so-brand">
 
@@ -607,7 +30,6 @@
             </div>
 
         </div>
-
 
         <div class="so-user-area">
 
@@ -627,7 +49,6 @@
 
             </button>
 
-
             <div class="so-user-info">
 
                 <strong id="facultyName"></strong>
@@ -638,14 +59,12 @@
 
             </div>
 
-
             <div
                 class="so-avatar"
                 aria-hidden="true"
             >
                 <span class="so-avatar-person">●</span>
             </div>
-
 
             <span
                 class="so-online-dot"
@@ -655,26 +74,12 @@
         </div>
 
     </header>
-
-
-    <!-- HEADER LINES -->
-    <div class="so-header-lines">
+<div class="so-header-lines">
         <div class="so-header-blue"></div>
         <div class="so-header-gold"></div>
     </div>
-
-
-    <!-- PAGE SHELL-->
-
-    <div class="so-shell">
-
-
-        <!-- =================================================
-             SIDEBAR
-             ================================================= -->
-
-        <aside class="so-sidebar">
-
+<div class="so-shell">
+<aside class="so-sidebar">
 
             <div class="so-pages-title">
 
@@ -694,12 +99,10 @@
 
             </div>
 
-
             <nav
                 class="so-nav"
                 aria-label="Faculty navigation"
             >
-
 
                 <a
                     href="#"
@@ -722,7 +125,6 @@
 
                 </a>
 
-
                 <a
                     href="#"
                     class="so-nav-item"
@@ -744,7 +146,6 @@
 
                 </a>
 
-
                 <a
                     href="#"
                     class="so-nav-item"
@@ -765,11 +166,7 @@
                     </span>
 
                 </a>
-
-
-                <!-- WORKFLOW -->
-
-                <div class="so-nav-group">
+<div class="so-nav-group">
 
                     <button
                         class="so-nav-item so-products active"
@@ -791,7 +188,6 @@
                         </span>
 
                     </button>
-
 
                     <div class="so-subnav">
 
@@ -834,7 +230,6 @@
 
                 </div>
 
-
                 <a
                     href="#"
                     class="so-nav-item"
@@ -855,7 +250,6 @@
                     </span>
 
                 </a>
-
 
                 <a
                     href="#"
@@ -880,7 +274,6 @@
 
             </nav>
 
-
             <div class="so-sidebar-brand">
 
                 <div class="so-sidebar-logo">
@@ -894,14 +287,7 @@
             </div>
 
         </aside>
-
-
-        <!-- =================================================
-             MAIN CONTENT
-             ================================================= -->
-
-        <main class="sof-main">
-
+<main class="sof-main">
 
             <section class="sof-page-heading">
 
@@ -914,14 +300,7 @@
                 </p>
 
             </section>
-
-
-            <!-- =================================================
-                 FILTERS
-                 ================================================= -->
-
-            <section class="sof-filter-card">
-
+<section class="sof-filter-card">
 
                 <div class="sof-filter-group sof-course-filter">
 
@@ -939,7 +318,6 @@
 
                 </div>
 
-
                 <div class="sof-filter-group">
 
                     <label for="facultySection">
@@ -955,7 +333,6 @@
                     </select>
 
                 </div>
-
 
                 <div class="sof-filter-group">
 
@@ -973,7 +350,6 @@
 
                 </div>
 
-
                 <div class="sof-filter-group">
 
                     <label for="facultyYear">
@@ -990,7 +366,6 @@
 
                 </div>
 
-
                 <button
                     class="sof-course-details-btn"
                     type="button"
@@ -999,18 +374,8 @@
                 </button>
 
             </section>
-
-
-            <!-- =================================================
-                 CONTENT CARD
-                 ================================================= -->
-
-            <section class="sof-content-card">
-
-
-                <!-- TABS -->
-
-                <div
+<section class="sof-content-card">
+<div
                     class="sof-tabs"
                     role="tablist"
                 >
@@ -1023,7 +388,6 @@
                         Course Syllabus
                     </button>
 
-
                     <button
                         class="sof-tab"
                         type="button"
@@ -1031,7 +395,6 @@
                     >
                         Course Outcomes
                     </button>
-
 
                     <button
                         class="sof-tab"
@@ -1042,17 +405,10 @@
                     </button>
 
                 </div>
-
-
-                <!-- =================================================
-                     COURSE SYLLABUS
-                     ================================================= -->
-
-                <div
+<div
                     class="sof-tab-panel active"
                     id="syllabus"
                 >
-
 
                     <div class="sof-panel-toolbar">
 
@@ -1060,13 +416,11 @@
                             Upload, view, update the course syllabus.
                         </p>
 
-
                         <div class="sof-panel-actions">
 
                             <small id="syllabusLastUpdated">
                                 No syllabus uploaded
                             </small>
-
 
                             <label class="sof-new-file-btn">
 
@@ -1080,7 +434,6 @@
                                     New File
                                 </span>
 
-
                                 <input
                                     id="syllabusFile"
                                     type="file"
@@ -1093,7 +446,6 @@
                         </div>
 
                     </div>
-
 
                     <div
                         class="sof-syllabus-empty"
@@ -1110,7 +462,6 @@
 
                     </div>
 
-
                     <div
                         class="sof-file-row"
                         id="facultySyllabusFileRow"
@@ -1123,13 +474,11 @@
                                 <small>PDF</small>
                             </div>
 
-
                             <div class="sof-file-copy">
 
                                 <strong id="syllabusFileName">
                                     Course_Syllabus.pdf
                                 </strong>
-
 
                                 <div>
 
@@ -1151,9 +500,7 @@
 
                         </div>
 
-
                         <div class="sof-file-actions">
-
 
                             <button
                                 class="sof-view-btn"
@@ -1173,7 +520,6 @@
 
                             </button>
 
-
                             <button
                                 class="sof-download-btn"
                                 type="button"
@@ -1192,7 +538,6 @@
 
                             </button>
 
-
                             <div class="sof-more-wrapper">
 
                                 <button
@@ -1203,7 +548,6 @@
                                 >
                                     ⋮
                                 </button>
-
 
                                 <div
                                     class="sof-file-menu"
@@ -1228,24 +572,16 @@
                     </div>
 
                 </div>
-
-
-                <!-- =================================================
-                     COURSE OUTCOMES
-                     ================================================= -->
-
-                <div
+<div
                     class="sof-tab-panel"
                     id="course-outcomes"
                 >
-
 
                     <div class="sof-outcome-toolbar">
 
                         <p>
                             Add, edit, delete course outcomes
                         </p>
-
 
                         <button
                             type="button"
@@ -1264,7 +600,6 @@
                         </button>
 
                     </div>
-
 
                     <div class="sof-outcome-table-wrap">
 
@@ -1294,7 +629,6 @@
 
                             </thead>
 
-
                             <tbody id="courseOutcomesTableBody">
                             </tbody>
 
@@ -1303,24 +637,16 @@
                     </div>
 
                 </div>
-
-
-                <!-- =================================================
-                     STUDENT OUTCOMES
-                     ================================================= -->
-
-                <div
+<div
                     class="sof-tab-panel"
                     id="student-outcomes"
                 >
-
 
                     <div class="sof-outcome-toolbar">
 
                         <p>
                             Upload and manage student outcome assessments
                         </p>
-
 
                         <button
                             type="button"
@@ -1341,7 +667,6 @@
                         </button>
 
                     </div>
-
 
                     <div class="sof-outcome-table-wrap">
 
@@ -1375,8 +700,7 @@
 
                             </thead>
 
-
-                            <tbody id="studentOutcomesTableBody">
+                            <tbody id="studentOutcomeTableBody">
                             </tbody>
 
                         </table>
@@ -1390,13 +714,7 @@
         </main>
 
     </div>
-
-
-    <!-- =========================================================
-         COURSE OUTCOME FORM MODAL
-         ========================================================= -->
-
-    <div
+<div
         class="sof-outcome-modal"
         id="courseOutcomeModal"
         hidden
@@ -1406,7 +724,6 @@
             class="sof-outcome-modal-backdrop"
             id="courseOutcomeBackdrop"
         ></div>
-
 
         <div
             class="sof-outcome-dialog"
@@ -1419,25 +736,17 @@
                 Add Course Outcome
             </h2>
 
-
             <p
                 class="sof-outcome-dialog-subtitle"
                 id="courseOutcomeModalSubtitle"
             >
                 Select an existing course outcome and its aligned student outcomes.
             </p>
-
-
-            <!-- =================================================
-                 EXISTING COURSE OUTCOME
-                 ================================================= -->
-
-            <div class="sof-outcome-form-group">
+<div class="sof-outcome-form-group">
 
                 <label for="courseOutcomeExistingSelect">
                     Course Outcome
                 </label>
-
 
                 <select id="courseOutcomeExistingSelect">
 
@@ -1476,11 +785,7 @@
                 </select>
 
             </div>
-
-
-            <!-- HIDDEN VALUES USED FOR TABLE / EDIT -->
-
-            <input
+<input
                 type="hidden"
                 id="courseOutcomeNumber"
             >
@@ -1489,13 +794,7 @@
                 type="hidden"
                 id="courseOutcomeDescription"
             >
-
-
-            <!-- =================================================
-                 ALIGNED SO
-                 ================================================= -->
-
-            <div class="sof-outcome-field">
+<div class="sof-outcome-field">
             <label>Student Outcome and Reflection</label>
 
             <div class="sof-so-options" id="courseOutcomeSoOptions">
@@ -1548,15 +847,13 @@
                     SO(K)
                 </button>
 
+                <button type="button" class="sof-so-option" data-so="SO(L)">
+                    SO(L)
+                </button>
+
             </div>
         </div>
-
-
-            <!-- =================================================
-                 ACTIONS
-                 ================================================= -->
-
-            <div class="sof-outcome-modal-actions">
+<div class="sof-outcome-modal-actions">
 
                 <button
                     type="button"
@@ -1565,7 +862,6 @@
                 >
                     Cancel
                 </button>
-
 
                 <button
                     type="button"
@@ -1580,13 +876,7 @@
         </div>
 
     </div>
-
-
-    <!-- =========================================================
-         DELETE COURSE OUTCOME MODAL
-         ========================================================= -->
-
-    <div
+<div
         class="sof-delete-modal"
         id="deleteCourseOutcomeModal"
         hidden
@@ -1596,7 +886,6 @@
             class="sof-delete-modal-backdrop"
             id="deleteCourseOutcomeBackdrop"
         ></div>
-
 
         <div
             class="sof-delete-dialog"
@@ -1608,11 +897,9 @@
                 🗑
             </div>
 
-
             <h2>
                 Delete course outcome?
             </h2>
-
 
             <p>
                 Are you sure you want to delete
@@ -1621,11 +908,9 @@
                 </strong>?
             </p>
 
-
             <p class="sof-delete-warning">
                 This course outcome will be removed from the selected course.
             </p>
-
 
             <div class="sof-delete-dialog-actions">
 
@@ -1636,7 +921,6 @@
                 >
                     Cancel
                 </button>
-
 
                 <button
                     class="sof-delete-confirm-btn"
@@ -1651,23 +935,15 @@
         </div>
 
     </div>
-
-
-    <!-- =========================================================
-         STUDENT OUTCOME FORM MODAL
-         ========================================================= -->
-
-    <div
+<div
         class="sof-outcome-modal"
         id="studentOutcomeModal"
         hidden
     >
-
         <div
             class="sof-outcome-modal-backdrop"
-            id="studentOutcomeBackdrop"
+            id="studentOutcomeModalBackdrop"
         ></div>
-
 
         <div
             class="sof-outcome-dialog"
@@ -1675,128 +951,51 @@
             aria-modal="true"
             aria-labelledby="studentOutcomeModalTitle"
         >
-
-            <h2 id="studentOutcomeModalTitle">
-                Upload Student Outcome
-            </h2>
-
+            <h2 id="studentOutcomeModalTitle">Upload Student Outcome</h2>
 
             <p
                 class="sof-outcome-dialog-subtitle"
                 id="studentOutcomeModalSubtitle"
             >
-                Enter the student outcome assessment details below.
+                Select the Student Outcome to assign, set its due date, and choose its status.
             </p>
 
-
-            <!-- =================================================
-                 FILE UPLOAD
-                 ================================================= -->
-
             <div class="sof-outcome-form-group">
-
-                <label for="studentOutcomeFile">
-                    Student Outcome File
-                </label>
-
-
-                <input
-                    class="sof-student-file-input"
-                    type="file"
-                    id="studentOutcomeFile"
-                    accept=".pdf,.doc,.docx,.xls,.xlsx,.csv"
-                >
-
-
-                <small
-                    class="sof-current-file"
-                    id="studentOutcomeCurrentFile"
-                    hidden
-                ></small>
-
-            </div>
-
-
-            <!-- =================================================
-                 STUDENT OUTCOME TITLE
-                 ================================================= -->
-
-            <div class="sof-outcome-form-group">
-
-                <label for="studentOutcomeDescription">
-                    Student Outcome / Assessment Name
-                </label>
-
-
-                <input
-                    type="text"
-                    id="studentOutcomeDescription"
-                    placeholder="Example: SO Self-Assessment"
-                    autocomplete="off"
-                >
-
-            </div>
-
-
-            <!-- =================================================
-                 DUE DATE
-                 ================================================= -->
-
-            <div class="sof-outcome-form-group">
-
-                <label for="studentOutcomeDueDate">
-                    Due Date
-                </label>
-
-
-                <input
-                    type="date"
-                    id="studentOutcomeDueDate"
-                >
-
-            </div>
-
-
-            <!-- =================================================
-                 STATUS
-                 ================================================= -->
-
-            <div class="sof-outcome-form-group">
-
-                <label for="studentOutcomeStatus">
-                    Status
-                </label>
-
-
-                <select id="studentOutcomeStatus">
-
-                    <option value="Draft">
-                        Draft
-                    </option>
-
-                    <option value="Active">
-                        Active
-                    </option>
-
-                    <option value="Closed">
-                        Closed
-                    </option>
-
-                    <option value="Archived">
-                        Archived
-                    </option>
-
+                <label for="studentOutcomeSelect">Student Outcome</label>
+                <select id="studentOutcomeSelect">
+                    <option value="">Select Student Outcome</option>
+                    <option value="a">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (a)</option>
+                    <option value="b">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (b)</option>
+                    <option value="c">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (c)</option>
+                    <option value="d">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (d)</option>
+                    <option value="e">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (e)</option>
+                    <option value="f">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (f)</option>
+                    <option value="g1">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (g1)</option>
+                    <option value="g2">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (g2)</option>
+                    <option value="h">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (h)</option>
+                    <option value="i">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (i)</option>
+                    <option value="j">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (j)</option>
+                    <option value="k">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (k)</option>
+                    <option value="l">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (l)</option>
                 </select>
-
             </div>
 
+            <div class="sof-outcome-form-group">
+                <label for="studentOutcomeDueDate">Due Date</label>
+                <input type="date" id="studentOutcomeDueDate">
+            </div>
 
-            <!-- =================================================
-                 ACTIONS
-                 ================================================= -->
+            <div class="sof-outcome-form-group">
+                <label for="studentOutcomeStatus">Status</label>
+                <select id="studentOutcomeStatus">
+                    <option value="Draft">Draft</option>
+                    <option value="Active" selected>Active</option>
+                    <option value="Closed">Closed</option>
+                    <option value="Archived">Archived</option>
+                </select>
+            </div>
 
             <div class="sof-outcome-modal-actions">
-
                 <button
                     type="button"
                     class="sof-outcome-cancel-btn"
@@ -1805,27 +1004,17 @@
                     Cancel
                 </button>
 
-
                 <button
                     type="button"
                     class="sof-outcome-save-btn"
                     id="saveStudentOutcomeButton"
                 >
-                    Save
+                    Upload
                 </button>
-
             </div>
-
         </div>
-
     </div>
-
-
-    <!-- =========================================================
-         DELETE STUDENT OUTCOME MODAL
-         ========================================================= -->
-
-    <div
+<div
         class="sof-delete-modal"
         id="deleteStudentOutcomeModal"
         hidden
@@ -1835,7 +1024,6 @@
             class="sof-delete-modal-backdrop"
             id="deleteStudentOutcomeBackdrop"
         ></div>
-
 
         <div
             class="sof-delete-dialog"
@@ -1847,11 +1035,9 @@
                 🗑
             </div>
 
-
             <h2>
                 Delete student outcome?
             </h2>
-
 
             <p>
                 Are you sure you want to delete
@@ -1860,11 +1046,9 @@
                 </strong>?
             </p>
 
-
             <p class="sof-delete-warning">
                 This student outcome will be removed from the selected course.
             </p>
-
 
             <div class="sof-delete-dialog-actions">
 
@@ -1875,7 +1059,6 @@
                 >
                     Cancel
                 </button>
-
 
                 <button
                     class="sof-delete-confirm-btn"
@@ -1890,13 +1073,7 @@
         </div>
 
     </div>
-
-
-    <!-- =========================================================
-         DELETE SYLLABUS MODAL
-         ========================================================= -->
-
-    <div
+<div
         class="sof-delete-modal"
         id="deleteSyllabusModal"
         hidden
@@ -1906,7 +1083,6 @@
             class="sof-delete-modal-backdrop"
             id="deleteSyllabusBackdrop"
         ></div>
-
 
         <div
             class="sof-delete-dialog"
@@ -1918,11 +1094,9 @@
                 🗑
             </div>
 
-
             <h2>
                 Delete syllabus?
             </h2>
-
 
             <p>
                 Are you sure you want to delete
@@ -1931,11 +1105,9 @@
                 </strong>?
             </p>
 
-
             <p class="sof-delete-warning">
                 This file will be removed from the course syllabus.
             </p>
-
 
             <div class="sof-delete-dialog-actions">
 
@@ -1946,7 +1118,6 @@
                 >
                     Cancel
                 </button>
-
 
                 <button
                     class="sof-delete-confirm-btn"
@@ -1961,1816 +1132,7 @@
         </div>
 
     </div>
-
-
-    <!-- =========================================================
-         YOUR EXISTING SHARED JAVASCRIPT
-         ========================================================= -->
-
-    <script src="../../Static/script.js"></script>
-
-    <script>
-
-        document.addEventListener(
-            "DOMContentLoaded",
-            function () {
-
-                /* =================================================
-                   ELEMENTS
-                   ================================================= */
-
-                const addCOButton =
-                    document.getElementById(
-                        "addCourseOutcomeButton"
-                    );
-
-                const coModal =
-                    document.getElementById(
-                        "courseOutcomeModal"
-                    );
-
-                const coBackdrop =
-                    document.getElementById(
-                        "courseOutcomeBackdrop"
-                    );
-
-                const coTitle =
-                    document.getElementById(
-                        "courseOutcomeModalTitle"
-                    );
-
-                const coSubtitle =
-                    document.getElementById(
-                        "courseOutcomeModalSubtitle"
-                    );
-
-                const coSelect =
-                    document.getElementById(
-                        "courseOutcomeExistingSelect"
-                    );
-
-                const coNumber =
-                    document.getElementById(
-                        "courseOutcomeNumber"
-                    );
-
-                const coDescription =
-                    document.getElementById(
-                        "courseOutcomeDescription"
-                    );
-
-                const cancelCOButton =
-                    document.getElementById(
-                        "cancelCourseOutcomeButton"
-                    );
-
-                const saveCOButton =
-                    document.getElementById(
-                        "saveCourseOutcomeButton"
-                    );
-
-                const coTableBody =
-                    document.getElementById(
-                        "courseOutcomesTableBody"
-                    );
-
-
-                const addSOButton =
-                    document.getElementById(
-                        "addStudentOutcomeButton"
-                    );
-
-                const soModal =
-                    document.getElementById(
-                        "studentOutcomeModal"
-                    );
-
-                const soBackdrop =
-                    document.getElementById(
-                        "studentOutcomeBackdrop"
-                    );
-
-                const soTitle =
-                    document.getElementById(
-                        "studentOutcomeModalTitle"
-                    );
-
-                const soSubtitle =
-                    document.getElementById(
-                        "studentOutcomeModalSubtitle"
-                    );
-
-                const soFile =
-                    document.getElementById(
-                        "studentOutcomeFile"
-                    );
-
-                const soCurrentFile =
-                    document.getElementById(
-                        "studentOutcomeCurrentFile"
-                    );
-
-                const soDescription =
-                    document.getElementById(
-                        "studentOutcomeDescription"
-                    );
-
-                const soDueDate =
-                    document.getElementById(
-                        "studentOutcomeDueDate"
-                    );
-
-                const soStatus =
-                    document.getElementById(
-                        "studentOutcomeStatus"
-                    );
-
-                const cancelSOButton =
-                    document.getElementById(
-                        "cancelStudentOutcomeButton"
-                    );
-
-                const saveSOButton =
-                    document.getElementById(
-                        "saveStudentOutcomeButton"
-                    );
-
-                const soTableBody =
-                    document.getElementById(
-                        "studentOutcomesTableBody"
-                    );
-
-
-                const deleteCOModal =
-                    document.getElementById(
-                        "deleteCourseOutcomeModal"
-                    );
-
-                const deleteCOBackdrop =
-                    document.getElementById(
-                        "deleteCourseOutcomeBackdrop"
-                    );
-
-                const deleteCOName =
-                    document.getElementById(
-                        "deleteCourseOutcomeName"
-                    );
-
-                const cancelDeleteCO =
-                    document.getElementById(
-                        "cancelDeleteCourseOutcome"
-                    );
-
-                const confirmDeleteCO =
-                    document.getElementById(
-                        "confirmDeleteCourseOutcome"
-                    );
-
-
-                const deleteSOModal =
-                    document.getElementById(
-                        "deleteStudentOutcomeModal"
-                    );
-
-                const deleteSOBackdrop =
-                    document.getElementById(
-                        "deleteStudentOutcomeBackdrop"
-                    );
-
-                const deleteSOName =
-                    document.getElementById(
-                        "deleteStudentOutcomeName"
-                    );
-
-                const cancelDeleteSO =
-                    document.getElementById(
-                        "cancelDeleteStudentOutcome"
-                    );
-
-                const confirmDeleteSO =
-                    document.getElementById(
-                        "confirmDeleteStudentOutcome"
-                    );
-
-
-                let editingCORow = null;
-                let deletingCORow = null;
-
-                let editingSORow = null;
-                let deletingSORow = null;
-
-
-                /* =================================================
-                   HELPERS
-                   ================================================= */
-
-                function stopOldHandler(event) {
-
-                    event.preventDefault();
-
-                    event.stopPropagation();
-
-                    event.stopImmediatePropagation();
-
-                }
-
-
-                function openFacultyModal(modal) {
-
-                    if (!modal) {
-                        return;
-                    }
-
-                    modal.hidden = false;
-
-                    modal.removeAttribute(
-                        "hidden"
-                    );
-
-                    document.body.classList.add(
-                        "sof-modal-open"
-                    );
-
-                }
-
-
-                function closeFacultyModal(modal) {
-
-                    if (!modal) {
-                        return;
-                    }
-
-                    modal.hidden = true;
-
-                    modal.setAttribute(
-                        "hidden",
-                        ""
-                    );
-
-                    if (
-                        (!coModal || coModal.hidden) &&
-                        (!soModal || soModal.hidden) &&
-                        (!deleteCOModal || deleteCOModal.hidden) &&
-                        (!deleteSOModal || deleteSOModal.hidden)
-                    ) {
-
-                        document.body.classList.remove(
-                            "sof-modal-open"
-                        );
-
-                    }
-
-                }
-
-
-                function getSOButtons() {
-
-                    return Array.from(
-                        document.querySelectorAll(
-                            "#courseOutcomeSoOptions .sof-so-option"
-                        )
-                    );
-
-                }
-
-
-                function clearSOChoices() {
-
-                    getSOButtons().forEach(
-                        function (button) {
-
-                            button.classList.remove(
-                                "selected"
-                            );
-
-                            button.setAttribute(
-                                "aria-pressed",
-                                "false"
-                            );
-
-                        }
-                    );
-
-                }
-
-
-                function getSelectedSOs() {
-
-                    return getSOButtons()
-                        .filter(
-                            function (button) {
-
-                                return button.classList.contains(
-                                    "selected"
-                                );
-
-                            }
-                        )
-                        .map(
-                            function (button) {
-
-                                return button.dataset.so;
-
-                            }
-                        );
-
-                }
-
-
-                function setSelectedSOs(values) {
-
-                    const selected =
-                        Array.isArray(values)
-                            ? values
-                            : [];
-
-                    getSOButtons().forEach(
-                        function (button) {
-
-                            const isSelected =
-                                selected.includes(
-                                    button.dataset.so
-                                );
-
-                            button.classList.toggle(
-                                "selected",
-                                isSelected
-                            );
-
-                            button.setAttribute(
-                                "aria-pressed",
-                                isSelected
-                                    ? "true"
-                                    : "false"
-                            );
-
-                        }
-                    );
-
-                }
-
-
-                function escapeHTML(value) {
-
-                    return String(
-                        value ?? ""
-                    )
-                        .replaceAll(
-                            "&",
-                            "&amp;"
-                        )
-                        .replaceAll(
-                            "<",
-                            "&lt;"
-                        )
-                        .replaceAll(
-                            ">",
-                            "&gt;"
-                        )
-                        .replaceAll(
-                            '"',
-                            "&quot;"
-                        )
-                        .replaceAll(
-                            "'",
-                            "&#039;"
-                        );
-
-                }
-
-
-                function formatDueDate(value) {
-
-                    if (!value) {
-                        return "—";
-                    }
-
-                    const date =
-                        new Date(
-                            value + "T00:00:00"
-                        );
-
-                    return date.toLocaleDateString(
-                        "en-US",
-                        {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric"
-                        }
-                    );
-
-                }
-
-
-                function getStatusClass(status) {
-
-                    const normalized =
-                        String(status)
-                            .toLowerCase();
-
-                    if (
-                        normalized ===
-                        "active"
-                    ) {
-                        return "sof-status-active";
-                    }
-
-                    if (
-                        normalized ===
-                        "closed"
-                    ) {
-                        return "sof-status-closed";
-                    }
-
-                    if (
-                        normalized ===
-                        "archived"
-                    ) {
-                        return "sof-status-archived";
-                    }
-
-                    return "sof-status-draft";
-
-                }
-
-
-                /* =================================================
-                   COURSE OUTCOME SELECT
-                   ================================================= */
-
-                if (coSelect) {
-
-                    coSelect.addEventListener(
-                        "change",
-                        function () {
-
-                            const option =
-                                this.options[
-                                    this.selectedIndex
-                                ];
-
-                            if (
-                                !option ||
-                                !option.value
-                            ) {
-
-                                coNumber.value = "";
-                                coDescription.value = "";
-
-                                return;
-                            }
-
-                            coNumber.value =
-                                option.value;
-
-                            coDescription.value =
-                                option.dataset.description ||
-                                "";
-
-                        }
-                    );
-
-                }
-
-
-                /* =================================================
-                   RESET COURSE OUTCOME FORM
-                   ================================================= */
-
-                function resetCOForm() {
-
-                    editingCORow = null;
-
-                    if (coSelect) {
-                        coSelect.value = "";
-                        coSelect.disabled = false;
-                    }
-
-                    if (coNumber) {
-                        coNumber.value = "";
-                    }
-
-                    if (coDescription) {
-                        coDescription.value = "";
-                    }
-
-                    clearSOChoices();
-
-                }
-
-
-                /* =================================================
-                   OPEN ADD COURSE OUTCOME
-                   ================================================= */
-
-                if (addCOButton) {
-
-                    addCOButton.addEventListener(
-                        "click",
-                        function (event) {
-
-                            stopOldHandler(
-                                event
-                            );
-
-                            resetCOForm();
-
-                            coTitle.textContent =
-                                "Add Course Outcome";
-
-                            coSubtitle.textContent =
-                                "Select an existing course outcome and its aligned student outcomes.";
-
-                            saveCOButton.textContent =
-                                "Save";
-
-                            openFacultyModal(
-                                coModal
-                            );
-
-                        },
-                        true
-                    );
-
-                }
-
-
-                /* =================================================
-                   CANCEL COURSE OUTCOME
-
-                   POINTERDOWN is included intentionally.
-                   This fixes the old issue where a focused form
-                   field had to lose focus before the button worked.
-                   ================================================= */
-
-                function cancelCO(event) {
-
-                    if (event) {
-
-                        stopOldHandler(
-                            event
-                        );
-
-                    }
-
-                    closeFacultyModal(
-                        coModal
-                    );
-
-                    resetCOForm();
-
-                }
-
-
-                if (cancelCOButton) {
-
-                    cancelCOButton.addEventListener(
-                        "pointerdown",
-                        cancelCO,
-                        true
-                    );
-
-                }
-
-
-                if (coBackdrop) {
-
-                    coBackdrop.addEventListener(
-                        "pointerdown",
-                        cancelCO,
-                        true
-                    );
-
-                }
-
-
-                /* =================================================
-                   SAVE / UPDATE COURSE OUTCOME
-                   ================================================= */
-
-                if (saveCOButton) {
-
-                    saveCOButton.addEventListener(
-                        "pointerdown",
-                        function (event) {
-
-                            stopOldHandler(
-                                event
-                            );
-
-
-                            const number =
-                                coNumber
-                                    ? coNumber.value.trim()
-                                    : "";
-
-                            const description =
-                                coDescription
-                                    ? coDescription.value.trim()
-                                    : "";
-
-                            const alignedSOs =
-                                getSelectedSOs();
-
-
-                            if (
-                                !number ||
-                                !description
-                            ) {
-
-                                alert(
-                                    "Please select a course outcome."
-                                );
-
-                                return;
-
-                            }
-
-
-                            if (
-                                alignedSOs.length === 0
-                            ) {
-
-                                alert(
-                                    "Please select at least one aligned Student Outcome."
-                                );
-
-                                return;
-
-                            }
-
-
-                            /* -------------------------------------
-                               EDIT EXISTING ROW
-                               IMPORTANT:
-                               UPDATE ONLY — DO NOT ADD NEW ROW
-                               ------------------------------------- */
-
-                            if (editingCORow) {
-
-                                editingCORow.dataset.coNumber =
-                                    number;
-
-                                editingCORow.dataset.description =
-                                    description;
-
-                                editingCORow.dataset.alignedSo =
-                                    JSON.stringify(
-                                        alignedSOs
-                                    );
-
-
-                                editingCORow.children[0].textContent =
-                                    number;
-
-                                editingCORow.children[1].textContent =
-                                    description;
-
-                                editingCORow.children[2].textContent =
-                                    alignedSOs.join(
-                                        ", "
-                                    );
-
-
-                                closeFacultyModal(
-                                    coModal
-                                );
-
-                                resetCOForm();
-
-                                return;
-
-                            }
-
-
-                            /* -------------------------------------
-                               PREVENT DUPLICATE COURSE OUTCOME
-                               ------------------------------------- */
-
-                            const duplicate =
-                                Array.from(
-                                    coTableBody.querySelectorAll(
-                                        "tr"
-                                    )
-                                )
-                                .some(
-                                    function (row) {
-
-                                        return (
-                                            row.dataset.coNumber ===
-                                            number
-                                        );
-
-                                    }
-                                );
-
-
-                            if (duplicate) {
-
-                                alert(
-                                    number +
-                                    " has already been added."
-                                );
-
-                                return;
-
-                            }
-
-
-                            /* -------------------------------------
-                               ADD NEW ROW
-                               ------------------------------------- */
-
-                            const row =
-                                document.createElement(
-                                    "tr"
-                                );
-
-
-                            row.dataset.coNumber =
-                                number;
-
-                            row.dataset.description =
-                                description;
-
-                            row.dataset.alignedSo =
-                                JSON.stringify(
-                                    alignedSOs
-                                );
-
-
-                            row.innerHTML = `
-                                <td>
-                                    ${escapeHTML(number)}
-                                </td>
-
-                                <td>
-                                    ${escapeHTML(description)}
-                                </td>
-
-                                <td>
-                                    ${escapeHTML(alignedSOs.join(", "))}
-                                </td>
-
-                                <td>
-                                    <div class="sof-row-actions">
-
-                                        <button
-                                            type="button"
-                                            class="sof-edit-outcome-btn js-edit-course-outcome"
-                                        >
-                                            Edit
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            class="sof-delete-outcome-btn js-delete-course-outcome"
-                                        >
-                                            Delete
-                                        </button>
-
-                                    </div>
-                                </td>
-                            `;
-
-
-                            coTableBody.appendChild(
-                                row
-                            );
-
-
-                            closeFacultyModal(
-                                coModal
-                            );
-
-                            resetCOForm();
-
-                        },
-                        true
-                    );
-
-                }
-
-
-                /* =================================================
-                   EDIT / DELETE COURSE OUTCOME
-                   ================================================= */
-
-                if (coTableBody) {
-
-                    coTableBody.addEventListener(
-                        "click",
-                        function (event) {
-
-                            const editButton =
-                                event.target.closest(
-                                    ".js-edit-course-outcome, .sof-edit-outcome-btn"
-                                );
-
-                            const deleteButton =
-                                event.target.closest(
-                                    ".js-delete-course-outcome, .sof-delete-outcome-btn"
-                                );
-
-
-                            /* EDIT */
-
-                            if (editButton) {
-
-                                stopOldHandler(
-                                    event
-                                );
-
-                                const row =
-                                    editButton.closest(
-                                        "tr"
-                                    );
-
-                                if (!row) {
-                                    return;
-                                }
-
-
-                                editingCORow =
-                                    row;
-
-
-                                const number =
-                                    row.dataset.coNumber ||
-                                    row.children[0]
-                                        .textContent
-                                        .trim();
-
-
-                                const description =
-                                    row.dataset.description ||
-                                    row.children[1]
-                                        .textContent
-                                        .trim();
-
-
-                                let aligned = [];
-
-                                try {
-
-                                    aligned =
-                                        JSON.parse(
-                                            row.dataset.alignedSo ||
-                                            "[]"
-                                        );
-
-                                } catch (error) {
-
-                                    aligned =
-                                        row.children[2]
-                                            .textContent
-                                            .split(",")
-                                            .map(
-                                                function (item) {
-
-                                                    return item.trim();
-
-                                                }
-                                            )
-                                            .filter(Boolean);
-
-                                }
-
-
-                                if (coSelect) {
-
-                                    coSelect.value =
-                                        number;
-
-                                    /*
-                                     * While editing, the selected CO
-                                     * stays the same. Faculty edits its
-                                     * aligned SO(s), then Save updates
-                                     * this exact row.
-                                     */
-
-                                    coSelect.disabled =
-                                        true;
-
-                                }
-
-
-                                if (coNumber) {
-
-                                    coNumber.value =
-                                        number;
-
-                                }
-
-
-                                if (coDescription) {
-
-                                    coDescription.value =
-                                        description;
-
-                                }
-
-
-                                setSelectedSOs(
-                                    aligned
-                                );
-
-
-                                coTitle.textContent =
-                                    "Edit Course Outcome";
-
-                                coSubtitle.textContent =
-                                    "Update the selected course outcome details below.";
-
-                                saveCOButton.textContent =
-                                    "Update";
-
-
-                                openFacultyModal(
-                                    coModal
-                                );
-
-                                return;
-
-                            }
-
-
-                            /* DELETE */
-
-                            if (deleteButton) {
-
-                                stopOldHandler(
-                                    event
-                                );
-
-                                const row =
-                                    deleteButton.closest(
-                                        "tr"
-                                    );
-
-                                if (!row) {
-                                    return;
-                                }
-
-
-                                deletingCORow =
-                                    row;
-
-
-                                if (deleteCOName) {
-
-                                    deleteCOName.textContent =
-                                        row.dataset.coNumber ||
-                                        row.children[0]
-                                            .textContent
-                                            .trim();
-
-                                }
-
-
-                                openFacultyModal(
-                                    deleteCOModal
-                                );
-
-                            }
-
-                        },
-                        true
-                    );
-
-                }
-
-
-                /* =================================================
-                   DELETE COURSE OUTCOME
-                   ================================================= */
-
-                function cancelCODelete(event) {
-
-                    if (event) {
-
-                        stopOldHandler(
-                            event
-                        );
-
-                    }
-
-                    deletingCORow =
-                        null;
-
-                    closeFacultyModal(
-                        deleteCOModal
-                    );
-
-                }
-
-
-                if (cancelDeleteCO) {
-
-                    cancelDeleteCO.addEventListener(
-                        "pointerdown",
-                        cancelCODelete,
-                        true
-                    );
-
-                }
-
-
-                if (deleteCOBackdrop) {
-
-                    deleteCOBackdrop.addEventListener(
-                        "pointerdown",
-                        cancelCODelete,
-                        true
-                    );
-
-                }
-
-
-                if (confirmDeleteCO) {
-
-                    confirmDeleteCO.addEventListener(
-                        "pointerdown",
-                        function (event) {
-
-                            stopOldHandler(
-                                event
-                            );
-
-                            if (deletingCORow) {
-
-                                deletingCORow.remove();
-
-                            }
-
-                            deletingCORow =
-                                null;
-
-                            closeFacultyModal(
-                                deleteCOModal
-                            );
-
-                        },
-                        true
-                    );
-
-                }
-
-
-                /* =================================================
-                   RESET STUDENT OUTCOME
-                   ================================================= */
-
-                function resetSOForm() {
-
-                    editingSORow =
-                        null;
-
-
-                    if (soFile) {
-
-                        soFile.value =
-                            "";
-
-                    }
-
-
-                    if (soCurrentFile) {
-
-                        soCurrentFile.textContent =
-                            "";
-
-                        soCurrentFile.hidden =
-                            true;
-
-                    }
-
-
-                    if (soDescription) {
-
-                        soDescription.value =
-                            "";
-
-                    }
-
-
-                    if (soDueDate) {
-
-                        soDueDate.value =
-                            "";
-
-                    }
-
-
-                    if (soStatus) {
-
-                        soStatus.value =
-                            "Draft";
-
-                    }
-
-                }
-
-
-                /* =================================================
-                   OPEN STUDENT OUTCOME UPLOAD
-                   ================================================= */
-
-                if (addSOButton) {
-
-                    addSOButton.addEventListener(
-                        "click",
-                        function (event) {
-
-                            stopOldHandler(
-                                event
-                            );
-
-                            resetSOForm();
-
-                            soTitle.textContent =
-                                "Upload Student Outcome";
-
-                            soSubtitle.textContent =
-                                "Enter the student outcome assessment details below.";
-
-                            saveSOButton.textContent =
-                                "Save";
-
-                            openFacultyModal(
-                                soModal
-                            );
-
-                        },
-                        true
-                    );
-
-                }
-
-
-                /* =================================================
-                   CANCEL STUDENT OUTCOME
-                   ================================================= */
-
-                function cancelSO(event) {
-
-                    if (event) {
-
-                        stopOldHandler(
-                            event
-                        );
-
-                    }
-
-                    closeFacultyModal(
-                        soModal
-                    );
-
-                    resetSOForm();
-
-                }
-
-
-                if (cancelSOButton) {
-
-                    cancelSOButton.addEventListener(
-                        "pointerdown",
-                        cancelSO,
-                        true
-                    );
-
-                }
-
-
-                if (soBackdrop) {
-
-                    soBackdrop.addEventListener(
-                        "pointerdown",
-                        cancelSO,
-                        true
-                    );
-
-                }
-
-
-                /* =================================================
-                   SAVE / UPDATE STUDENT OUTCOME
-                   ================================================= */
-
-                if (saveSOButton) {
-
-                    saveSOButton.addEventListener(
-                        "pointerdown",
-                        function (event) {
-
-                            stopOldHandler(
-                                event
-                            );
-
-
-                            const description =
-                                soDescription
-                                    ? soDescription.value.trim()
-                                    : "";
-
-                            const dueDate =
-                                soDueDate
-                                    ? soDueDate.value
-                                    : "";
-
-                            const status =
-                                soStatus
-                                    ? soStatus.value
-                                    : "Draft";
-
-                            const newFile =
-                                soFile &&
-                                soFile.files &&
-                                soFile.files.length
-                                    ? soFile.files[0]
-                                    : null;
-
-
-                            if (!description) {
-
-                                alert(
-                                    "Please enter the Student Outcome or assessment name."
-                                );
-
-                                return;
-
-                            }
-
-
-                            if (!dueDate) {
-
-                                alert(
-                                    "Please select a due date."
-                                );
-
-                                return;
-
-                            }
-
-
-                            /* -------------------------------------
-                               EDIT EXISTING SO
-                               UPDATE ONLY — NO NEW ROW
-                               ------------------------------------- */
-
-                            if (editingSORow) {
-
-                                let fileName =
-                                    editingSORow.dataset.fileName ||
-                                    "";
-
-
-                                if (newFile) {
-
-                                    fileName =
-                                        newFile.name;
-
-                                }
-
-
-                                editingSORow.dataset.description =
-                                    description;
-
-                                editingSORow.dataset.dueDate =
-                                    dueDate;
-
-                                editingSORow.dataset.status =
-                                    status;
-
-                                editingSORow.dataset.fileName =
-                                    fileName;
-
-
-                                editingSORow.children[0].innerHTML = `
-                                    <strong>
-                                        ${escapeHTML(description)}
-                                    </strong>
-
-                                    ${
-                                        fileName
-                                            ? `
-                                                <small
-                                                    style="
-                                                        display:block;
-                                                        margin-top:4px;
-                                                        color:#637487;
-                                                        font-size:11px;
-                                                    "
-                                                >
-                                                    ${escapeHTML(fileName)}
-                                                </small>
-                                              `
-                                            : ""
-                                    }
-                                `;
-
-
-                                editingSORow.children[1].textContent =
-                                    formatDueDate(
-                                        dueDate
-                                    );
-
-
-                                editingSORow.children[3].innerHTML = `
-                                    <span
-                                        class="
-                                            sof-status-pill
-                                            ${getStatusClass(status)}
-                                        "
-                                    >
-                                        ${escapeHTML(status)}
-                                    </span>
-                                `;
-
-
-                                closeFacultyModal(
-                                    soModal
-                                );
-
-                                resetSOForm();
-
-                                return;
-
-                            }
-
-
-                            /* -------------------------------------
-                               NEW SO REQUIRES FILE
-                               ------------------------------------- */
-
-                            if (!newFile) {
-
-                                alert(
-                                    "Please upload a Student Outcome file."
-                                );
-
-                                return;
-
-                            }
-
-
-                            /* -------------------------------------
-                               ADD NEW STUDENT OUTCOME
-                               ------------------------------------- */
-
-                            const row =
-                                document.createElement(
-                                    "tr"
-                                );
-
-
-                            row.dataset.description =
-                                description;
-
-                            row.dataset.dueDate =
-                                dueDate;
-
-                            row.dataset.status =
-                                status;
-
-                            row.dataset.fileName =
-                                newFile.name;
-
-                            row.dataset.responses =
-                                "0";
-
-
-                            row.innerHTML = `
-                                <td>
-
-                                    <strong>
-                                        ${escapeHTML(description)}
-                                    </strong>
-
-                                    <small
-                                        style="
-                                            display:block;
-                                            margin-top:4px;
-                                            color:#637487;
-                                            font-size:11px;
-                                        "
-                                    >
-                                        ${escapeHTML(newFile.name)}
-                                    </small>
-
-                                </td>
-
-                                <td>
-                                    ${escapeHTML(formatDueDate(dueDate))}
-                                </td>
-
-                                <td>
-                                    0
-                                </td>
-
-                                <td>
-
-                                    <span
-                                        class="
-                                            sof-status-pill
-                                            ${getStatusClass(status)}
-                                        "
-                                    >
-                                        ${escapeHTML(status)}
-                                    </span>
-
-                                </td>
-
-                                <td>
-
-                                    <div class="sof-row-actions">
-
-                                        <button
-                                            type="button"
-                                            class="sof-edit-outcome-btn js-edit-student-outcome"
-                                        >
-                                            Edit
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            class="sof-delete-outcome-btn js-delete-student-outcome"
-                                        >
-                                            Delete
-                                        </button>
-
-                                    </div>
-
-                                </td>
-                            `;
-
-
-                            soTableBody.appendChild(
-                                row
-                            );
-
-
-                            closeFacultyModal(
-                                soModal
-                            );
-
-                            resetSOForm();
-
-                        },
-                        true
-                    );
-
-                }
-
-
-                /* =================================================
-                   EDIT / DELETE STUDENT OUTCOME
-                   ================================================= */
-
-                if (soTableBody) {
-
-                    soTableBody.addEventListener(
-                        "click",
-                        function (event) {
-
-                            const editButton =
-                                event.target.closest(
-                                    ".js-edit-student-outcome, .sof-edit-outcome-btn"
-                                );
-
-                            const deleteButton =
-                                event.target.closest(
-                                    ".js-delete-student-outcome, .sof-delete-outcome-btn"
-                                );
-
-
-                            /* EDIT */
-
-                            if (editButton) {
-
-                                stopOldHandler(
-                                    event
-                                );
-
-                                const row =
-                                    editButton.closest(
-                                        "tr"
-                                    );
-
-                                if (!row) {
-                                    return;
-                                }
-
-
-                                editingSORow =
-                                    row;
-
-
-                                if (soDescription) {
-
-                                    soDescription.value =
-                                        row.dataset.description ||
-                                        "";
-
-                                }
-
-
-                                if (soDueDate) {
-
-                                    soDueDate.value =
-                                        row.dataset.dueDate ||
-                                        "";
-
-                                }
-
-
-                                if (soStatus) {
-
-                                    soStatus.value =
-                                        row.dataset.status ||
-                                        "Draft";
-
-                                }
-
-
-                                if (soFile) {
-
-                                    soFile.value =
-                                        "";
-
-                                }
-
-
-                                if (
-                                    soCurrentFile &&
-                                    row.dataset.fileName
-                                ) {
-
-                                    soCurrentFile.textContent =
-                                        "Current file: " +
-                                        row.dataset.fileName +
-                                        ". Choose a new file only if you want to replace it.";
-
-                                    soCurrentFile.hidden =
-                                        false;
-
-                                }
-
-
-                                soTitle.textContent =
-                                    "Edit Student Outcome";
-
-                                soSubtitle.textContent =
-                                    "Update the student outcome assessment details below.";
-
-                                saveSOButton.textContent =
-                                    "Update";
-
-
-                                openFacultyModal(
-                                    soModal
-                                );
-
-                                return;
-
-                            }
-
-
-                            /* DELETE */
-
-                            if (deleteButton) {
-
-                                stopOldHandler(
-                                    event
-                                );
-
-                                const row =
-                                    deleteButton.closest(
-                                        "tr"
-                                    );
-
-                                if (!row) {
-                                    return;
-                                }
-
-
-                                deletingSORow =
-                                    row;
-
-
-                                if (deleteSOName) {
-
-                                    deleteSOName.textContent =
-                                        row.dataset.description ||
-                                        "this student outcome";
-
-                                }
-
-
-                                openFacultyModal(
-                                    deleteSOModal
-                                );
-
-                            }
-
-                        },
-                        true
-                    );
-
-                }
-
-
-                /* =================================================
-                   DELETE STUDENT OUTCOME
-                   ================================================= */
-
-                function cancelSODelete(event) {
-
-                    if (event) {
-
-                        stopOldHandler(
-                            event
-                        );
-
-                    }
-
-                    deletingSORow =
-                        null;
-
-                    closeFacultyModal(
-                        deleteSOModal
-                    );
-
-                }
-
-
-                if (cancelDeleteSO) {
-
-                    cancelDeleteSO.addEventListener(
-                        "pointerdown",
-                        cancelSODelete,
-                        true
-                    );
-
-                }
-
-
-                if (deleteSOBackdrop) {
-
-                    deleteSOBackdrop.addEventListener(
-                        "pointerdown",
-                        cancelSODelete,
-                        true
-                    );
-
-                }
-
-
-                if (confirmDeleteSO) {
-
-                    confirmDeleteSO.addEventListener(
-                        "pointerdown",
-                        function (event) {
-
-                            stopOldHandler(
-                                event
-                            );
-
-                            if (deletingSORow) {
-
-                                deletingSORow.remove();
-
-                            }
-
-                            deletingSORow =
-                                null;
-
-                            closeFacultyModal(
-                                deleteSOModal
-                            );
-
-                        },
-                        true
-                    );
-
-                }
-
-
-                /* =================================================
-                   ESC KEY
-                   ================================================= */
-
-                document.addEventListener(
-                    "keydown",
-                    function (event) {
-
-                        if (
-                            event.key !==
-                            "Escape"
-                        ) {
-                            return;
-                        }
-
-
-                        if (
-                            coModal &&
-                            !coModal.hidden
-                        ) {
-
-                            closeFacultyModal(
-                                coModal
-                            );
-
-                            resetCOForm();
-
-                            return;
-
-                        }
-
-
-                        if (
-                            soModal &&
-                            !soModal.hidden
-                        ) {
-
-                            closeFacultyModal(
-                                soModal
-                            );
-
-                            resetSOForm();
-
-                            return;
-
-                        }
-
-
-                        if (
-                            deleteCOModal &&
-                            !deleteCOModal.hidden
-                        ) {
-
-                            deletingCORow =
-                                null;
-
-                            closeFacultyModal(
-                                deleteCOModal
-                            );
-
-                            return;
-
-                        }
-
-
-                        if (
-                            deleteSOModal &&
-                            !deleteSOModal.hidden
-                        ) {
-
-                            deletingSORow =
-                                null;
-
-                            closeFacultyModal(
-                                deleteSOModal
-                            );
-
-                        }
-
-                    }
-                );
-
-
-                /* =================================================
-                   IMPORTANT:
-                   KEEP BUTTONS CLICKABLE EVEN AFTER INPUT FOCUS
-                   ================================================= */
-
-                [
-                    cancelCOButton,
-                    saveCOButton,
-                    cancelSOButton,
-                    saveSOButton
-                ]
-                .filter(Boolean)
-                .forEach(
-                    function (button) {
-
-                        button.style.pointerEvents =
-                            "auto";
-
-                        button.style.position =
-                            "relative";
-
-                        button.style.zIndex =
-                            "100";
-
-                    }
-                );
-
-            }
-        );
-
-    </script>
-
+<script src="../../Static/script.js"></script>
 </body>
 
 </html>

@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Reflection | EduMetrics</title>
+
+    <link rel="stylesheet" href="../../../Static/style.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body.so-reflection-page {
+            margin: 0;
+            min-height: 100vh;
+            background: #F4F7FB;
+            color: #173B5C;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        /* Header */
+
+        .reflection-topbar {
+            min-height: 78px;
+            padding: 14px 38px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #FFFFFF;
+            border-bottom: 6px solid #F4C300;
+            box-shadow: 0 2px 8px rgba(0, 45, 114, 0.08);
+        }
+
+        .reflection-brand {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .reflection-brand-logo {
+            color: #004179;
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .reflection-brand-logo span {
+            color: #F4C300;
+        }
+
+        .reflection-brand-subtitle {
+            margin-top: 2px;
+            color: #607A91;
+            font-size: 11px;
+        }
+
+        .reflection-header-right {
+            color: #004179;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        /* Main */
+
+        .reflection-main {
+            width: min(1120px, calc(100% - 40px));
+            margin: 30px auto 50px;
+        }
+
+        /* Card */
+
+        .reflection-card {
+            overflow: hidden;
+            border-radius: 12px;
+            background: #FFFFFF;
+            box-shadow: 0 4px 18px rgba(0, 45, 114, 0.10);
+        }
+
+        /* Title */
+
+        .reflection-title-section {
+            padding: 28px 34px 25px;
+            border-bottom: 1px solid #DCE6EE;
+            background: #FFFFFF;
+        }
+
+        .reflection-page-label {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 70px;
+            height: 28px;
+            padding: 0 13px;
+            margin-bottom: 13px;
+            border-radius: 20px;
+            background: #FFF4B8;
+            color: #004179;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .reflection-title-section h1 {
+            margin: 0;
+            color: #00345F;
+            font-size: 24px;
+            font-weight: 800;
+            line-height: 1.3;
+        }
+
+        .reflection-title-section p {
+            margin: 9px 0 0;
+            color: #657C90;
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        /* Student information */
+
+        .reflection-student-info {
+            padding: 25px 34px 5px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .reflection-info-group {
+            min-width: 0;
+        }
+
+        .reflection-info-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #004179;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .reflection-info-group input {
+            width: 100%;
+            height: 39px;
+            padding: 0 11px;
+            border: 1px solid #B9CDDC;
+            border-radius: 6px;
+            outline: none;
+            background: #FFFFFF;
+            color: #294E6B;
+            font-family: inherit;
+            font-size: 12px;
+        }
+
+        .reflection-info-group input:focus {
+            border-color: #004179;
+            box-shadow: 0 0 0 2px rgba(0, 65, 121, 0.08);
+        }
+
+        /* Reflection */
+
+        .reflection-content {
+            padding: 28px 34px 34px;
+        }
+
+        .reflection-heading {
+            margin-bottom: 22px;
+        }
+
+        .reflection-heading h2 {
+            margin: 0 0 5px;
+            color: #00345F;
+            font-size: 17px;
+            font-weight: 800;
+        }
+
+        .reflection-heading p {
+            margin: 0;
+            color: #657C90;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        /* Questions */
+
+        .reflection-question {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #D7E3EC;
+            border-radius: 10px;
+            background: #FFFFFF;
+        }
+
+        .reflection-question-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .reflection-number {
+            width: 29px;
+            height: 29px;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: #004179;
+            color: #FFFFFF;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .reflection-question p {
+            margin: 3px 0 0;
+            color: #294E6B;
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1.55;
+        }
+
+        .reflection-question textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 14px;
+            resize: vertical;
+            border: 1px solid #B9CDDC;
+            border-radius: 8px;
+            outline: none;
+            background: #FAFCFE;
+            color: #294E6B;
+            font-family: inherit;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .reflection-question textarea:focus {
+            border-color: #004179;
+            background: #FFFFFF;
+            box-shadow: 0 0 0 2px rgba(0, 65, 121, 0.08);
+        }
+
+        .reflection-question textarea::placeholder {
+            color: #93A6B5;
+        }
+
+        /* Signature and date */
+
+        .reflection-signature-section {
+            margin-top: 28px;
+            padding-top: 22px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            align-items: start;
+            border-top: 1px solid #E1E9EF;
+        }
+
+        .reflection-signature-group label,
+        .reflection-date-group label {
+            display: block;
+            margin-bottom: 7px;
+            color: #004179;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .signature-pad-wrapper {
+            width: 100%;
+            height: 150px;
+            overflow: hidden;
+            border: 1px solid #B9CDDC;
+            border-radius: 8px;
+            background: #FFFFFF;
+        }
+
+        .signature-pad {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        .signature-helper {
+            margin: 6px 0 0;
+            color: #7A8E9F;
+            font-size: 10px;
+            line-height: 1.4;
+        }
+
+        .clear-signature-button {
+            margin-top: 9px;
+            height: 34px;
+            padding: 0 14px;
+            border: 1px solid #B7CAD8;
+            border-radius: 6px;
+            background: #FFFFFF;
+            color: #004179;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .clear-signature-button:hover {
+            background: #F4F7FB;
+        }
+
+        .reflection-date-input {
+            width: 100%;
+            height: 41px;
+            padding: 0 11px;
+            border: 1px solid #B9CDDC;
+            border-radius: 6px;
+            outline: none;
+            background: #FFFFFF;
+            color: #294E6B;
+            font-family: inherit;
+            font-size: 12px;
+        }
+
+        .reflection-date-input:focus {
+            border-color: #004179;
+            box-shadow: 0 0 0 2px rgba(0, 65, 121, 0.08);
+        }
+
+        /* Validation */
+
+        .reflection-message {
+            display: none;
+            margin-top: 20px;
+            padding: 11px 14px;
+            border-radius: 6px;
+            background: #FFF3F1;
+            color: #C54438;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .reflection-message.show {
+            display: block;
+        }
+
+        /* Actions */
+
+        .reflection-actions {
+            padding: 0 34px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .reflection-back-button,
+        .reflection-submit-button {
+            min-width: 130px;
+            height: 41px;
+            padding: 0 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 7px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .reflection-back-button {
+            border: 1px solid #B7CAD8;
+            background: #FFFFFF;
+            color: #004179;
+        }
+
+        .reflection-back-button:hover {
+            background: #F4F7FB;
+        }
+
+        .reflection-submit-button {
+            border: 0;
+            background: #004179;
+            color: #FFFFFF;
+        }
+
+        .reflection-submit-button:hover {
+            background: #00345F;
+        }
+
+        /* Success */
+
+        .reflection-success {
+            display: none;
+            padding: 50px 34px;
+            text-align: center;
+        }
+
+        .reflection-success.show {
+            display: block;
+        }
+
+        .reflection-success-icon {
+            width: 58px;
+            height: 58px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: #EAF3E8;
+            color: #287A38;
+            font-size: 27px;
+            font-weight: 800;
+        }
+
+        .reflection-success h2 {
+            margin: 0 0 7px;
+            color: #00345F;
+            font-size: 20px;
+        }
+
+        .reflection-success p {
+            margin: 0;
+            color: #657C90;
+            font-size: 12px;
+        }
+
+        /* Responsive */
+
+        @media (max-width: 850px) {
+            .reflection-student-info {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .reflection-signature-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .reflection-topbar {
+                padding: 14px 18px;
+            }
+
+            .reflection-header-right {
+                display: none;
+            }
+
+            .reflection-main {
+                width: calc(100% - 24px);
+                margin-top: 18px;
+            }
+
+            .reflection-title-section,
+            .reflection-content {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+
+            .reflection-student-info {
+                padding-left: 20px;
+                padding-right: 20px;
+                grid-template-columns: 1fr;
+            }
+
+            .reflection-actions {
+                padding-left: 20px;
+                padding-right: 20px;
+                flex-direction: column-reverse;
+            }
+
+            .reflection-back-button,
+            .reflection-submit-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body class="so-reflection-page">
+
+    <!-- Header -->
+
+    <header class="reflection-topbar">
+        <div class="reflection-brand">
+            <div class="reflection-brand-logo">
+                Edu<span>Metrics</span>
+            </div>
+
+            <div class="reflection-brand-subtitle">
+                Academic Assessment &amp; Grading System
+            </div>
+        </div>
+
+        <div class="reflection-header-right">
+            Student Self-Assessment
+        </div>
+    </header>
+
+    <!-- Main content -->
+
+    <main class="reflection-main">
+
+        <section class="reflection-card">
+
+            <!-- Page title -->
+
+            <div class="reflection-title-section">
+                <span class="reflection-page-label">
+                    Page 2 · Reflection
+                </span>
+
+                <h1>
+                    Self-Assessment and Reflection on
+                    Attainment of Student Outcome
+                </h1>
+
+                <p>
+                    Complete the reflection below before submitting
+                    your self-assessment.
+                </p>
+            </div>
+
+            <!-- Student information -->
+
+            <div class="reflection-student-info">
+
+                <div class="reflection-info-group">
+                    <label for="reflectionStudentName">
+                        Name of Student
+                    </label>
+
+                    <input
+                        id="reflectionStudentName"
+                        type="text"
+                        placeholder="Student name"
+                    >
+                </div>
+
+                <div class="reflection-info-group">
+                    <label for="reflectionProgram">
+                        Program
+                    </label>
+
+                    <input
+                        id="reflectionProgram"
+                        type="text"
+                        placeholder="Program"
+                    >
+                </div>
+
+                <div class="reflection-info-group">
+                    <label for="reflectionCourse">
+                        Course
+                    </label>
+
+                    <input
+                        id="reflectionCourse"
+                        type="text"
+                        placeholder="Course"
+                    >
+                </div>
+
+                <div class="reflection-info-group">
+                    <label for="reflectionSection">
+                        Section
+                    </label>
+
+                    <input
+                        id="reflectionSection"
+                        type="text"
+                        placeholder="Section"
+                    >
+                </div>
+
+                <div class="reflection-info-group">
+                    <label for="reflectionSemester">
+                        Semester
+                    </label>
+
+                    <input
+                        id="reflectionSemester"
+                        type="text"
+                        placeholder="Semester"
+                    >
+                </div>
+
+                <div class="reflection-info-group">
+                    <label for="reflectionSchoolYear">
+                        School Year
+                    </label>
+
+                    <input
+                        id="reflectionSchoolYear"
+                        type="text"
+                        placeholder="School Year"
+                    >
+                </div>
+
+            </div>
+
+            <!-- Reflection form -->
+
+            <div class="reflection-content" id="reflectionForm">
+
+                <div class="reflection-heading">
+                    <h2>
+                        B. Reflection
+                    </h2>
+
+                    <p>
+                        Complete both reflection questions before
+                        submitting your self-assessment.
+                    </p>
+                </div>
+
+                <!-- Reflection question 1 -->
+
+                <div class="reflection-question">
+                    <div class="reflection-question-header">
+                        <span class="reflection-number">
+                            1
+                        </span>
+
+                        <p>
+                            Which among the performance indicators
+                            you are best at? State how the course
+                            helped you perform.
+                        </p>
+                    </div>
+
+                    <textarea
+                        id="reflectionAnswer1"
+                        placeholder="Type your answer here..."
+                    ></textarea>
+                </div>
+
+                <!-- Reflection question 2 -->
+
+                <div class="reflection-question">
+                    <div class="reflection-question-header">
+                        <span class="reflection-number">
+                            2
+                        </span>
+
+                        <p>
+                            Which among the performance indicators
+                            you are weakest at? Suggest some ways
+                            on how you think the course could have
+                            helped you perform better.
+                        </p>
+                    </div>
+
+                    <textarea
+                        id="reflectionAnswer2"
+                        placeholder="Type your answer here..."
+                    ></textarea>
+                </div>
+
+                <!-- Signature and date -->
+
+                <div class="reflection-signature-section">
+
+                    <div class="reflection-signature-group">
+                        <label for="studentSignature">
+                            Signature of Student
+                        </label>
+
+                        <div class="signature-pad-wrapper">
+                            <canvas
+                                id="studentSignature"
+                                class="signature-pad"
+                            ></canvas>
+                        </div>
+
+                        <p class="signature-helper">
+                            Sign inside the box using your mouse or touchscreen.
+                        </p>
+
+                        <button
+                            type="button"
+                            class="clear-signature-button"
+                            id="clearSignatureButton"
+                        >
+                            Clear Signature
+                        </button>
+                    </div>
+
+                    <div class="reflection-date-group">
+                        <label for="reflectionDate">
+                            Date
+                        </label>
+
+                        <input
+                            type="date"
+                            id="reflectionDate"
+                            class="reflection-date-input"
+                        >
+                    </div>
+
+                </div>
+
+                <!-- Validation message -->
+
+                <div
+                    class="reflection-message"
+                    id="reflectionMessage"
+                >
+                    Please complete all required fields before submitting.
+                </div>
+
+            </div>
+
+            <!-- Success message -->
+
+            <div
+                class="reflection-success"
+                id="reflectionSuccess"
+            >
+                <div class="reflection-success-icon">
+                    ✓
+                </div>
+
+                <h2>
+                    Assessment Completed
+                </h2>
+
+                <p>
+                    Your self-assessment and reflection have
+                    been completed successfully.
+                </p>
+            </div>
+
+            <!-- Actions -->
+
+            <div
+                class="reflection-actions"
+                id="reflectionActions"
+            >
+                <button
+                    type="button"
+                    class="reflection-back-button"
+                    id="reflectionBackButton"
+                >
+                    ← Back
+                </button>
+
+                <button
+                    type="button"
+                    class="reflection-submit-button"
+                    id="reflectionSubmitButton"
+                >
+                    Submit Assessment
+                </button>
+            </div>
+
+        </section>
+
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const params = new URLSearchParams(window.location.search);
+            const currentSO = params.get("so");
+
+            const answer1 = document.getElementById("reflectionAnswer1");
+            const answer2 = document.getElementById("reflectionAnswer2");
+            const dateInput = document.getElementById("reflectionDate");
+            const message = document.getElementById("reflectionMessage");
+            const submitButton = document.getElementById("reflectionSubmitButton");
+            const backButton = document.getElementById("reflectionBackButton");
+            const form = document.getElementById("reflectionForm");
+            const success = document.getElementById("reflectionSuccess");
+            const actions = document.getElementById("reflectionActions");
+
+            const signatureCanvas = document.getElementById("studentSignature");
+            const signatureContext = signatureCanvas.getContext("2d");
+            const clearSignatureButton = document.getElementById("clearSignatureButton");
+
+            let isDrawing = false;
+            let hasSignature = false;
+
+            /* Back navigation */
+
+            backButton.addEventListener("click", function () {
+                const validStudentOutcomes = [
+                    "a",
+                    "b",
+                    "c",
+                    "d",
+                    "e",
+                    "f",
+                    "g1",
+                    "g2",
+                    "h",
+                    "i",
+                    "j",
+                    "k"
+                ];
+
+                if (currentSO && validStudentOutcomes.includes(currentSO)) {
+                    window.location.href = "so-" + currentSO + ".html";
+                    return;
+                }
+
+                window.location.href = "../so-student.html";
+            });
+
+            /* Signature canvas */
+
+            function resizeSignatureCanvas() {
+                const rect = signatureCanvas.getBoundingClientRect();
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+
+                signatureCanvas.width = rect.width * ratio;
+                signatureCanvas.height = rect.height * ratio;
+
+                signatureContext.setTransform(ratio, 0, 0, ratio, 0, 0);
+                signatureContext.lineWidth = 2;
+                signatureContext.lineCap = "round";
+                signatureContext.lineJoin = "round";
+                signatureContext.strokeStyle = "#173B5C";
+            }
+
+            function getSignaturePosition(event) {
+                const rect = signatureCanvas.getBoundingClientRect();
+
+                return {
+                    x: event.clientX - rect.left,
+                    y: event.clientY - rect.top
+                };
+            }
+
+            signatureCanvas.addEventListener("pointerdown", function (event) {
+                const position = getSignaturePosition(event);
+
+                isDrawing = true;
+
+                signatureContext.beginPath();
+                signatureContext.moveTo(position.x, position.y);
+
+                signatureCanvas.setPointerCapture(event.pointerId);
+            });
+
+            signatureCanvas.addEventListener("pointermove", function (event) {
+                if (!isDrawing) {
+                    return;
+                }
+
+                const position = getSignaturePosition(event);
+
+                signatureContext.lineTo(position.x, position.y);
+                signatureContext.stroke();
+
+                hasSignature = true;
+                hideMessage();
+            });
+
+            signatureCanvas.addEventListener("pointerup", function (event) {
+                isDrawing = false;
+
+                if (signatureCanvas.hasPointerCapture(event.pointerId)) {
+                    signatureCanvas.releasePointerCapture(event.pointerId);
+                }
+            });
+
+            signatureCanvas.addEventListener("pointercancel", function () {
+                isDrawing = false;
+            });
+
+            clearSignatureButton.addEventListener("click", function () {
+                signatureContext.clearRect(
+                    0,
+                    0,
+                    signatureCanvas.width,
+                    signatureCanvas.height
+                );
+
+                hasSignature = false;
+            });
+
+            /* Validation */
+
+            function hideMessage() {
+                if (
+                    answer1.value.trim() &&
+                    answer2.value.trim() &&
+                    dateInput.value &&
+                    hasSignature
+                ) {
+                    message.classList.remove("show");
+                }
+            }
+
+            answer1.addEventListener("input", function () {
+                hideMessage();
+            });
+
+            answer2.addEventListener("input", function () {
+                hideMessage();
+            });
+
+            dateInput.addEventListener("input", function () {
+                hideMessage();
+            });
+
+            /* Submit assessment */
+
+            submitButton.addEventListener("click", function () {
+                const firstAnswer = answer1.value.trim();
+                const secondAnswer = answer2.value.trim();
+                const selectedDate = dateInput.value;
+
+                if (
+                    !firstAnswer ||
+                    !secondAnswer ||
+                    !hasSignature ||
+                    !selectedDate
+                ) {
+                    message.classList.add("show");
+
+                    message.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center"
+                    });
+
+                    return;
+                }
+
+                let assessmentData = {};
+                const storedAssessment = sessionStorage.getItem("currentSOAssessment");
+
+                if (storedAssessment) {
+                    try {
+                        assessmentData = JSON.parse(storedAssessment);
+                    } catch (error) {
+                        assessmentData = {};
+                    }
+                }
+
+                if (currentSO) {
+                    assessmentData.studentOutcome = currentSO;
+                }
+
+                assessmentData.reflection = {
+                    bestPerformanceIndicator: firstAnswer,
+                    weakestPerformanceIndicator: secondAnswer,
+                    signature: signatureCanvas.toDataURL("image/png"),
+                    date: selectedDate,
+                    submittedAt: new Date().toISOString()
+                };
+
+                /* Temporary frontend storage */
+
+                sessionStorage.setItem(
+                    "completedSOAssessment",
+                    JSON.stringify(assessmentData)
+                );
+
+                form.style.display = "none";
+                actions.style.display = "none";
+                success.classList.add("show");
+            });
+
+            resizeSignatureCanvas();
+        });
+    </script>
+</body>
+</html>

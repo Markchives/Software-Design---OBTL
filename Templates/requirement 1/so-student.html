@@ -19,39 +19,37 @@
 
 <body class="so-student-page">
 
-    <!--TOP HEADER-->
     <header class="so-topbar">
-
-    
         <div class="so-brand">
-            <div class="so-brand-logo">Edu<span>Metrics</span></div>
-            <div class="so-brand-subtitle">Academic Assessment &amp; Grading System</div>
+            <div class="so-brand-logo">
+                Edu<span>Metrics</span>
+            </div>
+
+            <div class="so-brand-subtitle">
+                Academic Assessment &amp; Grading System
+            </div>
         </div>
 
         <div class="so-user-area">
-
-            <!-- NOTIFICATION -->
             <button
                 class="so-notification-btn"
                 type="button"
                 aria-label="Notifications"
             >
-
                 <img
                     src="../../Static/images/sidebar/notif.png"
                     alt="Notifications"
                     class="so-notification-image"
                 >
+
                 <span class="so-notification-dot"></span>
             </button>
 
-            <!-- STUDENT INFO -->
             <div class="so-user-info">
                 <strong id="studentName"></strong>
                 <span>Student</span>
             </div>
 
-            <!-- PROFILE ICON-->
             <div
                 class="so-avatar"
                 aria-hidden="true"
@@ -66,17 +64,15 @@
         </div>
     </header>
 
-    <!-- HEADER LINES -->
     <div class="so-header-lines">
         <div class="so-header-blue"></div>
         <div class="so-header-gold"></div>
     </div>
 
-    <!-- PAGE SHELL -->
     <div class="so-shell">
+
         <aside class="so-sidebar">
 
-            <!-- PAGES LABEL -->
             <div class="so-pages-title">
                 <span class="so-grid-icon so-pages-image-wrap">
                     <img
@@ -85,16 +81,15 @@
                         class="so-pages-image"
                     >
                 </span>
+
                 <span>Pages</span>
             </div>
 
-            <!-- NAVIGATION -->
             <nav
                 class="so-nav"
                 aria-label="Student navigation"
             >
 
-                <!-- HOME -->
                 <a
                     href="#"
                     class="so-nav-item"
@@ -106,10 +101,10 @@
                             class="so-nav-image"
                         >
                     </span>
-                    <span>Home </span>
+
+                    <span>Home</span>
                 </a>
 
-                <!-- MY COURSES -->
                 <a
                     href="#"
                     class="so-nav-item"
@@ -121,10 +116,10 @@
                             class="so-nav-image"
                         >
                     </span>
+
                     <span>My Courses</span>
                 </a>
 
-                <!-- PLATFORM -->
                 <a
                     href="#"
                     class="so-nav-item"
@@ -136,11 +131,12 @@
                             class="so-nav-image"
                         >
                     </span>
+
                     <span>Platform</span>
                 </a>
 
-                <!-- WORKFLOW -->
                 <div class="so-nav-group">
+
                     <button
                         class="so-nav-item so-products active"
                         type="button"
@@ -152,28 +148,50 @@
                                 class="so-nav-image"
                             >
                         </span>
+
                         <span>Workflow</span>
                     </button>
 
-                    <!-- WORKFLOW SUBMENU -->
                     <div class="so-subnav">
+
                         <a
                             href="#"
                             class="active"
                         >
                             Syllabus &amp; Outcomes
                         </a>
-                        <a href="#">Curriculum Mapping</a>
-                        <a href="#">Class Roster</a>
-                        <a href="#">Assessment Entry </a>
-                        <a href="#">Attainment</a>
-                        <a href="#">CQI Planning</a>
-                        <a href="#">Gradebook</a>
-                        <a href="#">Compliance Report</a>
+
+                        <a href="#">
+                            Curriculum Mapping
+                        </a>
+
+                        <a href="#">
+                            Class Roster
+                        </a>
+
+                        <a href="#">
+                            Assessment Entry
+                        </a>
+
+                        <a href="#">
+                            Attainment
+                        </a>
+
+                        <a href="#">
+                            CQI Planning
+                        </a>
+
+                        <a href="#">
+                            Gradebook
+                        </a>
+
+                        <a href="#">
+                            Compliance Report
+                        </a>
+
                     </div>
                 </div>
 
-                <!-- RESOURCES -->
                 <a
                     href="#"
                     class="so-nav-item"
@@ -184,13 +202,11 @@
                             alt=""
                             class="so-nav-image"
                         >
-
                     </span>
 
                     <span>Resources</span>
                 </a>
 
-                <!-- ABOUT US -->
                 <a
                     href="#"
                     class="so-nav-item"
@@ -202,87 +218,159 @@
                             class="so-nav-image"
                         >
                     </span>
+
                     <span>About Us</span>
                 </a>
+
             </nav>
 
-            <!-- SIDEBAR BRAND -->
             <div class="so-sidebar-brand">
-                <div class="so-sidebar-logo">Edu<span>Metrics</span></div>
-                <small>Academic Assessment &amp; Grading System</small>
+
+                <div class="so-sidebar-logo">
+                    Edu<span>Metrics</span>
+                </div>
+
+                <small>
+                    Academic Assessment &amp; Grading System
+                </small>
+
             </div>
+
         </aside>
 
-        <!-- MAIN CONTENT-->
         <main class="so-main">
 
-            <!-- PAGE TITLE -->
             <section class="so-page-heading">
-                <h1>Syllabus &amp; Outcomes</h1>
-                <p>View and download your course syllabus and
-                    SO/CO assessments</p>
+
+                <h1>
+                    Syllabus &amp; Outcomes
+                </h1>
+
+                <p>
+                    View and download your course syllabus and
+                    SO/CO assessments
+                </p>
+
             </section>
 
-            <!-- SUMMARY CARDS-->
             <section class="so-summary-grid">
 
-                <!-- PENDING SO -->
                 <article class="so-summary-card">
+
                     <div class="so-summary-accent"></div>
-                    <strong class="so-summary-number">0</strong> <!--edit this if evs-->
-                    <span class="so-summary-label">Pending SO<br>self-assessments </span>
+
+                    <strong
+                        class="so-summary-number"
+                        id="pendingSOCount"
+                    >
+                        0
+                    </strong>
+
+                    <span class="so-summary-label">
+                        Pending SO<br>
+                        self-assessments
+                    </span>
+
                 </article>
 
-                <!-- DUE THIS WEEK -->
                 <article class="so-summary-card">
+
                     <div class="so-summary-accent"></div>
-                    <strong class="so-summary-number"> 0</strong>
-                    <span class="so-summary-label">Due this week</span> <!--edit this if evs-->
+
+                    <strong
+                        class="so-summary-number"
+                        id="dueThisWeekCount"
+                    >
+                        0
+                    </strong>
+
+                    <span class="so-summary-label">
+                        Due this week
+                    </span>
+
                 </article>
 
-                <!-- AVAILABLE SYLLABUS -->
                 <article class="so-summary-card">
+
                     <div class="so-summary-accent"></div>
-                    <strong class="so-summary-number">0</strong> <!--edit this if evs-->
-                    <span class="so-summary-label">Available Syllabus</span>
+
+                    <strong
+                        class="so-summary-number"
+                        id="availableSyllabusCount"
+                    >
+                        0
+                    </strong>
+
+                    <span class="so-summary-label">
+                        Available Syllabus
+                    </span>
+
                 </article>
+
             </section>
 
-            <!-- PENDING SO SELF-ASSESSMENTS-->
             <section class="so-content-card">
-                <div class="so-section-header">
-                    <h2>Pending SO self-assessments</h2>
 
-                    <!-- SEARCH -->
+                <div class="so-section-header">
+
+                    <h2>
+                        Pending SO self-assessments
+                    </h2>
+
                     <div class="so-search">
-                        <span class="so-search-icon">⌕</span>
+
+                        <span class="so-search-icon">
+                            ⌕
+                        </span>
+
                         <input
                             type="search"
+                            id="pendingSOSearch"
                             placeholder="Search"
                             aria-label="Search pending self-assessments"
                         >
+
                     </div>
+
                 </div>
+
                 <div class="so-section-rule"></div>
 
-                <!-- EMPTY STATE -->
-                <div class="so-empty-state">
-                    <h3> No pending self-assessments </h3>
+                <div
+                    class="so-empty-state"
+                    id="pendingSOEmpty"
+                >
+                    <h3>
+                        No pending self-assessments
+                    </h3>
+
                     <p>
                         Your assigned SO self-assessments
                         will appear here once they become available.
                     </p>
                 </div>
+
+                <div
+                    class="so-pending-list"
+                    id="pendingSOList"
+                    hidden
+                ></div>
+
             </section>
 
-            <!-- MY COURSE SYLLABUS -->
             <section class="so-content-card so-syllabus-card">
                 <div class="so-section-header">
-                    <h2>My course syllabus</h2>
 
-                    <!-- SEARCH -->
+                    <h2>
+                        My course syllabus
+                    </h2>
+
                     <div class="so-search">
-                        <span class="so-search-icon"> ⌕</span>
+
+                        <span class="so-search-icon">
+                            ⌕
+                        </span>
+
                         <input
                             type="search"
                             placeholder="Search"
@@ -290,24 +378,21 @@
                         >
                     </div>
                 </div>
+
                 <div class="so-section-rule"></div>
-
-                <!--EMPTY STATE-->
-
                 <div
                     class="so-empty-state"
                     id="studentSyllabusEmpty"
                 >
-                    <h3>No courses yet</h3>
+                    <h3>
+                        No courses yet
+                    </h3>
+
                     <p>
                         Your course syllabus will appear here
                         once you are added to a course.
                     </p>
                 </div>
-
-                <!-- =================================================
-                    BY DEFAULT SINCE WALA PANG UPLOADED FILE
-                     ================================================= -->
 
                 <div
                     class="so-student-syllabus-list"
@@ -315,8 +400,6 @@
                     hidden
                 >
                     <div class="so-student-file-row">
-
-                        <!-- FILE INFORMATION -->
                         <div class="so-student-file-info">
                             <div class="so-student-file-copy">
                                 <strong id="studentSyllabusFileName">
@@ -324,42 +407,43 @@
                                 </strong>
 
                                 <div class="so-student-file-meta">
-                                    <span>PDF </span>
+                                    <span>PDF</span>
                                     <span>•</span>
                                     <span>2.4 MB</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- ACTIONS -->
                         <div class="so-student-file-actions">
 
-                            <!-- VIEW -->
                             <button
                                 class="so-student-view-btn"
                                 type="button"
                             >
-
                                 <img
                                     src="../../Static/images/sidebar/view-blue.png"
                                     alt=""
                                     class="so-action-icon"
                                 >
-                                <span>View Syllabus</span>
+
+                                <span>
+                                    View Syllabus
+                                </span>
                             </button>
 
-                            <!-- DOWNLOAD -->
                             <button
                                 class="so-student-download-btn"
                                 type="button"
                             >
-
                                 <img
                                     src="../../Static/images/sidebar/download.png"
                                     alt=""
                                     class="so-action-icon"
                                 >
-                                <span>Download PDF </span>
+
+                                <span>
+                                    Download PDF
+                                </span>
                             </button>
                         </div>
                     </div>
@@ -367,5 +451,7 @@
             </section>
         </main>
     </div>
+
+    <script src="../../Static/script.js"></script>
 </body>
 </html>
