@@ -14716,7 +14716,7 @@ body.sof-modal-open {
 }
 
 .so-faculty-page .sof-outcome-table td {
-    padding: 15px 17px;
+    padding: 15px 20px;
     border: none !important;
     border-bottom: 1px solid #E4EBF2 !important;
     background: transparent !important;
@@ -14740,10 +14740,23 @@ body.sof-modal-open {
 
 .so-faculty-page #course-outcomes .sof-outcome-table th:nth-child(3), .so-faculty-page #course-outcomes .sof-outcome-table td:nth-child(3) {
     width: 22% !important;
+    text-align: center !important;
+    vertical-align: middle !important;
 }
 
 .so-faculty-page #course-outcomes .sof-outcome-table th:nth-child(4), .so-faculty-page #course-outcomes .sof-outcome-table td:nth-child(4) {
     width: 18% !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
+.so-faculty-page #course-outcomes .sof-outcome-table td:nth-child(4) .sof-row-actions {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    margin: 0 !important;
 }
 
 .so-faculty-page #student-outcomes .sof-outcome-table th:nth-child(1), .so-faculty-page #student-outcomes .sof-outcome-table td:nth-child(1) {
@@ -18343,6 +18356,7 @@ body.sof-modal-open {
     padding: 35px 20px !important;
     text-align: center !important;
     color: #60778D !important;
+    border-bottom: none !important;
     font-family: Arial, Helvetica, sans-serif !important;
     font-size: 14px !important;
     font-weight: 400 !important;
@@ -18608,14 +18622,14 @@ body.sof-modal-open {
     height: 100% !important;
     max-height: none !important;
     margin: 0 !important;
-    padding: 0 8px 10px 0 !important;
+    padding: 0 0 10px 0 !important;
     border: 0 !important;
     border-radius: 0 !important;
     background: #FFFFFF !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
     box-sizing: border-box !important;
-    scrollbar-gutter: stable !important;
+    scrollbar-gutter: auto !important;
 }
 
 .so-faculty-page #student-outcomes .sof-outcome-table {
@@ -18648,7 +18662,7 @@ body.sof-modal-open {
     background: transparent !important;
 }
 
-.so-faculty-page #student-outcomes #studentOutcomeTableBody td {
+.so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row) td {
     height: 64px !important;
     padding: 10px 20px !important;
     background: #FFFFFF !important;
@@ -18657,20 +18671,20 @@ body.sof-modal-open {
     vertical-align: middle !important;
 }
 
-.so-faculty-page #student-outcomes #studentOutcomeTableBody td:nth-child(1),
-.so-faculty-page #student-outcomes #studentOutcomeTableBody td:nth-child(2),
-.so-faculty-page #student-outcomes #studentOutcomeTableBody td:nth-child(3) {
+.so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row) td:nth-child(1),
+.so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row) td:nth-child(2),
+.so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row) td:nth-child(3) {
     color: #004179 !important;
     font-weight: 700 !important;
 }
 
 
-.so-faculty-page #student-outcomes #studentOutcomeTableBody td:first-child {
+.so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row) td:first-child {
     border-left: 1px solid #D5E1EC !important;
     border-radius: 10px 0 0 10px !important;
 }
 
-.so-faculty-page #student-outcomes #studentOutcomeTableBody td:last-child {
+.so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row) td:last-child {
     border-right: 1px solid #D5E1EC !important;
     border-radius: 0 10px 10px 0 !important;
 }
@@ -18688,32 +18702,32 @@ body.sof-modal-open {
 }
 
 .so-faculty-page #student-outcomes .sof-outcome-table thead th:nth-child(1),
-.so-faculty-page #student-outcomes #studentOutcomeTableBody td:nth-child(1) {
-    width: 34% !important;
+.so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row) td:nth-child(1) {
+    width: 42% !important;
     text-align: left !important;
 }
 
 .so-faculty-page #student-outcomes .sof-outcome-table thead th:nth-child(2),
-.so-faculty-page #student-outcomes #studentOutcomeTableBody td:nth-child(2) {
-    width: 20% !important;
+.so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row) td:nth-child(2) {
+    width: 18% !important;
     text-align: left !important;
 }
 
 .so-faculty-page #student-outcomes .sof-outcome-table thead th:nth-child(3),
-.so-faculty-page #student-outcomes #studentOutcomeTableBody td:nth-child(3) {
-    width: 16% !important;
+.so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row) td:nth-child(3) {
+    width: 13% !important;
     text-align: center !important;
 }
 
 .so-faculty-page #student-outcomes .sof-outcome-table thead th:nth-child(4),
-.so-faculty-page #student-outcomes #studentOutcomeTableBody td:nth-child(4) {
-    width: 15% !important;
+.so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row) td:nth-child(4) {
+    width: 13% !important;
     text-align: center !important;
 }
 
 .so-faculty-page #student-outcomes .sof-outcome-table thead th:nth-child(5),
-.so-faculty-page #student-outcomes #studentOutcomeTableBody td:nth-child(5) {
-    width: 15% !important;
+.so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row) td:nth-child(5) {
+    width: 14% !important;
     text-align: center !important;
 }
 

@@ -1,1789 +1,1631 @@
-/* EduMetrics - Academic Assessment & Grading System */
+    console.info("EduMetrics script loaded: faculty SO fix 2026-09-27");
 
-/**Get an element safely.*/
-function getElement(id) {
-    return document.getElementById(id);
-}
+        /* EduMetrics - Academic Assessment & Grading System */
 
-/**Check whether an element exists.*/
-function elementExists(id) {
-    return getElement(id) !== null;
-}
+        /**Get an element safely.*/
+        function getElement(id) {
+            return document.getElementById(id);
+        }
 
-/**Open a modal.*/
-function openModal(modalId) {
-    const modal =
-        getElement(modalId);
-    if (!modal) {
-        return;
-    }
-    modal.classList.add(
-        "show"
-    );
-    modal.setAttribute(
-        "aria-hidden",
-        "false"
-    );
-}
+        /**Check whether an element exists.*/
+        function elementExists(id) {
+            return getElement(id) !== null;
+        }
 
-/**Close a modal.*/
-function closeModal(modalId) {
-    const modal =
-        getElement(modalId);
-    if (!modal) {
-        return;
-    }
-    modal.classList.remove(
-        "show"
-    );
-    modal.setAttribute(
-        "aria-hidden",
-        "true"
-    );
-}
+        /**Open a modal.*/
+        function openModal(modalId) {
+            const modal =
+                getElement(modalId);
+            if (!modal) {
+                return;
+            }
+            modal.classList.add(
+                "show"
+            );
+            modal.setAttribute(
+                "aria-hidden",
+                "false"
+            );
+        }
 
-/* EMAIL VALIDATION*/
-function isValidEmail(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-        email
-    );
-}
+        /**Close a modal.*/
+        function closeModal(modalId) {
+            const modal =
+                getElement(modalId);
+            if (!modal) {
+                return;
+            }
+            modal.classList.remove(
+                "show"
+            );
+            modal.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+        }
 
-/* PASSWORD VALIDATION*/
-function validatePassword(password) {
-    return {
-        length:
-            password.length >= 8,
-        uppercase:
-            /[A-Z]/.test(
-                password
-            ),
-        lowercase:
-            /[a-z]/.test(
-                password
-            ),
-        number:
-            /[0-9]/.test(
-                password
-            ),
-        special:
-            /[^A-Za-z0-9]/.test(
-                password
-            )
-    };
-}
+        /* EMAIL VALIDATION*/
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+                email
+            );
+        }
+
+        /* PASSWORD VALIDATION*/
+        function validatePassword(password) {
+            return {
+                length:
+                    password.length >= 8,
+                uppercase:
+                    /[A-Z]/.test(
+                        password
+                    ),
+                lowercase:
+                    /[a-z]/.test(
+                        password
+                    ),
+                number:
+                    /[0-9]/.test(
+                        password
+                    ),
+                special:
+                    /[^A-Za-z0-9]/.test(
+                        password
+                    )
+            };
+        }
 
 
-/**Check if password satisfies all requirements.*/
-function isStrongPassword(password) {
-    const result =
-        validatePassword(
+        /**Check if password satisfies all requirements.*/
+        function isStrongPassword(password) {
+            const result =
+                validatePassword(
+                    password
+                );
+
+            return (
+                result.length &&
+                result.uppercase &&
+                result.lowercase &&
+                result.number &&
+                result.special
+            );
+        }
+
+
+        /* PASSWORD SHOW / HIDE*/
+        function togglePassword(
+            inputId,
+            button
+        ) {
+            const input =
+                getElement(
+                    inputId
+                );
+            if (!input) {
+                return;
+            }
+            if (
+                input.type ===
+                "password"
+            ) {
+                input.type =
+                    "text";
+                if (button) {
+                    button.setAttribute(
+                        "aria-label",
+                        "Hide password"
+                    );
+                }
+
+            } else {
+                input.type =
+                    "password";
+
+                if (button) {
+                    button.setAttribute(
+                        "aria-label",
+                        "Show password"
+                    );
+                }
+            }
+        }
+
+        /* LOGIN PASSWORD*/
+        function toggleLoginPassword() {
+            const password =
+                getElement(
+                    "loginPassword"
+                );
+            const button =
+                document.querySelector(
+                    ".password-toggle"
+                );
+            if (!password) {
+                return;
+            }
+            if (
+                password.type ===
+                "password"
+            ) {
+                password.type =
+                    "text";
+                if (button) {
+                    button.setAttribute(
+                        "aria-label",
+                        "Hide password"
+                    );
+                }
+            } else {
+                password.type =
+                    "password";
+                if (button) {
+                    button.setAttribute(
+                        "aria-label",
+                        "Show password"
+                    );
+                }
+            }
+        }
+
+
+        /* REGISTRATION PASSWORD*/
+        function toggleSignupPassword(
+            inputId,
+            button
+        ) {
+            togglePassword(
+                inputId,
+                button
+            );
+        }
+
+        /* PASSWORD REQUIREMENTS*/
+        function updatePasswordRequirement(
+            elementId,
+            passed,
+            text
+        ) {
+            const element =
+                getElement(
+                    elementId
+                );
+
+            if (!element) {
+                return;
+            }
+
+            element.textContent =
+                (
+                    passed
+                        ? "✓ "
+                        : "○ "
+                ) +
+                text;
+            element.classList.toggle(
+                "requirement-passed",
+                passed
+            );
+        }
+
+        /**Update all password requirement indicators.*/
+        function updatePasswordRequirements(
             password
-        );
+        ) {
+            const result =
+                validatePassword(
+                    password
+                );
 
-    return (
-        result.length &&
-        result.uppercase &&
-        result.lowercase &&
-        result.number &&
-        result.special
-    );
-}
+            updatePasswordRequirement(
+                "lengthRequirement",
+                result.length,
+                "8 or more characters"
+            );
 
+            updatePasswordRequirement(
+                "uppercaseRequirement",
+                result.uppercase,
+                "At least one uppercase letter"
+            );
 
-/* PASSWORD SHOW / HIDE*/
-function togglePassword(
-    inputId,
-    button
-) {
-    const input =
-        getElement(
-            inputId
-        );
-    if (!input) {
-        return;
-    }
-    if (
-        input.type ===
-        "password"
-    ) {
-        input.type =
-            "text";
-        if (button) {
-            button.setAttribute(
-                "aria-label",
-                "Hide password"
+            updatePasswordRequirement(
+                "lowercaseRequirement",
+                result.lowercase,
+                "At least one lowercase letter"
+            );
+
+            updatePasswordRequirement(
+                "numberRequirement",
+                result.number,
+                "At least one number"
+            );
+
+            updatePasswordRequirement(
+                "specialRequirement",
+                result.special,
+                "At least one special character"
             );
         }
 
-    } else {
-        input.type =
-            "password";
+        /* EMAIL MASKING*/
+        function maskEmail(email) {
+            if (!email) {
+                return (
+                    "your email address"
+                );
+            }
+            const parts =
+                email.split(
+                    "@"
+                );
+            if (
+                parts.length !== 2
+            ) {
+                return email;
+            }
+            const username =
+                parts[0];
+            const domain =
+                parts[1];
+            let maskedUsername;
+            if (
+                username.length <= 2
+            ) {
+                maskedUsername =
+                    username.charAt(
+                        0
+                    ) +
+                    "*".repeat(
+                        Math.max(
+                            username.length - 1,
+                            1
+                        )
+                    );
 
-        if (button) {
-            button.setAttribute(
-                "aria-label",
-                "Show password"
+            } else {
+
+                maskedUsername =
+                    username.substring(
+                        0,
+                        2
+                    ) +
+                    "*".repeat(
+                        Math.max(
+                            username.length - 2,
+                            2
+                        )
+                    );
+            }
+
+            return (
+                maskedUsername +
+                "@" +
+                domain
             );
         }
-    }
-}
 
-/* LOGIN PASSWORD*/
-function toggleLoginPassword() {
-    const password =
-        getElement(
-            "loginPassword"
-        );
-    const button =
-        document.querySelector(
-            ".password-toggle"
-        );
-    if (!password) {
-        return;
-    }
-    if (
-        password.type ===
-        "password"
-    ) {
-        password.type =
-            "text";
-        if (button) {
-            button.setAttribute(
-                "aria-label",
-                "Hide password"
+
+        /* ROLE FORMATTING*/
+        function formatRole(role) {
+            const roleNames = {
+                "student":
+                    "Student",
+                "faculty":
+                    "Faculty",
+                "department-head":
+                    "Department Head",
+                "admin-security":
+                    "Admin & Security"
+            };
+            return (
+                roleNames[role] ||
+                role ||
+                "User"
             );
         }
-    } else {
-        password.type =
-            "password";
-        if (button) {
-            button.setAttribute(
-                "aria-label",
-                "Show password"
+
+        /* ROLE VALIDATION*/
+        function isValidRole(role) {
+            const validRoles = [
+                "student",
+                "faculty",
+                "department-head",
+                "admin-security"
+            ];
+
+            return validRoles.includes(
+                role
             );
         }
-    }
-}
 
+        /* SOCIAL LOGIN / SIGNUP*/
+        function socialLogin(provider) {
 
-/* REGISTRATION PASSWORD*/
-function toggleSignupPassword(
-    inputId,
-    button
-) {
-    togglePassword(
-        inputId,
-        button
-    );
-}
+            /*SOCIAL LOGIN FLOW*/
+            const params =
+                new URLSearchParams(
+                    window.location.search
+                );
 
-/* PASSWORD REQUIREMENTS*/
-function updatePasswordRequirement(
-    elementId,
-    passed,
-    text
-) {
-    const element =
-        getElement(
-            elementId
-        );
+            let role =
+                params.get(
+                    "role"
+                ) ||
+                getSelectedRole() ||
+                "student";
 
-    if (!element) {
-        return;
-    }
-
-    element.textContent =
-        (
-            passed
-                ? "✓ "
-                : "○ "
-        ) +
-        text;
-    element.classList.toggle(
-        "requirement-passed",
-        passed
-    );
-}
-
-/**Update all password requirement indicators.*/
-function updatePasswordRequirements(
-    password
-) {
-    const result =
-        validatePassword(
-            password
-        );
-
-    updatePasswordRequirement(
-        "lengthRequirement",
-        result.length,
-        "8 or more characters"
-    );
-
-    updatePasswordRequirement(
-        "uppercaseRequirement",
-        result.uppercase,
-        "At least one uppercase letter"
-    );
-
-    updatePasswordRequirement(
-        "lowercaseRequirement",
-        result.lowercase,
-        "At least one lowercase letter"
-    );
-
-    updatePasswordRequirement(
-        "numberRequirement",
-        result.number,
-        "At least one number"
-    );
-
-    updatePasswordRequirement(
-        "specialRequirement",
-        result.special,
-        "At least one special character"
-    );
-}
-
-/* EMAIL MASKING*/
-function maskEmail(email) {
-    if (!email) {
-        return (
-            "your email address"
-        );
-    }
-    const parts =
-        email.split(
-            "@"
-        );
-    if (
-        parts.length !== 2
-    ) {
-        return email;
-    }
-    const username =
-        parts[0];
-    const domain =
-        parts[1];
-    let maskedUsername;
-    if (
-        username.length <= 2
-    ) {
-        maskedUsername =
-            username.charAt(
-                0
-            ) +
-            "*".repeat(
-                Math.max(
-                    username.length - 1,
-                    1
+            if (
+                !isValidRole(
+                    role
                 )
+            ) {
+
+                role =
+                    "student";
+            }
+            sessionStorage.setItem(
+                "verificationRole",
+                role
+            );
+            saveSelectedRole(
+                role
+            );
+            sessionStorage.setItem(
+                "verificationPurpose",
+                "login"
+            );
+            sessionStorage.setItem(
+                "verificationType",
+                "login"
             );
 
-    } else {
+            /* GOOGLE / GMAIL LOGIN*/
+            if (
+                provider ===
+                "Google"
+            ) {
+                sessionStorage.setItem(
+                    "verificationProvider",
+                    "google"
+                );
 
-        maskedUsername =
-            username.substring(
-                0,
-                2
-            ) +
-            "*".repeat(
-                Math.max(
-                    username.length - 2,
-                    2
-                )
+                window.location.href =
+                    "verification-gmail-login.html";
+                return;
+            }
+
+            /*MICROSOFT LOGIN*/
+            if (
+                provider ===
+                "Microsoft"
+            ) {
+
+                sessionStorage.setItem(
+                    "verificationProvider",
+                    "microsoft"
+                );
+                window.location.href =
+                    "verification-ms-login.html";
+                return;
+            }
+
+            /*Fallback for an unsupported provider.*/
+            showGenericModal(
+                "Sign in unavailable",
+                "Please select Google or Microsoft to continue.",
+                "!"
             );
-    }
+        }
 
-    return (
-        maskedUsername +
-        "@" +
-        domain
-    );
-}
+        function socialSignup(provider) {
+            showGenericModal(
+                "Coming soon",
+                provider +
+                " registration will be available once the authentication service is connected.",
+                "!"
+            );
+        }
 
-
-/* ROLE FORMATTING*/
-function formatRole(role) {
-    const roleNames = {
-        "student":
-            "Student",
-        "faculty":
-            "Faculty",
-        "department-head":
-            "Department Head",
-        "admin-security":
-            "Admin & Security"
-    };
-    return (
-        roleNames[role] ||
-        role ||
-        "User"
-    );
-}
-
-/* ROLE VALIDATION*/
-function isValidRole(role) {
-    const validRoles = [
-        "student",
-        "faculty",
-        "department-head",
-        "admin-security"
-    ];
-
-    return validRoles.includes(
-        role
-    );
-}
-
-/* SOCIAL LOGIN / SIGNUP*/
-function socialLogin(provider) {
-
-    /*SOCIAL LOGIN FLOW*/
-    const params =
-        new URLSearchParams(
-            window.location.search
-        );
-
-    let role =
-        params.get(
-            "role"
-        ) ||
-        getSelectedRole() ||
-        "student";
-
-    if (
-        !isValidRole(
-            role
-        )
-    ) {
-
-        role =
-            "student";
-    }
-    sessionStorage.setItem(
-        "verificationRole",
-        role
-    );
-    saveSelectedRole(
-        role
-    );
-    sessionStorage.setItem(
-        "verificationPurpose",
-        "login"
-    );
-    sessionStorage.setItem(
-        "verificationType",
-        "login"
-    );
-
-    /* GOOGLE / GMAIL LOGIN*/
-    if (
-        provider ===
-        "Google"
-    ) {
-        sessionStorage.setItem(
-            "verificationProvider",
-            "google"
-        );
-
-        window.location.href =
-            "verification-gmail-login.html";
-        return;
-    }
-
-    /*MICROSOFT LOGIN*/
-    if (
-        provider ===
-        "Microsoft"
-    ) {
-
-        sessionStorage.setItem(
-            "verificationProvider",
-            "microsoft"
-        );
-        window.location.href =
-            "verification-ms-login.html";
-        return;
-    }
-
-    /*Fallback for an unsupported provider.*/
-    showGenericModal(
-        "Sign in unavailable",
-        "Please select Google or Microsoft to continue.",
-        "!"
-    );
-}
-
-function socialSignup(provider) {
-    showGenericModal(
-        "Coming soon",
-        provider +
-        " registration will be available once the authentication service is connected.",
-        "!"
-    );
-}
-
-/* GENERIC MODAL*/
-function showGenericModal(
-    title,
-    message,
-    icon = "!"
-) {
-
-    /* LOGIN MODAL */
-const loginModal =
-    getElement(
-        "loginMessageModal"
-    );
-
-if (loginModal) {
-
-    const titleElement =
-        getElement(
-            "loginModalTitle"
-        );
-
-    const messageElement =
-        getElement(
-            "loginModalMessage"
-        );
-
-    const iconElement =
-        getElement(
-            "loginModalIcon"
-        );
-
-    if (titleElement) {
-        titleElement.textContent =
-            title;
-    }
-
-    if (messageElement) {
-        messageElement.textContent =
-            message;
-    }
-
-    if (iconElement) {
-        iconElement.textContent =
-            icon;
-    }
-
-    openModal(
-        "loginMessageModal"
-    );
-
-    return;
-}
-
-
-/* VERIFICATION MODAL */
-const verificationModal =
-    getElement(
-        "verificationModal"
-    );
-
-if (verificationModal) {
-
-    const titleElement =
-        getElement(
-            "verificationModalTitle"
-        );
-
-    const messageElement =
-        getElement(
-            "verificationModalMessage"
-        );
-
-    const iconElement =
-        getElement(
-            "verificationModalIcon"
-        );
-
-    if (titleElement) {
-        titleElement.textContent =
-            title;
-    }
-
-    if (messageElement) {
-        messageElement.textContent =
-            message;
-    }
-
-    if (iconElement) {
-        iconElement.textContent =
-            icon;
-    }
-
-    openModal(
-        "verificationModal"
-    );
-
-    return;
-}
-
-
-/* TERMS MODAL */
-const termsModal =
-    getElement(
-        "termsModal"
-    );
-
-if (termsModal) {
-
-    const titleElement =
-        termsModal.querySelector(
-            "h2"
-        );
-
-    const paragraph =
-        termsModal.querySelector(
-            "p"
-        );
-
-    if (titleElement) {
-        titleElement.textContent =
-            title;
-    }
-
-    if (paragraph) {
-        paragraph.textContent =
-            message;
-    }
-
-    openModal(
-        "termsModal"
-    );
-}
-}
-
-
-/* LOGIN MODAL */
-function showLoginModal(
-    title,
-    message,
-    icon = "!"
-) {
-    const modal =
-        getElement(
-            "loginMessageModal"
-        );
-    if (!modal) {
-        return;
-    }
-    const titleElement =
-        getElement(
-            "loginModalTitle"
-        );
-    const messageElement =
-        getElement(
-            "loginModalMessage"
-        );
-    const iconElement =
-        getElement(
-            "loginModalIcon"
-        );
-    if (titleElement) {
-        titleElement.textContent =
-            title;
-    }
-    if (messageElement) {
-        messageElement.textContent =
-            message;
-    }
-    if (iconElement) {
-        iconElement.textContent =
-            icon;
-    }
-    openModal(
-        "loginMessageModal"
-    );
-}
-
-function closeLoginModal() {
-    closeModal(
-        "loginMessageModal"
-    );
-}
-
-
-/* VERIFICATION MODAL*/
-function showVerificationModal(
-    title,
-    message,
-    icon = "!"
-) {
-
-    const modal =
-        getElement(
-            "verificationModal"
-        );
-    if (!modal) {
-
-        showGenericModal(
+        /* GENERIC MODAL*/
+        function showGenericModal(
             title,
             message,
-            icon
-        );
+            icon = "!"
+        ) {
 
-        return;
-    }
+            /* LOGIN MODAL */
+        const loginModal =
+            getElement(
+                "loginMessageModal"
+            );
 
-    const titleElement =
-        getElement(
-            "verificationModalTitle"
-        );
+        if (loginModal) {
 
-    const messageElement =
-        getElement(
-            "verificationModalMessage"
-        );
+            const titleElement =
+                getElement(
+                    "loginModalTitle"
+                );
 
-    const iconElement =
-        getElement(
-            "verificationModalIcon"
-        );
+            const messageElement =
+                getElement(
+                    "loginModalMessage"
+                );
 
-    if (titleElement) {
-        titleElement.textContent =
-            title;
-    }
+            const iconElement =
+                getElement(
+                    "loginModalIcon"
+                );
 
-    if (messageElement) {
-        messageElement.textContent =
-            message;
-    }
+            if (titleElement) {
+                titleElement.textContent =
+                    title;
+            }
 
-    if (iconElement) {
-        iconElement.textContent =
-            icon;
-    }
+            if (messageElement) {
+                messageElement.textContent =
+                    message;
+            }
 
-    openModal(
-        "verificationModal"
-    );
-}
+            if (iconElement) {
+                iconElement.textContent =
+                    icon;
+            }
+
+            openModal(
+                "loginMessageModal"
+            );
+
+            return;
+        }
 
 
-function closeVerificationModal() {
+        /* VERIFICATION MODAL */
+        const verificationModal =
+            getElement(
+                "verificationModal"
+            );
 
-    closeModal(
-        "verificationModal"
-    );
+        if (verificationModal) {
 
-}
+            const titleElement =
+                getElement(
+                    "verificationModalTitle"
+                );
 
-/* HEADER MESSAGE*/
-function showHeaderMessage(section) {
-    showGenericModal(
-        section,
-        section +
-        " options will be available once this section is connected.",
-        "!"
-    );
-}
+            const messageElement =
+                getElement(
+                    "verificationModalMessage"
+                );
 
-/* FORGOT PASSWORD*/
-function handleForgotPassword(event) {
-    if (event) {
-        event.preventDefault();
-    }
+            const iconElement =
+                getElement(
+                    "verificationModalIcon"
+                );
 
-    showLoginModal(
-        "Forgot Password",
-        "Password recovery will be available once the account security system is connected.",
-        "?"
-    );
-}
+            if (titleElement) {
+                titleElement.textContent =
+                    title;
+            }
 
-/* TERMS AND CONDITIONS*/
-function showTerms(event) {
-    if (event) {
-        event.preventDefault();
-    }
-    const modal =
-        getElement(
-            "termsModal"
-        );
+            if (messageElement) {
+                messageElement.textContent =
+                    message;
+            }
 
-    if (!modal) {
-        return;
-    }
+            if (iconElement) {
+                iconElement.textContent =
+                    icon;
+            }
 
-    const title =
-        modal.querySelector(
-            "h2"
-        );
+            openModal(
+                "verificationModal"
+            );
 
-    const paragraph =
-        modal.querySelector(
-            "p"
-        );
+            return;
+        }
 
-    if (title) {
 
-        title.textContent =
-            "Terms and Conditions";
-    }
+        /* TERMS MODAL */
+        const termsModal =
+            getElement(
+                "termsModal"
+            );
 
-    if (paragraph) {
-        paragraph.textContent =
-            "By creating an EduMetrics account, you agree to follow the rules and policies established for the system. Your account information should be accurate and kept secure.";
-    }
+        if (termsModal) {
 
-    openModal(
-        "termsModal"
-    );
-}
+            const titleElement =
+                termsModal.querySelector(
+                    "h2"
+                );
 
-function closeTerms() {
-    closeModal(
-        "termsModal"
-    );
-}
+            const paragraph =
+                termsModal.querySelector(
+                    "p"
+                );
 
-function acceptTerms() {
-    const terms =
-        getElement(
-            "termsAgreement"
-        );
+            if (titleElement) {
+                titleElement.textContent =
+                    title;
+            }
 
-    if (terms) {
-        terms.checked =
-            true;
-    }
-    closeTerms();
-}
+            if (paragraph) {
+                paragraph.textContent =
+                    message;
+            }
 
-/* OTP HELPERS*/
-function getOtpInputs() {
-    return Array.from(
-        document.querySelectorAll(
-            ".otp-input"
-        )
-    );
-}
+            openModal(
+                "termsModal"
+            );
+        }
+        }
 
-function clearOtpInputs() {
 
-    const otpInputs =
-        getOtpInputs();
+        /* LOGIN MODAL */
+        function showLoginModal(
+            title,
+            message,
+            icon = "!"
+        ) {
+            const modal =
+                getElement(
+                    "loginMessageModal"
+                );
+            if (!modal) {
+                return;
+            }
+            const titleElement =
+                getElement(
+                    "loginModalTitle"
+                );
+            const messageElement =
+                getElement(
+                    "loginModalMessage"
+                );
+            const iconElement =
+                getElement(
+                    "loginModalIcon"
+                );
+            if (titleElement) {
+                titleElement.textContent =
+                    title;
+            }
+            if (messageElement) {
+                messageElement.textContent =
+                    message;
+            }
+            if (iconElement) {
+                iconElement.textContent =
+                    icon;
+            }
+            openModal(
+                "loginMessageModal"
+            );
+        }
 
-    otpInputs.forEach(
-        function (input) {
+        function closeLoginModal() {
+            closeModal(
+                "loginMessageModal"
+            );
+        }
 
-            input.value = "";
+
+        /* VERIFICATION MODAL*/
+        function showVerificationModal(
+            title,
+            message,
+            icon = "!"
+        ) {
+
+            const modal =
+                getElement(
+                    "verificationModal"
+                );
+            if (!modal) {
+
+                showGenericModal(
+                    title,
+                    message,
+                    icon
+                );
+
+                return;
+            }
+
+            const titleElement =
+                getElement(
+                    "verificationModalTitle"
+                );
+
+            const messageElement =
+                getElement(
+                    "verificationModalMessage"
+                );
+
+            const iconElement =
+                getElement(
+                    "verificationModalIcon"
+                );
+
+            if (titleElement) {
+                titleElement.textContent =
+                    title;
+            }
+
+            if (messageElement) {
+                messageElement.textContent =
+                    message;
+            }
+
+            if (iconElement) {
+                iconElement.textContent =
+                    icon;
+            }
+
+            openModal(
+                "verificationModal"
+            );
+        }
+
+
+        function closeVerificationModal() {
+
+            closeModal(
+                "verificationModal"
+            );
 
         }
-    );
 
-    if (otpInputs.length > 0) {
-        otpInputs[0].focus();
-    }
-}
+        /* HEADER MESSAGE*/
+        function showHeaderMessage(section) {
+            showGenericModal(
+                section,
+                section +
+                " options will be available once this section is connected.",
+                "!"
+            );
+        }
 
-function getOtpValue() {
-
-    const otpInputs =
-        getOtpInputs();
-    return otpInputs
-        .map(
-            function (input) {
-
-                return input.value;
-
+        /* FORGOT PASSWORD*/
+        function handleForgotPassword(event) {
+            if (event) {
+                event.preventDefault();
             }
-        )
-        .join("");
-}
 
-function setupOtpInputs() {
+            showLoginModal(
+                "Forgot Password",
+                "Password recovery will be available once the account security system is connected.",
+                "?"
+            );
+        }
 
-    const otpInputs =
-        getOtpInputs();
+        /* TERMS AND CONDITIONS*/
+        function showTerms(event) {
+            if (event) {
+                event.preventDefault();
+            }
+            const modal =
+                getElement(
+                    "termsModal"
+                );
 
-    if (
-        otpInputs.length === 0
-    ) {
-        return;
-    }
+            if (!modal) {
+                return;
+            }
 
-    otpInputs.forEach(
-        function (
-            input,
-            index
-        ) {
-            input.addEventListener(
-                "input",
-                function (event) {
+            const title =
+                modal.querySelector(
+                    "h2"
+                );
 
-                    let value =
-                        event.target.value;
+            const paragraph =
+                modal.querySelector(
+                    "p"
+                );
 
-                    value =
-                        value.replace(
-                            /\D/g,
-                            ""
-                        );
-                    if (
-                        value.length > 1
-                    ) {
-                        value =
-                            value.slice(
-                                -1
-                            );
-                    }
+            if (title) {
 
-                    event.target.value =
-                        value;
+                title.textContent =
+                    "Terms and Conditions";
+            }
 
-                    if (
-                        value &&
-                        index <
-                            otpInputs.length - 1
-                    ) {
-                        otpInputs[
-                            index + 1
-                        ].focus();
+            if (paragraph) {
+                paragraph.textContent =
+                    "By creating an EduMetrics account, you agree to follow the rules and policies established for the system. Your account information should be accurate and kept secure.";
+            }
 
-                    }
+            openModal(
+                "termsModal"
+            );
+        }
+
+        function closeTerms() {
+            closeModal(
+                "termsModal"
+            );
+        }
+
+        function acceptTerms() {
+            const terms =
+                getElement(
+                    "termsAgreement"
+                );
+
+            if (terms) {
+                terms.checked =
+                    true;
+            }
+            closeTerms();
+        }
+
+        /* OTP HELPERS*/
+        function getOtpInputs() {
+            return Array.from(
+                document.querySelectorAll(
+                    ".otp-input"
+                )
+            );
+        }
+
+        function clearOtpInputs() {
+
+            const otpInputs =
+                getOtpInputs();
+
+            otpInputs.forEach(
+                function (input) {
+
+                    input.value = "";
+
                 }
             );
 
-            input.addEventListener(
-                "keydown",
-                function (event) {
+            if (otpInputs.length > 0) {
+                otpInputs[0].focus();
+            }
+        }
 
-                    if (
-                        event.key ===
-                            "Backspace" &&
-                        input.value === "" &&
-                        index > 0
-                    ) {
+        function getOtpValue() {
 
-                        otpInputs[
-                            index - 1
-                        ].focus();
-                    }
+            const otpInputs =
+                getOtpInputs();
+            return otpInputs
+                .map(
+                    function (input) {
 
-                    if (
-                        event.key ===
-                            "ArrowLeft" &&
-                        index > 0
-                    ) {
-
-                        event.preventDefault();
-
-                        otpInputs[
-                            index - 1
-                        ].focus();
+                        return input.value;
 
                     }
+                )
+                .join("");
+        }
 
-                    if (
-                        event.key ===
-                            "ArrowRight" &&
-                        index <
-                            otpInputs.length - 1
-                    ) {
+        function setupOtpInputs() {
 
-                        event.preventDefault();
+            const otpInputs =
+                getOtpInputs();
 
-                        otpInputs[
-                            index + 1
-                        ].focus();
-                    }
-                }
-            );
+            if (
+                otpInputs.length === 0
+            ) {
+                return;
+            }
 
-            input.addEventListener(
-                "paste",
-                function (event) {
+            otpInputs.forEach(
+                function (
+                    input,
+                    index
+                ) {
+                    input.addEventListener(
+                        "input",
+                        function (event) {
 
-                    event.preventDefault();
-                    const pastedText =
-                        (
-                            event.clipboardData ||
-                            window.clipboardData
-                        )
-                            .getData(
-                                "text"
-                            )
-                            .replace(
-                                /\D/g,
-                                ""
-                            );
+                            let value =
+                                event.target.value;
 
-                    if (!pastedText) {
+                            value =
+                                value.replace(
+                                    /\D/g,
+                                    ""
+                                );
+                            if (
+                                value.length > 1
+                            ) {
+                                value =
+                                    value.slice(
+                                        -1
+                                    );
+                            }
 
-                        return;
-
-                    }
-
-                    const digits =
-                        pastedText
-                            .slice(
-                                0,
-                                otpInputs.length
-                            )
-                            .split("");
-
-                    digits.forEach(
-                        function (
-                            digit,
-                            digitIndex
-                        ) {
+                            event.target.value =
+                                value;
 
                             if (
-                                otpInputs[
-                                    digitIndex
-                                ]
+                                value &&
+                                index <
+                                    otpInputs.length - 1
                             ) {
                                 otpInputs[
-                                    digitIndex
-                                ].value =
-                                    digit;
+                                    index + 1
+                                ].focus();
+
                             }
                         }
                     );
 
-                    const focusIndex =
-                        Math.min(
-                            digits.length,
-                            otpInputs.length
-                        ) - 1;
+                    input.addEventListener(
+                        "keydown",
+                        function (event) {
 
-                    if (
-                        focusIndex >= 0
-                    ) {
-                        otpInputs[
-                            focusIndex
-                        ].focus();
-                    }
+                            if (
+                                event.key ===
+                                    "Backspace" &&
+                                input.value === "" &&
+                                index > 0
+                            ) {
+
+                                otpInputs[
+                                    index - 1
+                                ].focus();
+                            }
+
+                            if (
+                                event.key ===
+                                    "ArrowLeft" &&
+                                index > 0
+                            ) {
+
+                                event.preventDefault();
+
+                                otpInputs[
+                                    index - 1
+                                ].focus();
+
+                            }
+
+                            if (
+                                event.key ===
+                                    "ArrowRight" &&
+                                index <
+                                    otpInputs.length - 1
+                            ) {
+
+                                event.preventDefault();
+
+                                otpInputs[
+                                    index + 1
+                                ].focus();
+                            }
+                        }
+                    );
+
+                    input.addEventListener(
+                        "paste",
+                        function (event) {
+
+                            event.preventDefault();
+                            const pastedText =
+                                (
+                                    event.clipboardData ||
+                                    window.clipboardData
+                                )
+                                    .getData(
+                                        "text"
+                                    )
+                                    .replace(
+                                        /\D/g,
+                                        ""
+                                    );
+
+                            if (!pastedText) {
+
+                                return;
+
+                            }
+
+                            const digits =
+                                pastedText
+                                    .slice(
+                                        0,
+                                        otpInputs.length
+                                    )
+                                    .split("");
+
+                            digits.forEach(
+                                function (
+                                    digit,
+                                    digitIndex
+                                ) {
+
+                                    if (
+                                        otpInputs[
+                                            digitIndex
+                                        ]
+                                    ) {
+                                        otpInputs[
+                                            digitIndex
+                                        ].value =
+                                            digit;
+                                    }
+                                }
+                            );
+
+                            const focusIndex =
+                                Math.min(
+                                    digits.length,
+                                    otpInputs.length
+                                ) - 1;
+
+                            if (
+                                focusIndex >= 0
+                            ) {
+                                otpInputs[
+                                    focusIndex
+                                ].focus();
+                            }
+                        }
+                    );
                 }
             );
         }
-    );
-}
 
-/* VERIFICATION CODE*/
-function generateVerificationCode() {
+        /* VERIFICATION CODE*/
+        function generateVerificationCode() {
 
-    return String(
-        Math.floor(
-            100000 +
-            Math.random() *
-                900000
-        )
-    );
-}
-
-function saveVerificationCode(code) {
-
-    sessionStorage.setItem(
-        "verificationCode",
-        code
-    );
-
-    sessionStorage.setItem(
-        "verificationCodeCreatedAt",
-        String(
-            Date.now()
-        )
-    );
-}
-
-function getVerificationCode() {
-    return (
-        sessionStorage.getItem(
-            "verificationCode"
-        ) || ""
-    );
-}
-
-function createVerificationCode() {
-    const code =
-        generateVerificationCode();
-    saveVerificationCode(
-        code
-    );
-    return code;
-}
-
-/* VERIFICATION TIMER*/
-let verificationTimerInterval =
-    null;
-
-function formatVerificationTime(
-    seconds
-) {
-    const minutes =
-        Math.floor(
-            seconds / 60
-        );
-
-    const remainingSeconds =
-        seconds % 60;
-    return (
-        String(minutes).padStart(
-            2,
-            "0"
-        ) +
-        ":" +
-        String(
-            remainingSeconds
-        ).padStart(
-            2,
-            "0"
-        )
-    );
-}
-
-function startVerificationTimer(
-    duration = 60
-) {
-    const timerElement =
-        getElement(
-            "verificationTimer"
-        );
-    const resendButton =
-        getElement(
-            "resendCodeButton"
-        );
-    if (
-        verificationTimerInterval
-    ) {
-        clearInterval(
-            verificationTimerInterval
-        );
-    }
-
-    let remaining =
-        duration;
-    if (resendButton) {
-        resendButton.disabled =
-            true;
-    }
-    function updateTimer() {
-        if (timerElement) {
-            timerElement.textContent =
-                formatVerificationTime(
-                    remaining
-                );
+            return String(
+                Math.floor(
+                    100000 +
+                    Math.random() *
+                        900000
+                )
+            );
         }
 
-        if (
-            remaining <= 0
-        ) {
-            clearInterval(
-                verificationTimerInterval
-            );
-            verificationTimerInterval =
-                null;
+        function saveVerificationCode(code) {
 
+            sessionStorage.setItem(
+                "verificationCode",
+                code
+            );
+
+            sessionStorage.setItem(
+                "verificationCodeCreatedAt",
+                String(
+                    Date.now()
+                )
+            );
+        }
+
+        function getVerificationCode() {
+            return (
+                sessionStorage.getItem(
+                    "verificationCode"
+                ) || ""
+            );
+        }
+
+        function createVerificationCode() {
+            const code =
+                generateVerificationCode();
+            saveVerificationCode(
+                code
+            );
+            return code;
+        }
+
+        /* VERIFICATION TIMER*/
+        let verificationTimerInterval =
+            null;
+
+        function formatVerificationTime(
+            seconds
+        ) {
+            const minutes =
+                Math.floor(
+                    seconds / 60
+                );
+
+            const remainingSeconds =
+                seconds % 60;
+            return (
+                String(minutes).padStart(
+                    2,
+                    "0"
+                ) +
+                ":" +
+                String(
+                    remainingSeconds
+                ).padStart(
+                    2,
+                    "0"
+                )
+            );
+        }
+
+        function startVerificationTimer(
+            duration = 60
+        ) {
+            const timerElement =
+                getElement(
+                    "verificationTimer"
+                );
+            const resendButton =
+                getElement(
+                    "resendCodeButton"
+                );
+            if (
+                verificationTimerInterval
+            ) {
+                clearInterval(
+                    verificationTimerInterval
+                );
+            }
+
+            let remaining =
+                duration;
             if (resendButton) {
                 resendButton.disabled =
-                    false;
+                    true;
             }
-            return;
-        }
-        remaining -= 1;
-    }
-    updateTimer();
-    verificationTimerInterval =
-        setInterval(
-            updateTimer,
-            1000
-        );
-}
-
-/* RESEND VERIFICATION CODE */
-function resendVerificationCode(
-    event
-) {
-    if (event) {
-        event.preventDefault();
-
-    }
-    const newCode =
-        createVerificationCode();
-    clearOtpInputs();
-    startVerificationTimer(
-        60
-    );
-    console.log(
-        "New verification code:",
-        newCode
-    );
-    showVerificationModal(
-        "Code Resent",
-        "A new verification code has been sent.",
-        "✓"
-    );
-}
-
-/* OTP / VERIFICATION INITIALIZATION*/
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-        setupOtpInputs();
-    }
-);
-
-/* OTP RESEND TIMER*/
-let eduMetricsCountdownInterval =
-    null;
-
-function startResendCountdown(
-    seconds = 30
-) {
-    const resendButton =
-        getElement(
-            "resendButton"
-        );
-    const resendTimer =
-        getElement(
-            "resendTimer"
-        );
-    if (!resendButton) {
-        return;
-    }
-    clearInterval(
-        eduMetricsCountdownInterval
-    );
-    let remaining =
-        seconds;
-    resendButton.disabled =
-        true;
-
-    if (resendTimer) {
-        resendTimer.innerHTML =
-            "Resend available in " +
-            "<strong id=\"countdown\">" +
-            remaining +
-            "</strong>" +
-            " seconds";
-    }
-
-    eduMetricsCountdownInterval =
-        setInterval(
-            function() {
-                remaining--;
-                const countdown =
-                    getElement(
-                        "countdown"
-                    );
-                if (countdown) {
-                    countdown.textContent =
-                        Math.max(
-                            remaining,
-                            0
+            function updateTimer() {
+                if (timerElement) {
+                    timerElement.textContent =
+                        formatVerificationTime(
+                            remaining
                         );
                 }
+
                 if (
                     remaining <= 0
                 ) {
                     clearInterval(
-                        eduMetricsCountdownInterval
+                        verificationTimerInterval
                     );
-                    eduMetricsCountdownInterval =
+                    verificationTimerInterval =
                         null;
-                    resendButton.disabled =
-                        false;
-                    if (resendTimer) {
-                        resendTimer.innerHTML =
-                            "<strong>You can now resend the code.</strong>";
-                        resendTimer.style.setProperty(
-                            "font-size",
-                            "18px",
-                            "important"
-                        );
-                        resendTimer.style.fontWeight =
-                            "600";
+
+                    if (resendButton) {
+                        resendButton.disabled =
+                            false;
                     }
-
+                    return;
                 }
-            },
-            1000
-    );
+                remaining -= 1;
+            }
+            updateTimer();
+            verificationTimerInterval =
+                setInterval(
+                    updateTimer,
+                    1000
+                );
+        }
 
-}
+        /* RESEND VERIFICATION CODE */
+        function resendVerificationCode(
+            event
+        ) {
+            if (event) {
+                event.preventDefault();
 
-/* VERIFY LOGIN CODE*/
-function verifyCode() {
-    clearOTPError();
-    const code =
-        getOTP();
-    if (
-        code.length !== 6
-    ) {
-        showOTPError(
-            "Please enter the complete 6-digit verification code."
-        );
-        return;
-    }
-    if (
-        !/^\d{6}$/.test(
-            code
-        )
-    ) {
-        showOTPError(
-            "Verification code must contain numbers only."
-        );
-        return;
-
-    }
-
-    /*
-     PROTYPE VERIFICATION, PALITAN NA LANG*/
-    if (
-        code !==
-        "123456"
-    ) {
-        showOTPError(
-            "Invalid verification code. Please try again."
-        );
-        return;
-    }
-
-    const verificationEmail =
-        sessionStorage.getItem(
-            "verificationEmail"
-        ) || "";
-    const verificationRole =
-        sessionStorage.getItem(
-            "verificationRole"
-        ) ||
-        getSelectedRole() ||
-        "student";
-    sessionStorage.setItem(
-        "verificationCompleted",
-        "true"
-    );
-    sessionStorage.setItem(
-        "verificationType",
-        "login"
-    );
-    sessionStorage.setItem(
-        "verifiedEmail",
-        verificationEmail
-    );
-    sessionStorage.setItem(
-        "verifiedRole",
-        verificationRole
-    );
-    window.location.href =
-        "verification-success.html";
-
-}
-
-/* RESEND LOGIN VERIFICATION CODE */
-function resendCode() {
-    const resendButton =
-        getElement(
-            "resendButton"
-        );
-
-    if (
-        !resendButton ||
-        resendButton.disabled
-    ) {return;}
-    showVerificationModal(
-        "Code Resent",
-        "A new verification code has been requested. For this prototype, use 123456.",
-       "✓"
-
-    );
-    clearOTP();
-    startResendCountdown(
-        30
-    );
-}
-
-/* SESSION STORAGE HELPERS */
-function saveVerificationData(
-    email,
-    role,
-    purpose
-) {
-    sessionStorage.setItem(
-        "verificationEmail",
-        email || ""
-    );
-
-    sessionStorage.setItem(
-        "verificationRole",
-        role || ""
-    );
-
-    sessionStorage.setItem(
-        "verificationPurpose",
-        purpose || ""
-    );
-}
-
-/**Clear verification-related session data.*/
-function clearVerificationData() {
-    const keys = [
-        "verificationEmail",
-        "verificationRole",
-        "verificationPurpose",
-        "verificationProvider",
-        "verificationCompleted",
-        "verificationType",
-        "verifiedEmail",
-        "verifiedRole",
-        "accountVerified"
-    ];
-
-    keys.forEach(
-        function(key) {
-            sessionStorage.removeItem(
-                key
+            }
+            const newCode =
+                createVerificationCode();
+            clearOtpInputs();
+            startVerificationTimer(
+                60
+            );
+            console.log(
+                "New verification code:",
+                newCode
+            );
+            showVerificationModal(
+                "Code Resent",
+                "A new verification code has been sent.",
+                "✓"
             );
         }
-    );
-}
 
-/* ROLE STORAGE*/
-function saveSelectedRole(role) {
-    if (
-        !role
-    ) {
-        return;
-    }
-
-    sessionStorage.setItem(
-        "selectedRole",
-        role
-    );
-}
-
-function getSelectedRole() {
-    return sessionStorage.getItem(
-        "selectedRole"
-    );
-}
-
-/**Restore saved role into a select element.*/
-function restoreSelectedRole(
-    selectId
-) {
-    const select =
-        getElement(
-            selectId
-        );
-
-    if (!select) {
-        return;
-    }
-
-    const savedRole =
-        getSelectedRole();
-
-    if (!savedRole) {
-        return;
-    }
-
-    const option =
-        Array.from(
-            select.options
-        )
-        .find(
-            function(item) {
-
-                return (
-                    item.value ===
-                    savedRole
-                );
+        /* OTP / VERIFICATION INITIALIZATION*/
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+                setupOtpInputs();
             }
         );
-    if (option) {
-        select.value =
-            savedRole;
-    }
-}
 
-/* INFO MODAL - WEBSITE PAGE */
-function openInfoModal(
-    title,
-    text,
-    icon = "◇"
-) {
-    const modal =
-        getElement(
-            "infoModal"
-        );
+        /* OTP RESEND TIMER*/
+        let eduMetricsCountdownInterval =
+            null;
 
-    if (!modal) {
-        return;
-    }
-    const modalTitle =
-        getElement(
-            "modalTitle"
-        );
-    const modalText =
-        getElement(
-            "modalText"
-        );
+        function startResendCountdown(
+            seconds = 30
+        ) {
+            const resendButton =
+                getElement(
+                    "resendButton"
+                );
+            const resendTimer =
+                getElement(
+                    "resendTimer"
+                );
+            if (!resendButton) {
+                return;
+            }
+            clearInterval(
+                eduMetricsCountdownInterval
+            );
+            let remaining =
+                seconds;
+            resendButton.disabled =
+                true;
 
-    const modalIcon =
-        getElement(
-            "modalIcon"
-        );
+            if (resendTimer) {
+                resendTimer.innerHTML =
+                    "Resend available in " +
+                    "<strong id=\"countdown\">" +
+                    remaining +
+                    "</strong>" +
+                    " seconds";
+            }
 
-    if (modalTitle) {
-        modalTitle.textContent =
-            title;
-    }
+            eduMetricsCountdownInterval =
+                setInterval(
+                    function() {
+                        remaining--;
+                        const countdown =
+                            getElement(
+                                "countdown"
+                            );
+                        if (countdown) {
+                            countdown.textContent =
+                                Math.max(
+                                    remaining,
+                                    0
+                                );
+                        }
+                        if (
+                            remaining <= 0
+                        ) {
+                            clearInterval(
+                                eduMetricsCountdownInterval
+                            );
+                            eduMetricsCountdownInterval =
+                                null;
+                            resendButton.disabled =
+                                false;
+                            if (resendTimer) {
+                                resendTimer.innerHTML =
+                                    "<strong>You can now resend the code.</strong>";
+                                resendTimer.style.setProperty(
+                                    "font-size",
+                                    "18px",
+                                    "important"
+                                );
+                                resendTimer.style.fontWeight =
+                                    "600";
+                            }
 
-    if (modalText) {
-        modalText.textContent =
-            text;
-    }
-    if (modalIcon) {
-        modalIcon.textContent =
-            icon;
-    }
-    openModal(
-        "infoModal"
-    );
-}
+                        }
+                    },
+                    1000
+            );
 
-function closeInfoModal() {
-    closeModal(
-        "infoModal"
-    );
-}
-
-/* WEBSITE SUPPORT */
-function showSupport() {
-    window.location.href =
-        "webpage/support.html";
-}
-
-/* WEBSITE SETTINGS */
-
-function showSettings() {
-    openInfoModal(
-        "Settings",
-        "System settings will be available after you log in.",
-        "⚙"
-        );
-}
-
-/*WEBSITE INFORMATION CARDS*/
-function handleInfoClick(
-    event,
-    type
-) {
-    if (event) {
-        event.preventDefault();
-    }
-    const content = {
-        platform: {
-            title:
-                "Platform",
-            text:
-                "Explore the EduMetrics academic assessment and grading platform.",
-            icon:
-                "▣"
-        },
-        products: {
-            title:
-                "Products",
-            text:
-                "Explore tools for assessments, outcomes, and CQI analytics.",
-            icon:
-                "◇"
-        },
-
-        resources: {
-            title:
-                "Resources",
-            text:
-                "Access guides, manuals, and other EduMetrics resource materials.",
-            icon:
-                "▱"
-        },
-
-        about: {
-            title:
-                "About us",
-            text:
-                "Learn about the vision, mission, and commitment behind EduMetrics.",
-            icon:
-                "♧"
         }
-    };
 
-    const selected =
-        content[type];
+        /* VERIFY LOGIN CODE*/
+        function verifyCode() {
+            clearOTPError();
+            const code =
+                getOTP();
+            if (
+                code.length !== 6
+            ) {
+                showOTPError(
+                    "Please enter the complete 6-digit verification code."
+                );
+                return;
+            }
+            if (
+                !/^\d{6}$/.test(
+                    code
+                )
+            ) {
+                showOTPError(
+                    "Verification code must contain numbers only."
+                );
+                return;
 
-    if (!selected) {
-        return;
-    }
+            }
 
-    openInfoModal(
-        selected.title,
-        selected.text,
-        selected.icon
-    );
-}
+            /*
+             PROTYPE VERIFICATION, PALITAN NA LANG*/
+            if (
+                code !==
+                "123456"
+            ) {
+                showOTPError(
+                    "Invalid verification code. Please try again."
+                );
+                return;
+            }
 
-/* REGISTRATION BACK BUTTON*/
-function initializeRegistrationBackButton() {
-    const backButton =
-        document.querySelector(
-            ".registration-back"
-        );
+            const verificationEmail =
+                sessionStorage.getItem(
+                    "verificationEmail"
+                ) || "";
+            const verificationRole =
+                sessionStorage.getItem(
+                    "verificationRole"
+                ) ||
+                getSelectedRole() ||
+                "student";
+            sessionStorage.setItem(
+                "verificationCompleted",
+                "true"
+            );
+            sessionStorage.setItem(
+                "verificationType",
+                "login"
+            );
+            sessionStorage.setItem(
+                "verifiedEmail",
+                verificationEmail
+            );
+            sessionStorage.setItem(
+                "verifiedRole",
+                verificationRole
+            );
+            window.location.href =
+                "verification-success.html";
 
-    if (!backButton) {
-        return;
-    }
-    const params =
-        new URLSearchParams(
-            window.location.search
-        );
-    let role =
-        params.get(
-            "role"
-        ) ||
-        getSelectedRole() ||
-        "student";
+        }
 
-    if ( !isValidRole(
-            role
-        )
-    ) {
+        /* RESEND LOGIN VERIFICATION CODE */
+        function resendCode() {
+            const resendButton =
+                getElement(
+                    "resendButton"
+                );
 
-        role =
-            "student";
-    }
+            if (
+                !resendButton ||
+                resendButton.disabled
+            ) {return;}
+            showVerificationModal(
+                "Code Resent",
+                "A new verification code has been requested. For this prototype, use 123456.",
+               "✓"
 
-    saveSelectedRole(
-        role
-    );
+            );
+            clearOTP();
+            startResendCountdown(
+                30
+            );
+        }
 
-    backButton.href =
-        "login page.html?role=" +
-        encodeURIComponent(
-            role
-        );
-}
+        /* SESSION STORAGE HELPERS */
+        function saveVerificationData(
+            email,
+            role,
+            purpose
+        ) {
+            sessionStorage.setItem(
+                "verificationEmail",
+                email || ""
+            );
 
-/* LOGIN ROLE FROM URL */
-function initializeLoginRoleFromURL() {
-    const params =
-        new URLSearchParams(
-            window.location.search
-        );
-            const urlRole =
-        params.get(
-            "role"
-        );
+            sessionStorage.setItem(
+                "verificationRole",
+                role || ""
+            );
 
-    if (
-        !urlRole ||
-        !isValidRole(
-            urlRole
-        )
-    ) {
+            sessionStorage.setItem(
+                "verificationPurpose",
+                purpose || ""
+            );
+        }
 
-        return;
+        /**Clear verification-related session data.*/
+        function clearVerificationData() {
+            const keys = [
+                "verificationEmail",
+                "verificationRole",
+                "verificationPurpose",
+                "verificationProvider",
+                "verificationCompleted",
+                "verificationType",
+                "verifiedEmail",
+                "verifiedRole",
+                "accountVerified"
+            ];
 
-    }
-    saveSelectedRole(
-        urlRole
-    );
-
-    const loginRole =
-        getElement(
-            "loginRole"
-        );
-
-    if (loginRole) {
-        const option =
-            Array.from(
-                loginRole.options
-            )
-            .find(
-                function(item) {
-                    return (
-                        item.value ===
-                        urlRole
+            keys.forEach(
+                function(key) {
+                    sessionStorage.removeItem(
+                        key
                     );
                 }
             );
-
-        if (option) {
-
-            loginRole.value =
-                urlRole;
         }
-    }
 
-    const loginRoleLabel =
-        getElement(
-            "loginRoleLabel"
-        );
+        /* ROLE STORAGE*/
+        function saveSelectedRole(role) {
+            if (
+                !role
+            ) {
+                return;
+            }
 
-    if (loginRoleLabel) {
-        loginRoleLabel.textContent =
-            formatRole(
-                urlRole
-            );
-    }
-}
-
-/* LOGIN VERIFICATION PAGE*/
-function initializeLoginVerificationPage() {
-
-    const roleLabel =
-        getElement(
-            "verificationRoleLabel"
-        ) ||
-        getElement(
-            "verificationHeaderRole"
-        );
-
-    const emailLabel =
-        getElement(
-            "verificationEmail"
-        );
-
-    const verificationBackButton =
-        getElement(
-            "verificationBackButton"
-        );
-
-    const backToLoginLink =
-        getElement(
-            "backToLoginLink"
-        );
-
-    /*If none of these exist,
-     this is not verification-login.html.*/
-    if (
-        !roleLabel &&
-        !emailLabel &&
-        !verificationBackButton &&
-        !backToLoginLink
-    ) {
-        return;
-    }
-
-    /*Verification role has first priority.*/
-    let role =
-        sessionStorage.getItem(
-            "verificationRole"
-        ) ||
-        getSelectedRole() ||
-        "student";
-
-    if (
-        !isValidRole(
-            role
-        )
-    ) {
-        role =
-            "student";
-    }
-
-    /*Keep both role values synchronized.*/
-    sessionStorage.setItem(
-        "verificationRole",
-        role
-    );
-    saveSelectedRole(
-        role
-    );
-
-    /*HEADER ROLE*/
-    if (roleLabel) {
-        roleLabel.textContent =
-            formatRole(
+            sessionStorage.setItem(
+                "selectedRole",
                 role
             );
-    }
+        }
 
-    /*VERIFICATION EMAIL */
-    const email =
-        sessionStorage.getItem(
-            "verificationEmail"
-        ) || "";
-
-    if (emailLabel) {
-        emailLabel.textContent =
-            email ||
-            "your email address";
-
-    }
-
-    /* BACK URL*/
-    const loginURL =
-        "login page.html?role=" +
-        encodeURIComponent(
-            role
-        );
-    if (
-        verificationBackButton
-    ) {
-        verificationBackButton.href =
-            loginURL;
-    }
-
-    if (
-        backToLoginLink
-    ) {
-        backToLoginLink.href =
-            loginURL;
-    }
-
-    /* PAGE TITLE*/
-    document.title =
-        "EduMetrics | " +
-        formatRole(
-            role
-        ) +
-        " Verification";
-
-    /*START RESEND TIMER*/
-    if (
-        getElement(
-            "resendButton"
-        )
-    ) {
-        startResendCountdown(
-            30
-        );
-    }
-}
-
-/* LOGIN PAGE ROLE CHANGE*/
-function initializeLoginRoleChange() {
-    const loginRole =
-        getElement(
-            "loginRole"
-        );
-    if (!loginRole) {
-        return;
-    }
-    if (
-        loginRole.dataset.roleInitialized ===
-        "true"
-    ) {
-        return;
-    }
-    loginRole.dataset.roleInitialized =
-        "true";
-    loginRole.addEventListener(
-        "change",
-        function() {
-            saveSelectedRole(
-                this.value
+        function getSelectedRole() {
+            return sessionStorage.getItem(
+                "selectedRole"
             );
+        }
+
+        /**Restore saved role into a select element.*/
+        function restoreSelectedRole(
+            selectId
+        ) {
+            const select =
+                getElement(
+                    selectId
+                );
+
+            if (!select) {
+                return;
+            }
+
+            const savedRole =
+                getSelectedRole();
+
+            if (!savedRole) {
+                return;
+            }
+
+            const option =
+                Array.from(
+                    select.options
+                )
+                .find(
+                    function(item) {
+
+                        return (
+                            item.value ===
+                            savedRole
+                        );
+                    }
+                );
+            if (option) {
+                select.value =
+                    savedRole;
+            }
+        }
+
+        /* INFO MODAL - WEBSITE PAGE */
+        function openInfoModal(
+            title,
+            text,
+            icon = "◇"
+        ) {
+            const modal =
+                getElement(
+                    "infoModal"
+                );
+
+            if (!modal) {
+                return;
+            }
+            const modalTitle =
+                getElement(
+                    "modalTitle"
+                );
+            const modalText =
+                getElement(
+                    "modalText"
+                );
+
+            const modalIcon =
+                getElement(
+                    "modalIcon"
+                );
+
+            if (modalTitle) {
+                modalTitle.textContent =
+                    title;
+            }
+
+            if (modalText) {
+                modalText.textContent =
+                    text;
+            }
+            if (modalIcon) {
+                modalIcon.textContent =
+                    icon;
+            }
+            openModal(
+                "infoModal"
+            );
+        }
+
+        function closeInfoModal() {
+            closeModal(
+                "infoModal"
+            );
+        }
+
+        /* WEBSITE SUPPORT */
+        function showSupport() {
+            window.location.href =
+                "webpage/support.html";
+        }
+
+        /* WEBSITE SETTINGS */
+
+        function showSettings() {
+            openInfoModal(
+                "Settings",
+                "System settings will be available after you log in.",
+                "⚙"
+                );
+        }
+
+        /*WEBSITE INFORMATION CARDS*/
+        function handleInfoClick(
+            event,
+            type
+        ) {
+            if (event) {
+                event.preventDefault();
+            }
+            const content = {
+                platform: {
+                    title:
+                        "Platform",
+                    text:
+                        "Explore the EduMetrics academic assessment and grading platform.",
+                    icon:
+                        "▣"
+                },
+                products: {
+                    title:
+                        "Products",
+                    text:
+                        "Explore tools for assessments, outcomes, and CQI analytics.",
+                    icon:
+                        "◇"
+                },
+
+                resources: {
+                    title:
+                        "Resources",
+                    text:
+                        "Access guides, manuals, and other EduMetrics resource materials.",
+                    icon:
+                        "▱"
+                },
+
+                about: {
+                    title:
+                        "About us",
+                    text:
+                        "Learn about the vision, mission, and commitment behind EduMetrics.",
+                    icon:
+                        "♧"
+                }
+            };
+
+            const selected =
+                content[type];
+
+            if (!selected) {
+                return;
+            }
+
+            openInfoModal(
+                selected.title,
+                selected.text,
+                selected.icon
+            );
+        }
+
+        /* REGISTRATION BACK BUTTON*/
+        function initializeRegistrationBackButton() {
+            const backButton =
+                document.querySelector(
+                    ".registration-back"
+                );
+
+            if (!backButton) {
+                return;
+            }
+            const params =
+                new URLSearchParams(
+                    window.location.search
+                );
+            let role =
+                params.get(
+                    "role"
+                ) ||
+                getSelectedRole() ||
+                "student";
+
+            if ( !isValidRole(
+                    role
+                )
+            ) {
+
+                role =
+                    "student";
+            }
+
+            saveSelectedRole(
+                role
+            );
+
+            backButton.href =
+                "login page.html?role=" +
+                encodeURIComponent(
+                    role
+                );
+        }
+
+        /* LOGIN ROLE FROM URL */
+        function initializeLoginRoleFromURL() {
+            const params =
+                new URLSearchParams(
+                    window.location.search
+                );
+                    const urlRole =
+                params.get(
+                    "role"
+                );
+
+            if (
+                !urlRole ||
+                !isValidRole(
+                    urlRole
+                )
+            ) {
+
+                return;
+
+            }
+            saveSelectedRole(
+                urlRole
+            );
+
+            const loginRole =
+                getElement(
+                    "loginRole"
+                );
+
+            if (loginRole) {
+                const option =
+                    Array.from(
+                        loginRole.options
+                    )
+                    .find(
+                        function(item) {
+                            return (
+                                item.value ===
+                                urlRole
+                            );
+                        }
+                    );
+
+                if (option) {
+
+                    loginRole.value =
+                        urlRole;
+                }
+            }
+
             const loginRoleLabel =
                 getElement(
                     "loginRoleLabel"
@@ -1792,793 +1634,441 @@ function initializeLoginRoleChange() {
             if (loginRoleLabel) {
                 loginRoleLabel.textContent =
                     formatRole(
-                        this.value
+                        urlRole
                     );
             }
         }
-    );
-}
-
-/* SIGNUP ROLE CHANGE*/
-function initializeSignupRoleChange() {
-
-    const signupRole =
-        getElement(
-            "signupRole"
-        );
-
-    if (!signupRole) {
-        return;
-    }
-    if (
-        signupRole.dataset.roleInitialized ===
-        "true"
-    ) {
-        return;
-    }
-
-    signupRole.dataset.roleInitialized =
-        "true";
-    signupRole.addEventListener(
-        "change",
-        function() {
-            saveSelectedRole(
-                this.value
-            );
-        }
-    );
-}
-
-/* REGISTRATION PASSWORD REQUIREMENTS*/
-function initializeSignupPasswordRequirements() {
-
-    const signupPassword =
-        getElement(
-            "signupPassword"
-        );
-    if (!signupPassword) {
-        return;
-    }
-    if (
-        signupPassword.dataset.requirementsInitialized ===
-        "true"
-    ) {
-        return;
-    }
-
-    signupPassword.dataset.requirementsInitialized =
-        "true";
-    signupPassword.addEventListener(
-        "input",
-        function() {
-            updatePasswordRequirements(
-                this.value
-            );
-        }
-    );
-
-    updatePasswordRequirements(
-        signupPassword.value
-    );
-
-}
-
-/* GENERIC CLOSE MODAL EVENTS */
-document.addEventListener(
-    "click",
-    function(event) {
-
-        /* INFO MODAL*/
-        const infoModal =
-            getElement(
-                "infoModal"
-            );
-        if (
-            infoModal &&
-            event.target ===
-                infoModal
-        ) {
-            closeInfoModal();
-        }
-
-        /* LOGIN MODAL*/
-        const loginModal =
-            getElement(
-                "loginMessageModal"
-            );
-
-        if (
-            loginModal &&
-            event.target ===
-                loginModal
-        ) {
-            closeLoginModal();
-        }
-
-        /* VERIFICATION MODAL*/
-        const verificationModal =
-            getElement(
-                "verificationModal"
-            );
-
-        if (
-            verificationModal &&
-            event.target ===
-                verificationModal
-        ) {
-            closeVerificationModal();
-        }
-
-        /* TERMS MODAL*/
-        const termsModal =
-            getElement(
-                "termsModal"
-            );
-                    if (
-            termsModal &&
-            event.target ===
-                termsModal
-        ) {
-
-            closeTerms();
-        }
-    }
-);
-
-/* ESCAPE KEY*/
-document.addEventListener(
-    "keydown",
-    function(event) {
-        if (
-            event.key !==
-            "Escape"
-        ) {
-            return;
-        }
-        closeInfoModal();
-        closeLoginModal();
-        closeVerificationModal();
-        closeTerms();
-    }
-);
-
-/* INITIALIZE COMMON FEATURES*/
-document.addEventListener(
-    "DOMContentLoaded",
-    function() {
-
-        /* LOGIN ROLE FROM URL */
-        initializeLoginRoleFromURL();
-
-        /* REGISTRATION BACK BUTTON*/
-        initializeRegistrationBackButton();
-
-        /* RESTORE LOGIN ROLE */
-        restoreSelectedRole(
-            "loginRole"
-        );
-        initializeLoginRoleFromURL();
-
-        /*  RESTORE SIGNUP ROLE */
-        restoreSelectedRole(
-            "signupRole"
-        );
-
-        /* LOGIN ROLE CHANGE*/
-        initializeLoginRoleChange();
-
-        /* SIGNUP ROLE CHANGE*/
-        initializeSignupRoleChange();
-
-        /* REGISTRATION PASSWORD REQUIREMENTS */
-        initializeSignupPasswordRequirements();
 
         /* LOGIN VERIFICATION PAGE*/
-        initializeLoginVerificationPage();
+        function initializeLoginVerificationPage() {
 
-        /* OTP INITIALIZATION*/
-        if (
-            document.querySelector(
-                ".otp-input"
-            )
-        ) {
-            initializeOTPInputs();
-        }
-    }
-);
+            const roleLabel =
+                getElement(
+                    "verificationRoleLabel"
+                ) ||
+                getElement(
+                    "verificationHeaderRole"
+                );
 
+            const emailLabel =
+                getElement(
+                    "verificationEmail"
+                );
 
-/* STUDENT OUTCOME TITLE FORMAT */
-function formatStudentOutcomeTitle(value) {
-    const text = String(value || "").trim();
+            const verificationBackButton =
+                getElement(
+                    "verificationBackButton"
+                );
 
-    const match = text.match(
-        /student outcome\s*\((a|b|c|d|e|f|g1|g2|h|i|j|k|l)\)/i
-    );
+            const backToLoginLink =
+                getElement(
+                    "backToLoginLink"
+                );
 
-    if (match) {
-        return (
-            "Self-Assessment and Reflection on Attainment of Student Outcome (" +
-            match[1].toLowerCase() +
-            ")"
-        );
-    }
-
-    return text;
-}
-
-function normalizeStoredStudentOutcomeTitles() {
-    const storageKey = "eduMetricsStudentOutcomes";
-    const raw = localStorage.getItem(storageKey);
-
-    if (!raw) {
-        return;
-    }
-
-    try {
-        const records = JSON.parse(raw);
-
-        if (!Array.isArray(records)) {
-            return;
-        }
-
-        let changed = false;
-
-        records.forEach(function (record) {
-            if (!record || typeof record !== "object") {
+            /*If none of these exist,
+             this is not verification-login.html.*/
+            if (
+                !roleLabel &&
+                !emailLabel &&
+                !verificationBackButton &&
+                !backToLoginLink
+            ) {
                 return;
             }
 
-            ["title", "name", "outcomeTitle", "studentOutcome"].forEach(
-                function (key) {
-                    if (
-                        typeof record[key] === "string" &&
-                        /student outcome\s*\(/i.test(record[key])
-                    ) {
-                        const formatted =
-                            formatStudentOutcomeTitle(record[key]);
+            /*Verification role has first priority.*/
+            let role =
+                sessionStorage.getItem(
+                    "verificationRole"
+                ) ||
+                getSelectedRole() ||
+                "student";
 
-                        if (formatted !== record[key]) {
-                            record[key] = formatted;
-                            changed = true;
-                        }
-                    }
-                }
-            );
-        });
-
-        if (changed) {
-            localStorage.setItem(
-                storageKey,
-                JSON.stringify(records)
-            );
-        }
-    } catch (error) {
-        console.warn(
-            "Unable to normalize stored Student Outcome titles.",
-            error
-        );
-    }
-}
-
-normalizeStoredStudentOutcomeTitles();
-
-/* SYLLABUS & OUTCOMES -STUDENT + FACULTY SHARED PAGE FUNCTIONS*/
-/* DATE HELPER*/
-function getFormattedDate() {
-    return new Date().toLocaleDateString(
-        "en-US",
-        {
-            month: "long",
-            day: "numeric",
-            year: "numeric"
-        }
-    );
-}
-
-/* FILE SIZE HELPER*/
-function formatFileSize(bytes) {
-
-    if (!bytes) {
-        return "0 MB";
-    }
-    const mb =
-        bytes /
-        (1024 * 1024);
-
-    return mb.toFixed(2) + " MB";
-}
-
-/* SAFE SHOW / HIDE HELPERS*/
-function showElement(element) {
-    if (!element) {
-        return;
-    }
-    element.hidden = false;
-}
-
-function hideElement(element) {
-
-    if (!element) {
-        return;
-    }
-    element.hidden = true;
-}
-
-/* TABS-WORKS FOR STUDENT + FACULTY*/
-function initializeSyllabusOutcomeTabs() {
-    const tabs =
-        document.querySelectorAll(
-            ".sof-tab"
-        );
-    if (!tabs.length) {
-        return;
-    }
-
-    const panels =
-        document.querySelectorAll(
-            ".sof-tab-panel"
-        );
-
-    tabs.forEach(
-        function(tab) {
             if (
-                tab.dataset.tabInitialized ===
+                !isValidRole(
+                    role
+                )
+            ) {
+                role =
+                    "student";
+            }
+
+            /*Keep both role values synchronized.*/
+            sessionStorage.setItem(
+                "verificationRole",
+                role
+            );
+            saveSelectedRole(
+                role
+            );
+
+            /*HEADER ROLE*/
+            if (roleLabel) {
+                roleLabel.textContent =
+                    formatRole(
+                        role
+                    );
+            }
+
+            /*VERIFICATION EMAIL */
+            const email =
+                sessionStorage.getItem(
+                    "verificationEmail"
+                ) || "";
+
+            if (emailLabel) {
+                emailLabel.textContent =
+                    email ||
+                    "your email address";
+
+            }
+
+            /* BACK URL*/
+            const loginURL =
+                "login page.html?role=" +
+                encodeURIComponent(
+                    role
+                );
+            if (
+                verificationBackButton
+            ) {
+                verificationBackButton.href =
+                    loginURL;
+            }
+
+            if (
+                backToLoginLink
+            ) {
+                backToLoginLink.href =
+                    loginURL;
+            }
+
+            /* PAGE TITLE*/
+            document.title =
+                "EduMetrics | " +
+                formatRole(
+                    role
+                ) +
+                " Verification";
+
+            /*START RESEND TIMER*/
+            if (
+                getElement(
+                    "resendButton"
+                )
+            ) {
+                startResendCountdown(
+                    30
+                );
+            }
+        }
+
+        /* LOGIN PAGE ROLE CHANGE*/
+        function initializeLoginRoleChange() {
+            const loginRole =
+                getElement(
+                    "loginRole"
+                );
+            if (!loginRole) {
+                return;
+            }
+            if (
+                loginRole.dataset.roleInitialized ===
                 "true"
             ) {
                 return;
             }
-            tab.dataset.tabInitialized =
+            loginRole.dataset.roleInitialized =
                 "true";
-            tab.addEventListener(
-                "click",
+            loginRole.addEventListener(
+                "change",
                 function() {
-                    const targetId =
-                        this.dataset.tab;
-                    if (!targetId) {
-                        return;
-                    }
-
-                    tabs.forEach(
-                        function(item) {
-
-                            item.classList.remove(
-                                "active"
-                            );
-                        }
+                    saveSelectedRole(
+                        this.value
                     );
-
-                    panels.forEach(
-                        function(panel) {
-                            panel.classList.remove(
-                                "active"
-                            );
-                        }
-                    );
-
-                    this.classList.add(
-                        "active"
-                    );
-
-                    const targetPanel =
-                        document.getElementById(
-                            targetId
+                    const loginRoleLabel =
+                        getElement(
+                            "loginRoleLabel"
                         );
 
-                    if (targetPanel) {
-                        targetPanel.classList.add(
-                            "active"
-                        );
+                    if (loginRoleLabel) {
+                        loginRoleLabel.textContent =
+                            formatRole(
+                                this.value
+                            );
                     }
                 }
             );
         }
-    );
-}
 
-/* COURSE SYLLABUS-FACULTY ONLY*/
-function initializeFacultySyllabus() {
+        /* SIGNUP ROLE CHANGE*/
+        function initializeSignupRoleChange() {
 
-    const syllabusFile =
-        document.getElementById(
-            "syllabusFile"
-        );
+            const signupRole =
+                getElement(
+                    "signupRole"
+                );
 
-    const syllabusLastUpdated =
-        document.getElementById(
-            "syllabusLastUpdated"
-        );
-
-    const facultySyllabusEmpty =
-        document.getElementById(
-            "facultySyllabusEmpty"
-        );
-
-    const facultySyllabusFileRow =
-        document.getElementById(
-            "facultySyllabusFileRow"
-        );
-
-    const syllabusFileName =
-        document.getElementById(
-            "syllabusFileName"
-        );
-
-    const syllabusFileSize =
-        document.getElementById(
-            "syllabusFileSize"
-        );
-
-    const viewSyllabusButton =
-        document.getElementById(
-            "viewSyllabusButton"
-        );
-
-    const downloadSyllabusButton =
-        document.getElementById(
-            "downloadSyllabusButton"
-        );
-
-    const syllabusMoreButton =
-        document.getElementById(
-            "syllabusMoreButton"
-        );
-
-    const syllabusFileMenu =
-        document.getElementById(
-            "syllabusFileMenu"
-        );
-
-    const deleteSyllabusOption =
-        document.getElementById(
-            "deleteSyllabusOption"
-        );
-
-    if (!syllabusFile) {
-        return;
-    }
-    /*Prevent duplicate initialization.*/
-    if (
-        syllabusFile.dataset.initialized ===
-        "true"
-    ) {
-        return;
-    }
-
-    syllabusFile.dataset.initialized =
-        "true";
-    let currentSyllabusURL =
-        null;
-
-    /* CLOSE THREE-DOT MENU */
-    function closeSyllabusMenu() {
-        if (!syllabusFileMenu) {
-            return;
-        }
-
-        syllabusFileMenu.hidden =
-            true;
-
-        if (syllabusMoreButton) {
-            syllabusMoreButton.setAttribute(
-                "aria-expanded",
-                "false"
-            );
-        }
-    }
-
-    /* UPLOAD SYLLABUS*/
-    syllabusFile.addEventListener(
-        "change",
-        function() {
-
+            if (!signupRole) {
+                return;
+            }
             if (
-                !this.files ||
-                !this.files.length
+                signupRole.dataset.roleInitialized ===
+                "true"
             ) {
                 return;
             }
 
-            const selectedFile =
-                this.files[0];
-            const isPDF =
-                selectedFile.type ===
-                    "application/pdf" ||
-                selectedFile.name
-                    .toLowerCase()
-                    .endsWith(".pdf");
+            signupRole.dataset.roleInitialized =
+                "true";
+            signupRole.addEventListener(
+                "change",
+                function() {
+                    saveSelectedRole(
+                        this.value
+                    );
+                }
+            );
+        }
 
-            if (!isPDF) {
-                alert(
-                    "Please select a PDF file."
+        /* REGISTRATION PASSWORD REQUIREMENTS*/
+        function initializeSignupPasswordRequirements() {
+
+            const signupPassword =
+                getElement(
+                    "signupPassword"
                 );
-                this.value = "";
+            if (!signupPassword) {
+                return;
+            }
+            if (
+                signupPassword.dataset.requirementsInitialized ===
+                "true"
+            ) {
                 return;
             }
 
-            if (currentSyllabusURL) {
-                URL.revokeObjectURL(
-                    currentSyllabusURL
-                );
-            }
-
-            currentSyllabusURL =
-                URL.createObjectURL(
-                    selectedFile
-                );
-
-            if (syllabusFileName) {
-                syllabusFileName.textContent =
-                    selectedFile.name;
-            }
-
-            if (syllabusFileSize) {
-                syllabusFileSize.textContent =
-                    formatFileSize(
-                        selectedFile.size
+            signupPassword.dataset.requirementsInitialized =
+                "true";
+            signupPassword.addEventListener(
+                "input",
+                function() {
+                    updatePasswordRequirements(
+                        this.value
                     );
-            }
-            if (syllabusLastUpdated) {
-                syllabusLastUpdated.textContent =
-                    "Last Updated: " +
-                    getFormattedDate();
-            }
-            hideElement(
-                facultySyllabusEmpty
-            );
-            showElement(
-                facultySyllabusFileRow
-            );
-            closeSyllabusMenu();
-        }
-    );
-
-    /* VIEW SYLLABUS*/
-    if (viewSyllabusButton) {
-        viewSyllabusButton.addEventListener(
-            "click",
-            function() {
-                if (!currentSyllabusURL) {
-                    return;
                 }
-                window.open(
-                    currentSyllabusURL,
-                    "_blank"
-                );
+            );
+
+            updatePasswordRequirements(
+                signupPassword.value
+            );
+
+        }
+
+        /* GENERIC CLOSE MODAL EVENTS */
+        document.addEventListener(
+            "click",
+            function(event) {
+
+                /* INFO MODAL*/
+                const infoModal =
+                    getElement(
+                        "infoModal"
+                    );
+                if (
+                    infoModal &&
+                    event.target ===
+                        infoModal
+                ) {
+                    closeInfoModal();
+                }
+
+                /* LOGIN MODAL*/
+                const loginModal =
+                    getElement(
+                        "loginMessageModal"
+                    );
+
+                if (
+                    loginModal &&
+                    event.target ===
+                        loginModal
+                ) {
+                    closeLoginModal();
+                }
+
+                /* VERIFICATION MODAL*/
+                const verificationModal =
+                    getElement(
+                        "verificationModal"
+                    );
+
+                if (
+                    verificationModal &&
+                    event.target ===
+                        verificationModal
+                ) {
+                    closeVerificationModal();
+                }
+
+                /* TERMS MODAL*/
+                const termsModal =
+                    getElement(
+                        "termsModal"
+                    );
+                            if (
+                    termsModal &&
+                    event.target ===
+                        termsModal
+                ) {
+
+                    closeTerms();
+                }
             }
         );
-    }
-    /* DOWNLOAD SYLLABUS*/
-    if (downloadSyllabusButton) {
-        downloadSyllabusButton.addEventListener(
-            "click",
-            function() {
+
+        /* ESCAPE KEY*/
+        document.addEventListener(
+            "keydown",
+            function(event) {
                 if (
-                    !currentSyllabusURL ||
-                    !syllabusFile.files ||
-                    !syllabusFile.files.length
+                    event.key !==
+                    "Escape"
                 ) {
                     return;
                 }
-                const downloadLink =
-                    document.createElement(
-                        "a"
-                    );
-                downloadLink.href =
-                    currentSyllabusURL;
-                downloadLink.download =
-                    syllabusFile.files[0].name;
-                document.body.appendChild(
-                    downloadLink
-                );
-                downloadLink.click();
-                downloadLink.remove();
+                closeInfoModal();
+                closeLoginModal();
+                closeVerificationModal();
+                closeTerms();
             }
         );
-    }
 
-    /* THREE DOTS*/
-    if (
-        syllabusMoreButton &&
-        syllabusFileMenu
-    ) {
-        syllabusMoreButton.addEventListener(
-            "click",
-            function(event) {
-                event.preventDefault();
-                event.stopPropagation();
-                syllabusFileMenu.hidden =
-                    !syllabusFileMenu.hidden;
-                syllabusMoreButton.setAttribute(
-                    "aria-expanded",
-                    syllabusFileMenu.hidden
-                        ? "false"
-                        : "true"
-                );
-            }
-        );
-        syllabusFileMenu.addEventListener(
-            "click",             function(event) {
-
-                event.stopPropagation();
-            }
-        );
-    }
-
-    /* DELETE SYLLABUS */
-    if (deleteSyllabusOption) {
-        deleteSyllabusOption.addEventListener(
-            "click",
+        /* INITIALIZE COMMON FEATURES*/
+        document.addEventListener(
+            "DOMContentLoaded",
             function() {
-                closeSyllabusMenu();
-                const confirmed =
-                    window.confirm(
-                        "Are you sure you want to delete this syllabus?"
-                    );
-                if (!confirmed) {
+
+                /* LOGIN ROLE FROM URL */
+                initializeLoginRoleFromURL();
+
+                /* REGISTRATION BACK BUTTON*/
+                initializeRegistrationBackButton();
+
+                /* RESTORE LOGIN ROLE */
+                restoreSelectedRole(
+                    "loginRole"
+                );
+                initializeLoginRoleFromURL();
+
+                /*  RESTORE SIGNUP ROLE */
+                restoreSelectedRole(
+                    "signupRole"
+                );
+
+                /* LOGIN ROLE CHANGE*/
+                initializeLoginRoleChange();
+
+                /* SIGNUP ROLE CHANGE*/
+                initializeSignupRoleChange();
+
+                /* REGISTRATION PASSWORD REQUIREMENTS */
+                initializeSignupPasswordRequirements();
+
+                /* LOGIN VERIFICATION PAGE*/
+                initializeLoginVerificationPage();
+
+                /* OTP INITIALIZATION*/
+                if (
+                    document.querySelector(
+                        ".otp-input"
+                    )
+                ) {
+                    initializeOTPInputs();
+                }
+            }
+        );
+
+
+        /* STUDENT OUTCOME TITLE FORMAT */
+        function formatStudentOutcomeTitle(value) {
+            const text = String(value || "").trim();
+
+            const match = text.match(
+                /student outcome\s*\((a|b|c|d|e|f|g1|g2|h|i|j|k|l)\)/i
+            );
+
+            if (match) {
+                return (
+                    "Self-Assessment and Reflection on Attainment of Student Outcome (" +
+                    match[1].toLowerCase() +
+                    ")"
+                );
+            }
+
+            return text;
+        }
+
+        function normalizeStoredStudentOutcomeTitles() {
+            const storageKey = "eduMetricsStudentOutcomes";
+            const raw = localStorage.getItem(storageKey);
+
+            if (!raw) {
+                return;
+            }
+
+            try {
+                const records = JSON.parse(raw);
+
+                if (!Array.isArray(records)) {
                     return;
                 }
-                if (currentSyllabusURL) {
-                    URL.revokeObjectURL(
-                        currentSyllabusURL
+
+                let changed = false;
+
+                records.forEach(function (record) {
+                    if (!record || typeof record !== "object") {
+                        return;
+                    }
+
+                    ["title", "name", "outcomeTitle", "studentOutcome"].forEach(
+                        function (key) {
+                            if (
+                                typeof record[key] === "string" &&
+                                /student outcome\s*\(/i.test(record[key])
+                            ) {
+                                const formatted =
+                                    formatStudentOutcomeTitle(record[key]);
+
+                                if (formatted !== record[key]) {
+                                    record[key] = formatted;
+                                    changed = true;
+                                }
+                            }
+                        }
                     );
-                    currentSyllabusURL =
-                        null;
-                }
+                });
 
-                syllabusFile.value =
-                    "";
-                if (syllabusFileName) {
-                    syllabusFileName.textContent =
-                        "Course_Syllabus.pdf";
+                if (changed) {
+                    localStorage.setItem(
+                        storageKey,
+                        JSON.stringify(records)
+                    );
                 }
-                if (syllabusFileSize) {
-                    syllabusFileSize.textContent =
-                        "0 MB";
-                }
-                if (syllabusLastUpdated) {
-                    syllabusLastUpdated.textContent =
-                        "No syllabus uploaded";
-                }
-                hideElement(
-                    facultySyllabusFileRow
-                );
-                showElement(
-                    facultySyllabusEmpty
+            } catch (error) {
+                console.warn(
+                    "Unable to normalize stored Student Outcome titles.",
+                    error
                 );
             }
-        );
-    }
-
-    /* CLICK OUTSIDE*/
-    document.addEventListener(
-        "click",
-        function(event) {
-            if (
-                syllabusMoreButton &&
-                syllabusMoreButton.contains(
-                    event.target
-                )
-            ) {
-                return;
-            }
-
-            if (
-                syllabusFileMenu &&
-                syllabusFileMenu.contains(
-                    event.target
-                )
-            ) {
-                return;
-            }
-            closeSyllabusMenu();
         }
-    );
 
-    /* ESC*/
-    document.addEventListener(
-        "keydown",
-        function(event) {
-            if (
-                event.key ===
-                "Escape"
-            ) {
-                closeSyllabusMenu();
-            }
-        }
-    );
-}
+        normalizeStoredStudentOutcomeTitles();
 
-/* FACULTY — SYLLABUS & OUTCOMES*/
-document.addEventListener("DOMContentLoaded", function () {
-    initFacultySyllabusOutcomes();
-});
-function initFacultySyllabusOutcomes() {
-
-    const page =
-        document.querySelector(
-            ".so-faculty-page"
-        );
-
-    if (!page) {
-        return;
-    }
-
-    /* COMMON HELPERS*/
-    function escapeHTML(value) {
-        return String(value ?? "")
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;")
-            .replaceAll("'", "&#039;");
-    }
-    function openModal(modal) {
-        if (!modal) {
-            return;
-        }
-        modal.hidden = false;
-        modal.removeAttribute(
-            "hidden"
-        );
-        document.body.classList.add(
-            "sof-modal-open"
-        );
-    }
-    function closeModal(modal) {
-        if (!modal) {
-            return;
-        }
-        modal.hidden = true;
-        modal.setAttribute(
-            "hidden",
-           ""
-        );
-        const stillOpen =
-            document.querySelector(
-                ".sof-outcome-modal:not([hidden]), " +
-                ".sof-delete-modal:not([hidden])"
-            );
-        if (!stillOpen) {
-            document.body.classList.remove(
-                "sof-modal-open"
-            );
-        }
-    }
-    function formatFileSize(bytes) {
-        if (!bytes) {
-            return "0 MB";
-        }
-        const mb =
-            bytes /
-            (1024 * 1024);
-        return (
-            mb.toFixed(2) +
-            " MB"
-        );
-    }
-
-    function formatDate(value) {
-        if (!value) {
-            return "—";
-        }
-        const date =
-            new Date(
-                value + "T00:00:00"
-            );
-        return date.toLocaleDateString(
-            "en-US",
-            {
-                month: "short",
-                day: "numeric",
-                year: "numeric"
-            }
-        );
-    }
-
-    function getTodayFormatted() {
-        return new Date()
-            .toLocaleDateString(
+        /* SYLLABUS & OUTCOMES -STUDENT + FACULTY SHARED PAGE FUNCTIONS*/
+        /* DATE HELPER*/
+        function getFormattedDate() {
+            return new Date().toLocaleDateString(
                 "en-US",
                 {
                     month: "long",
@@ -2586,3829 +2076,4538 @@ function initFacultySyllabusOutcomes() {
                     year: "numeric"
                 }
             );
-    }
+        }
 
-    /* TABS*/
-    const tabs =
-        document.querySelectorAll(
-            ".sof-tab"
-        );
-    const tabPanels =
-        document.querySelectorAll(
-            ".sof-tab-panel"
-        );
-    tabs.forEach(
-        function (tab) {
-            tab.addEventListener(
-                "click",
-                function () {
-                    const targetId =
-                        this.dataset.tab;
-                    if (!targetId) {
+        /* FILE SIZE HELPER*/
+        function formatFileSize(bytes) {
+
+            if (!bytes) {
+                return "0 MB";
+            }
+            const mb =
+                bytes /
+                (1024 * 1024);
+
+            return mb.toFixed(2) + " MB";
+        }
+
+        /* SAFE SHOW / HIDE HELPERS*/
+        function showElement(element) {
+            if (!element) {
+                return;
+            }
+            element.hidden = false;
+        }
+
+        function hideElement(element) {
+
+            if (!element) {
+                return;
+            }
+            element.hidden = true;
+        }
+
+        /* TABS-WORKS FOR STUDENT + FACULTY*/
+        function initializeSyllabusOutcomeTabs() {
+            const tabs =
+                document.querySelectorAll(
+                    ".sof-tab"
+                );
+            if (!tabs.length) {
+                return;
+            }
+
+            const panels =
+                document.querySelectorAll(
+                    ".sof-tab-panel"
+                );
+
+            tabs.forEach(
+                function(tab) {
+                    if (
+                        tab.dataset.tabInitialized ===
+                        "true"
+                    ) {
                         return;
                     }
-                    tabs.forEach(
-                        function (item) {
-                            item.classList.remove(
-                                "active"
-                            );
-                        }
-                    );
-                    tabPanels.forEach(
-                        function (panel) {
-                            panel.classList.remove(
-                                "active"
-                            );
-                        }
-                    );
-                    this.classList.add(
-                        "active"
-                    );
-                    const target =
-                        document.getElementById(
-                            targetId
-                        );
-                    if (target) {
+                    tab.dataset.tabInitialized =
+                        "true";
+                    tab.addEventListener(
+                        "click",
+                        function() {
+                            const targetId =
+                                this.dataset.tab;
+                            if (!targetId) {
+                                return;
+                            }
 
-                        target.classList.add(
-                            "active"
-                        );
-                    }
+                            tabs.forEach(
+                                function(item) {
+
+                                    item.classList.remove(
+                                        "active"
+                                    );
+                                }
+                            );
+
+                            panels.forEach(
+                                function(panel) {
+                                    panel.classList.remove(
+                                        "active"
+                                    );
+                                }
+                            );
+
+                            this.classList.add(
+                                "active"
+                            );
+
+                            const targetPanel =
+                                document.getElementById(
+                                    targetId
+                                );
+
+                            if (targetPanel) {
+                                targetPanel.classList.add(
+                                    "active"
+                                );
+                            }
+                        }
+                    );
                 }
             );
         }
-    );
 
+        /* COURSE SYLLABUS-FACULTY ONLY*/
+        function initializeFacultySyllabus() {
 
-    /* COURSE SYLLABUS*/
-    const syllabusFile =
-        document.getElementById(
-            "syllabusFile"
-        );
-
-    const syllabusLastUpdated =
-        document.getElementById(
-            "syllabusLastUpdated"
-        );
-
-    const syllabusEmpty =
-        document.getElementById(
-            "facultySyllabusEmpty"
-        );
-
-    const syllabusFileRow =
-        document.getElementById(
-            "facultySyllabusFileRow"
-        );
-
-    const syllabusFileName =
-        document.getElementById(
-            "syllabusFileName"
-        );
-
-    const syllabusFileSize =
-        document.getElementById(
-            "syllabusFileSize"
-        );
-
-    const viewSyllabusButton =
-        document.getElementById(
-            "viewSyllabusButton"
-        );
-
-    const downloadSyllabusButton =
-        document.getElementById(
-            "downloadSyllabusButton"
-        );
-
-    const syllabusMoreButton =
-        document.getElementById(
-            "syllabusMoreButton"
-        );
-
-    const syllabusFileMenu =
-        document.getElementById(
-            "syllabusFileMenu"
-        );
-
-    const deleteSyllabusOption =
-        document.getElementById(
-            "deleteSyllabusOption"
-        );
-
-    const deleteSyllabusModal =
-        document.getElementById(
-            "deleteSyllabusModal"
-        );
-
-    const deleteSyllabusBackdrop =
-        document.getElementById(
-            "deleteSyllabusBackdrop"
-        );
-
-
-    const deleteSyllabusFileName =
-        document.getElementById(
-            "deleteSyllabusFileName"
-        );
-
-    const cancelDeleteSyllabus =
-        document.getElementById(
-            "cancelDeleteSyllabus"
-        );
-
-    const confirmDeleteSyllabus =
-        document.getElementById(
-            "confirmDeleteSyllabus"
-        );
-
-    let currentSyllabusURL =
-        null;
-
-    let currentSyllabusFile =
-        null;
-
-    /* SYLLABUS UPLOAD*/
-    if (syllabusFile) {
-        syllabusFile.addEventListener(
-            "change",
-            function () {
-                if (
-                    !this.files ||
-                    !this.files.length
-                ) {
-                    return;
-                }
-                const file =
-                    this.files[0];
-                const isPDF =
-                    file.type ===
-                        "application/pdf" ||
-                    file.name
-                        .toLowerCase()
-                        .endsWith(".pdf");
-                if (!isPDF) {
-                    alert(
-                        "Please upload a PDF file."
-                    );
-                    this.value =
-                        "";
-                    return;
-                }
-
-                if (currentSyllabusURL) {
-                    URL.revokeObjectURL(
-                        currentSyllabusURL
-                    );
-                }
-
-                currentSyllabusFile =
-                    file;
-                currentSyllabusURL =
-                    URL.createObjectURL(
-                        file
-                    );
-
-                if (syllabusFileName) {
-                    syllabusFileName.textContent =
-                        file.name;
-                }
-
-                if (syllabusFileSize) {
-                    syllabusFileSize.textContent =
-                        formatFileSize(
-                            file.size
-                        );
-                }
-
-                if (syllabusLastUpdated) {
-                    syllabusLastUpdated.textContent =
-                        "Last Updated: " +
-                        getTodayFormatted();
-                }
-
-                if (syllabusEmpty) {
-                    syllabusEmpty.hidden =
-                        true;
-                }
-
-                if (syllabusFileRow) {
-                    syllabusFileRow.hidden =
-                        false;
-                }
-            }
-        );
-    }
-
-    /* VIEW SYLLABUS*/
-    if (viewSyllabusButton) {
-        viewSyllabusButton.addEventListener(
-            "click",
-            function () {
-                if (!currentSyllabusURL) {
-                    alert(
-                        "No syllabus has been uploaded."
-                    );
-                    return;
-                }
-
-                window.open(
-                    currentSyllabusURL,
-                    "_blank"
+            const syllabusFile =
+                document.getElementById(
+                    "syllabusFile"
                 );
-            }
-        );
-    }
 
-    /* DOWNLOAD SYLLABUS */
-    if (downloadSyllabusButton) {
-        downloadSyllabusButton.addEventListener(
-            "click",
-            function () {
-                if (
-                    !currentSyllabusURL ||
-                    !currentSyllabusFile
-                                    ) {
-                    alert(
-                        "No syllabus has been uploaded."
-                    );
-                    return;
-
-                }
-                const link =
-                    document.createElement(
-                        "a"
-                    );
-
-                link.href =
-                    currentSyllabusURL;
-                link.download =
-                    currentSyllabusFile.name;
-                document.body.appendChild(
-                    link
+            const syllabusLastUpdated =
+                document.getElementById(
+                    "syllabusLastUpdated"
                 );
-                link.click();
-                link.remove();
 
+            const facultySyllabusEmpty =
+                document.getElementById(
+                    "facultySyllabusEmpty"
+                );
+
+            const facultySyllabusFileRow =
+                document.getElementById(
+                    "facultySyllabusFileRow"
+                );
+
+            const syllabusFileName =
+                document.getElementById(
+                    "syllabusFileName"
+                );
+
+            const syllabusFileSize =
+                document.getElementById(
+                    "syllabusFileSize"
+                );
+
+            const viewSyllabusButton =
+                document.getElementById(
+                    "viewSyllabusButton"
+                );
+
+            const downloadSyllabusButton =
+                document.getElementById(
+                    "downloadSyllabusButton"
+                );
+
+            const syllabusMoreButton =
+                document.getElementById(
+                    "syllabusMoreButton"
+                );
+
+            const syllabusFileMenu =
+                document.getElementById(
+                    "syllabusFileMenu"
+                );
+
+            const deleteSyllabusOption =
+                document.getElementById(
+                    "deleteSyllabusOption"
+                );
+
+            if (!syllabusFile) {
+                return;
             }
-        );
+            /*Prevent duplicate initialization.*/
+            if (
+                syllabusFile.dataset.initialized ===
+                "true"
+            ) {
+                return;
+            }
 
-    }
+            syllabusFile.dataset.initialized =
+                "true";
+            let currentSyllabusURL =
+                null;
 
-    /* SYLLABUS MORE MENU*/
-    if (
-        syllabusMoreButton &&
-        syllabusFileMenu
-    ) {
-        syllabusMoreButton.addEventListener(
-            "click",
-            function (event) {
+            /* CLOSE THREE-DOT MENU */
+            function closeSyllabusMenu() {
+                if (!syllabusFileMenu) {
+                    return;
+                }
 
-                event.stopPropagation();
                 syllabusFileMenu.hidden =
-                    !syllabusFileMenu.hidden;
-                syllabusMoreButton.setAttribute(
-                    "aria-expanded",
-                    String(
-                        !syllabusFileMenu.hidden
-                    )
-                );
-            }
-        );
+                    true;
 
-        document.addEventListener(
-            "click",
-            function (event) {
-
-                if (
-                    !syllabusFileMenu.hidden &&
-                    !syllabusFileMenu.contains(
-                        event.target
-                    ) &&
-                    !syllabusMoreButton.contains(
-                        event.target
-                    )
-                ) {
-                    syllabusFileMenu.hidden =
-                        true;
+                if (syllabusMoreButton) {
                     syllabusMoreButton.setAttribute(
                         "aria-expanded",
                         "false"
                     );
                 }
             }
-        );
 
-    }
+            /* UPLOAD SYLLABUS*/
+            syllabusFile.addEventListener(
+                "change",
+                function() {
 
-    /* OPEN DELETE SYLLABUS*/
-    if (deleteSyllabusOption) {
-        deleteSyllabusOption.addEventListener(
-            "click",
-            function () {
+                    if (
+                        !this.files ||
+                        !this.files.length
+                    ) {
+                        return;
+                    }
 
-                if (
-                    syllabusFileMenu
-                ) {
+                    const selectedFile =
+                        this.files[0];
+                    const isPDF =
+                        selectedFile.type ===
+                            "application/pdf" ||
+                        selectedFile.name
+                            .toLowerCase()
+                            .endsWith(".pdf");
 
-                    syllabusFileMenu.hidden =
-                        true;
+                    if (!isPDF) {
+                        alert(
+                            "Please select a PDF file."
+                        );
+                        this.value = "";
+                        return;
+                    }
 
-                }
+                    if (currentSyllabusURL) {
+                        URL.revokeObjectURL(
+                            currentSyllabusURL
+                        );
+                    }
 
-                if (
-                    deleteSyllabusFileName
-                ) {
+                    currentSyllabusURL =
+                        URL.createObjectURL(
+                            selectedFile
+                        );
 
-                    deleteSyllabusFileName.textContent =
-                        currentSyllabusFile
-                            ? currentSyllabusFile.name
-                            : "this syllabus";
+                    if (syllabusFileName) {
+                        syllabusFileName.textContent =
+                            selectedFile.name;
+                    }
 
-                }
-
-                openModal(
-                    deleteSyllabusModal
-                );
-            }
-        );
-    }
-
-    /* CANCEL DELETE SYLLABUS */
-    if (cancelDeleteSyllabus) {
-
-        cancelDeleteSyllabus.addEventListener(
-            "click",
-            function () {
-
-                closeModal(
-                    deleteSyllabusModal
-                );
-            }
-        );
-    }
-
-    if (deleteSyllabusBackdrop) {
-        deleteSyllabusBackdrop.addEventListener(
-            "click",
-            function () {
-                closeModal(
-                    deleteSyllabusModal
-                );
-            }
-        );
-    }
-
-    /* CONFIRM DELETE SYLLABUS */
-    if (confirmDeleteSyllabus) {
-        confirmDeleteSyllabus.addEventListener(
-            "click",
-            function () {
-                if (currentSyllabusURL) {
-                    URL.revokeObjectURL(
-                        currentSyllabusURL
+                    if (syllabusFileSize) {
+                        syllabusFileSize.textContent =
+                            formatFileSize(
+                                selectedFile.size
+                            );
+                    }
+                    if (syllabusLastUpdated) {
+                        syllabusLastUpdated.textContent =
+                            "Last Updated: " +
+                            getFormattedDate();
+                    }
+                    hideElement(
+                        facultySyllabusEmpty
                     );
-                }
-                currentSyllabusURL =
-                    null;
-                currentSyllabusFile =
-                    null;
-                if (syllabusFile) {
-                    syllabusFile.value =
-                        "";
-
-                }
-                if (syllabusFileName) {
-                    syllabusFileName.textContent =
-                        "Course_Syllabus.pdf";
-
-                }
-
-                if (syllabusFileSize) {
-                    syllabusFileSize.textContent =
-                        "0 MB";
-                }
-
-                if (syllabusLastUpdated) {
-                    syllabusLastUpdated.textContent =
-                        "No syllabus uploaded";
-                }
-                if (syllabusFileRow) {
-                    syllabusFileRow.hidden =
-                        true;
-                }
-                if (syllabusEmpty) {
-                    syllabusEmpty.hidden =
-                        false;
-                }
-                closeModal(
-                    deleteSyllabusModal
-                );
-            }
-        );
-
-    }
-
-    /* COURSE OUTCOME*/
-    const addCourseOutcomeButton =
-        document.getElementById(
-            "addCourseOutcomeButton"
-        );
-
-    const courseOutcomeModal =
-        document.getElementById(
-            "courseOutcomeModal"
-        );
-
-    const courseOutcomeBackdrop =
-        document.getElementById(
-            "courseOutcomeBackdrop"
-        );
-
-    const courseOutcomeModalTitle =
-        document.getElementById(
-            "courseOutcomeModalTitle"
-        );
-
-
-    const courseOutcomeModalSubtitle =
-        document.getElementById(
-            "courseOutcomeModalSubtitle"
-        );
-
-    const courseOutcomeSelect =
-        document.getElementById(
-            "courseOutcomeExistingSelect"
-        );
-
-    const courseOutcomeNumber =
-        document.getElementById(
-            "courseOutcomeNumber"
-        );
-
-    const courseOutcomeDescription =
-        document.getElementById(
-            "courseOutcomeDescription"
-        );
-
-    const cancelCourseOutcomeButton =
-        document.getElementById(
-            "cancelCourseOutcomeButton"
-        );
-
-    const saveCourseOutcomeButton =
-        document.getElementById(
-            "saveCourseOutcomeButton"
-        );
-
-    const courseOutcomesTableBody =
-        document.getElementById(
-            "courseOutcomesTableBody"
-        );
-
-    let editingCourseOutcomeRow =
-        null;
-    let deletingCourseOutcomeRow =
-        null;
-
-    /* COURSE OUTCOME SO HELPERS */
-    function getAlignedSOOptions() {
-
-        return Array.from(
-            document.querySelectorAll(
-                "#courseOutcomeSoOptions .sof-so-option"
-            )
-        );
-
-    }
-
-    function getSelectedAlignedSOs() {
-
-        return Array.from(
-            document.querySelectorAll(
-                "#courseOutcomeSoOptions .sof-so-option"
-            )
-        )
-        .filter(
-            function (option) {
-
-                const style =
-                    window.getComputedStyle(option);
-
-                return (
-                    option.classList.contains("selected") ||
-                    option.classList.contains("is-selected") ||
-                    option.getAttribute("aria-pressed") === "true" ||
-                    option.dataset.selected === "true" ||
-                    style.backgroundColor === "rgb(0, 65, 121)"
-                );
-
-            }
-        )
-        .map(
-            function (option) {
-
-                return (
-                    option.dataset.so ||
-                    option.value ||
-                    option.textContent.trim()
-                );
-
-            }
-        );
-
-    }
-
-    function clearAlignedSOs() {
-        getAlignedSOOptions()
-            .forEach(
-                function (option) {
-                    option.classList.remove(
-                        "selected",
-                        "is-selected"
+                    showElement(
+                        facultySyllabusFileRow
                     );
-
-                    option.setAttribute(
-                        "aria-pressed",
-                        "false"
-                    );
+                    closeSyllabusMenu();
                 }
             );
-    }
 
-    function setAlignedSOs(values) {
-        const selectedValues =
-            Array.isArray(values)
-                ? values
-                : [];
-
-        getAlignedSOOptions()
-            .forEach(
-                function (option) {
-                    const value =
-                        option.dataset.so ||
-                        option.value ||
-                        option.textContent.trim();
-                    const selected =
-                        selectedValues.includes(value);
-                    option.classList.toggle(
-                        "selected",
-                        selected
-                    );
-                    option.classList.toggle(
-                        "is-selected",
-                        selected
-                    );
-                    option.setAttribute(
-                        "aria-pressed",
-                        selected ? "true" : "false"
-                    );
-                }
-            );
-    }
-
-    /* SO BUTTON MULTI-SELECT*/
-    getAlignedSOOptions()
-        .forEach(
-            function (option) {
-
-                if (
-                    option.dataset.soMultiSelectInitialized ===
-                    "true"
-                ) {
-                    return;
-                }
-
-                option.dataset.soMultiSelectInitialized =
-                    "true";
-
-                if (
-                    !option.hasAttribute("aria-pressed")
-                ) {
-                    option.setAttribute(
-                        "aria-pressed",
-                        "false"
-                    );
-                     }
-                option.addEventListener(
+            /* VIEW SYLLABUS*/
+            if (viewSyllabusButton) {
+                viewSyllabusButton.addEventListener(
                     "click",
-                    function (event) {
+                    function() {
+                        if (!currentSyllabusURL) {
+                            return;
+                        }
+                        window.open(
+                            currentSyllabusURL,
+                            "_blank"
+                        );
+                    }
+                );
+            }
+            /* DOWNLOAD SYLLABUS*/
+            if (downloadSyllabusButton) {
+                downloadSyllabusButton.addEventListener(
+                    "click",
+                    function() {
+                        if (
+                            !currentSyllabusURL ||
+                            !syllabusFile.files ||
+                            !syllabusFile.files.length
+                        ) {
+                            return;
+                        }
+                        const downloadLink =
+                            document.createElement(
+                                "a"
+                            );
+                        downloadLink.href =
+                            currentSyllabusURL;
+                        downloadLink.download =
+                            syllabusFile.files[0].name;
+                        document.body.appendChild(
+                            downloadLink
+                        );
+                        downloadLink.click();
+                        downloadLink.remove();
+                    }
+                );
+            }
+
+            /* THREE DOTS*/
+            if (
+                syllabusMoreButton &&
+                syllabusFileMenu
+            ) {
+                syllabusMoreButton.addEventListener(
+                    "click",
+                    function(event) {
                         event.preventDefault();
                         event.stopPropagation();
-                        const selected =
-                            !this.classList.contains(
-                                "selected"
+                        syllabusFileMenu.hidden =
+                            !syllabusFileMenu.hidden;
+                        syllabusMoreButton.setAttribute(
+                            "aria-expanded",
+                            syllabusFileMenu.hidden
+                                ? "false"
+                                : "true"
+                        );
+                    }
+                );
+                syllabusFileMenu.addEventListener(
+                    "click",             function(event) {
+
+                        event.stopPropagation();
+                    }
+                );
+            }
+
+            /* DELETE SYLLABUS */
+            if (deleteSyllabusOption) {
+                deleteSyllabusOption.addEventListener(
+                    "click",
+                    function() {
+                        closeSyllabusMenu();
+                        const confirmed =
+                            window.confirm(
+                                "Are you sure you want to delete this syllabus?"
                             );
+                        if (!confirmed) {
+                            return;
+                        }
+                        if (currentSyllabusURL) {
+                            URL.revokeObjectURL(
+                                currentSyllabusURL
+                            );
+                            currentSyllabusURL =
+                                null;
+                        }
 
-                        this.classList.toggle(
-                            "selected",
-                            selected
+                        syllabusFile.value =
+                            "";
+                        if (syllabusFileName) {
+                            syllabusFileName.textContent =
+                                "Course_Syllabus.pdf";
+                        }
+                        if (syllabusFileSize) {
+                            syllabusFileSize.textContent =
+                                "0 MB";
+                        }
+                        if (syllabusLastUpdated) {
+                            syllabusLastUpdated.textContent =
+                                "No syllabus uploaded";
+                        }
+                        hideElement(
+                            facultySyllabusFileRow
                         );
-
-                        this.classList.toggle(
-                            "is-selected",
-                            selected
-                        );
-
-                        this.setAttribute(
-                            "aria-pressed",
-                            selected ? "true" : "false"
+                        showElement(
+                            facultySyllabusEmpty
                         );
                     }
                 );
             }
-        );
 
-    /* COURSE OUTCOME SELECT*/
-    if (courseOutcomeSelect) {
-        courseOutcomeSelect.addEventListener(
-            "change",
-            function () {
-                const option =
-                    this.options[
-                        this.selectedIndex
-                    ];
-
-                if (
-                    !option ||
-                    !option.value
-                ) {
-                    if (courseOutcomeNumber) {
-                        courseOutcomeNumber.value =
-                            "";
+            /* CLICK OUTSIDE*/
+            document.addEventListener(
+                "click",
+                function(event) {
+                    if (
+                        syllabusMoreButton &&
+                        syllabusMoreButton.contains(
+                            event.target
+                        )
+                    ) {
+                        return;
                     }
 
-                    if (courseOutcomeDescription) {
-                        courseOutcomeDescription.value =
-                            "";
+                    if (
+                        syllabusFileMenu &&
+                        syllabusFileMenu.contains(
+                            event.target
+                        )
+                    ) {
+                        return;
                     }
+                    closeSyllabusMenu();
+                }
+            );
+
+            /* ESC*/
+            document.addEventListener(
+                "keydown",
+                function(event) {
+                    if (
+                        event.key ===
+                        "Escape"
+                    ) {
+                        closeSyllabusMenu();
+                    }
+                }
+            );
+        }
+
+        /* FACULTY — SYLLABUS & OUTCOMES*/
+        document.addEventListener("DOMContentLoaded", function () {
+            initFacultySyllabusOutcomes();
+        });
+        function initFacultySyllabusOutcomes() {
+
+            const page =
+                document.querySelector(
+                    ".so-faculty-page"
+                );
+
+            if (!page) {
+                return;
+            }
+
+            /* COMMON HELPERS*/
+            function escapeHTML(value) {
+                return String(value ?? "")
+                    .replaceAll("&", "&amp;")
+                    .replaceAll("<", "&lt;")
+                    .replaceAll(">", "&gt;")
+                    .replaceAll('"', "&quot;")
+                    .replaceAll("'", "&#039;");
+            }
+            function openModal(modal) {
+                if (!modal) {
                     return;
                 }
-
-                if (courseOutcomeNumber) {
-                    courseOutcomeNumber.value =
-                        option.value;
-                }
-
-                if (courseOutcomeDescription) {
-                    courseOutcomeDescription.value =
-                        option.dataset.description ||
-                        "";
-                }
-            }
-        );
-    }
-
-    /* RESET COURSE OUTCOME FORM*/
-    function resetCourseOutcomeForm() {
-        editingCourseOutcomeRow =
-            null;
-
-        if (courseOutcomeSelect) {
-            courseOutcomeSelect.disabled =
-                false;
-            courseOutcomeSelect.value =
-                "";
-        }
-        if (courseOutcomeNumber) {
-            courseOutcomeNumber.value =
-                "";
-        }
-        if (courseOutcomeDescription) {
-            courseOutcomeDescription.value =
-                "";
-        }
-        clearAlignedSOs();
-        if (saveCourseOutcomeButton) {
-            saveCourseOutcomeButton.textContent =
-                "Save";
-        }
-    }
-
-    /*OPEN ADD COURSE OUTCOME*/
-    if (addCourseOutcomeButton) {
-        addCourseOutcomeButton.addEventListener(
-            "click",
-            function () {
-                resetCourseOutcomeForm();
-                                if (courseOutcomeModalTitle) {
-                    courseOutcomeModalTitle.textContent =
-                        "Add Course Outcome";
-                }
-
-                if (courseOutcomeModalSubtitle) {
-                    courseOutcomeModalSubtitle.textContent =
-                        "Select an existing course outcome and its aligned student outcomes.";
-
-                }
-
-                openModal(
-                    courseOutcomeModal
+                modal.hidden = false;
+                modal.removeAttribute(
+                    "hidden"
+                );
+                document.body.classList.add(
+                    "sof-modal-open"
                 );
             }
-        );
-    }
-
-
-    /* CLOSE COURSE OUTCOME*/
-    function closeCourseOutcomeForm() {
-        closeModal(
-            courseOutcomeModal
-        );
-        resetCourseOutcomeForm();
-    }
-
-    if (cancelCourseOutcomeButton) {
-        cancelCourseOutcomeButton.addEventListener(
-            "pointerdown",
-            function (event) {
-
-                event.preventDefault();
-
-                closeCourseOutcomeForm();
-            }
-        );
-    }
-
-    if (courseOutcomeBackdrop) {
-        courseOutcomeBackdrop.addEventListener(
-            "pointerdown",
-            function (event) {
-                event.preventDefault();
-                closeCourseOutcomeForm();
-            }
-        );
-    }
-
-    /* SAVE COURSE OUTCOME*/
-    if (saveCourseOutcomeButton) {
-        saveCourseOutcomeButton.addEventListener(
-            "click",
-            function (event) {
-
-                event.preventDefault();
-                const coNumber =
-                    courseOutcomeNumber
-                        ? courseOutcomeNumber.value.trim()
-                        : "";
-                const description =
-                    courseOutcomeDescription
-                        ? courseOutcomeDescription.value.trim()
-                        : "";
-
-                const alignedSOs =
-                    getSelectedAlignedSOs();
-
-                if (
-                    !coNumber ||
-                    !description
-                ) {
-
-                    alert(
-                        "Please select a Course Outcome."
-                    );
+            function closeModal(modal) {
+                if (!modal) {
                     return;
                 }
-
-                if (
-                    alignedSOs.length === 0
-                ) {
-                    alert(
-                        "Please select at least one aligned Student Outcome."
+                modal.hidden = true;
+                modal.setAttribute(
+                    "hidden",
+                   ""
+                );
+                const stillOpen =
+                    document.querySelector(
+                        ".sof-outcome-modal:not([hidden]), " +
+                        ".sof-delete-modal:not([hidden])"
                     );
-                    return;
-
+                if (!stillOpen) {
+                    document.body.classList.remove(
+                        "sof-modal-open"
+                    );
                 }
+            }
+            function formatFileSize(bytes) {
+                if (!bytes) {
+                    return "0 MB";
+                }
+                const mb =
+                    bytes /
+                    (1024 * 1024);
+                return (
+                    mb.toFixed(2) +
+                    " MB"
+                );
+            }
 
-                /* EDIT
-                   UPDATE EXISTING ROW ONLY*/
-                if (editingCourseOutcomeRow) {
-                    const cells =
-                        editingCourseOutcomeRow
-                            .querySelectorAll(
-                                "td"
-                            );
-
-                    editingCourseOutcomeRow.dataset.coNumber =
-                        coNumber;
-                    editingCourseOutcomeRow.dataset.description =
-                        description;
-                    editingCourseOutcomeRow.dataset.alignedSo =
-                        JSON.stringify(
-                            alignedSOs
-                        );
-
-                    if (cells.length >= 3) {
-                        cells[0].textContent =
-                            coNumber;
-
-                        cells[1].textContent =
-                            description;
-
-                        cells[2].textContent =
-                            alignedSOs.join(
-                                ", "
-                            );
+            function formatDate(value) {
+                if (!value) {
+                    return "—";
+                }
+                const date =
+                    new Date(
+                        value + "T00:00:00"
+                    );
+                return date.toLocaleDateString(
+                    "en-US",
+                    {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric"
                     }
-                    closeCourseOutcomeForm();
-                    return;
-                }
+                );
+            }
 
-                /*PREVENT DUPLICATE CO*/
-                const duplicate =
-                    Array.from(
-                        courseOutcomesTableBody
-                            .querySelectorAll(
-                                "tr"
-                            )
-                    )
-                    .some(
-                        function (row) {
-
-                            return (
-                                row.dataset.coNumber ===
-                                coNumber
-                            );
-
+            function getTodayFormatted() {
+                return new Date()
+                    .toLocaleDateString(
+                        "en-US",
+                        {
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric"
                         }
                     );
-                if (duplicate) {
-                    alert(
-                        coNumber +
-                        " has already been added."
-                    );
-                    return;
-                }
+            }
 
-                /* ADD NEW COURSE OUTCOME*/
-                const row =
-                    document.createElement(
-                        "tr"
-                    );
-                row.dataset.coNumber =
-                    coNumber;
-                row.dataset.description =
-                    description;
-                row.dataset.alignedSo =
-                    JSON.stringify(
-                        alignedSOs
-                    );
-                row.innerHTML = `
-                    <td>
-                        ${escapeHTML(coNumber)}
-                    </td>
-                    <td>
-                        ${escapeHTML(description)}
-                    </td>
-                    <td>
-                        ${escapeHTML(
-                            alignedSOs.join(", ")
-                        )}
-                    </td>
-                    <td>
-                        <div class="sof-row-actions">
-                            <button
-                                type="button"
-                                class="
-                                    sof-edit-outcome-btn
-                                    js-edit-course-outcome
-                                "
-                            >
-                                Edit
-                            </button>
-                            <button
-                                type="button"
-                                class="
-                                    sof-delete-outcome-btn
-                                    js-delete-course-outcome
-                                "
-                            >
-                                Delete
-                            </button>
-                        </div>
-                    </td>
-                `;
-                courseOutcomesTableBody.appendChild(
-                    row
+            /* TABS*/
+            const tabs =
+                document.querySelectorAll(
+                    ".sof-tab"
                 );
-                closeCourseOutcomeForm();
-            }
-        );
-
-    }
-
-    /* COURSE OUTCOME TABLE ACTIONS */
-    if (courseOutcomesTableBody) {
-        courseOutcomesTableBody.addEventListener(
-            "click",
-            function (event) {
-
-                const editButton =
-                    event.target.closest(
-                        ".js-edit-course-outcome"
-                    );
-
-                const deleteButton =
-                    event.target.closest(
-                        ".js-delete-course-outcome"
-                    );
-
-                /*  EDIT COURSE OUTCOME*/
-                if (editButton) {
-
-                    const row =
-                        editButton.closest(
-                            "tr"
-                        );
-
-                    if (!row) {
-                        return;
-                    }
-
-                    editingCourseOutcomeRow =
-                        row;
-
-                    const coNumber =
-                        row.dataset.coNumber ||
-                        row.cells[0]
-                            .textContent
-                            .trim();
-
-                    const description =
-                        row.dataset.description ||
-                        row.cells[1]
-                            .textContent
-                            .trim();
-                    let alignedSOs =
-                        [];
-
-                    try {
-                        alignedSOs =
-                            JSON.parse(
-                                row.dataset.alignedSo ||
-                                "[]"
+            const tabPanels =
+                document.querySelectorAll(
+                    ".sof-tab-panel"
+                );
+            tabs.forEach(
+                function (tab) {
+                    tab.addEventListener(
+                        "click",
+                        function () {
+                            const targetId =
+                                this.dataset.tab;
+                            if (!targetId) {
+                                return;
+                            }
+                            tabs.forEach(
+                                function (item) {
+                                    item.classList.remove(
+                                        "active"
+                                    );
+                                }
                             );
-                    }
-                    catch (error) {
-                        alignedSOs =
-                            row.cells[2]
-                                .textContent
-                                .split(",")
-                                .map(
-                                    function (item) {
-                                        return item.trim();
-                                    }
-                                )
-                                .filter(Boolean);
-                    }
+                            tabPanels.forEach(
+                                function (panel) {
+                                    panel.classList.remove(
+                                        "active"
+                                    );
+                                }
+                            );
+                            this.classList.add(
+                                "active"
+                            );
+                            const target =
+                                document.getElementById(
+                                    targetId
+                                );
+                            if (target) {
 
-                    if (courseOutcomeSelect) {
-                        courseOutcomeSelect.value =
-                            coNumber;
-
-
-                        /*
-                         Editing an existing CO should update
-                         that CO instead of selecting another
-                         CO and accidentally creating a new one.
-                         */
-
-                        courseOutcomeSelect.disabled =
-                            true;
-                    }
-
-                    if (courseOutcomeNumber) {
-                        courseOutcomeNumber.value =
-                            coNumber;
-                    }
-
-                    if (courseOutcomeDescription) {
-
-                        courseOutcomeDescription.value =
-                            description;
-                    }
-
-                    setAlignedSOs(
-                        alignedSOs
+                                target.classList.add(
+                                    "active"
+                                );
+                            }
+                        }
                     );
-
-                    if (courseOutcomeModalTitle) {
-                        courseOutcomeModalTitle.textContent =
-                            "Edit Course Outcome";
-                    }
-
-                    if (courseOutcomeModalSubtitle) {
-                        courseOutcomeModalSubtitle.textContent =
-                            "Update the selected course outcome details below.";
-                    }
-                    if (saveCourseOutcomeButton) {
-                        saveCourseOutcomeButton.textContent =
-                            "Update";
-                    }
-                    openModal(
-                        courseOutcomeModal
-                    );
-                    return;
                 }
+            );
 
-                /*DELETE COURSE OUTCOME*/
-                if (deleteButton) {
-                    const row =
-                        deleteButton.closest(
-                            "tr"
-                        );
 
-                    if (!row) {
-                        return;
+            /* COURSE SYLLABUS*/
+            const syllabusFile =
+                document.getElementById(
+                    "syllabusFile"
+                );
+
+            const syllabusLastUpdated =
+                document.getElementById(
+                    "syllabusLastUpdated"
+                );
+
+            const syllabusEmpty =
+                document.getElementById(
+                    "facultySyllabusEmpty"
+                );
+
+            const syllabusFileRow =
+                document.getElementById(
+                    "facultySyllabusFileRow"
+                );
+
+            const syllabusFileName =
+                document.getElementById(
+                    "syllabusFileName"
+                );
+
+            const syllabusFileSize =
+                document.getElementById(
+                    "syllabusFileSize"
+                );
+
+            const viewSyllabusButton =
+                document.getElementById(
+                    "viewSyllabusButton"
+                );
+
+            const downloadSyllabusButton =
+                document.getElementById(
+                    "downloadSyllabusButton"
+                );
+
+            const syllabusMoreButton =
+                document.getElementById(
+                    "syllabusMoreButton"
+                );
+
+            const syllabusFileMenu =
+                document.getElementById(
+                    "syllabusFileMenu"
+                );
+
+            const deleteSyllabusOption =
+                document.getElementById(
+                    "deleteSyllabusOption"
+                );
+
+            const deleteSyllabusModal =
+                document.getElementById(
+                    "deleteSyllabusModal"
+                );
+
+            const deleteSyllabusBackdrop =
+                document.getElementById(
+                    "deleteSyllabusBackdrop"
+                );
+
+
+            const deleteSyllabusFileName =
+                document.getElementById(
+                    "deleteSyllabusFileName"
+                );
+
+            const cancelDeleteSyllabus =
+                document.getElementById(
+                    "cancelDeleteSyllabus"
+                );
+
+            const confirmDeleteSyllabus =
+                document.getElementById(
+                    "confirmDeleteSyllabus"
+                );
+
+            let currentSyllabusURL =
+                null;
+
+            let currentSyllabusFile =
+                null;
+
+            /* SYLLABUS UPLOAD*/
+            if (syllabusFile) {
+                syllabusFile.addEventListener(
+                    "change",
+                    function () {
+                        if (
+                            !this.files ||
+                            !this.files.length
+                        ) {
+                            return;
+                        }
+                        const file =
+                            this.files[0];
+                        const isPDF =
+                            file.type ===
+                                "application/pdf" ||
+                            file.name
+                                .toLowerCase()
+                                .endsWith(".pdf");
+                        if (!isPDF) {
+                            alert(
+                                "Please upload a PDF file."
+                            );
+                            this.value =
+                                "";
+                            return;
+                        }
+
+                        if (currentSyllabusURL) {
+                            URL.revokeObjectURL(
+                                currentSyllabusURL
+                            );
+                        }
+
+                        currentSyllabusFile =
+                            file;
+                        currentSyllabusURL =
+                            URL.createObjectURL(
+                                file
+                            );
+
+                        if (syllabusFileName) {
+                            syllabusFileName.textContent =
+                                file.name;
+                        }
+
+                        if (syllabusFileSize) {
+                            syllabusFileSize.textContent =
+                                formatFileSize(
+                                    file.size
+                                );
+                        }
+
+                        if (syllabusLastUpdated) {
+                            syllabusLastUpdated.textContent =
+                                "Last Updated: " +
+                                getTodayFormatted();
+                        }
+
+                        if (syllabusEmpty) {
+                            syllabusEmpty.hidden =
+                                true;
+                        }
+
+                        if (syllabusFileRow) {
+                            syllabusFileRow.hidden =
+                                false;
+                        }
                     }
-                    deletingCourseOutcomeRow =
-                        row;
+                );
+            }
 
-                    const deleteModal =
-                        document.getElementById(
-                            "deleteCourseOutcomeModal"
+            /* VIEW SYLLABUS*/
+            if (viewSyllabusButton) {
+                viewSyllabusButton.addEventListener(
+                    "click",
+                    function () {
+                        if (!currentSyllabusURL) {
+                            alert(
+                                "No syllabus has been uploaded."
+                            );
+                            return;
+                        }
+
+                        window.open(
+                            currentSyllabusURL,
+                            "_blank"
                         );
+                    }
+                );
+            }
 
-                    const deleteName =
-                        document.getElementById(
-                            "deleteCourseOutcomeName"
+            /* DOWNLOAD SYLLABUS */
+            if (downloadSyllabusButton) {
+                downloadSyllabusButton.addEventListener(
+                    "click",
+                    function () {
+                        if (
+                            !currentSyllabusURL ||
+                            !currentSyllabusFile
+                                            ) {
+                            alert(
+                                "No syllabus has been uploaded."
+                            );
+                            return;
+
+                        }
+                        const link =
+                            document.createElement(
+                                "a"
+                            );
+
+                        link.href =
+                            currentSyllabusURL;
+                        link.download =
+                            currentSyllabusFile.name;
+                        document.body.appendChild(
+                            link
                         );
-
-                    if (deleteName) {
-
-                        deleteName.textContent =
-                            row.dataset.coNumber ||
-                            row.cells[0]
-                                .textContent
-                                .trim();
+                        link.click();
+                        link.remove();
 
                     }
-                    openModal(
-                        deleteModal
+                );
+
+            }
+
+            /* SYLLABUS MORE MENU*/
+            if (
+                syllabusMoreButton &&
+                syllabusFileMenu
+            ) {
+                syllabusMoreButton.addEventListener(
+                    "click",
+                    function (event) {
+
+                        event.stopPropagation();
+                        syllabusFileMenu.hidden =
+                            !syllabusFileMenu.hidden;
+                        syllabusMoreButton.setAttribute(
+                            "aria-expanded",
+                            String(
+                                !syllabusFileMenu.hidden
+                            )
+                        );
+                    }
+                );
+
+                document.addEventListener(
+                    "click",
+                    function (event) {
+
+                        if (
+                            !syllabusFileMenu.hidden &&
+                            !syllabusFileMenu.contains(
+                                event.target
+                            ) &&
+                            !syllabusMoreButton.contains(
+                                event.target
+                            )
+                        ) {
+                            syllabusFileMenu.hidden =
+                                true;
+                            syllabusMoreButton.setAttribute(
+                                "aria-expanded",
+                                "false"
+                            );
+                        }
+                    }
+                );
+
+            }
+
+            /* OPEN DELETE SYLLABUS*/
+            if (deleteSyllabusOption) {
+                deleteSyllabusOption.addEventListener(
+                    "click",
+                    function () {
+
+                        if (
+                            syllabusFileMenu
+                        ) {
+
+                            syllabusFileMenu.hidden =
+                                true;
+
+                        }
+
+                        if (
+                            deleteSyllabusFileName
+                        ) {
+
+                            deleteSyllabusFileName.textContent =
+                                currentSyllabusFile
+                                    ? currentSyllabusFile.name
+                                    : "this syllabus";
+
+                        }
+
+                        openModal(
+                            deleteSyllabusModal
+                        );
+                    }
+                );
+            }
+
+            /* CANCEL DELETE SYLLABUS */
+            if (cancelDeleteSyllabus) {
+
+                cancelDeleteSyllabus.addEventListener(
+                    "click",
+                    function () {
+
+                        closeModal(
+                            deleteSyllabusModal
+                        );
+                    }
+                );
+            }
+
+            if (deleteSyllabusBackdrop) {
+                deleteSyllabusBackdrop.addEventListener(
+                    "click",
+                    function () {
+                        closeModal(
+                            deleteSyllabusModal
+                        );
+                    }
+                );
+            }
+
+            /* CONFIRM DELETE SYLLABUS */
+            if (confirmDeleteSyllabus) {
+                confirmDeleteSyllabus.addEventListener(
+                    "click",
+                    function () {
+                        if (currentSyllabusURL) {
+                            URL.revokeObjectURL(
+                                currentSyllabusURL
+                            );
+                        }
+                        currentSyllabusURL =
+                            null;
+                        currentSyllabusFile =
+                            null;
+                        if (syllabusFile) {
+                            syllabusFile.value =
+                                "";
+
+                        }
+                        if (syllabusFileName) {
+                            syllabusFileName.textContent =
+                                "Course_Syllabus.pdf";
+
+                        }
+
+                        if (syllabusFileSize) {
+                            syllabusFileSize.textContent =
+                                "0 MB";
+                        }
+
+                        if (syllabusLastUpdated) {
+                            syllabusLastUpdated.textContent =
+                                "No syllabus uploaded";
+                        }
+                        if (syllabusFileRow) {
+                            syllabusFileRow.hidden =
+                                true;
+                        }
+                        if (syllabusEmpty) {
+                            syllabusEmpty.hidden =
+                                false;
+                        }
+                        closeModal(
+                            deleteSyllabusModal
+                        );
+                    }
+                );
+
+            }
+
+            /* COURSE OUTCOME*/
+            const addCourseOutcomeButton =
+                document.getElementById(
+                    "addCourseOutcomeButton"
+                );
+
+            const courseOutcomeModal =
+                document.getElementById(
+                    "courseOutcomeModal"
+                );
+
+            const courseOutcomeBackdrop =
+                document.getElementById(
+                    "courseOutcomeBackdrop"
+                );
+
+            const courseOutcomeModalTitle =
+                document.getElementById(
+                    "courseOutcomeModalTitle"
+                );
+
+
+            const courseOutcomeModalSubtitle =
+                document.getElementById(
+                    "courseOutcomeModalSubtitle"
+                );
+
+            const courseOutcomeSelect =
+                document.getElementById(
+                    "courseOutcomeExistingSelect"
+                );
+
+            const courseOutcomeNumber =
+                document.getElementById(
+                    "courseOutcomeNumber"
+                );
+
+            const courseOutcomeDescription =
+                document.getElementById(
+                    "courseOutcomeDescription"
+                );
+
+            const cancelCourseOutcomeButton =
+                document.getElementById(
+                    "cancelCourseOutcomeButton"
+                );
+
+            const saveCourseOutcomeButton =
+                document.getElementById(
+                    "saveCourseOutcomeButton"
+                );
+
+            const courseOutcomesTableBody =
+                document.getElementById(
+                    "courseOutcomesTableBody"
+                );
+
+            let editingCourseOutcomeRow =
+                null;
+            let deletingCourseOutcomeRow =
+                null;
+
+            /* COURSE OUTCOME SO HELPERS */
+            function getAlignedSOOptions() {
+
+                return Array.from(
+                    document.querySelectorAll(
+                        "#courseOutcomeSoOptions .sof-so-option"
+                    )
+                );
+
+            }
+
+            function getSelectedAlignedSOs() {
+
+                return Array.from(
+                    document.querySelectorAll(
+                        "#courseOutcomeSoOptions .sof-so-option"
+                    )
+                )
+                .filter(
+                    function (option) {
+
+                        const style =
+                            window.getComputedStyle(option);
+
+                        return (
+                            option.classList.contains("selected") ||
+                            option.classList.contains("is-selected") ||
+                            option.getAttribute("aria-pressed") === "true" ||
+                            option.dataset.selected === "true" ||
+                            style.backgroundColor === "rgb(0, 65, 121)"
+                        );
+
+                    }
+                )
+                .map(
+                    function (option) {
+
+                        return (
+                            option.dataset.so ||
+                            option.value ||
+                            option.textContent.trim()
+                        );
+
+                    }
+                );
+
+            }
+
+            function clearAlignedSOs() {
+                getAlignedSOOptions()
+                    .forEach(
+                        function (option) {
+                            option.classList.remove(
+                                "selected",
+                                "is-selected"
+                            );
+
+                            option.setAttribute(
+                                "aria-pressed",
+                                "false"
+                            );
+                        }
                     );
+            }
+
+            function setAlignedSOs(values) {
+                const selectedValues =
+                    Array.isArray(values)
+                        ? values
+                        : [];
+
+                getAlignedSOOptions()
+                    .forEach(
+                        function (option) {
+                            const value =
+                                option.dataset.so ||
+                                option.value ||
+                                option.textContent.trim();
+                            const selected =
+                                selectedValues.includes(value);
+                            option.classList.toggle(
+                                "selected",
+                                selected
+                            );
+                            option.classList.toggle(
+                                "is-selected",
+                                selected
+                            );
+                            option.setAttribute(
+                                "aria-pressed",
+                                selected ? "true" : "false"
+                            );
+                        }
+                    );
+            }
+
+            /* SO BUTTON MULTI-SELECT*/
+            getAlignedSOOptions()
+                .forEach(
+                    function (option) {
+
+                        if (
+                            option.dataset.soMultiSelectInitialized ===
+                            "true"
+                        ) {
+                            return;
+                        }
+
+                        option.dataset.soMultiSelectInitialized =
+                            "true";
+
+                        if (
+                            !option.hasAttribute("aria-pressed")
+                        ) {
+                            option.setAttribute(
+                                "aria-pressed",
+                                "false"
+                            );
+                             }
+                        option.addEventListener(
+                            "click",
+                            function (event) {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                const selected =
+                                    !this.classList.contains(
+                                        "selected"
+                                    );
+
+                                this.classList.toggle(
+                                    "selected",
+                                    selected
+                                );
+
+                                this.classList.toggle(
+                                    "is-selected",
+                                    selected
+                                );
+
+                                this.setAttribute(
+                                    "aria-pressed",
+                                    selected ? "true" : "false"
+                                );
+                            }
+                        );
+                    }
+                );
+
+            /* COURSE OUTCOME SELECT*/
+            if (courseOutcomeSelect) {
+                courseOutcomeSelect.addEventListener(
+                    "change",
+                    function () {
+                        const option =
+                            this.options[
+                                this.selectedIndex
+                            ];
+
+                        if (
+                            !option ||
+                            !option.value
+                        ) {
+                            if (courseOutcomeNumber) {
+                                courseOutcomeNumber.value =
+                                    "";
+                            }
+
+                            if (courseOutcomeDescription) {
+                                courseOutcomeDescription.value =
+                                    "";
+                            }
+                            return;
+                        }
+
+                        if (courseOutcomeNumber) {
+                            courseOutcomeNumber.value =
+                                option.value;
+                        }
+
+                        if (courseOutcomeDescription) {
+                            courseOutcomeDescription.value =
+                                option.dataset.description ||
+                                "";
+                        }
+                    }
+                );
+            }
+
+            /* RESET COURSE OUTCOME FORM*/
+            function resetCourseOutcomeForm() {
+                editingCourseOutcomeRow =
+                    null;
+
+                if (courseOutcomeSelect) {
+                    courseOutcomeSelect.disabled =
+                        false;
+                    courseOutcomeSelect.value =
+                        "";
+                }
+                if (courseOutcomeNumber) {
+                    courseOutcomeNumber.value =
+                        "";
+                }
+                if (courseOutcomeDescription) {
+                    courseOutcomeDescription.value =
+                        "";
+                }
+                clearAlignedSOs();
+                if (saveCourseOutcomeButton) {
+                    saveCourseOutcomeButton.textContent =
+                        "Save";
                 }
             }
-        );
 
-    }
+            /*OPEN ADD COURSE OUTCOME*/
+            if (addCourseOutcomeButton) {
+                addCourseOutcomeButton.addEventListener(
+                    "click",
+                    function () {
+                        resetCourseOutcomeForm();
+                                        if (courseOutcomeModalTitle) {
+                            courseOutcomeModalTitle.textContent =
+                                "Add Course Outcome";
+                        }
+
+                        if (courseOutcomeModalSubtitle) {
+                            courseOutcomeModalSubtitle.textContent =
+                                "Select an existing course outcome and its aligned student outcomes.";
+
+                        }
+
+                        openModal(
+                            courseOutcomeModal
+                        );
+                    }
+                );
+            }
 
 
-    /* DELETE COURSE OUTCOME MODAL */
-    const deleteCourseOutcomeModal =
-        document.getElementById(
-            "deleteCourseOutcomeModal"
-        );
-    const deleteCourseOutcomeBackdrop =
-        document.getElementById(
-            "deleteCourseOutcomeBackdrop"
-        );
-    const cancelDeleteCourseOutcome =
-        document.getElementById(
-            "cancelDeleteCourseOutcome"
-        );
-    const confirmDeleteCourseOutcome =
-        document.getElementById(
-            "confirmDeleteCourseOutcome"
-        );
-    function closeDeleteCourseOutcome() {
-        deletingCourseOutcomeRow =
-            null;
-        closeModal(
-            deleteCourseOutcomeModal
-        );
-    }
+            /* CLOSE COURSE OUTCOME*/
+            function closeCourseOutcomeForm() {
+                closeModal(
+                    courseOutcomeModal
+                );
+                resetCourseOutcomeForm();
+            }
 
-    if (cancelDeleteCourseOutcome) {
-        cancelDeleteCourseOutcome.addEventListener(
-            "click",
-            closeDeleteCourseOutcome
-        );
-    }
+            if (cancelCourseOutcomeButton) {
+                cancelCourseOutcomeButton.addEventListener(
+                    "pointerdown",
+                    function (event) {
 
-    if (deleteCourseOutcomeBackdrop) {
+                        event.preventDefault();
 
-        deleteCourseOutcomeBackdrop.addEventListener(
-            "click",
-            closeDeleteCourseOutcome
-        );
-    }
+                        closeCourseOutcomeForm();
+                    }
+                );
+            }
 
-    if (confirmDeleteCourseOutcome) {
-        confirmDeleteCourseOutcome.addEventListener(
-            "click",
-            function () {
-                if (deletingCourseOutcomeRow) {
-                    deletingCourseOutcomeRow.remove();
-                }
+            if (courseOutcomeBackdrop) {
+                courseOutcomeBackdrop.addEventListener(
+                    "pointerdown",
+                    function (event) {
+                        event.preventDefault();
+                        closeCourseOutcomeForm();
+                    }
+                );
+            }
+
+            /* SAVE COURSE OUTCOME*/
+            if (saveCourseOutcomeButton) {
+                saveCourseOutcomeButton.addEventListener(
+                    "click",
+                    function (event) {
+
+                        event.preventDefault();
+                        const coNumber =
+                            courseOutcomeNumber
+                                ? courseOutcomeNumber.value.trim()
+                                : "";
+                        const description =
+                            courseOutcomeDescription
+                                ? courseOutcomeDescription.value.trim()
+                                : "";
+
+                        const alignedSOs =
+                            getSelectedAlignedSOs();
+
+                        if (
+                            !coNumber ||
+                            !description
+                        ) {
+
+                            alert(
+                                "Please select a Course Outcome."
+                            );
+                            return;
+                        }
+
+                        if (
+                            alignedSOs.length === 0
+                        ) {
+                            alert(
+                                "Please select at least one aligned Student Outcome."
+                            );
+                            return;
+
+                        }
+
+                        /* EDIT
+                           UPDATE EXISTING ROW ONLY*/
+                        if (editingCourseOutcomeRow) {
+                            const cells =
+                                editingCourseOutcomeRow
+                                    .querySelectorAll(
+                                        "td"
+                                    );
+
+                            editingCourseOutcomeRow.dataset.coNumber =
+                                coNumber;
+                            editingCourseOutcomeRow.dataset.description =
+                                description;
+                            editingCourseOutcomeRow.dataset.alignedSo =
+                                JSON.stringify(
+                                    alignedSOs
+                                );
+
+                            if (cells.length >= 3) {
+                                cells[0].textContent =
+                                    coNumber;
+
+                                cells[1].textContent =
+                                    description;
+
+                                cells[2].textContent =
+                                    alignedSOs.join(
+                                        ", "
+                                    );
+                            }
+                            closeCourseOutcomeForm();
+                            return;
+                        }
+
+                        /*PREVENT DUPLICATE CO*/
+                        const duplicate =
+                            Array.from(
+                                courseOutcomesTableBody
+                                    .querySelectorAll(
+                                        "tr"
+                                    )
+                            )
+                            .some(
+                                function (row) {
+
+                                    return (
+                                        row.dataset.coNumber ===
+                                        coNumber
+                                    );
+
+                                }
+                            );
+                        if (duplicate) {
+                            alert(
+                                coNumber +
+                                " has already been added."
+                            );
+                            return;
+                        }
+
+                        /* ADD NEW COURSE OUTCOME*/
+                        const row =
+                            document.createElement(
+                                "tr"
+                            );
+                        row.dataset.coNumber =
+                            coNumber;
+                        row.dataset.description =
+                            description;
+                        row.dataset.alignedSo =
+                            JSON.stringify(
+                                alignedSOs
+                            );
+                        row.innerHTML = `
+                            <td>
+                                ${escapeHTML(coNumber)}
+                            </td>
+                            <td>
+                                ${escapeHTML(description)}
+                            </td>
+                            <td>
+                                ${escapeHTML(
+                                    alignedSOs.join(", ")
+                                )}
+                            </td>
+                            <td>
+                                <div class="sof-row-actions">
+                                    <button
+                                        type="button"
+                                        class="
+                                            sof-edit-outcome-btn
+                                            js-edit-course-outcome
+                                        "
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="
+                                            sof-delete-outcome-btn
+                                            js-delete-course-outcome
+                                        "
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </td>
+                        `;
+                        const emptyCourseOutcomeRow =
+                            courseOutcomesTableBody.querySelector(
+                                ".sodh-empty-row"
+                            );
+
+                        if (emptyCourseOutcomeRow) {
+                            emptyCourseOutcomeRow.remove();
+                        }
+
+                        courseOutcomesTableBody.appendChild(
+                            row
+                        );
+                        closeCourseOutcomeForm();
+                    }
+                );
+
+            }
+
+            /* COURSE OUTCOME TABLE ACTIONS */
+            if (courseOutcomesTableBody) {
+                courseOutcomesTableBody.addEventListener(
+                    "click",
+                    function (event) {
+
+                        const editButton =
+                            event.target.closest(
+                                ".js-edit-course-outcome"
+                            );
+
+                        const deleteButton =
+                            event.target.closest(
+                                ".js-delete-course-outcome"
+                            );
+
+                        /*  EDIT COURSE OUTCOME*/
+                        if (editButton) {
+
+                            const row =
+                                editButton.closest(
+                                    "tr"
+                                );
+
+                            if (!row) {
+                                return;
+                            }
+
+                            editingCourseOutcomeRow =
+                                row;
+
+                            const coNumber =
+                                row.dataset.coNumber ||
+                                row.cells[0]
+                                    .textContent
+                                    .trim();
+
+                            const description =
+                                row.dataset.description ||
+                                row.cells[1]
+                                    .textContent
+                                    .trim();
+                            let alignedSOs =
+                                [];
+
+                            try {
+                                alignedSOs =
+                                    JSON.parse(
+                                        row.dataset.alignedSo ||
+                                        "[]"
+                                    );
+                            }
+                            catch (error) {
+                                alignedSOs =
+                                    row.cells[2]
+                                        .textContent
+                                        .split(",")
+                                        .map(
+                                            function (item) {
+                                                return item.trim();
+                                            }
+                                        )
+                                        .filter(Boolean);
+                            }
+
+                            if (courseOutcomeSelect) {
+                                courseOutcomeSelect.value =
+                                    coNumber;
+
+
+                                /*
+                                 Editing an existing CO should update
+                                 that CO instead of selecting another
+                                 CO and accidentally creating a new one.
+                                 */
+
+                                courseOutcomeSelect.disabled =
+                                    true;
+                            }
+
+                            if (courseOutcomeNumber) {
+                                courseOutcomeNumber.value =
+                                    coNumber;
+                            }
+
+                            if (courseOutcomeDescription) {
+
+                                courseOutcomeDescription.value =
+                                    description;
+                            }
+
+                            setAlignedSOs(
+                                alignedSOs
+                            );
+
+                            if (courseOutcomeModalTitle) {
+                                courseOutcomeModalTitle.textContent =
+                                    "Edit Course Outcome";
+                            }
+
+                            if (courseOutcomeModalSubtitle) {
+                                courseOutcomeModalSubtitle.textContent =
+                                    "Update the selected course outcome details below.";
+                            }
+                            if (saveCourseOutcomeButton) {
+                                saveCourseOutcomeButton.textContent =
+                                    "Update";
+                            }
+                            openModal(
+                                courseOutcomeModal
+                            );
+                            return;
+                        }
+
+                        /*DELETE COURSE OUTCOME*/
+                        if (deleteButton) {
+                            const row =
+                                deleteButton.closest(
+                                    "tr"
+                                );
+
+                            if (!row) {
+                                return;
+                            }
+                            deletingCourseOutcomeRow =
+                                row;
+
+                            const deleteModal =
+                                document.getElementById(
+                                    "deleteCourseOutcomeModal"
+                                );
+
+                            const deleteName =
+                                document.getElementById(
+                                    "deleteCourseOutcomeName"
+                                );
+
+                            if (deleteName) {
+
+                                deleteName.textContent =
+                                    row.dataset.coNumber ||
+                                    row.cells[0]
+                                        .textContent
+                                        .trim();
+
+                            }
+                            openModal(
+                                deleteModal
+                            );
+                        }
+                    }
+                );
+
+            }
+
+
+            /* DELETE COURSE OUTCOME MODAL */
+            const deleteCourseOutcomeModal =
+                document.getElementById(
+                    "deleteCourseOutcomeModal"
+                );
+            const deleteCourseOutcomeBackdrop =
+                document.getElementById(
+                    "deleteCourseOutcomeBackdrop"
+                );
+            const cancelDeleteCourseOutcome =
+                document.getElementById(
+                    "cancelDeleteCourseOutcome"
+                );
+            const confirmDeleteCourseOutcome =
+                document.getElementById(
+                    "confirmDeleteCourseOutcome"
+                );
+            function closeDeleteCourseOutcome() {
                 deletingCourseOutcomeRow =
                     null;
                 closeModal(
                     deleteCourseOutcomeModal
                 );
             }
-        );
-    }
 
-    /* STUDENT OUTCOME */
-    const studentOutcomeStorageKey =
-        "eduMetricsStudentOutcomes";
-
-    const addStudentOutcomeButton =
-        document.getElementById(
-            "addStudentOutcomeButton"
-        );
-
-    const studentOutcomeModal =
-        document.getElementById(
-            "studentOutcomeModal"
-        );
-
-    const studentOutcomeBackdrop =
-        document.getElementById(
-            "studentOutcomeModalBackdrop"
-        );
-
-    const studentOutcomeModalTitle =
-        document.getElementById(
-            "studentOutcomeModalTitle"
-        );
-
-    const studentOutcomeModalSubtitle =
-        document.getElementById(
-            "studentOutcomeModalSubtitle"
-        );
-
-    const studentOutcomeSelect =
-        document.getElementById(
-            "studentOutcomeSelect"
-        );
-
-    const studentOutcomeDueDate =
-        document.getElementById(
-            "studentOutcomeDueDate"
-        );
-
-    const studentOutcomeStatus =
-        document.getElementById(
-            "studentOutcomeStatus"
-        );
-
-    const cancelStudentOutcomeButton =
-        document.getElementById(
-            "cancelStudentOutcomeButton"
-        );
-
-    const saveStudentOutcomeButton =
-        document.getElementById(
-            "saveStudentOutcomeButton"
-        );
-
-    const studentOutcomeTableBody =
-        document.getElementById(
-            "studentOutcomeTableBody"
-        );
-
-    const studentOutcomeEmptyState =
-        document.getElementById(
-            "studentOutcomeEmptyState"
-        );
-
-    const facultyStudentOutcomeCount =
-        document.getElementById(
-            "facultyStudentOutcomeCount"
-        );
-
-    const facultyActiveOutcomeCount =
-        document.getElementById(
-            "facultyActiveOutcomeCount"
-        );
-
-    const deleteStudentOutcomeModal =
-        document.getElementById(
-            "deleteStudentOutcomeModal"
-        );
-
-    const deleteStudentOutcomeBackdrop =
-        document.getElementById(
-            "deleteStudentOutcomeBackdrop"
-        );
-
-    const deleteStudentOutcomeName =
-        document.getElementById(
-            "deleteStudentOutcomeName"
-        );
-
-    const cancelDeleteStudentOutcome =
-        document.getElementById(
-            "cancelDeleteStudentOutcome"
-        );
-
-    const confirmDeleteStudentOutcome =
-        document.getElementById(
-            "confirmDeleteStudentOutcome"
-        );
-
-    let editingStudentOutcomeId =
-        null;
-
-    let deletingStudentOutcomeId =
-        null;
-
-    function getStudentOutcomeTitle(code) {
-        return (
-            "SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (" +
-            code +
-            ")"
-        );
-    }
-
-    function getStudentOutcomeLink(code) {
-        return (
-            "assessment/so-" +
-            code +
-            ".html"
-        );
-    }
-
-    function getStoredStudentOutcomes() {
-        try {
-            const stored =
-                localStorage.getItem(
-                    studentOutcomeStorageKey
-                );
-
-            if(!stored) {
-                return [];
-            }
-
-            const parsed =
-                JSON.parse(stored);
-
-            return Array.isArray(parsed)
-                ? parsed
-                : [];
-        }
-        catch(error) {
-            console.error(
-                "Unable to load Student Outcomes:",
-                error
-            );
-
-            return [];
-        }
-    }
-
-    function saveStoredStudentOutcomes(outcomes) {
-        localStorage.setItem(
-            studentOutcomeStorageKey,
-            JSON.stringify(outcomes)
-        );
-    }
-
-    function getStudentOutcomeStatusClass(status) {
-        switch(status) {
-            case "Active":
-                return "sof-status-active";
-
-            case "Closed":
-                return "sof-status-closed";
-
-            case "Archived":
-                return "sof-status-archived";
-
-            default:
-                return "sof-status-draft";
-        }
-    }
-
-    function resetStudentOutcomeForm() {
-        editingStudentOutcomeId =
-            null;
-
-        if(studentOutcomeSelect) {
-            studentOutcomeSelect.value =
-                "";
-            studentOutcomeSelect.disabled =
-                false;
-        }
-
-        if(studentOutcomeDueDate) {
-            studentOutcomeDueDate.value =
-                "";
-        }
-
-        if(studentOutcomeStatus) {
-            studentOutcomeStatus.value =
-                "Active";
-        }
-
-        if(studentOutcomeModalTitle) {
-            studentOutcomeModalTitle.textContent =
-                "Upload Student Outcome";
-        }
-
-        if(studentOutcomeModalSubtitle) {
-            studentOutcomeModalSubtitle.textContent =
-                "Select the Student Outcome to assign, set its due date, and choose its status.";
-        }
-
-        if(saveStudentOutcomeButton) {
-            saveStudentOutcomeButton.textContent =
-                "Upload";
-        }
-    }
-
-    function updateStudentOutcomeSummary(outcomes) {
-        if(facultyStudentOutcomeCount) {
-            facultyStudentOutcomeCount.textContent =
-                outcomes.length;
-        }
-
-        if(facultyActiveOutcomeCount) {
-            facultyActiveOutcomeCount.textContent =
-                outcomes.filter(
-                    function (outcome) {
-                        return (
-                            outcome.status ===
-                            "Active"
-                        );
-                    }
-                ).length;
-        }
-    }
-
-    function renderStoredStudentOutcomes() {
-        if(!studentOutcomeTableBody) {
-            return;
-        }
-
-        const outcomes =
-            getStoredStudentOutcomes();
-
-        studentOutcomeTableBody.innerHTML =
-            "";
-
-        outcomes.forEach(
-            function (outcome) {
-                const row =
-                    document.createElement(
-                        "tr"
-                    );
-
-                row.dataset.id =
-                    outcome.id;
-
-                row.innerHTML = `
-                    <td>
-                        <strong class="sof-outcome-name">
-                            ${escapeHTML(outcome.title)}
-                        </strong>
-                    </td>
-                    <td>${escapeHTML(formatDate(outcome.dueDate))}</td>
-                    <td>${Number(outcome.responses) || 0}</td>
-                    <td>
-                        <span class="sof-status-pill ${getStudentOutcomeStatusClass(outcome.status)}">
-                            ${escapeHTML(outcome.status)}
-                        </span>
-                    </td>
-                    <td>
-                        <div class="sof-row-actions">
-                            <button type="button" class="sof-row-action-btn sof-view-outcome-btn" data-id="${escapeHTML(outcome.id)}">View</button>
-                            <button type="button" class="sof-row-action-btn sof-edit-outcome-btn" data-id="${escapeHTML(outcome.id)}">Edit</button>
-                            <button type="button" class="sof-row-action-btn sof-delete-outcome-btn" data-id="${escapeHTML(outcome.id)}">Delete</button>
-                        </div>
-                    </td>
-                `;
-
-                studentOutcomeTableBody.appendChild(
-                    row
+            if (cancelDeleteCourseOutcome) {
+                cancelDeleteCourseOutcome.addEventListener(
+                    "click",
+                    closeDeleteCourseOutcome
                 );
             }
-        );
 
-        if(studentOutcomeEmptyState) {
-            studentOutcomeEmptyState.hidden =
-                outcomes.length > 0;
-        }
+            if (deleteCourseOutcomeBackdrop) {
 
-        updateStudentOutcomeSummary(
-            outcomes
-        );
-    }
-
-    function closeStudentOutcomeForm() {
-        closeModal(
-            studentOutcomeModal
-        );
-
-        resetStudentOutcomeForm();
-    }
-
-    if(addStudentOutcomeButton) {
-        addStudentOutcomeButton.addEventListener(
-            "click",
-            function () {
-                resetStudentOutcomeForm();
-                openModal(
-                    studentOutcomeModal
+                deleteCourseOutcomeBackdrop.addEventListener(
+                    "click",
+                    closeDeleteCourseOutcome
                 );
             }
-        );
-    }
 
-    if(cancelStudentOutcomeButton) {
-        cancelStudentOutcomeButton.addEventListener(
-            "click",
-            function () {
-                closeStudentOutcomeForm();
-            }
-        );
-    }
+            if (confirmDeleteCourseOutcome) {
+                confirmDeleteCourseOutcome.addEventListener(
+                    "click",
+                    function () {
+                        if (deletingCourseOutcomeRow) {
+                            deletingCourseOutcomeRow.remove();
+                        }
 
-    if(studentOutcomeBackdrop) {
-        studentOutcomeBackdrop.addEventListener(
-            "click",
-            function () {
-                closeStudentOutcomeForm();
-            }
-        );
-    }
+                        const remainingCourseOutcomeRows =
+                            courseOutcomesTableBody
+                                ? courseOutcomesTableBody.querySelectorAll(
+                                    "tr[data-co-number]"
+                                )
+                                : [];
 
-    if(saveStudentOutcomeButton) {
-        saveStudentOutcomeButton.addEventListener(
-            "click",
-            function () {
-                const code =
-                    studentOutcomeSelect
-                        ? studentOutcomeSelect.value.trim()
-                        : "";
-
-                const dueDate =
-                    studentOutcomeDueDate
-                        ? studentOutcomeDueDate.value
-                        : "";
-
-                const status =
-                    studentOutcomeStatus
-                        ? studentOutcomeStatus.value
-                        : "Active";
-
-                if(!code) {
-                    alert(
-                        "Please select a Student Outcome."
-                    );
-                    return;
-                }
-
-                if(!dueDate) {
-                    alert(
-                        "Please select a due date."
-                    );
-                    return;
-                }
-
-                const outcomes =
-                    getStoredStudentOutcomes();
-
-                if(editingStudentOutcomeId) {
-                    const index =
-                        outcomes.findIndex(
-                            function (outcome) {
-                                return (
-                                    outcome.id ===
-                                    editingStudentOutcomeId
-                                );
-                            }
-                        );
-
-                    if(index !== -1) {
-                        outcomes[index].dueDate =
-                            dueDate;
-                        outcomes[index].status =
-                            status;
-                    }
-                }
-                else {
-                    const duplicate =
-                        outcomes.some(
-                            function (outcome) {
-                                return (
-                                    outcome.code ===
-                                    code
-                                );
-                            }
-                        );
-
-                    if(duplicate) {
-                        alert(
-                            "This Student Outcome has already been added."
-                        );
-                        return;
-                    }
-
-                    outcomes.push({
-                        id:
-                            "so-" +
-                            code +
-                            "-" +
-                            Date.now(),
-                        code: code,
-                        title:
-                            getStudentOutcomeTitle(
-                                code
-                            ),
-                        dueDate: dueDate,
-                        status: status,
-                        responses: 0,
-                        link:
-                            getStudentOutcomeLink(
-                                code
+                        if (
+                            courseOutcomesTableBody &&
+                            remainingCourseOutcomeRows.length === 0 &&
+                            !courseOutcomesTableBody.querySelector(
+                                ".sodh-empty-row"
                             )
-                    });
-                }
+                        ) {
+                            const emptyRow =
+                                document.createElement(
+                                    "tr"
+                                );
 
-                saveStoredStudentOutcomes(
-                    outcomes
+                            emptyRow.className =
+                                "sodh-empty-row sof-outcome-empty-row";
+
+                            emptyRow.innerHTML = `
+                                <td colspan="4">
+                                    <strong>No course outcome uploaded</strong>
+                                    Course outcomes will appear here once uploaded.
+                                </td>
+                            `;
+
+                            courseOutcomesTableBody.appendChild(
+                                emptyRow
+                            );
+                        }
+
+                        deletingCourseOutcomeRow =
+                            null;
+                        closeModal(
+                            deleteCourseOutcomeModal
+                        );
+                    }
+                );
+            }
+
+            /* STUDENT OUTCOME */
+            const studentOutcomeStorageKey =
+                "eduMetricsStudentOutcomes";
+
+            const addStudentOutcomeButton =
+                document.getElementById(
+                    "addStudentOutcomeButton"
                 );
 
-                closeStudentOutcomeForm();
-                renderStoredStudentOutcomes();
+            const studentOutcomeModal =
+                document.getElementById(
+                    "studentOutcomeModal"
+                );
+
+            const studentOutcomeBackdrop =
+                document.getElementById(
+                    "studentOutcomeModalBackdrop"
+                );
+
+            const studentOutcomeModalTitle =
+                document.getElementById(
+                    "studentOutcomeModalTitle"
+                );
+
+            const studentOutcomeModalSubtitle =
+                document.getElementById(
+                    "studentOutcomeModalSubtitle"
+                );
+
+            const studentOutcomeSelect =
+                document.getElementById(
+                    "studentOutcomeSelect"
+                );
+
+            const studentOutcomeDueDate =
+                document.getElementById(
+                    "studentOutcomeDueDate"
+                );
+
+            const studentOutcomeStatus =
+                document.getElementById(
+                    "studentOutcomeStatus"
+                );
+
+            const cancelStudentOutcomeButton =
+                document.getElementById(
+                    "cancelStudentOutcomeButton"
+                );
+
+            const saveStudentOutcomeButton =
+                document.getElementById(
+                    "saveStudentOutcomeButton"
+                );
+
+            const studentOutcomeTableBody =
+                document.getElementById(
+                    "studentOutcomeTableBody"
+                );
+
+            const studentOutcomeEmptyState =
+                document.getElementById(
+                    "studentOutcomeEmptyState"
+                );
+
+            const facultyStudentOutcomeCount =
+                document.getElementById(
+                    "facultyStudentOutcomeCount"
+                );
+
+            const facultyActiveOutcomeCount =
+                document.getElementById(
+                    "facultyActiveOutcomeCount"
+                );
+
+            const deleteStudentOutcomeModal =
+                document.getElementById(
+                    "deleteStudentOutcomeModal"
+                );
+
+            const deleteStudentOutcomeBackdrop =
+                document.getElementById(
+                    "deleteStudentOutcomeBackdrop"
+                );
+
+            const deleteStudentOutcomeName =
+                document.getElementById(
+                    "deleteStudentOutcomeName"
+                );
+
+            const cancelDeleteStudentOutcome =
+                document.getElementById(
+                    "cancelDeleteStudentOutcome"
+                );
+
+            const confirmDeleteStudentOutcome =
+                document.getElementById(
+                    "confirmDeleteStudentOutcome"
+                );
+
+            let editingStudentOutcomeId =
+                null;
+
+            let deletingStudentOutcomeId =
+                null;
+
+            function getStudentOutcomeTitle(code) {
+                return (
+                    "SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (" +
+                    code +
+                    ")"
+                );
             }
-        );
-    }
 
-    if(studentOutcomeTableBody) {
-        studentOutcomeTableBody.addEventListener(
-            "click",
-            function (event) {
-                const viewButton =
-                    event.target.closest(
-                        ".sof-view-outcome-btn"
+            function getStudentOutcomeLink(code) {
+                return (
+                    "assessment/so-" +
+                    code +
+                    ".html"
+                );
+            }
+
+            function getStoredStudentOutcomes() {
+                try {
+                    const stored =
+                        localStorage.getItem(
+                            studentOutcomeStorageKey
+                        );
+
+                    if(!stored) {
+                        return [];
+                    }
+
+                    const parsed =
+                        JSON.parse(stored);
+
+                    return Array.isArray(parsed)
+                        ? parsed
+                        : [];
+                }
+                catch(error) {
+                    console.error(
+                        "Unable to load Student Outcomes:",
+                        error
                     );
 
-                const editButton =
-                    event.target.closest(
-                        ".sof-edit-outcome-btn"
+                    return [];
+                }
+            }
+
+            function saveStoredStudentOutcomes(outcomes) {
+                try {
+                    localStorage.setItem(
+                        studentOutcomeStorageKey,
+                        JSON.stringify(outcomes)
                     );
 
-                const deleteButton =
-                    event.target.closest(
-                        ".sof-delete-outcome-btn"
+                    window.dispatchEvent(
+                        new CustomEvent(
+                            "eduMetricsStudentOutcomesUpdated",
+                            {
+                                detail: outcomes
+                            }
+                        )
                     );
+
+                    return true;
+                }
+                catch(error) {
+                    console.error(
+                        "Unable to save Student Outcomes:",
+                        error
+                    );
+
+                    alert(
+                        "Unable to save the Student Outcome. Please open EduMetrics through your local server instead of opening the HTML file directly."
+                    );
+
+                    return false;
+                }
+            }
+
+            function getStudentOutcomeStatusClass(status) {
+                switch(status) {
+                    case "Active":
+                        return "sof-status-active";
+
+                    case "Closed":
+                        return "sof-status-closed";
+
+                    case "Archived":
+                        return "sof-status-archived";
+
+                    default:
+                        return "sof-status-draft";
+                }
+            }
+
+            function resetStudentOutcomeForm() {
+                editingStudentOutcomeId =
+                    null;
+
+                if(studentOutcomeSelect) {
+                    studentOutcomeSelect.value =
+                        "";
+                    studentOutcomeSelect.disabled =
+                        false;
+                }
+
+                if(studentOutcomeDueDate) {
+                    studentOutcomeDueDate.value =
+                        "";
+                }
+
+                if(studentOutcomeStatus) {
+                    studentOutcomeStatus.value =
+                        "Active";
+                }
+
+                if(studentOutcomeModalTitle) {
+                    studentOutcomeModalTitle.textContent =
+                        "Upload Student Outcome";
+                }
+
+                if(studentOutcomeModalSubtitle) {
+                    studentOutcomeModalSubtitle.textContent =
+                        "Select the Student Outcome to assign, set its due date, and choose its status.";
+                }
+
+                if(saveStudentOutcomeButton) {
+                    saveStudentOutcomeButton.textContent =
+                        "Upload";
+                }
+            }
+
+            function updateStudentOutcomeSummary(outcomes) {
+                if(facultyStudentOutcomeCount) {
+                    facultyStudentOutcomeCount.textContent =
+                        outcomes.length;
+                }
+
+                if(facultyActiveOutcomeCount) {
+                    facultyActiveOutcomeCount.textContent =
+                        outcomes.filter(
+                            function (outcome) {
+                                return (
+                                    outcome.status ===
+                                    "Active"
+                                );
+                            }
+                        ).length;
+                }
+            }
+
+            function renderStoredStudentOutcomes() {
+                if(!studentOutcomeTableBody) {
+                    return;
+                }
 
                 const outcomes =
                     getStoredStudentOutcomes();
 
-                if(viewButton) {
-                    const outcome =
-                        outcomes.find(
-                            function (item) {
-                                return (
-                                    item.id ===
-                                    viewButton.dataset.id
-                                );
-                            }
-                        );
+                studentOutcomeTableBody.innerHTML =
+                    "";
 
-                    if(outcome && outcome.link) {
-                        window.location.href =
-                            outcome.link;
-                    }
+                if(outcomes.length === 0) {
+                    studentOutcomeTableBody.innerHTML = `
+                        <tr class="sodh-empty-row sof-outcome-empty-row">
+                            <td colspan="5">
+                                <div class="sodh-empty-state">
+                                    <strong>No student outcome uploaded</strong>
+                                    <span>Student outcomes will appear here once uploaded.</span>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+
+                    updateStudentOutcomeSummary(outcomes);
                     return;
                 }
 
-                if(editButton) {
-                    const outcome =
-                        outcomes.find(
-                            function (item) {
-                                return (
-                                    item.id ===
-                                    editButton.dataset.id
-                                );
-                            }
+                outcomes.forEach(
+                    function (outcome) {
+                        const row =
+                            document.createElement(
+                                "tr"
+                            );
+
+                        row.dataset.id =
+                            outcome.id;
+
+                        row.innerHTML = `
+                            <td>
+                                <strong class="sof-outcome-name">
+                                    ${escapeHTML(outcome.title)}
+                                </strong>
+                            </td>
+                            <td>${escapeHTML(formatDate(outcome.dueDate))}</td>
+                            <td>${Number(outcome.responses) || 0}</td>
+                            <td>
+                                <span class="sof-status-pill ${getStudentOutcomeStatusClass(outcome.status)}">
+                                    ${escapeHTML(outcome.status)}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="sof-row-actions">
+                                    <button type="button" class="sof-row-action-btn sof-view-outcome-btn" data-id="${escapeHTML(outcome.id)}">View</button>
+                                    <button type="button" class="sof-row-action-btn sof-edit-outcome-btn" data-id="${escapeHTML(outcome.id)}">Edit</button>
+                                    <button type="button" class="sof-row-action-btn sof-delete-outcome-btn" data-id="${escapeHTML(outcome.id)}">Delete</button>
+                                </div>
+                            </td>
+                        `;
+
+                        studentOutcomeTableBody.appendChild(
+                            row
                         );
-
-                    if(!outcome) {
-                        return;
                     }
-
-                    editingStudentOutcomeId =
-                        outcome.id;
-
-                    if(studentOutcomeSelect) {
-                        studentOutcomeSelect.value =
-                            outcome.code;
-                        studentOutcomeSelect.disabled =
-                            true;
-                    }
-
-                    if(studentOutcomeDueDate) {
-                        studentOutcomeDueDate.value =
-                            outcome.dueDate || "";
-                    }
-
-                    if(studentOutcomeStatus) {
-                        studentOutcomeStatus.value =
-                            outcome.status || "Active";
-                    }
-
-                    if(studentOutcomeModalTitle) {
-                        studentOutcomeModalTitle.textContent =
-                            "Edit Student Outcome";
-                    }
-
-                    if(studentOutcomeModalSubtitle) {
-                        studentOutcomeModalSubtitle.textContent =
-                            "Update the due date or status of this Student Outcome.";
-                    }
-
-                    if(saveStudentOutcomeButton) {
-                        saveStudentOutcomeButton.textContent =
-                            "Save Changes";
-                    }
-
-                    openModal(
-                        studentOutcomeModal
-                    );
-                    return;
-                }
-
-                if(deleteButton) {
-                    const outcome =
-                        outcomes.find(
-                            function (item) {
-                                return (
-                                    item.id ===
-                                    deleteButton.dataset.id
-                                );
-                            }
-                        );
-
-                    if(!outcome) {
-                        return;
-                    }
-
-                    deletingStudentOutcomeId =
-                        outcome.id;
-
-                    if(deleteStudentOutcomeName) {
-                        deleteStudentOutcomeName.textContent =
-                            outcome.title;
-                    }
-
-                    openModal(
-                        deleteStudentOutcomeModal
-                    );
-                }
-            }
-        );
-    }
-
-    function closeDeleteStudentOutcome() {
-        deletingStudentOutcomeId =
-            null;
-
-        closeModal(
-            deleteStudentOutcomeModal
-        );
-    }
-
-    if(cancelDeleteStudentOutcome) {
-        cancelDeleteStudentOutcome.addEventListener(
-            "click",
-            closeDeleteStudentOutcome
-        );
-    }
-
-    if(deleteStudentOutcomeBackdrop) {
-        deleteStudentOutcomeBackdrop.addEventListener(
-            "click",
-            closeDeleteStudentOutcome
-        );
-    }
-
-    if(confirmDeleteStudentOutcome) {
-        confirmDeleteStudentOutcome.addEventListener(
-            "click",
-            function () {
-                if(!deletingStudentOutcomeId) {
-                    return;
-                }
-
-                const outcomes =
-                    getStoredStudentOutcomes()
-                        .filter(
-                            function (outcome) {
-                                return (
-                                    outcome.id !==
-                                    deletingStudentOutcomeId
-                                );
-                            }
-                        );
-
-                saveStoredStudentOutcomes(
-                    outcomes
                 );
 
-                closeDeleteStudentOutcome();
-                renderStoredStudentOutcomes();
-            }
-        );
-    }
+                if(studentOutcomeEmptyState) {
+                    studentOutcomeEmptyState.hidden =
+                        outcomes.length > 0;
+                }
 
-    window.addEventListener(
-        "storage",
-        function (event) {
-            if(
-                event.key ===
-                studentOutcomeStorageKey
-            ) {
-                renderStoredStudentOutcomes();
-            }
-        }
-    );
-
-    renderStoredStudentOutcomes();
-
-    /* ESCAPE KEY */
-    document.addEventListener(
-        "keydown",
-        function (event) {
-
-            if (
-                event.key !==
-                "Escape"
-            ) {
-                return;
+                updateStudentOutcomeSummary(
+                    outcomes
+                );
             }
 
-            if (
-                courseOutcomeModal &&
-                !courseOutcomeModal.hidden
-            ) {
-                closeCourseOutcomeForm();
-                return;
+            function closeStudentOutcomeForm() {
+                if(studentOutcomeModal) {
+                    studentOutcomeModal.hidden = true;
+                    studentOutcomeModal.setAttribute("hidden", "");
+                    studentOutcomeModal.classList.remove("show", "active", "open");
+                    studentOutcomeModal.setAttribute("aria-hidden", "true");
+                }
+
+                document.body.classList.remove("sof-modal-open");
+                document.body.style.overflow = "";
+
+                resetStudentOutcomeForm();
             }
 
-            if (
-                studentOutcomeModal &&
-                !studentOutcomeModal.hidden
-            ) {
-
-                closeStudentOutcomeForm();
-
-                return;
-
+            if(addStudentOutcomeButton) {
+                addStudentOutcomeButton.addEventListener(
+                    "click",
+                    function () {
+                        resetStudentOutcomeForm();
+                        openModal(
+                            studentOutcomeModal
+                        );
+                    }
+                );
             }
 
-            if (
-                deleteCourseOutcomeModal &&
-                !deleteCourseOutcomeModal.hidden
-            ) {
-                closeDeleteCourseOutcome();
-                return;
+            if(cancelStudentOutcomeButton) {
+                cancelStudentOutcomeButton.addEventListener(
+                    "click",
+                    function (event) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        closeStudentOutcomeForm();
+                    }
+                );
             }
 
-            if (
-                deleteStudentOutcomeModal &&
-                !deleteStudentOutcomeModal.hidden
-            ) {
-                closeDeleteStudentOutcome();
-                return;
+            if(studentOutcomeBackdrop) {
+                studentOutcomeBackdrop.addEventListener(
+                    "click",
+                    function (event) {
+                        if(event.target === studentOutcomeBackdrop) {
+                            closeStudentOutcomeForm();
+                        }
+                    }
+                );
             }
 
-            if (
-                deleteSyllabusModal &&
-                !deleteSyllabusModal.hidden
-            ) {
+            if(saveStudentOutcomeButton) {
+                saveStudentOutcomeButton.addEventListener(
+                    "click",
+                    function (event) {
+                        event.preventDefault();
+                        event.stopPropagation();
+
+                        if(saveStudentOutcomeButton.disabled) {
+                            return;
+                        }
+
+                        const code =
+                            studentOutcomeSelect
+                                ? studentOutcomeSelect.value.trim()
+                                : "";
+
+                        const dueDate =
+                            studentOutcomeDueDate
+                                ? studentOutcomeDueDate.value
+                                : "";
+
+                        const status =
+                            studentOutcomeStatus
+                                ? studentOutcomeStatus.value
+                                : "Active";
+
+                        if(!code) {
+                            alert("Please select a Student Outcome.");
+                            return;
+                        }
+
+                        if(!dueDate) {
+                            alert("Please select a due date.");
+                            return;
+                        }
+
+                        saveStudentOutcomeButton.disabled = true;
+
+                        try {
+                            const selectedOption =
+                                studentOutcomeSelect &&
+                                studentOutcomeSelect.selectedIndex >= 0
+                                    ? studentOutcomeSelect.options[
+                                        studentOutcomeSelect.selectedIndex
+                                    ]
+                                    : null;
+
+                            const title =
+                                selectedOption &&
+                                selectedOption.textContent.trim()
+                                    ? formatStudentOutcomeTitle(
+                                        selectedOption.textContent.trim()
+                                    )
+                                    : formatStudentOutcomeTitle(
+                                        getStudentOutcomeTitle(code)
+                                    );
+
+                            const facultyCourse =
+                                document.getElementById("facultyCourse");
+
+                            const facultySection =
+                                document.getElementById("facultySection");
+
+                            const facultyTerm =
+                                document.getElementById("facultyTerm");
+
+                            const facultyYear =
+                                document.getElementById("facultyYear");
+
+                            const course =
+                                facultyCourse
+                                    ? facultyCourse.value
+                                    : "";
+
+                            const courseLabel =
+                                facultyCourse &&
+                                facultyCourse.selectedIndex >= 0
+                                    ? facultyCourse.options[
+                                        facultyCourse.selectedIndex
+                                    ].textContent.trim()
+                                    : "";
+
+                            const section =
+                                facultySection
+                                    ? facultySection.value
+                                    : "";
+
+                            const academicTerm =
+                                facultyTerm
+                                    ? facultyTerm.value
+                                    : "";
+
+                            const schoolYear =
+                                facultyYear
+                                    ? facultyYear.value
+                                    : "";
+
+                            const outcomes =
+                                getStoredStudentOutcomes();
+
+                            if(editingStudentOutcomeId) {
+                                const index =
+                                    outcomes.findIndex(
+                                        function (item) {
+                                            return (
+                                                item.id ===
+                                                editingStudentOutcomeId
+                                            );
+                                        }
+                                    );
+
+                                if(index !== -1) {
+                                    outcomes[index] = {
+                                        ...outcomes[index],
+                                        code: code,
+                                        title: title,
+                                        dueDate: dueDate,
+                                        status: status,
+                                        course: course,
+                                        courseLabel: courseLabel,
+                                        section: section,
+                                        academicTerm: academicTerm,
+                                        schoolYear: schoolYear,
+                                        link:
+                                            getStudentOutcomeLink(code)
+                                    };
+                                }
+                            }
+                            else {
+                                outcomes.push({
+                                    id:
+                                        "so-" +
+                                        Date.now(),
+                                    code: code,
+                                    title: title,
+                                    dueDate: dueDate,
+                                    status: status,
+                                    responses: 0,
+                                    course: course,
+                                    courseLabel: courseLabel,
+                                    section: section,
+                                    academicTerm: academicTerm,
+                                    schoolYear: schoolYear,
+                                    link:
+                                        getStudentOutcomeLink(code),
+                                    createdAt:
+                                        new Date().toISOString()
+                                });
+                            }
+
+                            if(!saveStoredStudentOutcomes(outcomes)) {
+                                return;
+                            }
+
+                            renderStoredStudentOutcomes();
+                            closeStudentOutcomeForm();
+                        }
+                        catch(error) {
+                            console.error(
+                                "Unable to save Student Outcome:",
+                                error
+                            );
+
+                            alert(
+                                "Unable to save the Student Outcome. Please check the browser console."
+                            );
+                        }
+                        finally {
+                            saveStudentOutcomeButton.disabled = false;
+                        }
+                    }
+                );
+            }
+
+            if(studentOutcomeTableBody) {
+                studentOutcomeTableBody.addEventListener(
+                    "click",
+                    function (event) {
+                        const viewButton =
+                            event.target.closest(
+                                ".sof-view-outcome-btn"
+                            );
+
+                        const editButton =
+                            event.target.closest(
+                                ".sof-edit-outcome-btn"
+                            );
+
+                        const deleteButton =
+                            event.target.closest(
+                                ".sof-delete-outcome-btn"
+                            );
+
+                        const outcomes =
+                            getStoredStudentOutcomes();
+
+                        if(viewButton) {
+                            const outcome =
+                                outcomes.find(
+                                    function (item) {
+                                        return (
+                                            item.id ===
+                                            viewButton.dataset.id
+                                        );
+                                    }
+                                );
+
+                            if(outcome && outcome.link) {
+                                window.location.href =
+                                    outcome.link;
+                            }
+                            return;
+                        }
+
+                        if(editButton) {
+                            const outcome =
+                                outcomes.find(
+                                    function (item) {
+                                        return (
+                                            item.id ===
+                                            editButton.dataset.id
+                                        );
+                                    }
+                                );
+
+                            if(!outcome) {
+                                return;
+                            }
+
+                            editingStudentOutcomeId =
+                                outcome.id;
+
+                            if(studentOutcomeSelect) {
+                                studentOutcomeSelect.value =
+                                    outcome.code;
+                                studentOutcomeSelect.disabled =
+                                    true;
+                            }
+
+                            if(studentOutcomeDueDate) {
+                                studentOutcomeDueDate.value =
+                                    outcome.dueDate || "";
+                            }
+
+                            if(studentOutcomeStatus) {
+                                studentOutcomeStatus.value =
+                                    outcome.status || "Active";
+                            }
+
+                            if(studentOutcomeModalTitle) {
+                                studentOutcomeModalTitle.textContent =
+                                    "Edit Student Outcome";
+                            }
+
+                            if(studentOutcomeModalSubtitle) {
+                                studentOutcomeModalSubtitle.textContent =
+                                    "Update the due date or status of this Student Outcome.";
+                            }
+
+                            if(saveStudentOutcomeButton) {
+                                saveStudentOutcomeButton.textContent =
+                                    "Save Changes";
+                            }
+
+                            openModal(
+                                studentOutcomeModal
+                            );
+                            return;
+                        }
+
+                        if(deleteButton) {
+                            const outcome =
+                                outcomes.find(
+                                    function (item) {
+                                        return (
+                                            item.id ===
+                                            deleteButton.dataset.id
+                                        );
+                                    }
+                                );
+
+                            if(!outcome) {
+                                return;
+                            }
+
+                            deletingStudentOutcomeId =
+                                outcome.id;
+
+                            if(deleteStudentOutcomeName) {
+                                deleteStudentOutcomeName.textContent =
+                                    outcome.title;
+                            }
+
+                            openModal(
+                                deleteStudentOutcomeModal
+                            );
+                        }
+                    }
+                );
+            }
+
+            function closeDeleteStudentOutcome() {
+                deletingStudentOutcomeId =
+                    null;
 
                 closeModal(
-                    deleteSyllabusModal
+                    deleteStudentOutcomeModal
                 );
             }
-        }
-    );
 
-    /* INITIAL PAGE STATE*/
-   tabPanels.forEach(
-        function (panel) {
-
-            panel.classList.toggle(
-                "active",
-                panel.id ===
-                    "syllabus"
-            );
-
-        }
-    );
-
-
-    tabs.forEach(
-        function (tab) {
-
-            tab.classList.toggle(
-                "active",
-                tab.dataset.tab ===
-                    "syllabus"
-            );
-
-        }
-    );
-}
-
-
-/* STUDENT PENDING STUDENT OUTCOMES */
-document.addEventListener("DOMContentLoaded", function () {
-    const page =
-        document.querySelector(
-            ".so-student-page"
-        );
-
-    const pendingSOList =
-        document.getElementById(
-            "pendingSOList"
-        );
-
-    const pendingSOEmpty =
-        document.getElementById(
-            "pendingSOEmpty"
-        );
-
-    if(!page || !pendingSOList || !pendingSOEmpty) {
-        return;
-    }
-
-    const storageKey =
-        "eduMetricsStudentOutcomes";
-
-    const pendingCourseFilter =
-        document.getElementById(
-            "pendingSOCourseFilter"
-        );
-
-    const pendingSOCount =
-        document.getElementById(
-            "pendingSOCount"
-        );
-
-    const dueThisWeekCount =
-        document.getElementById(
-            "dueThisWeekCount"
-        );
-
-    function getStudentOutcomes() {
-        try {
-            const stored =
-                localStorage.getItem(
-                    storageKey
+            if(cancelDeleteStudentOutcome) {
+                cancelDeleteStudentOutcome.addEventListener(
+                    "click",
+                    closeDeleteStudentOutcome
                 );
-
-            if(!stored) {
-                return [];
             }
 
-            const parsed =
-                JSON.parse(stored);
-
-            return Array.isArray(parsed)
-                ? parsed
-                : [];
-        }
-        catch(error) {
-            console.error(
-                "Unable to load Student Outcomes:",
-                error
-            );
-            return [];
-        }
-    }
-
-    function escapeStudentSOHTML(value) {
-        return String(value ?? "")
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;")
-            .replaceAll("'", "&#039;");
-    }
-
-    function formatStudentSODueDate(value) {
-        if(!value) {
-            return "Pending";
-        }
-
-        const date =
-            new Date(
-                value + "T00:00:00"
-            );
-
-        return date.toLocaleDateString(
-            "en-US",
-            {
-                month: "short",
-                day: "numeric",
-                year: "numeric"
+            if(deleteStudentOutcomeBackdrop) {
+                deleteStudentOutcomeBackdrop.addEventListener(
+                    "click",
+                    closeDeleteStudentOutcome
+                );
             }
-        );
-    }
 
-    function isDueWithinSevenDays(value) {
-        if(!value) {
-            return false;
-        }
+            if(confirmDeleteStudentOutcome) {
+                confirmDeleteStudentOutcome.addEventListener(
+                    "click",
+                    function () {
+                        if(!deletingStudentOutcomeId) {
+                            return;
+                        }
 
-        const today =
-            new Date();
+                        const outcomes =
+                            getStoredStudentOutcomes()
+                                .filter(
+                                    function (outcome) {
+                                        return (
+                                            outcome.id !==
+                                            deletingStudentOutcomeId
+                                        );
+                                    }
+                                );
 
-        today.setHours(
-            0,
-            0,
-            0,
-            0
-        );
+                        saveStoredStudentOutcomes(
+                            outcomes
+                        );
 
-        const dueDate =
-            new Date(
-                value + "T00:00:00"
-            );
+                        closeDeleteStudentOutcome();
+                        renderStoredStudentOutcomes();
+                    }
+                );
+            }
 
-        const lastDay =
-            new Date(today);
-
-        lastDay.setDate(
-            lastDay.getDate() + 7
-        );
-
-        return (
-            dueDate >= today &&
-            dueDate <= lastDay
-        );
-    }
-
-    function getActiveStudentOutcomes() {
-        return getStudentOutcomes()
-            .filter(
-                function (outcome) {
-                    return (
-                        outcome.status ===
-                        "Active"
-                    );
-                }
-            )
-            .map(
-                function (outcome) {
-                    return {
-                        ...outcome,
-
-                        /*
-                         * CHANGE THIS LATER:
-                         * Replace this sample course with the course
-                         * saved by the backend/faculty assignment.
-                         * For now, every uploaded SO is Software Design.
-                         */
-                        course:
-                            outcome.course ||
-                            ""
-                    };
+            window.addEventListener(
+                "storage",
+                function (event) {
+                    if(
+                        event.key ===
+                        studentOutcomeStorageKey
+                    ) {
+                        renderStoredStudentOutcomes();
+                    }
                 }
             );
-    }
 
-    function updateStudentSOSummary(outcomes) {
-        if(pendingSOCount) {
-            pendingSOCount.textContent =
-                outcomes.length;
-        }
+            renderStoredStudentOutcomes();
 
-        if(dueThisWeekCount) {
-            dueThisWeekCount.textContent =
-                outcomes.filter(
-                    function (outcome) {
-                        return isDueWithinSevenDays(
-                            outcome.dueDate
+            /* ESCAPE KEY */
+            document.addEventListener(
+                "keydown",
+                function (event) {
+
+                    if (
+                        event.key !==
+                        "Escape"
+                    ) {
+                        return;
+                    }
+
+                    if (
+                        courseOutcomeModal &&
+                        !courseOutcomeModal.hidden
+                    ) {
+                        closeCourseOutcomeForm();
+                        return;
+                    }
+
+                    if (
+                        studentOutcomeModal &&
+                        !studentOutcomeModal.hidden
+                    ) {
+
+                        closeStudentOutcomeForm();
+
+                        return;
+
+                    }
+
+                    if (
+                        deleteCourseOutcomeModal &&
+                        !deleteCourseOutcomeModal.hidden
+                    ) {
+                        closeDeleteCourseOutcome();
+                        return;
+                    }
+
+                    if (
+                        deleteStudentOutcomeModal &&
+                        !deleteStudentOutcomeModal.hidden
+                    ) {
+                        closeDeleteStudentOutcome();
+                        return;
+                    }
+
+                    if (
+                        deleteSyllabusModal &&
+                        !deleteSyllabusModal.hidden
+                    ) {
+
+                        closeModal(
+                            deleteSyllabusModal
                         );
                     }
-                ).length;
+                }
+            );
+
+            /* INITIAL PAGE STATE*/
+           tabPanels.forEach(
+                function (panel) {
+
+                    panel.classList.toggle(
+                        "active",
+                        panel.id ===
+                            "syllabus"
+                    );
+
+                }
+            );
+
+
+            tabs.forEach(
+                function (tab) {
+
+                    tab.classList.toggle(
+                        "active",
+                        tab.dataset.tab ===
+                            "syllabus"
+                    );
+
+                }
+            );
         }
-    }
 
-    function populatePendingCourseFilter(outcomes) {
-        if(!pendingCourseFilter) {
-            return;
-        }
 
-        const selectedValue =
-            pendingCourseFilter.value;
+        /* STUDENT PENDING STUDENT OUTCOMES */
+        document.addEventListener("DOMContentLoaded", function () {
+            const page =
+                document.querySelector(
+                    ".so-student-page"
+                );
 
-        const courses =
-            [
-                ...new Set(
-                    outcomes.map(
+            const pendingSOList =
+                document.getElementById(
+                    "pendingSOList"
+                );
+
+            const pendingSOEmpty =
+                document.getElementById(
+                    "pendingSOEmpty"
+                );
+
+            if(!page || !pendingSOList || !pendingSOEmpty) {
+                return;
+            }
+
+            const storageKey =
+                "eduMetricsStudentOutcomes";
+
+            const pendingCourseFilter =
+                document.getElementById(
+                    "pendingSOCourseFilter"
+                );
+
+            const pendingSOCount =
+                document.getElementById(
+                    "pendingSOCount"
+                );
+
+            const dueThisWeekCount =
+                document.getElementById(
+                    "dueThisWeekCount"
+                );
+
+            function getStudentOutcomes() {
+                try {
+                    const stored =
+                        localStorage.getItem(
+                            storageKey
+                        );
+
+                    if(!stored) {
+                        return [];
+                    }
+
+                    const parsed =
+                        JSON.parse(stored);
+
+                    return Array.isArray(parsed)
+                        ? parsed
+                        : [];
+                }
+                catch(error) {
+                    console.error(
+                        "Unable to load Student Outcomes:",
+                        error
+                    );
+                    return [];
+                }
+            }
+
+            function escapeStudentSOHTML(value) {
+                return String(value ?? "")
+                    .replaceAll("&", "&amp;")
+                    .replaceAll("<", "&lt;")
+                    .replaceAll(">", "&gt;")
+                    .replaceAll('"', "&quot;")
+                    .replaceAll("'", "&#039;");
+            }
+
+            function formatStudentSODueDate(value) {
+                if(!value) {
+                    return "Pending";
+                }
+
+                const date =
+                    new Date(
+                        value + "T00:00:00"
+                    );
+
+                return date.toLocaleDateString(
+                    "en-US",
+                    {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric"
+                    }
+                );
+            }
+
+            function isDueWithinSevenDays(value) {
+                if(!value) {
+                    return false;
+                }
+
+                const today =
+                    new Date();
+
+                today.setHours(
+                    0,
+                    0,
+                    0,
+                    0
+                );
+
+                const dueDate =
+                    new Date(
+                        value + "T00:00:00"
+                    );
+
+                const lastDay =
+                    new Date(today);
+
+                lastDay.setDate(
+                    lastDay.getDate() + 7
+                );
+
+                return (
+                    dueDate >= today &&
+                    dueDate <= lastDay
+                );
+            }
+
+            function getActiveStudentOutcomes() {
+                return getStudentOutcomes()
+                    .filter(
                         function (outcome) {
-                            return outcome.course;
+                            return (
+                                outcome.status ===
+                                "Active"
+                            );
                         }
                     )
-                )
-            ];
+                    .map(
+                        function (outcome) {
+                            return {
+                                ...outcome,
 
-        pendingCourseFilter.innerHTML = "";
+                                /*
+                                 * CHANGE THIS LATER:
+                                 * Replace this sample course with the course
+                                 * saved by the backend/faculty assignment.
+                                 * For now, every uploaded SO is Software Design.
+                                 */
+                                course:
+                                    outcome.course ||
+                                    ""
+                            };
+                        }
+                    );
+            }
 
-        courses.forEach(
-            function (course) {
-                const option =
+            function updateStudentSOSummary(outcomes) {
+                if(pendingSOCount) {
+                    pendingSOCount.textContent =
+                        outcomes.length;
+                }
+
+                if(dueThisWeekCount) {
+                    dueThisWeekCount.textContent =
+                        outcomes.filter(
+                            function (outcome) {
+                                return isDueWithinSevenDays(
+                                    outcome.dueDate
+                                );
+                            }
+                        ).length;
+                }
+            }
+
+            function populatePendingCourseFilter(outcomes) {
+                if(!pendingCourseFilter) {
+                    return;
+                }
+
+                const selectedValue =
+                    pendingCourseFilter.value;
+
+                const courses =
+                    [
+                        ...new Set(
+                            outcomes.map(
+                                function (outcome) {
+                                    return outcome.course;
+                                }
+                            )
+                        )
+                    ];
+
+                pendingCourseFilter.innerHTML = "";
+
+                const allCoursesOption =
                     document.createElement(
                         "option"
                     );
 
-                option.value =
-                    course;
-
-                option.textContent =
-                    course;
+                allCoursesOption.value = "";
+                allCoursesOption.textContent =
+                    "All Courses";
 
                 pendingCourseFilter.appendChild(
-                    option
+                    allCoursesOption
                 );
-            }
-        );
 
-        if(
-            selectedValue &&
-            Array.from(
-                pendingCourseFilter.options
-            ).some(
-                function (option) {
-                    return (
-                        option.value ===
-                        selectedValue
-                    );
+                courses
+                    .filter(
+                        function (course) {
+                            return Boolean(course);
+                        }
+                    )
+                    .forEach(
+                    function (course) {
+                        const option =
+                            document.createElement(
+                                "option"
+                            );
+
+                        option.value =
+                            course;
+
+                        option.textContent =
+                            course;
+
+                        pendingCourseFilter.appendChild(
+                            option
+                        );
+                    }
+                );
+
+                if(
+                    selectedValue &&
+                    Array.from(
+                        pendingCourseFilter.options
+                    ).some(
+                        function (option) {
+                            return (
+                                option.value ===
+                                selectedValue
+                            );
+                        }
+                    )
+                ) {
+                    pendingCourseFilter.value =
+                        selectedValue;
                 }
-            )
-        ) {
-            pendingCourseFilter.value =
-                selectedValue;
-        }
-    }
+            }
 
-    function renderPendingStudentOutcomes() {
-        const activeOutcomes =
-            getActiveStudentOutcomes();
+            function renderPendingStudentOutcomes() {
+                const activeOutcomes =
+                    getActiveStudentOutcomes();
 
-        populatePendingCourseFilter(
-            activeOutcomes
-        );
+                populatePendingCourseFilter(
+                    activeOutcomes
+                );
 
-        const selectedCourse =
-            pendingCourseFilter
-                ? pendingCourseFilter.value
-                : "";
+                const selectedCourse =
+                    pendingCourseFilter
+                        ? pendingCourseFilter.value
+                        : "";
 
-        const filteredOutcomes =
-            activeOutcomes.filter(
-                function (outcome) {
-                    return (
-                        !selectedCourse ||
-                        outcome.course ===
-                            selectedCourse
+                const filteredOutcomes =
+                    activeOutcomes.filter(
+                        function (outcome) {
+                            return (
+                                !selectedCourse ||
+                                outcome.course ===
+                                    selectedCourse
+                            );
+                        }
                     );
+
+                pendingSOList.innerHTML =
+                    "";
+
+                filteredOutcomes.forEach(
+                    function (outcome) {
+                        const item =
+                            document.createElement(
+                                "article"
+                            );
+
+                        item.className =
+                            "so-pending-item";
+
+                        item.innerHTML = `
+                            <div class="so-pending-information">
+                                <h3 class="so-pending-title">${escapeStudentSOHTML(outcome.title)}</h3>
+                                <div class="so-pending-meta">
+                                    <span class="so-pending-due">Due: ${escapeStudentSOHTML(formatStudentSODueDate(outcome.dueDate))}</span>
+                                    <span class="so-pending-status">Pending</span>
+                                </div>
+                            </div>
+
+                            <div class="so-pending-course">
+                                ${escapeStudentSOHTML(outcome.course)}
+                            </div>
+
+                            <button
+                                type="button"
+                                class="so-start-assessment-btn"
+                                data-link="${escapeStudentSOHTML(outcome.link || "")}"
+                            >
+                                <span>Complete Self-Assessment</span>
+                                <span class="so-assessment-arrow" aria-hidden="true">→</span>
+                            </button>
+                        `;
+
+                        pendingSOList.appendChild(
+                            item
+                        );
+                    }
+                );
+
+                pendingSOList.hidden =
+                    filteredOutcomes.length === 0;
+
+                pendingSOEmpty.hidden =
+                    filteredOutcomes.length > 0;
+
+                if(
+                    filteredOutcomes.length === 0 &&
+                    selectedCourse !== ""
+                ) {
+                    pendingSOEmpty.innerHTML = `
+                        <h3>No self-assessments for this course</h3>
+                        <p>Select another course to view its assigned Student Outcomes.</p>
+                    `;
                 }
-            );
 
-        pendingSOList.innerHTML =
-            "";
-
-        filteredOutcomes.forEach(
-            function (outcome) {
-                const item =
-                    document.createElement(
-                        "article"
-                    );
-
-                item.className =
-                    "so-pending-item";
-
-                item.innerHTML = `
-                    <div class="so-pending-information">
-                        <h3 class="so-pending-title">${escapeStudentSOHTML(outcome.title)}</h3>
-                        <div class="so-pending-meta">
-                            <span class="so-pending-due">Due: ${escapeStudentSOHTML(formatStudentSODueDate(outcome.dueDate))}</span>
-                            <span class="so-pending-status">Pending</span>
-                        </div>
-                    </div>
-
-                    <div class="so-pending-course">
-                        ${escapeStudentSOHTML(outcome.course)}
-                    </div>
-
-                    <button
-                        type="button"
-                        class="so-start-assessment-btn"
-                        data-link="${escapeStudentSOHTML(outcome.link || "")}"
-                    >
-                        <span>Complete Self-Assessment</span>
-                        <span class="so-assessment-arrow" aria-hidden="true">→</span>
-                    </button>
-                `;
-
-                pendingSOList.appendChild(
-                    item
+                updateStudentSOSummary(
+                    activeOutcomes
                 );
             }
-        );
 
-        pendingSOList.hidden =
-            filteredOutcomes.length === 0;
-
-        pendingSOEmpty.hidden =
-            filteredOutcomes.length > 0;
-
-        if(
-            filteredOutcomes.length === 0 &&
-            selectedCourse !== ""
-        ) {
-            pendingSOEmpty.innerHTML = `
-                <h3>No self-assessments for this course</h3>
-                <p>Select another course to view its assigned Student Outcomes.</p>
-            `;
-        }
-
-        updateStudentSOSummary(
-            activeOutcomes
-        );
-    }
-
-    pendingSOList.addEventListener(
-        "click",
-        function (event) {
-            const button =
-                event.target.closest(
-                    ".so-start-assessment-btn"
-                );
-
-            if(!button) {
-                return;
-            }
-
-            const link =
-                button.dataset.link;
-
-            if(link) {
-                window.location.href =
-                    link;
-            }
-        }
-    );
-
-    if(pendingCourseFilter) {
-        pendingCourseFilter.addEventListener(
-            "change",
-            renderPendingStudentOutcomes
-        );
-    }
-
-    window.addEventListener(
-        "storage",
-        function (event) {
-            if(event.key === storageKey) {
-                renderPendingStudentOutcomes();
-            }
-        }
-    );
-
-    renderPendingStudentOutcomes();
-});
-
-/* DEPARTMENT HEAD SYLLABUS & OUTCOMES */
-document.addEventListener("DOMContentLoaded", function () {
-    const tabs =
-        document.querySelectorAll(
-            ".sodh-tab"
-        );
-
-    const panels =
-        document.querySelectorAll(
-            ".sodh-tab-panel"
-        );
-
-    if(!tabs.length || !panels.length) {
-        return;
-    }
-
-    tabs.forEach(
-        function (tab) {
-            tab.addEventListener(
+            pendingSOList.addEventListener(
                 "click",
-                function () {
-                    const targetId =
-                        this.dataset.tab;
+                function (event) {
+                    const button =
+                        event.target.closest(
+                            ".so-start-assessment-btn"
+                        );
 
-                    if(!targetId) {
+                    if(!button) {
                         return;
                     }
 
-                    tabs.forEach(
-                        function (item) {
-                            item.classList.remove(
-                                "active"
-                            );
-                        }
-                    );
+                    const link =
+                        button.dataset.link;
 
-                    panels.forEach(
-                        function (panel) {
-                            panel.classList.remove(
-                                "active"
-                            );
-                        }
-                    );
-
-                    this.classList.add(
-                        "active"
-                    );
-
-                    const targetPanel =
-                        document.getElementById(
-                            targetId
-                        );
-
-                    if(targetPanel) {
-                        targetPanel.classList.add(
-                            "active"
-                        );
+                    if(link) {
+                        window.location.href =
+                            link;
                     }
                 }
             );
-        }
-    );
 
-    const responseStorageKey =
-        "eduMetricsSOResponses";
-
-    const outcomeStorageKey =
-        "eduMetricsStudentOutcomes";
-
-    const soSummaryTableBody =
-        document.getElementById(
-            "soSummaryTableBody"
-        );
-
-    const studentResponsesTableBody =
-        document.getElementById(
-            "studentResponsesTableBody"
-        );
-
-    const soSummarySearch =
-        document.getElementById(
-            "soSummarySearch"
-        );
-
-    const studentResponseSearch =
-        document.getElementById(
-            "studentResponseSearch"
-        );
-
-    function readArray(key) {
-        try {
-            const stored =
-                localStorage.getItem(key);
-
-            if(!stored) {
-                return [];
+            if(pendingCourseFilter) {
+                pendingCourseFilter.addEventListener(
+                    "change",
+                    renderPendingStudentOutcomes
+                );
             }
 
-            const parsed =
-                JSON.parse(stored);
-
-            return Array.isArray(parsed)
-                ? parsed
-                : [];
-        }
-        catch(error) {
-            return [];
-        }
-    }
-
-    function safeText(value) {
-        return String(
-            value === undefined ||
-            value === null
-                ? ""
-                : value
-        );
-    }
-
-    function escapeDeptHTML(value) {
-        return safeText(value)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
-
-    function normalize(value) {
-        return safeText(value)
-            .trim()
-            .toLowerCase();
-    }
-
-    function selectedFilter(id) {
-        const field =
-            document.getElementById(id);
-
-        return field
-            ? normalize(field.value)
-            : "";
-    }
-
-    function responseMatchesFilters(response) {
-        const info =
-            response.studentInformation ||
-            {};
-
-        const schoolYear =
-            selectedFilter(
-                "schoolYearFilter"
+            window.addEventListener(
+                "storage",
+                function (event) {
+                    if(event.key === storageKey) {
+                        renderPendingStudentOutcomes();
+                    }
+                }
             );
 
-        const program =
-            selectedFilter(
-                "programFilter"
+            window.addEventListener(
+                "eduMetricsStudentOutcomesUpdated",
+                renderPendingStudentOutcomes
             );
 
-        const course =
-            selectedFilter(
-                "courseFilter"
+            renderPendingStudentOutcomes();
+        });
+
+        /* DEPARTMENT HEAD SYLLABUS & OUTCOMES */
+        document.addEventListener("DOMContentLoaded", function () {
+            const tabs =
+                document.querySelectorAll(
+                    ".sodh-tab"
+                );
+
+            const panels =
+                document.querySelectorAll(
+                    ".sodh-tab-panel"
+                );
+
+            if(!tabs.length || !panels.length) {
+                return;
+            }
+
+            tabs.forEach(
+                function (tab) {
+                    tab.addEventListener(
+                        "click",
+                        function () {
+                            const targetId =
+                                this.dataset.tab;
+
+                            if(!targetId) {
+                                return;
+                            }
+
+                            tabs.forEach(
+                                function (item) {
+                                    item.classList.remove(
+                                        "active"
+                                    );
+                                }
+                            );
+
+                            panels.forEach(
+                                function (panel) {
+                                    panel.classList.remove(
+                                        "active"
+                                    );
+                                }
+                            );
+
+                            this.classList.add(
+                                "active"
+                            );
+
+                            const targetPanel =
+                                document.getElementById(
+                                    targetId
+                                );
+
+                            if(targetPanel) {
+                                targetPanel.classList.add(
+                                    "active"
+                                );
+                            }
+                        }
+                    );
+                }
             );
 
-        const section =
-            selectedFilter(
-                "sectionFilter"
-            );
+            const responseStorageKey =
+                "eduMetricsSOResponses";
 
-        return (
-            (!schoolYear ||
-                normalize(info.schoolYear) ===
-                    schoolYear) &&
-            (!program ||
-                normalize(info.program) ===
-                    program) &&
-            (!course ||
-                normalize(info.course) ===
-                    course) &&
-            (!section ||
-                normalize(info.section) ===
-                    section)
-        );
-    }
+            const outcomeStorageKey =
+                "eduMetricsStudentOutcomes";
 
-    function getFilteredResponses() {
-        return readArray(
-            responseStorageKey
-        ).filter(
-            responseMatchesFilters
-        );
-    }
+            const soSummaryTableBody =
+                document.getElementById(
+                    "soSummaryTableBody"
+                );
 
-    function emptySummaryRow() {
-        return `
-            <tr class="sodh-empty-row">
-                <td colspan="3">
-                    <strong>No SO results yet</strong>
-                    Student Outcome attainment results
-                    will appear here once assessment
-                    data is available.
-                </td>
-            </tr>
-        `;
-    }
+            const studentResponsesTableBody =
+                document.getElementById(
+                    "studentResponsesTableBody"
+                );
 
-    function emptyStudentRow() {
-        return `
-            <tr class="sodh-empty-row">
-                <td colspan="7">
-                    <strong>No student responses yet</strong>
-                    Student responses will appear here
-                    once assessment responses are available.
-                </td>
-            </tr>
-        `;
-    }
+            const soSummarySearch =
+                document.getElementById(
+                    "soSummarySearch"
+                );
 
-    function renderSOSummary() {
-        if(!soSummaryTableBody) {
-            return;
-        }
+            const studentResponseSearch =
+                document.getElementById(
+                    "studentResponseSearch"
+                );
 
-        const query =
-            soSummarySearch
-                ? normalize(
-                    soSummarySearch.value
-                )
-                : "";
+            function readArray(key) {
+                try {
+                    const stored =
+                        localStorage.getItem(key);
 
-        const responses =
-            getFilteredResponses();
+                    if(!stored) {
+                        return [];
+                    }
 
-        const groups = {};
+                    const parsed =
+                        JSON.parse(stored);
 
-        responses.forEach(
-            function (response) {
-                const so =
-                    safeText(
-                        response.studentOutcome
-                    ).toLowerCase();
-
-                const answers =
-                    response.answers || {};
-
-                const descriptions =
-                    Array.isArray(
-                        response.indicatorDescriptions
-                    )
-                        ? response.indicatorDescriptions
+                    return Array.isArray(parsed)
+                        ? parsed
                         : [];
+                }
+                catch(error) {
+                    return [];
+                }
+            }
 
-                Object.keys(answers).forEach(
-                    function (answerKey) {
-                        const indicatorMatch =
-                            answerKey.match(
-                                /(\d+)$/
-                            );
-
-                        const indicatorNumber =
-                            indicatorMatch
-                                ? Number(
-                                    indicatorMatch[1]
-                                )
-                                : 0;
-
-                        const description =
-                            descriptions[
-                                Math.max(
-                                    indicatorNumber - 1,
-                                    0
-                                )
-                            ] ||
-                            (
-                                "Performance Indicator " +
-                                indicatorNumber
-                            );
-
-                        const groupKey =
-                            so +
-                            "|" +
-                            indicatorNumber +
-                            "|" +
-                            description;
-
-                        if(!groups[groupKey]) {
-                            groups[groupKey] = {
-                                so: so,
-                                indicatorNumber:
-                                    indicatorNumber,
-                                description:
-                                    description,
-                                total: 0,
-                                count: 0
-                            };
-                        }
-
-                        const score =
-                            Number(
-                                answers[answerKey]
-                            );
-
-                        if(
-                            Number.isFinite(score) &&
-                            score > 0
-                        ) {
-                            groups[groupKey].total +=
-                                score;
-
-                            groups[groupKey].count +=
-                                1;
-                        }
-                    }
+            function safeText(value) {
+                return String(
+                    value === undefined ||
+                    value === null
+                        ? ""
+                        : value
                 );
             }
-        );
 
-        const rows =
-            Object.values(groups)
-                .filter(
-                    function (group) {
-                        if(!query) {
-                            return true;
-                        }
+            function escapeDeptHTML(value) {
+                return safeText(value)
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
 
-                        const haystack =
-                            (
-                                "SO (" +
-                                group.so +
-                                ") " +
-                                group.indicatorNumber +
-                                " " +
-                                group.description
-                            ).toLowerCase();
+            function normalize(value) {
+                return safeText(value)
+                    .trim()
+                    .toLowerCase();
+            }
 
-                        return haystack.includes(
-                            query
-                        );
-                    }
-                )
-                .sort(
-                    function (a, b) {
-                        if(a.so !== b.so) {
-                            return a.so.localeCompare(
-                                b.so
-                            );
-                        }
+            function selectedFilter(id) {
+                const field =
+                    document.getElementById(id);
 
-                        return (
-                            a.indicatorNumber -
-                            b.indicatorNumber
-                        );
-                    }
-                );
+                return field
+                    ? normalize(field.value)
+                    : "";
+            }
 
-        if(!rows.length) {
-            soSummaryTableBody.innerHTML =
-                emptySummaryRow();
-
-            return;
-        }
-
-        soSummaryTableBody.innerHTML =
-            rows.map(
-                function (group) {
-                    const average =
-                        group.count
-                            ? (
-                                group.total /
-                                group.count
-                            )
-                            : 0;
-
-                    /* Ratings are 1-3.
-                       Convert the average rating to a 0-100 attainment rate. */
-                    const attainment =
-                        Math.max(
-                            0,
-                            Math.min(
-                                100,
-                                (
-                                    average /
-                                    3
-                                ) * 100
-                            )
-                        );
-
-                    const percent =
-                        Math.round(
-                            attainment
-                        );
-
-                    return `
-                        <tr>
-                            <td>
-                                <span class="sodh-so-code">
-                                    SO (${escapeDeptHTML(group.so)})
-                                    - ${group.indicatorNumber}
-                                </span>
-                            </td>
-                            <td>
-                                <span class="sodh-so-description">
-                                    ${escapeDeptHTML(group.description)}
-                                </span>
-                            </td>
-                            <td>
-                                <div class="sodh-attainment">
-                                    <div
-                                        class="sodh-attainment-track"
-                                        aria-label="Attainment ${percent}%"
-                                    >
-                                        <span
-                                            class="sodh-attainment-fill"
-                                            style="--attainment:${percent}%"
-                                        ></span>
-                                    </div>
-                                    <span class="sodh-attainment-value">
-                                        ${percent}%
-                                    </span>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                }
-            ).join("");
-    }
-
-    function getAssignedSOCount(course) {
-        const outcomes =
-            readArray(
-                outcomeStorageKey
-            );
-
-        const courseName =
-            normalize(course);
-
-        const courseOutcomes =
-            outcomes.filter(
-                function (outcome) {
-                    const outcomeCourse =
-                        normalize(
-                            outcome.course
-                        );
-
-                    return (
-                        !courseName ||
-                        !outcomeCourse ||
-                        outcomeCourse ===
-                            courseName
-                    );
-                }
-            );
-
-        const uniqueCodes =
-            new Set(
-                courseOutcomes.map(
-                    function (outcome) {
-                        return normalize(
-                            outcome.code ||
-                            outcome.studentOutcome ||
-                            (
-                                safeText(
-                                    outcome.title
-                                ).match(
-                                    /outcome\s*\((g1|g2|[a-l])\)/i
-                                ) || []
-                            )[1] ||
-                            outcome.id
-                        );
-                    }
-                ).filter(Boolean)
-            );
-
-        return uniqueCodes.size;
-    }
-
-    function renderStudentResponses() {
-        if(!studentResponsesTableBody) {
-            return;
-        }
-
-        const query =
-            studentResponseSearch
-                ? normalize(
-                    studentResponseSearch.value
-                )
-                : "";
-
-        const responses =
-            getFilteredResponses();
-
-        const students = {};
-
-        responses.forEach(
-            function (response) {
+            function responseMatchesFilters(response) {
                 const info =
                     response.studentInformation ||
                     {};
 
-                const key = [
-                    normalize(
-                        info.studentName
-                    ) || "student",
-                    normalize(
-                        info.course
-                    ) || "course",
-                    normalize(
-                        info.section
-                    ) || "section"
-                ].join("|");
-
-                if(!students[key]) {
-                    students[key] = {
-                        info: info,
-                        completed:
-                            new Set()
-                    };
-                }
-
-                if(response.studentOutcome) {
-                    students[key].completed.add(
-                        normalize(
-                            response.studentOutcome
-                        )
+                const schoolYear =
+                    selectedFilter(
+                        "schoolYearFilter"
                     );
-                }
+
+                const program =
+                    selectedFilter(
+                        "programFilter"
+                    );
+
+                const course =
+                    selectedFilter(
+                        "courseFilter"
+                    );
+
+                const section =
+                    selectedFilter(
+                        "sectionFilter"
+                    );
+
+                return (
+                    (!schoolYear ||
+                        normalize(info.schoolYear) ===
+                            schoolYear) &&
+                    (!program ||
+                        normalize(info.program) ===
+                            program) &&
+                    (!course ||
+                        normalize(info.course) ===
+                            course) &&
+                    (!section ||
+                        normalize(info.section) ===
+                            section)
+                );
             }
-        );
 
-        const rows =
-            Object.values(students)
-                .filter(
-                    function (student) {
-                        if(!query) {
-                            return true;
-                        }
+            function getFilteredResponses() {
+                return readArray(
+                    responseStorageKey
+                ).filter(
+                    responseMatchesFilters
+                );
+            }
 
-                        const info =
-                            student.info || {};
+            function emptySummaryRow() {
+                return `
+                    <tr class="sodh-empty-row">
+                        <td colspan="3">
+                            <strong>No SO results yet</strong>
+                            Student Outcome attainment results
+                            will appear here once assessment
+                            data is available.
+                        </td>
+                    </tr>
+                `;
+            }
 
-                        const haystack = [
-                            info.studentName,
-                            info.program,
-                            info.course,
-                            info.section
-                        ].join(" ")
-                            .toLowerCase();
+            function emptyStudentRow() {
+                return `
+                    <tr class="sodh-empty-row">
+                        <td colspan="7">
+                            <strong>No student responses yet</strong>
+                            Student responses will appear here
+                            once assessment responses are available.
+                        </td>
+                    </tr>
+                `;
+            }
 
-                        return haystack.includes(
-                            query
+            function renderSOSummary() {
+                if(!soSummaryTableBody) {
+                    return;
+                }
+
+                const query =
+                    soSummarySearch
+                        ? normalize(
+                            soSummarySearch.value
+                        )
+                        : "";
+
+                const responses =
+                    getFilteredResponses();
+
+                const groups = {};
+
+                responses.forEach(
+                    function (response) {
+                        const so =
+                            safeText(
+                                response.studentOutcome
+                            ).toLowerCase();
+
+                        const answers =
+                            response.answers || {};
+
+                        const descriptions =
+                            Array.isArray(
+                                response.indicatorDescriptions
+                            )
+                                ? response.indicatorDescriptions
+                                : [];
+
+                        Object.keys(answers).forEach(
+                            function (answerKey) {
+                                const indicatorMatch =
+                                    answerKey.match(
+                                        /(\d+)$/
+                                    );
+
+                                const indicatorNumber =
+                                    indicatorMatch
+                                        ? Number(
+                                            indicatorMatch[1]
+                                        )
+                                        : 0;
+
+                                const description =
+                                    descriptions[
+                                        Math.max(
+                                            indicatorNumber - 1,
+                                            0
+                                        )
+                                    ] ||
+                                    (
+                                        "Performance Indicator " +
+                                        indicatorNumber
+                                    );
+
+                                const groupKey =
+                                    so +
+                                    "|" +
+                                    indicatorNumber +
+                                    "|" +
+                                    description;
+
+                                if(!groups[groupKey]) {
+                                    groups[groupKey] = {
+                                        so: so,
+                                        indicatorNumber:
+                                            indicatorNumber,
+                                        description:
+                                            description,
+                                        total: 0,
+                                        count: 0
+                                    };
+                                }
+
+                                const score =
+                                    Number(
+                                        answers[answerKey]
+                                    );
+
+                                if(
+                                    Number.isFinite(score) &&
+                                    score > 0
+                                ) {
+                                    groups[groupKey].total +=
+                                        score;
+
+                                    groups[groupKey].count +=
+                                        1;
+                                }
+                            }
                         );
                     }
                 );
 
-        if(!rows.length) {
-            studentResponsesTableBody.innerHTML =
-                emptyStudentRow();
+                const rows =
+                    Object.values(groups)
+                        .filter(
+                            function (group) {
+                                if(!query) {
+                                    return true;
+                                }
 
-            return;
-        }
+                                const haystack =
+                                    (
+                                        "SO (" +
+                                        group.so +
+                                        ") " +
+                                        group.indicatorNumber +
+                                        " " +
+                                        group.description
+                                    ).toLowerCase();
 
-        studentResponsesTableBody.innerHTML =
-            rows.map(
-                function (student) {
-                    const info =
-                        student.info || {};
+                                return haystack.includes(
+                                    query
+                                );
+                            }
+                        )
+                        .sort(
+                            function (a, b) {
+                                if(a.so !== b.so) {
+                                    return a.so.localeCompare(
+                                        b.so
+                                    );
+                                }
 
-                    const completed =
-                        student.completed.size;
-
-                    const assigned =
-                        getAssignedSOCount(
-                            info.course
+                                return (
+                                    a.indicatorNumber -
+                                    b.indicatorNumber
+                                );
+                            }
                         );
 
-                    const total =
-                        Math.max(
-                            assigned,
-                            completed
+                if(!rows.length) {
+                    soSummaryTableBody.innerHTML =
+                        emptySummaryRow();
+
+                    return;
+                }
+
+                soSummaryTableBody.innerHTML =
+                    rows.map(
+                        function (group) {
+                            const average =
+                                group.count
+                                    ? (
+                                        group.total /
+                                        group.count
+                                    )
+                                    : 0;
+
+                            /* Ratings are 1-3.
+                               Convert the average rating to a 0-100 attainment rate. */
+                            const attainment =
+                                Math.max(
+                                    0,
+                                    Math.min(
+                                        100,
+                                        (
+                                            average /
+                                            3
+                                        ) * 100
+                                    )
+                                );
+
+                            const percent =
+                                Math.round(
+                                    attainment
+                                );
+
+                            return `
+                                <tr>
+                                    <td>
+                                        <span class="sodh-so-code">
+                                            SO (${escapeDeptHTML(group.so)})
+                                            - ${group.indicatorNumber}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="sodh-so-description">
+                                            ${escapeDeptHTML(group.description)}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="sodh-attainment">
+                                            <div
+                                                class="sodh-attainment-track"
+                                                aria-label="Attainment ${percent}%"
+                                            >
+                                                <span
+                                                    class="sodh-attainment-fill"
+                                                    style="--attainment:${percent}%"
+                                                ></span>
+                                            </div>
+                                            <span class="sodh-attainment-value">
+                                                ${percent}%
+                                            </span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+                        }
+                    ).join("");
+            }
+
+            function getAssignedSOCount(course) {
+                const outcomes =
+                    readArray(
+                        outcomeStorageKey
+                    );
+
+                const courseName =
+                    normalize(course);
+
+                const courseOutcomes =
+                    outcomes.filter(
+                        function (outcome) {
+                            const outcomeCourse =
+                                normalize(
+                                    outcome.course
+                                );
+
+                            return (
+                                !courseName ||
+                                !outcomeCourse ||
+                                outcomeCourse ===
+                                    courseName
+                            );
+                        }
+                    );
+
+                const uniqueCodes =
+                    new Set(
+                        courseOutcomes.map(
+                            function (outcome) {
+                                return normalize(
+                                    outcome.code ||
+                                    outcome.studentOutcome ||
+                                    (
+                                        safeText(
+                                            outcome.title
+                                        ).match(
+                                            /outcome\s*\((g1|g2|[a-l])\)/i
+                                        ) || []
+                                    )[1] ||
+                                    outcome.id
+                                );
+                            }
+                        ).filter(Boolean)
+                    );
+
+                return uniqueCodes.size;
+            }
+
+            function renderStudentResponses() {
+                if(!studentResponsesTableBody) {
+                    return;
+                }
+
+                const query =
+                    studentResponseSearch
+                        ? normalize(
+                            studentResponseSearch.value
+                        )
+                        : "";
+
+                const responses =
+                    getFilteredResponses();
+
+                const students = {};
+
+                responses.forEach(
+                    function (response) {
+                        const info =
+                            response.studentInformation ||
+                            {};
+
+                        const key = [
+                            normalize(
+                                info.studentName
+                            ) || "student",
+                            normalize(
+                                info.course
+                            ) || "course",
+                            normalize(
+                                info.section
+                            ) || "section"
+                        ].join("|");
+
+                        if(!students[key]) {
+                            students[key] = {
+                                info: info,
+                                completed:
+                                    new Set()
+                            };
+                        }
+
+                        if(response.studentOutcome) {
+                            students[key].completed.add(
+                                normalize(
+                                    response.studentOutcome
+                                )
+                            );
+                        }
+                    }
+                );
+
+                const rows =
+                    Object.values(students)
+                        .filter(
+                            function (student) {
+                                if(!query) {
+                                    return true;
+                                }
+
+                                const info =
+                                    student.info || {};
+
+                                const haystack = [
+                                    info.studentName,
+                                    info.program,
+                                    info.course,
+                                    info.section
+                                ].join(" ")
+                                    .toLowerCase();
+
+                                return haystack.includes(
+                                    query
+                                );
+                            }
                         );
 
-                    const percent =
-                        total > 0
-                            ? Math.round(
-                                (
-                                    completed /
-                                    total
-                                ) * 100
-                            )
-                            : 0;
+                if(!rows.length) {
+                    studentResponsesTableBody.innerHTML =
+                        emptyStudentRow();
 
-                    const isComplete =
-                        total > 0 &&
-                        completed >= total;
-
-                    const status =
-                        isComplete
-                            ? "Complete"
-                            : "Incomplete";
-
-                    const statusClass =
-                        isComplete
-                            ? "complete"
-                            : "incomplete";
-
-                    return `
-                        <tr>
-                            <td>
-                                <strong>
-                                    ${escapeDeptHTML(info.studentName || "—")}
-                                </strong>
-                            </td>
-                            <td>
-                                ${escapeDeptHTML(info.program || "—")}
-                            </td>
-                            <td>
-                                ${escapeDeptHTML(info.course || "—")}
-                            </td>
-                            <td>
-                                ${escapeDeptHTML(info.section || "—")}
-                            </td>
-                            <td>
-                                <span class="sodh-progress-text">
-                                    ${completed} / ${total}
-                                </span>
-                            </td>
-                            <td>
-                                <div class="sodh-completion">
-                                    <div class="sodh-completion-track">
-                                        <span
-                                            class="sodh-completion-fill"
-                                            style="--completion:${percent}%"
-                                        ></span>
-                                    </div>
-                                    <span class="sodh-completion-value">
-                                        ${percent}%
-                                    </span>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="sodh-response-status ${statusClass}">
-                                    ${status}
-                                </span>
-                            </td>
-                        </tr>
-                    `;
+                    return;
                 }
-            ).join("");
-    }
 
-    function renderDepartmentHeadSOData() {
-        renderSOSummary();
-        renderStudentResponses();
-    }
+                studentResponsesTableBody.innerHTML =
+                    rows.map(
+                        function (student) {
+                            const info =
+                                student.info || {};
 
-    [
-        "schoolYearFilter",
-        "departmentFilter",
-        "programFilter",
-        "courseFilter",
-        "sectionFilter"
-    ].forEach(
-        function (id) {
-            const field =
-                document.getElementById(id);
+                            const completed =
+                                student.completed.size;
 
-            if(field) {
-                field.addEventListener(
-                    "change",
-                    renderDepartmentHeadSOData
+                            const assigned =
+                                getAssignedSOCount(
+                                    info.course
+                                );
+
+                            const total =
+                                Math.max(
+                                    assigned,
+                                    completed
+                                );
+
+                            const percent =
+                                total > 0
+                                    ? Math.round(
+                                        (
+                                            completed /
+                                            total
+                                        ) * 100
+                                    )
+                                    : 0;
+
+                            const isComplete =
+                                total > 0 &&
+                                completed >= total;
+
+                            const status =
+                                isComplete
+                                    ? "Complete"
+                                    : "Incomplete";
+
+                            const statusClass =
+                                isComplete
+                                    ? "complete"
+                                    : "incomplete";
+
+                            return `
+                                <tr>
+                                    <td>
+                                        <strong>
+                                            ${escapeDeptHTML(info.studentName || "—")}
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        ${escapeDeptHTML(info.program || "—")}
+                                    </td>
+                                    <td>
+                                        ${escapeDeptHTML(info.course || "—")}
+                                    </td>
+                                    <td>
+                                        ${escapeDeptHTML(info.section || "—")}
+                                    </td>
+                                    <td>
+                                        <span class="sodh-progress-text">
+                                            ${completed} / ${total}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="sodh-completion">
+                                            <div class="sodh-completion-track">
+                                                <span
+                                                    class="sodh-completion-fill"
+                                                    style="--completion:${percent}%"
+                                                ></span>
+                                            </div>
+                                            <span class="sodh-completion-value">
+                                                ${percent}%
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="sodh-response-status ${statusClass}">
+                                            ${status}
+                                        </span>
+                                    </td>
+                                </tr>
+                            `;
+                        }
+                    ).join("");
+            }
+
+            function renderDepartmentHeadSOData() {
+                renderSOSummary();
+                renderStudentResponses();
+            }
+
+            [
+                "schoolYearFilter",
+                "departmentFilter",
+                "programFilter",
+                "courseFilter",
+                "sectionFilter"
+            ].forEach(
+                function (id) {
+                    const field =
+                        document.getElementById(id);
+
+                    if(field) {
+                        field.addEventListener(
+                            "change",
+                            renderDepartmentHeadSOData
+                        );
+                    }
+                }
+            );
+
+            if(soSummarySearch) {
+                soSummarySearch.addEventListener(
+                    "input",
+                    renderSOSummary
                 );
             }
-        }
-    );
 
-    if(soSummarySearch) {
-        soSummarySearch.addEventListener(
-            "input",
-            renderSOSummary
-        );
-    }
-
-    if(studentResponseSearch) {
-        studentResponseSearch.addEventListener(
-            "input",
-            renderStudentResponses
-        );
-    }
-
-    window.addEventListener(
-        "storage",
-        function (event) {
-            if(
-                event.key ===
-                    responseStorageKey ||
-                event.key ===
-                    outcomeStorageKey
-            ) {
-                renderDepartmentHeadSOData();
-            }
-        }
-    );
-
-    renderDepartmentHeadSOData();
-});
-
-/* STUDENT OUTCOME SELF-ASSESSMENT — SHARED SO(A-L) */
-
-document.addEventListener("DOMContentLoaded", function () {
-    const assessmentPage = document.querySelector("body.soa-page");
-    const nextButton = document.getElementById("soaNextButton");
-
-    if(!assessmentPage || !nextButton) {
-        return;
-    }
-
-    const ratingInputs =
-        document.querySelectorAll(
-            '.soa-rating-option input[type="radio"]'
-        );
-
-    const totalScoreElement =
-        document.getElementById("soaTotalScore");
-
-    const percentageElement =
-        document.getElementById("soaPercentage");
-
-    const message =
-        document.getElementById("soaMessage");
-
-    const indicatorNames =
-        Array.from(ratingInputs)
-            .map(function (input) {
-                return input.name;
-            })
-            .filter(function (name, index, names) {
-                return name && names.indexOf(name) === index;
-            });
-
-    const numberOfIndicators =
-        indicatorNames.length;
-
-    const maximumScore =
-        numberOfIndicators * 3;
-
-    const fileName =
-        window.location.pathname
-            .split("/")
-            .pop()
-            .toLowerCase();
-
-    const soMatch =
-        fileName.match(
-            /^so-(g1|g2|[a-l])\.html$/
-        );
-
-    const currentSO =
-        soMatch
-            ? soMatch[1]
-            : "a";
-
-    function calculateScore() {
-        let total = 0;
-
-        indicatorNames.forEach(function (name) {
-            const selected =
-                document.querySelector(
-                    'input[name="' + name + '"]:checked'
+            if(studentResponseSearch) {
+                studentResponseSearch.addEventListener(
+                    "input",
+                    renderStudentResponses
                 );
-
-            if(selected) {
-                total += Number(selected.value);
             }
+
+            window.addEventListener(
+                "storage",
+                function (event) {
+                    if(
+                        event.key ===
+                            responseStorageKey ||
+                        event.key ===
+                            outcomeStorageKey
+                    ) {
+                        renderDepartmentHeadSOData();
+                    }
+                }
+            );
+
+            renderDepartmentHeadSOData();
         });
 
-        const percentage =
-            maximumScore > 0
-                ? (total / maximumScore) * 100
-                : 0;
+        /* STUDENT OUTCOME SELF-ASSESSMENT — SHARED SO(A-L) */
 
-        if(totalScoreElement) {
-            totalScoreElement.textContent =
-                total + " / " + maximumScore;
-        }
+        document.addEventListener("DOMContentLoaded", function () {
+            const assessmentPage = document.querySelector("body.soa-page");
+            const nextButton = document.getElementById("soaNextButton");
 
-        if(percentageElement) {
-            percentageElement.textContent =
-                total === 0
-                    ? "0%"
-                    : percentage.toFixed(2) + "%";
-        }
-
-        return total;
-    }
-
-    function assessmentComplete() {
-        return indicatorNames.every(
-            function (name) {
-                return Boolean(
-                    document.querySelector(
-                        'input[name="' + name + '"]:checked'
-                    )
-                );
-            }
-        );
-    }
-
-    function getStudentInformation() {
-        const fields = {
-            studentName: "soaStudentName",
-            program: "soaProgram",
-            course: "soaCourse",
-            section: "soaSection",
-            semester: "soaSemester",
-            schoolYear: "soaSchoolYear"
-        };
-
-        const information = {};
-
-        Object.keys(fields).forEach(function (key) {
-            const field =
-                document.getElementById(
-                    fields[key]
-                );
-
-            information[key] =
-                field
-                    ? (
-                        field.value ||
-                        field.textContent ||
-                        ""
-                    ).trim()
-                    : "";
-        });
-
-        return information;
-    }
-
-    ratingInputs.forEach(function (input) {
-        input.addEventListener(
-            "change",
-            function () {
-                calculateScore();
-
-                if(message) {
-                    message.classList.remove("show");
-                }
-            }
-        );
-    });
-
-    nextButton.addEventListener(
-        "click",
-        function () {
-            if(!assessmentComplete()) {
-                if(message) {
-                    message.classList.add("show");
-
-                    message.scrollIntoView({
-                        behavior: "smooth",
-                        block: "center"
-                    });
-                }
-
+            if(!assessmentPage || !nextButton) {
                 return;
             }
 
-            const answers = {};
-            let total = 0;
+            const ratingInputs =
+                document.querySelectorAll(
+                    '.soa-rating-option input[type="radio"]'
+                );
 
-            indicatorNames.forEach(
-                function (name, index) {
+            const totalScoreElement =
+                document.getElementById("soaTotalScore");
+
+            const percentageElement =
+                document.getElementById("soaPercentage");
+
+            const message =
+                document.getElementById("soaMessage");
+
+            const indicatorNames =
+                Array.from(ratingInputs)
+                    .map(function (input) {
+                        return input.name;
+                    })
+                    .filter(function (name, index, names) {
+                        return name && names.indexOf(name) === index;
+                    });
+
+            const numberOfIndicators =
+                indicatorNames.length;
+
+            const maximumScore =
+                numberOfIndicators * 3;
+
+            const fileName =
+                window.location.pathname
+                    .split("/")
+                    .pop()
+                    .toLowerCase();
+
+            const soMatch =
+                fileName.match(
+                    /^so-(g1|g2|[a-l])\.html$/
+                );
+
+            const currentSO =
+                soMatch
+                    ? soMatch[1]
+                    : "a";
+
+            function calculateScore() {
+                let total = 0;
+
+                indicatorNames.forEach(function (name) {
                     const selected =
                         document.querySelector(
                             'input[name="' + name + '"]:checked'
                         );
 
-                    const score =
-                        Number(selected.value);
+                    if(selected) {
+                        total += Number(selected.value);
+                    }
+                });
 
-                    answers[
-                        "indicator" + (index + 1)
-                    ] = score;
+                const percentage =
+                    maximumScore > 0
+                        ? (total / maximumScore) * 100
+                        : 0;
 
-                    total += score;
+                if(totalScoreElement) {
+                    totalScoreElement.textContent =
+                        total + " / " + maximumScore;
                 }
-            );
 
-            const indicatorDescriptions =
-                Array.from(
-                    document.querySelectorAll(
-                        ".soa-question"
-                    )
-                ).map(
-                    function (question) {
-                        const title =
-                            question.querySelector(
-                                ".soa-question-title"
-                            );
+                if(percentageElement) {
+                    percentageElement.textContent =
+                        total === 0
+                            ? "0%"
+                            : percentage.toFixed(2) + "%";
+                }
 
-                        if(!title) {
-                            return "";
-                        }
+                return total;
+            }
 
-                        const clone =
-                            title.cloneNode(true);
-
-                        const number =
-                            clone.querySelector(
-                                ".soa-question-number"
-                            );
-
-                        if(number) {
-                            number.remove();
-                        }
-
-                        return clone.textContent
-                            .replace(/\s+/g, " ")
-                            .trim();
+            function assessmentComplete() {
+                return indicatorNames.every(
+                    function (name) {
+                        return Boolean(
+                            document.querySelector(
+                                'input[name="' + name + '"]:checked'
+                            )
+                        );
                     }
                 );
-
-            const assessmentData = {
-                studentOutcome: currentSO,
-                studentInformation:
-                    getStudentInformation(),
-                answers: answers,
-                indicatorDescriptions:
-                    indicatorDescriptions,
-                totalScore: total,
-                maximumScore: maximumScore,
-                percentage:
-                    maximumScore > 0
-                        ? Number(
-                            (
-                                (total / maximumScore) *
-                                100
-                            ).toFixed(2)
-                        )
-                        : 0
-            };
-
-            sessionStorage.setItem(
-                "currentSOAssessment",
-                JSON.stringify(
-                    assessmentData
-                )
-            );
-
-            window.location.href =
-                "page-2.html?so=" +
-                encodeURIComponent(currentSO);
-        }
-    );
-
-    calculateScore();
-});
-
-
-/* STUDENT OUTCOME REFLECTION — SHARED PAGE 2 */
-
-document.addEventListener("DOMContentLoaded", function () {
-    const answer1 =
-        document.getElementById("reflectionAnswer1");
-
-    const answer2 =
-        document.getElementById("reflectionAnswer2");
-
-    const submitButton =
-        document.getElementById("reflectionSubmitButton");
-
-    const backButton =
-        document.getElementById("reflectionBackButton");
-
-    if(
-        !answer1 ||
-        !answer2 ||
-        !submitButton ||
-        !backButton
-    ) {
-        return;
-    }
-
-    const params =
-        new URLSearchParams(
-            window.location.search
-        );
-
-    const currentSO =
-        params.get("so") || "a";
-
-    const validStudentOutcomes = [
-        "a",
-        "b",
-        "c",
-        "d",
-        "e",
-        "f",
-        "g1",
-        "g2",
-        "h",
-        "i",
-        "j",
-        "k",
-        "l"
-    ];
-
-    const dateInput =
-        document.getElementById("reflectionDate");
-
-    const message =
-        document.getElementById("reflectionMessage");
-
-    const form =
-        document.getElementById("reflectionForm");
-
-    const success =
-        document.getElementById("reflectionSuccess");
-
-    const actions =
-        document.getElementById("reflectionActions");
-
-    const signatureCanvas =
-        document.getElementById("studentSignature");
-
-    const clearSignatureButton =
-        document.getElementById("clearSignatureButton");
-
-    let signatureContext = null;
-    let isDrawing = false;
-    let hasSignature = false;
-
-    backButton.addEventListener(
-        "click",
-        function () {
-            if(
-                currentSO &&
-                validStudentOutcomes.includes(currentSO)
-            ) {
-                window.location.href =
-                    "so-" + currentSO + ".html";
-
-                return;
             }
 
-            window.location.href =
-                "../so-student.html";
-        }
-    );
+            function getStudentInformation() {
+                const fields = {
+                    studentName: "soaStudentName",
+                    program: "soaProgram",
+                    course: "soaCourse",
+                    section: "soaSection",
+                    semester: "soaSemester",
+                    schoolYear: "soaSchoolYear"
+                };
 
-    function hideMessage() {
-        const dateComplete =
-            !dateInput || dateInput.value;
+                const information = {};
 
-        const signatureComplete =
-            !signatureCanvas || hasSignature;
+                Object.keys(fields).forEach(function (key) {
+                    const field =
+                        document.getElementById(
+                            fields[key]
+                        );
 
-        if(
-            answer1.value.trim() &&
-            answer2.value.trim() &&
-            dateComplete &&
-            signatureComplete &&
-            message
-        ) {
-            message.classList.remove("show");
-        }
-    }
+                    information[key] =
+                        field
+                            ? (
+                                field.value ||
+                                field.textContent ||
+                                ""
+                            ).trim()
+                            : "";
+                });
 
-    answer1.addEventListener(
-        "input",
-        hideMessage
-    );
+                return information;
+            }
 
-    answer2.addEventListener(
-        "input",
-        hideMessage
-    );
+            ratingInputs.forEach(function (input) {
+                input.addEventListener(
+                    "change",
+                    function () {
+                        calculateScore();
 
-    if(dateInput) {
-        dateInput.addEventListener(
-            "input",
-            hideMessage
-        );
-    }
-
-    if(signatureCanvas) {
-        signatureContext =
-            signatureCanvas.getContext("2d");
-
-        function resizeSignatureCanvas() {
-            const rect =
-                signatureCanvas.getBoundingClientRect();
-
-            const ratio =
-                Math.max(
-                    window.devicePixelRatio || 1,
-                    1
+                        if(message) {
+                            message.classList.remove("show");
+                        }
+                    }
                 );
+            });
 
-            signatureCanvas.width =
-                rect.width * ratio;
-
-            signatureCanvas.height =
-                rect.height * ratio;
-
-            signatureContext.setTransform(
-                ratio,
-                0,
-                0,
-                ratio,
-                0,
-                0
-            );
-
-            signatureContext.lineWidth = 2;
-            signatureContext.lineCap = "round";
-            signatureContext.lineJoin = "round";
-            signatureContext.strokeStyle =
-                "#173B5C";
-        }
-
-        function getSignaturePosition(event) {
-            const rect =
-                signatureCanvas.getBoundingClientRect();
-
-            return {
-                x: event.clientX - rect.left,
-                y: event.clientY - rect.top
-            };
-        }
-
-        signatureCanvas.addEventListener(
-            "pointerdown",
-            function (event) {
-                const position =
-                    getSignaturePosition(event);
-
-                isDrawing = true;
-
-                signatureContext.beginPath();
-                signatureContext.moveTo(
-                    position.x,
-                    position.y
-                );
-
-                signatureCanvas.setPointerCapture(
-                    event.pointerId
-                );
-            }
-        );
-
-        signatureCanvas.addEventListener(
-            "pointermove",
-            function (event) {
-                if(!isDrawing) {
-                    return;
-                }
-
-                const position =
-                    getSignaturePosition(event);
-
-                signatureContext.lineTo(
-                    position.x,
-                    position.y
-                );
-
-                signatureContext.stroke();
-
-                hasSignature = true;
-                hideMessage();
-            }
-        );
-
-        signatureCanvas.addEventListener(
-            "pointerup",
-            function (event) {
-                isDrawing = false;
-
-                if(
-                    signatureCanvas.hasPointerCapture(
-                        event.pointerId
-                    )
-                ) {
-                    signatureCanvas.releasePointerCapture(
-                        event.pointerId
-                    );
-                }
-            }
-        );
-
-        signatureCanvas.addEventListener(
-            "pointercancel",
-            function () {
-                isDrawing = false;
-            }
-        );
-
-        if(clearSignatureButton) {
-            clearSignatureButton.addEventListener(
+            nextButton.addEventListener(
                 "click",
                 function () {
-                    signatureContext.clearRect(
-                        0,
-                        0,
-                        signatureCanvas.width,
-                        signatureCanvas.height
-                    );
+                    if(!assessmentComplete()) {
+                        if(message) {
+                            message.classList.add("show");
 
-                    hasSignature = false;
-                }
-            );
-        }
+                            message.scrollIntoView({
+                                behavior: "smooth",
+                                block: "center"
+                            });
+                        }
 
-        resizeSignatureCanvas();
-    }
-
-    submitButton.addEventListener(
-        "click",
-        function () {
-            const firstAnswer =
-                answer1.value.trim();
-
-            const secondAnswer =
-                answer2.value.trim();
-
-            const selectedDate =
-                dateInput
-                    ? dateInput.value
-                    : "";
-
-            const missingDate =
-                dateInput && !selectedDate;
-
-            const missingSignature =
-                signatureCanvas && !hasSignature;
-
-            if(
-                !firstAnswer ||
-                !secondAnswer ||
-                missingDate ||
-                missingSignature
-            ) {
-                if(message) {
-                    message.classList.add("show");
-
-                    message.scrollIntoView({
-                        behavior: "smooth",
-                        block: "center"
-                    });
-                }
-
-                return;
-            }
-
-            let assessmentData = {};
-
-            const storedAssessment =
-                sessionStorage.getItem(
-                    "currentSOAssessment"
-                );
-
-            if(storedAssessment) {
-                try {
-                    assessmentData =
-                        JSON.parse(
-                            storedAssessment
-                        );
-                }
-                catch(error) {
-                    assessmentData = {};
-                }
-            }
-
-            assessmentData.studentOutcome =
-                currentSO;
-
-            assessmentData.reflection = {
-                bestPerformanceIndicator:
-                    firstAnswer,
-                weakestPerformanceIndicator:
-                    secondAnswer,
-                signature:
-                    signatureCanvas
-                        ? signatureCanvas.toDataURL(
-                            "image/png"
-                        )
-                        : "",
-                date: selectedDate,
-                submittedAt:
-                    new Date().toISOString()
-            };
-
-            sessionStorage.setItem(
-                "completedSOAssessment",
-                JSON.stringify(
-                    assessmentData
-                )
-            );
-
-            /* CHANGE THIS LATER:
-               Replace localStorage with backend/API storage.
-               The Department Head page reads this frontend data for now. */
-            const responseStorageKey =
-                "eduMetricsSOResponses";
-
-            let storedResponses = [];
-
-            try {
-                const stored =
-                    localStorage.getItem(
-                        responseStorageKey
-                    );
-
-                const parsed =
-                    stored
-                        ? JSON.parse(stored)
-                        : [];
-
-                storedResponses =
-                    Array.isArray(parsed)
-                        ? parsed
-                        : [];
-            }
-            catch(error) {
-                storedResponses = [];
-            }
-
-            const studentInfo =
-                assessmentData.studentInformation ||
-                {};
-
-            const responseId = [
-                (
-                    studentInfo.studentName ||
-                    "student"
-                ).trim().toLowerCase(),
-                (
-                    studentInfo.course ||
-                    "course"
-                ).trim().toLowerCase(),
-                currentSO
-            ].join("|");
-
-            assessmentData.responseId =
-                responseId;
-
-            assessmentData.completedAt =
-                new Date().toISOString();
-
-            const existingIndex =
-                storedResponses.findIndex(
-                    function (response) {
-                        return (
-                            response.responseId ===
-                            responseId
-                        );
+                        return;
                     }
-                );
 
-            if(existingIndex >= 0) {
-                storedResponses[existingIndex] =
-                    assessmentData;
-            }
-            else {
-                storedResponses.push(
-                    assessmentData
-                );
-            }
+                    const answers = {};
+                    let total = 0;
 
-            localStorage.setItem(
-                responseStorageKey,
-                JSON.stringify(
-                    storedResponses
-                )
-            );
-
-            if(form) {
-                form.style.display = "none";
-            }
-
-            if(actions) {
-                actions.style.display = "none";
-            }
-
-            if(success) {
-                success.classList.add("show");
-            }
-        }
-    );
-});
-
-/* SUPPORT PAGE */
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-        const supportSearch =
-            getElement(
-                "supportSearch"
-            );
-
-        const supportCards =
-            Array.from(
-                document.querySelectorAll(
-                    ".support-topic-card"
-                )
-            );
-
-        const supportNoResults =
-            getElement(
-                "supportNoResults"
-            );
-
-        const supportReportCard =
-            getElement(
-                "supportReportCard"
-            );
-
-        const supportReportForm =
-            getElement(
-                "supportReportForm"
-            );
-
-        const supportFormMessage =
-            getElement(
-                "supportFormMessage"
-            );
-
-        if (supportSearch) {
-            supportSearch.addEventListener(
-                "input",
-                function () {
-                    const query =
-                        supportSearch.value
-                            .trim()
-                            .toLowerCase();
-
-                    let visibleCount = 0;
-
-                    supportCards.forEach(
-                        function (card) {
-                            const searchableText =
-                                (
-                                    card.dataset.supportSearch ||
-                                    card.textContent ||
-                                    ""
-                                ).toLowerCase();
-
-                            const matches =
-                                !query ||
-                                searchableText.includes(
-                                    query
+                    indicatorNames.forEach(
+                        function (name, index) {
+                            const selected =
+                                document.querySelector(
+                                    'input[name="' + name + '"]:checked'
                                 );
 
-                            card.hidden =
-                                !matches;
+                            const score =
+                                Number(selected.value);
 
-                            if (matches) {
-                                visibleCount += 1;
-                            }
+                            answers[
+                                "indicator" + (index + 1)
+                            ] = score;
+
+                            total += score;
                         }
                     );
 
-                    if (supportNoResults) {
-                        supportNoResults.hidden =
-                            visibleCount !== 0;
-                    }
+                    const indicatorDescriptions =
+                        Array.from(
+                            document.querySelectorAll(
+                                ".soa-question"
+                            )
+                        ).map(
+                            function (question) {
+                                const title =
+                                    question.querySelector(
+                                        ".soa-question-title"
+                                    );
+
+                                if(!title) {
+                                    return "";
+                                }
+
+                                const clone =
+                                    title.cloneNode(true);
+
+                                const number =
+                                    clone.querySelector(
+                                        ".soa-question-number"
+                                    );
+
+                                if(number) {
+                                    number.remove();
+                                }
+
+                                return clone.textContent
+                                    .replace(/\s+/g, " ")
+                                    .trim();
+                            }
+                        );
+
+                    const assessmentData = {
+                        studentOutcome: currentSO,
+                        studentInformation:
+                            getStudentInformation(),
+                        answers: answers,
+                        indicatorDescriptions:
+                            indicatorDescriptions,
+                        totalScore: total,
+                        maximumScore: maximumScore,
+                        percentage:
+                            maximumScore > 0
+                                ? Number(
+                                    (
+                                        (total / maximumScore) *
+                                        100
+                                    ).toFixed(2)
+                                )
+                                : 0
+                    };
+
+                    sessionStorage.setItem(
+                        "currentSOAssessment",
+                        JSON.stringify(
+                            assessmentData
+                        )
+                    );
+
+                    window.location.href =
+                        "page-2.html?so=" +
+                        encodeURIComponent(currentSO);
                 }
             );
-        }
 
-        document.querySelectorAll(
-            ".support-topic-link"
-        ).forEach(
-            function (button) {
-                button.addEventListener(
-                    "click",
-                    function () {
-                        const topic =
-                            button.dataset.supportTopic;
+            calculateScore();
+        });
 
-                        if (
-                            topic ===
-                            "report-problem"
-                        ) {
-                            if (supportReportCard) {
-                                supportReportCard.scrollIntoView(
-                                    {
-                                        behavior:
-                                            "smooth",
-                                        block:
-                                            "start"
-                                    }
-                                );
-                            }
 
+        /* STUDENT OUTCOME REFLECTION — SHARED PAGE 2 */
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const answer1 =
+                document.getElementById("reflectionAnswer1");
+
+            const answer2 =
+                document.getElementById("reflectionAnswer2");
+
+            const submitButton =
+                document.getElementById("reflectionSubmitButton");
+
+            const backButton =
+                document.getElementById("reflectionBackButton");
+
+            if(
+                !answer1 ||
+                !answer2 ||
+                !submitButton ||
+                !backButton
+            ) {
+                return;
+            }
+
+            const params =
+                new URLSearchParams(
+                    window.location.search
+                );
+
+            const currentSO =
+                params.get("so") || "a";
+
+            const validStudentOutcomes = [
+                "a",
+                "b",
+                "c",
+                "d",
+                "e",
+                "f",
+                "g1",
+                "g2",
+                "h",
+                "i",
+                "j",
+                "k",
+                "l"
+            ];
+
+            const dateInput =
+                document.getElementById("reflectionDate");
+
+            const message =
+                document.getElementById("reflectionMessage");
+
+            const form =
+                document.getElementById("reflectionForm");
+
+            const success =
+                document.getElementById("reflectionSuccess");
+
+            const actions =
+                document.getElementById("reflectionActions");
+
+            const signatureCanvas =
+                document.getElementById("studentSignature");
+
+            const clearSignatureButton =
+                document.getElementById("clearSignatureButton");
+
+            let signatureContext = null;
+            let isDrawing = false;
+            let hasSignature = false;
+
+            backButton.addEventListener(
+                "click",
+                function () {
+                    if(
+                        currentSO &&
+                        validStudentOutcomes.includes(currentSO)
+                    ) {
+                        window.location.href =
+                            "so-" + currentSO + ".html";
+
+                        return;
+                    }
+
+                    window.location.href =
+                        "../so-student.html";
+                }
+            );
+
+            function hideMessage() {
+                const dateComplete =
+                    !dateInput || dateInput.value;
+
+                const signatureComplete =
+                    !signatureCanvas || hasSignature;
+
+                if(
+                    answer1.value.trim() &&
+                    answer2.value.trim() &&
+                    dateComplete &&
+                    signatureComplete &&
+                    message
+                ) {
+                    message.classList.remove("show");
+                }
+            }
+
+            answer1.addEventListener(
+                "input",
+                hideMessage
+            );
+
+            answer2.addEventListener(
+                "input",
+                hideMessage
+            );
+
+            if(dateInput) {
+                dateInput.addEventListener(
+                    "input",
+                    hideMessage
+                );
+            }
+
+            if(signatureCanvas) {
+                signatureContext =
+                    signatureCanvas.getContext("2d");
+
+                function resizeSignatureCanvas() {
+                    const rect =
+                        signatureCanvas.getBoundingClientRect();
+
+                    const ratio =
+                        Math.max(
+                            window.devicePixelRatio || 1,
+                            1
+                        );
+
+                    signatureCanvas.width =
+                        rect.width * ratio;
+
+                    signatureCanvas.height =
+                        rect.height * ratio;
+
+                    signatureContext.setTransform(
+                        ratio,
+                        0,
+                        0,
+                        ratio,
+                        0,
+                        0
+                    );
+
+                    signatureContext.lineWidth = 2;
+                    signatureContext.lineCap = "round";
+                    signatureContext.lineJoin = "round";
+                    signatureContext.strokeStyle =
+                        "#173B5C";
+                }
+
+                function getSignaturePosition(event) {
+                    const rect =
+                        signatureCanvas.getBoundingClientRect();
+
+                    return {
+                        x: event.clientX - rect.left,
+                        y: event.clientY - rect.top
+                    };
+                }
+
+                signatureCanvas.addEventListener(
+                    "pointerdown",
+                    function (event) {
+                        const position =
+                            getSignaturePosition(event);
+
+                        isDrawing = true;
+
+                        signatureContext.beginPath();
+                        signatureContext.moveTo(
+                            position.x,
+                            position.y
+                        );
+
+                        signatureCanvas.setPointerCapture(
+                            event.pointerId
+                        );
+                    }
+                );
+
+                signatureCanvas.addEventListener(
+                    "pointermove",
+                    function (event) {
+                        if(!isDrawing) {
                             return;
                         }
 
-                        const topicMessages = {
-                            "getting-started":
-                                "Getting Started guides will contain account setup, verification, and navigation instructions.",
-                            "account-login":
-                                "Account & Login help covers sign in, email verification, passwords, and account access.",
-                            "using-edumetrics":
-                                "Using EduMetrics guides cover syllabus, CO/SO assessments, grading, workflow, and course tools."
-                        };
+                        const position =
+                            getSignaturePosition(event);
 
-                        showGenericModal(
-                            "Support",
-                            topicMessages[topic] ||
-                                "Support information will be available here.",
-                            "?"
+                        signatureContext.lineTo(
+                            position.x,
+                            position.y
                         );
+
+                        signatureContext.stroke();
+
+                        hasSignature = true;
+                        hideMessage();
                     }
                 );
+
+                signatureCanvas.addEventListener(
+                    "pointerup",
+                    function (event) {
+                        isDrawing = false;
+
+                        if(
+                            signatureCanvas.hasPointerCapture(
+                                event.pointerId
+                            )
+                        ) {
+                            signatureCanvas.releasePointerCapture(
+                                event.pointerId
+                            );
+                        }
+                    }
+                );
+
+                signatureCanvas.addEventListener(
+                    "pointercancel",
+                    function () {
+                        isDrawing = false;
+                    }
+                );
+
+                if(clearSignatureButton) {
+                    clearSignatureButton.addEventListener(
+                        "click",
+                        function () {
+                            signatureContext.clearRect(
+                                0,
+                                0,
+                                signatureCanvas.width,
+                                signatureCanvas.height
+                            );
+
+                            hasSignature = false;
+                        }
+                    );
+                }
+
+                resizeSignatureCanvas();
             }
-        );
 
-        if (supportReportForm) {
-            supportReportForm.addEventListener(
-                "submit",
-                function (event) {
-                    event.preventDefault();
+            submitButton.addEventListener(
+                "click",
+                function () {
+                    const firstAnswer =
+                        answer1.value.trim();
 
-                    if (supportFormMessage) {
-                        supportFormMessage.textContent =
-                            "Your report is ready to be connected to the support backend.";
+                    const secondAnswer =
+                        answer2.value.trim();
+
+                    const selectedDate =
+                        dateInput
+                            ? dateInput.value
+                            : "";
+
+                    const missingDate =
+                        dateInput && !selectedDate;
+
+                    const missingSignature =
+                        signatureCanvas && !hasSignature;
+
+                    if(
+                        !firstAnswer ||
+                        !secondAnswer ||
+                        missingDate ||
+                        missingSignature
+                    ) {
+                        if(message) {
+                            message.classList.add("show");
+
+                            message.scrollIntoView({
+                                behavior: "smooth",
+                                block: "center"
+                            });
+                        }
+
+                        return;
+                    }
+
+                    let assessmentData = {};
+
+                    const storedAssessment =
+                        sessionStorage.getItem(
+                            "currentSOAssessment"
+                        );
+
+                    if(storedAssessment) {
+                        try {
+                            assessmentData =
+                                JSON.parse(
+                                    storedAssessment
+                                );
+                        }
+                        catch(error) {
+                            assessmentData = {};
+                        }
+                    }
+
+                    assessmentData.studentOutcome =
+                        currentSO;
+
+                    assessmentData.reflection = {
+                        bestPerformanceIndicator:
+                            firstAnswer,
+                        weakestPerformanceIndicator:
+                            secondAnswer,
+                        signature:
+                            signatureCanvas
+                                ? signatureCanvas.toDataURL(
+                                    "image/png"
+                                )
+                                : "",
+                        date: selectedDate,
+                        submittedAt:
+                            new Date().toISOString()
+                    };
+
+                    sessionStorage.setItem(
+                        "completedSOAssessment",
+                        JSON.stringify(
+                            assessmentData
+                        )
+                    );
+
+                    /* CHANGE THIS LATER:
+                       Replace localStorage with backend/API storage.
+                       The Department Head page reads this frontend data for now. */
+                    const responseStorageKey =
+                        "eduMetricsSOResponses";
+
+                    let storedResponses = [];
+
+                    try {
+                        const stored =
+                            localStorage.getItem(
+                                responseStorageKey
+                            );
+
+                        const parsed =
+                            stored
+                                ? JSON.parse(stored)
+                                : [];
+
+                        storedResponses =
+                            Array.isArray(parsed)
+                                ? parsed
+                                : [];
+                    }
+                    catch(error) {
+                        storedResponses = [];
+                    }
+
+                    const studentInfo =
+                        assessmentData.studentInformation ||
+                        {};
+
+                    const responseId = [
+                        (
+                            studentInfo.studentName ||
+                            "student"
+                        ).trim().toLowerCase(),
+                        (
+                            studentInfo.course ||
+                            "course"
+                        ).trim().toLowerCase(),
+                        currentSO
+                    ].join("|");
+
+                    assessmentData.responseId =
+                        responseId;
+
+                    assessmentData.completedAt =
+                        new Date().toISOString();
+
+                    const existingIndex =
+                        storedResponses.findIndex(
+                            function (response) {
+                                return (
+                                    response.responseId ===
+                                    responseId
+                                );
+                            }
+                        );
+
+                    if(existingIndex >= 0) {
+                        storedResponses[existingIndex] =
+                            assessmentData;
+                    }
+                    else {
+                        storedResponses.push(
+                            assessmentData
+                        );
+                    }
+
+                    localStorage.setItem(
+                        responseStorageKey,
+                        JSON.stringify(
+                            storedResponses
+                        )
+                    );
+
+                    if(form) {
+                        form.style.display = "none";
+                    }
+
+                    if(actions) {
+                        actions.style.display = "none";
+                    }
+
+                    if(success) {
+                        success.classList.add("show");
                     }
                 }
             );
-        }
-    }
-);
+        });
 
+        /* SUPPORT PAGE */
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+                const supportSearch =
+                    getElement(
+                        "supportSearch"
+                    );
 
+                const supportCards =
+                    Array.from(
+                        document.querySelectorAll(
+                            ".support-topic-card"
+                        )
+                    );
 
-/* KEEP RENDERED STUDENT OUTCOME TITLES IN TITLE CASE */
-function normalizeRenderedStudentOutcomeTitles() {
-    const elements = document.querySelectorAll(
-        "#studentOutcomeTableBody td, " +
-        "#pendingSOList strong, " +
-        "#pendingSOList h3, " +
-        "#pendingSOList .so-pending-title"
-    );
+                const supportNoResults =
+                    getElement(
+                        "supportNoResults"
+                    );
 
-    elements.forEach(function (element) {
-        if (
-            element &&
-            /student outcome\s*\(/i.test(element.textContent || "")
-        ) {
-            element.textContent =
-                formatStudentOutcomeTitle(
-                    element.textContent
+                const supportReportCard =
+                    getElement(
+                        "supportReportCard"
+                    );
+
+                const supportReportForm =
+                    getElement(
+                        "supportReportForm"
+                    );
+
+                const supportFormMessage =
+                    getElement(
+                        "supportFormMessage"
+                    );
+
+                if (supportSearch) {
+                    supportSearch.addEventListener(
+                        "input",
+                        function () {
+                            const query =
+                                supportSearch.value
+                                    .trim()
+                                    .toLowerCase();
+
+                            let visibleCount = 0;
+
+                            supportCards.forEach(
+                                function (card) {
+                                    const searchableText =
+                                        (
+                                            card.dataset.supportSearch ||
+                                            card.textContent ||
+                                            ""
+                                        ).toLowerCase();
+
+                                    const matches =
+                                        !query ||
+                                        searchableText.includes(
+                                            query
+                                        );
+
+                                    card.hidden =
+                                        !matches;
+
+                                    if (matches) {
+                                        visibleCount += 1;
+                                    }
+                                }
+                            );
+
+                            if (supportNoResults) {
+                                supportNoResults.hidden =
+                                    visibleCount !== 0;
+                            }
+                        }
+                    );
+                }
+
+                document.querySelectorAll(
+                    ".support-topic-link"
+                ).forEach(
+                    function (button) {
+                        button.addEventListener(
+                            "click",
+                            function () {
+                                const topic =
+                                    button.dataset.supportTopic;
+
+                                if (
+                                    topic ===
+                                    "report-problem"
+                                ) {
+                                    if (supportReportCard) {
+                                        supportReportCard.scrollIntoView(
+                                            {
+                                                behavior:
+                                                    "smooth",
+                                                block:
+                                                    "start"
+                                            }
+                                        );
+                                    }
+
+                                    return;
+                                }
+
+                                const topicMessages = {
+                                    "getting-started":
+                                        "Getting Started guides will contain account setup, verification, and navigation instructions.",
+                                    "account-login":
+                                        "Account & Login help covers sign in, email verification, passwords, and account access.",
+                                    "using-edumetrics":
+                                        "Using EduMetrics guides cover syllabus, CO/SO assessments, grading, workflow, and course tools."
+                                };
+
+                                showGenericModal(
+                                    "Support",
+                                    topicMessages[topic] ||
+                                        "Support information will be available here.",
+                                    "?"
+                                );
+                            }
+                        );
+                    }
                 );
-        }
-    });
-}
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-        normalizeRenderedStudentOutcomeTitles();
+                if (supportReportForm) {
+                    supportReportForm.addEventListener(
+                        "submit",
+                        function (event) {
+                            event.preventDefault();
 
-        const observer =
-            new MutationObserver(
-                normalizeRenderedStudentOutcomeTitles
-            );
-
-        const facultyTable =
-            document.getElementById(
-                "studentOutcomeTableBody"
-            );
-
-        const studentList =
-            document.getElementById(
-                "pendingSOList"
-            );
-
-        [facultyTable, studentList].forEach(
-            function (target) {
-                if (target) {
-                    observer.observe(
-                        target,
-                        {
-                            childList: true,
-                            subtree: true
+                            if (supportFormMessage) {
+                                supportFormMessage.textContent =
+                                    "Your report is ready to be connected to the support backend.";
+                            }
                         }
                     );
                 }
             }
         );
-    }
-);
 
-/* SO Student Course Filters */
-function ensureSOStudentCourseFilters() {
-    const courseFilters = [
-        document.getElementById("studentCourseSort"),
-        document.getElementById("pendingSOCourseFilter")
-    ];
 
-    courseFilters.forEach(function (select) {
-        if (!select) {
-            return;
+
+        /* KEEP RENDERED STUDENT OUTCOME TITLES IN TITLE CASE */
+        function normalizeRenderedStudentOutcomeTitles() {
+            const elements = document.querySelectorAll(
+                "#studentOutcomeTableBody td, " +
+                "#pendingSOList strong, " +
+                "#pendingSOList h3, " +
+                "#pendingSOList .so-pending-title"
+            );
+
+            elements.forEach(function (element) {
+                if (
+                    element &&
+                    /student outcome\s*\(/i.test(element.textContent || "")
+                ) {
+                    const currentText =
+                        element.textContent;
+
+                    const formattedText =
+                        formatStudentOutcomeTitle(
+                            currentText
+                        );
+
+                    if(currentText !== formattedText) {
+                        element.textContent =
+                            formattedText;
+                    }
+                }
+            });
         }
 
-        const existingAllCourses = Array.from(select.options).find(
-            function (option) {
-                return option.textContent.trim().toLowerCase() === "all courses";
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+                normalizeRenderedStudentOutcomeTitles();
+
+                const observer =
+                    new MutationObserver(
+                        normalizeRenderedStudentOutcomeTitles
+                    );
+
+                const facultyTable =
+                    document.getElementById(
+                        "studentOutcomeTableBody"
+                    );
+
+                const studentList =
+                    document.getElementById(
+                        "pendingSOList"
+                    );
+
+                [facultyTable, studentList].forEach(
+                    function (target) {
+                        if (target) {
+                            observer.observe(
+                                target,
+                                {
+                                    childList: true,
+                                    subtree: true
+                                }
+                            );
+                        }
+                    }
+                );
             }
         );
 
-        if (!existingAllCourses) {
-            const allCoursesOption = document.createElement("option");
-            allCoursesOption.value = "";
-            allCoursesOption.textContent = "All Courses";
-            select.insertBefore(
-                allCoursesOption,
-                select.firstChild
-            );
+        /* SO Student Course Filters */
+        function ensureSOStudentCourseFilters() {
+            const courseFilters = [
+                document.getElementById("studentCourseSort"),
+                document.getElementById("pendingSOCourseFilter")
+            ];
+
+            courseFilters.forEach(function (select) {
+                if (!select) {
+                    return;
+                }
+
+                const existingAllCourses = Array.from(select.options).find(
+                    function (option) {
+                        return option.textContent.trim().toLowerCase() === "all courses";
+                    }
+                );
+
+                if (!existingAllCourses) {
+                    const allCoursesOption = document.createElement("option");
+                    allCoursesOption.value = "";
+                    allCoursesOption.textContent = "All Courses";
+                    select.insertBefore(
+                        allCoursesOption,
+                        select.firstChild
+                    );
+                }
+
+                if (!select.value) {
+                    select.value = "";
+                }
+            });
         }
 
-        if (!select.value) {
-            select.value = "";
-        }
-    });
-}
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-        ensureSOStudentCourseFilters();
-    }
-);
-
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+                ensureSOStudentCourseFilters();
+            }
+        );
