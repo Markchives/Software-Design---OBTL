@@ -48,21 +48,7 @@
                     class="header-action-icon"
                 >
 
-                <span>Support</span>
-            </button>
-
-            <!-- SETTINGS -->
-            <button
-                type="button"
-                class="text-btn header-action"
-                onclick="showHeaderMessage('Settings')"
-            >
-                <img
-                    src="../Static/images/icons/settings.png"
-                    alt=""
-                    class="header-action-icon"
-                >
-                <span>Settings</span>
+                <span>Help &amp; Support</span>
             </button>
 
             <!-- DYNAMIC ACCOUNT ROLE -->
@@ -244,6 +230,16 @@
                             class="verification-error verification-login-error"
                         ></p>
 
+                        <!-- VERIFY BUTTON -->
+                                                <button
+                                                    type="button"
+                                                    id="verifyButton"
+                                                    class="primary-auth-button verification-login-button"
+                                                    onclick="verifyCode()"
+                                                >
+                                                    Verify
+                                                </button>
+
                         <!-- RESEND -->
                         <div class="verification-login-resend">
                             <span>Didn't receive the code?</span>
@@ -267,16 +263,6 @@
                             <strong id="countdown">30</strong>
                             seconds
                         </p>
-
-                        <!-- VERIFY BUTTON -->
-                        <button
-                            type="button"
-                            id="verifyButton"
-                            class="primary-auth-button verification-login-button"
-                            onclick="verifyCode()"
-                        >
-                            Verify
-                        </button>
 
                         <!-- BACK TO LOGIN -->
                         <a

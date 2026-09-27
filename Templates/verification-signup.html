@@ -49,30 +49,9 @@
                     alt=""
                     class="header-action-icon"
                 >
-
-                <span>Support</span>
+                <span>Help &amp; Support</span>
             </button>
-
-            <!-- SETTINGS -->
-            <button
-                type="button"
-                class="text-btn header-action"
-                onclick="
-                    showVerificationMessage(
-                        'Settings',
-                        'Settings options will be available once this section is connected.'
-                    )
-                "
-            >
-                <img
-                    src="../Static/images/icons/settings.png"
-                    alt=""
-                    class="header-action-icon"
-                >
-
-                <span>Settings</span>
-            </button>
-
+            
             <!-- ROLE -->
             <div
                 class="login-pill auth-role-pill"
@@ -184,6 +163,16 @@
                             class="verification-signup-error"
                         ></p>
 
+                        <!-- VERIFY -->
+                                                <button
+                                                    type="button"
+                                                    id="verifyButton"
+                                                    class="primary-auth-button verification-signup-button"
+                                                    onclick="verifySignupCode()"
+                                                >
+                                                    Verify
+                                                </button>
+
                         <!-- RESEND -->
                         <div class="verification-signup-resend">
                             <span> Didn't receive the code?</span>
@@ -209,16 +198,6 @@
                             </strong>
                             seconds
                         </p>
-
-                        <!-- VERIFY -->
-                        <button
-                            type="button"
-                            id="verifyButton"
-                            class="primary-auth-button verification-signup-button"
-                            onclick="verifySignupCode()"
-                        >
-                            Verify
-                        </button>
 
                         <!-- BACK TO SIGN UP -->
                         <a

@@ -24,15 +24,7 @@
                     src="../Static/images/icons/support.png"
                     alt=""
                     class="header-action-icon">
-                <span>Support</span>
-            </button>
-
-            <button type="button" class="text-btn header-action">
-                <img
-                    src="../Static/images/icons/settings.png"
-                    alt=""
-                    class="header-action-icon">
-                <span>Settings</span>
+                <span>Help &amp; Support</span>
             </button>
 
             <span class="login-pill auth-role-pill">Student</span>
@@ -110,23 +102,17 @@
                             identity using your Google account
                         </p>
 
-                        <div class="gmail-account-box">
+                        <a
+                            href="https://accounts.google.com/AccountChooser"
+                            class="gmail-account-box"
+                            id="continueGoogleButton">
                             <div class="gmail-account-main">
                                 <img
                                     src="../Static/images/icons/gmail.png"
                                     alt="">
-                                <span id="googleAccountEmail">student@gmail.com</span>
+                                <span>Continue to Google</span>
                             </div>
-
-                            <a href="login page.html" class="gmail-change-account"> Change account</a>
-                        </div>
-
-                        <button
-                            type="button"
-                            class="gmail-continue-button"
-                            id="continueGoogleButton">
-                            Continue to Google
-                        </button>
+                        </a>
 
                         <div class="gmail-method-divider">
                             <span>or use another method</span>
@@ -150,18 +136,11 @@
     <script src="../Static/script.js"></script>
 
     <script>
-        const googleButton = document.getElementById("continueGoogleButton");
         const microsoftButton = document.getElementById("continueMicrosoftButton");
-
-        if (googleButton) {
-            googleButton.addEventListener("click", function () {
-                /*BACKEND*/
-            });
-        }
 
         if (microsoftButton) {
             microsoftButton.addEventListener("click", function () {
-                /*BACKEND*/
+                /* BACKEND */
             });
         }
     </script>

@@ -24,17 +24,9 @@
                     src="../Static/images/icons/support.png"
                     alt=""
                     class="header-action-icon">
-                <span>Support</span>
+                <span>Help &amp; Support</span>
             </button>
-
-            <button type="button" class="text-btn header-action">
-                <img
-                    src="../Static/images/icons/settings.png"
-                    alt=""
-                    class="header-action-icon">
-                <span>Settings</span>
-            </button>
-
+            
             <span class="login-pill auth-role-pill">Student</span>
         </div>
     </header>
@@ -114,23 +106,17 @@
                             identity using your Microsoft account
                         </p>
 
-                        <div class="gmail-account-box">
+                        <a
+                            href="https://login.microsoftonline.com/"
+                            class="gmail-account-box"
+                            id="continueMicrosoftButton">
                             <div class="gmail-account-main">
                                 <img
                                     src="../Static/images/icons/microsoft.png"
                                     alt="">
-                                <span id="microsoftAccountEmail">student@edu.ph</span>
+                                <span>Continue to Microsoft</span>
                             </div>
-
-                            <a href="login page.html" class="gmail-change-account">Change account</a>
-                        </div>
-
-                        <button
-                            type="button"
-                            class="gmail-continue-button"
-                            id="continueMicrosoftButton">
-                            Continue to Microsoft
-                        </button>
+                        </a>
 
                         <div class="gmail-method-divider">
                             <span>or use another method</span>
@@ -154,18 +140,11 @@
     <script src="../Static/script.js"></script>
 
     <script>
-        const microsoftButton = document.getElementById("continueMicrosoftButton");
         const googleButton = document.getElementById("continueGoogleButton");
-
-        if (microsoftButton) {
-            microsoftButton.addEventListener("click", function () {
-                /*BACKEND*/
-            });
-        }
 
         if (googleButton) {
             googleButton.addEventListener("click", function () {
-                /*BACKEND.*/
+                /* BACKEND */
             });
         }
     </script>

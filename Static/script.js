@@ -1459,11 +1459,8 @@ function closeInfoModal() {
 
 /* WEBSITE SUPPORT */
 function showSupport() {
-    openInfoModal(
-        "Support",
-        "For assistance with EduMetrics, please contact your system administrator.",
-        "?"
-    );
+    window.location.href =
+        "webpage/support.html";
 }
 
 /* WEBSITE SETTINGS */
@@ -5242,3 +5239,146 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     );
 });
+
+/* SUPPORT PAGE */
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+        const supportSearch =
+            getElement(
+                "supportSearch"
+            );
+
+        const supportCards =
+            Array.from(
+                document.querySelectorAll(
+                    ".support-topic-card"
+                )
+            );
+
+        const supportNoResults =
+            getElement(
+                "supportNoResults"
+            );
+
+        const supportReportCard =
+            getElement(
+                "supportReportCard"
+            );
+
+        const supportReportForm =
+            getElement(
+                "supportReportForm"
+            );
+
+        const supportFormMessage =
+            getElement(
+                "supportFormMessage"
+            );
+
+        if (supportSearch) {
+            supportSearch.addEventListener(
+                "input",
+                function () {
+                    const query =
+                        supportSearch.value
+                            .trim()
+                            .toLowerCase();
+
+                    let visibleCount = 0;
+
+                    supportCards.forEach(
+                        function (card) {
+                            const searchableText =
+                                (
+                                    card.dataset.supportSearch ||
+                                    card.textContent ||
+                                    ""
+                                ).toLowerCase();
+
+                            const matches =
+                                !query ||
+                                searchableText.includes(
+                                    query
+                                );
+
+                            card.hidden =
+                                !matches;
+
+                            if (matches) {
+                                visibleCount += 1;
+                            }
+                        }
+                    );
+
+                    if (supportNoResults) {
+                        supportNoResults.hidden =
+                            visibleCount !== 0;
+                    }
+                }
+            );
+        }
+
+        document.querySelectorAll(
+            ".support-topic-link"
+        ).forEach(
+            function (button) {
+                button.addEventListener(
+                    "click",
+                    function () {
+                        const topic =
+                            button.dataset.supportTopic;
+
+                        if (
+                            topic ===
+                            "report-problem"
+                        ) {
+                            if (supportReportCard) {
+                                supportReportCard.scrollIntoView(
+                                    {
+                                        behavior:
+                                            "smooth",
+                                        block:
+                                            "start"
+                                    }
+                                );
+                            }
+
+                            return;
+                        }
+
+                        const topicMessages = {
+                            "getting-started":
+                                "Getting Started guides will contain account setup, verification, and navigation instructions.",
+                            "account-login":
+                                "Account & Login help covers sign in, email verification, passwords, and account access.",
+                            "using-edumetrics":
+                                "Using EduMetrics guides cover syllabus, CO/SO assessments, grading, workflow, and course tools."
+                        };
+
+                        showGenericModal(
+                            "Support",
+                            topicMessages[topic] ||
+                                "Support information will be available here.",
+                            "?"
+                        );
+                    }
+                );
+            }
+        );
+
+        if (supportReportForm) {
+            supportReportForm.addEventListener(
+                "submit",
+                function (event) {
+                    event.preventDefault();
+
+                    if (supportFormMessage) {
+                        supportFormMessage.textContent =
+                            "Your report is ready to be connected to the support backend.";
+                    }
+                }
+            );
+        }
+    }
+);
