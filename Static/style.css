@@ -14914,6 +14914,8 @@ body.sof-modal-open {
 
 .so-student-page .so-pending-list {
     display: grid;
+    grid-auto-rows: max-content;
+    align-content: start;
     gap: 14px;
     padding: 10px 8px 12px 0;
     min-height: 0;
