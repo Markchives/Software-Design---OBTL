@@ -18495,7 +18495,6 @@ body.sof-modal-open {
     color: #003F73;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 14px;
-    font-weight: 700;
     line-height: 1.4;
     white-space: normal;
     overflow: visible;
@@ -18656,6 +18655,13 @@ body.sof-modal-open {
     border-top: 1px solid #D5E1EC !important;
     border-bottom: 1px solid #D5E1EC !important;
     vertical-align: middle !important;
+}
+
+.so-faculty-page #student-outcomes #studentOutcomeTableBody td:nth-child(1),
+.so-faculty-page #student-outcomes #studentOutcomeTableBody td:nth-child(2),
+.so-faculty-page #student-outcomes #studentOutcomeTableBody td:nth-child(3) {
+    color: #004179 !important;
+    font-weight: 700 !important;
 }
 
 
