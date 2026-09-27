@@ -18376,7 +18376,7 @@ body.sof-modal-open {
 .so-faculty-page #student-outcomes .sof-outcome-table-wrap {
     flex: 1 1 auto;
     min-height: 0;
-    max-height: 330px;
+    max-height: 430px;
     padding: 0 8px 12px 0;
     overflow-y: auto;
     overflow-x: hidden;
@@ -18518,7 +18518,7 @@ body.sof-modal-open {
     border: 0 !important;
 }
 
-/* SO FACULTY — MATCH DEPARTMENT HEAD HEADER / TABLE ALIGNMENT */
+/* SO FACULTY — CLEAN FINAL */
 .so-faculty-page .sodh-toolbar.sof-panel-toolbar,
 .so-faculty-page .sodh-toolbar.sof-outcome-toolbar {
     height: 60px !important;
@@ -18541,22 +18541,18 @@ body.sof-modal-open {
     line-height: 1.5 !important;
 }
 
-/* Course Outcome + Student Outcome wrappers: straight edges, no rounded yellow corners */
-.so-faculty-page #course-outcomes .sodh-table-wrap.sof-outcome-table-wrap,
-.so-faculty-page #student-outcomes .sodh-table-wrap.sof-outcome-table-wrap {
+.so-faculty-page #course-outcomes .sodh-table-wrap.sof-outcome-table-wrap {
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
     border: 0 !important;
     border-radius: 0 !important;
     background: #FFFFFF !important;
-    overflow-x: hidden !important;
+    overflow: hidden !important;
     box-sizing: border-box !important;
 }
 
-/* Both yellow headers use exactly the same geometry */
-.so-faculty-page #course-outcomes .sof-outcome-table,
-.so-faculty-page #student-outcomes .sof-outcome-table {
+.so-faculty-page #course-outcomes .sof-outcome-table {
     width: 100% !important;
     margin: 0 !important;
     border-collapse: collapse !important;
@@ -18566,10 +18562,12 @@ body.sof-modal-open {
 }
 
 .so-faculty-page #course-outcomes .sof-outcome-table thead,
-.so-faculty-page #student-outcomes .sof-outcome-table thead,
 .so-faculty-page #course-outcomes .sof-outcome-table thead tr,
+.so-faculty-page #student-outcomes .sof-outcome-table thead,
 .so-faculty-page #student-outcomes .sof-outcome-table thead tr {
     height: 43px !important;
+    min-height: 43px !important;
+    max-height: 43px !important;
     background: #FFF6C8 !important;
     border-radius: 0 !important;
 }
@@ -18577,8 +18575,12 @@ body.sof-modal-open {
 .so-faculty-page #course-outcomes .sof-outcome-table thead th,
 .so-faculty-page #student-outcomes .sof-outcome-table thead th {
     height: 43px !important;
-    padding: 13px 12px !important;
-    border-top: 1px solid #E1E7EC !important;
+    min-height: 43px !important;
+    max-height: 43px !important;
+    padding: 0 20px !important;
+    box-sizing: border-box !important;
+    vertical-align: middle !important;
+    border-top: 0 !important;
     border-bottom: 1px solid #D8C66C !important;
     border-left: 0 !important;
     border-right: 0 !important;
@@ -18587,30 +18589,168 @@ body.sof-modal-open {
     color: #004179 !important;
     font-size: 14px !important;
     font-weight: 800 !important;
-    line-height: 1.25 !important;
-    text-align: left !important;
-    white-space: nowrap !important;
-    vertical-align: middle !important;
-    box-sizing: border-box !important;
+    line-height: 43px !important;
 }
 
-/* Student Outcome yellow header must touch the gold divider */
 .so-faculty-page #student-outcomes.sodh-tab-panel.active,
 .so-faculty-page #student-outcomes.sof-tab-panel.active {
-    gap: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
 }
 
-.so-faculty-page #student-outcomes .sof-student-outcome-toolbar {
-    margin-bottom: 0 !important;
-}
-
+.so-faculty-page #student-outcomes .sodh-table-wrap.sof-outcome-table-wrap,
 .so-faculty-page #student-outcomes .sof-outcome-table-wrap {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 8px 10px 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #FFFFFF !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+    scrollbar-gutter: stable !important;
+}
+
+.so-faculty-page #student-outcomes .sof-outcome-table {
+    width: 100% !important;
+    margin: -8px 0 0 !important;
+    border-collapse: separate !important;
+    border-spacing: 0 8px !important;
+    table-layout: fixed !important;
+    background: transparent !important;
 }
 
 .so-faculty-page #student-outcomes .sof-outcome-table thead {
-    position: static !important;
-    top: auto !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 20 !important;
+    transform: none !important;
+}
+
+.so-faculty-page #student-outcomes .sof-outcome-table thead th {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 21 !important;
+}
+
+.so-faculty-page #student-outcomes #studentOutcomeTableBody {
+    transform: none !important;
+}
+
+.so-faculty-page #student-outcomes #studentOutcomeTableBody tr {
+    background: transparent !important;
+}
+
+.so-faculty-page #student-outcomes #studentOutcomeTableBody td {
+    height: 64px !important;
+    padding: 10px 20px !important;
+    background: #FFFFFF !important;
+    border-top: 1px solid #D5E1EC !important;
+    border-bottom: 1px solid #D5E1EC !important;
+    vertical-align: middle !important;
+}
+
+
+.so-faculty-page #student-outcomes #studentOutcomeTableBody td:first-child {
+    border-left: 1px solid #D5E1EC !important;
+    border-radius: 10px 0 0 10px !important;
+}
+
+.so-faculty-page #student-outcomes #studentOutcomeTableBody td:last-child {
+    border-right: 1px solid #D5E1EC !important;
+    border-radius: 0 10px 10px 0 !important;
+}
+
+.so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row):hover td {
+    border-bottom-color: #C7D9E7 !important;
+}
+
+.so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row):hover td:first-child {
+    border-left-color: #C7D9E7 !important;
+}
+
+.so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row):hover td:last-child {
+    border-right-color: #C7D9E7 !important;
+}
+
+.so-faculty-page #student-outcomes .sof-outcome-table thead th:nth-child(1),
+.so-faculty-page #student-outcomes #studentOutcomeTableBody td:nth-child(1) {
+    width: 34% !important;
+    text-align: left !important;
+}
+
+.so-faculty-page #student-outcomes .sof-outcome-table thead th:nth-child(2),
+.so-faculty-page #student-outcomes #studentOutcomeTableBody td:nth-child(2) {
+    width: 20% !important;
+    text-align: left !important;
+}
+
+.so-faculty-page #student-outcomes .sof-outcome-table thead th:nth-child(3),
+.so-faculty-page #student-outcomes #studentOutcomeTableBody td:nth-child(3) {
+    width: 16% !important;
+    text-align: center !important;
+}
+
+.so-faculty-page #student-outcomes .sof-outcome-table thead th:nth-child(4),
+.so-faculty-page #student-outcomes #studentOutcomeTableBody td:nth-child(4) {
+    width: 15% !important;
+    text-align: center !important;
+}
+
+.so-faculty-page #student-outcomes .sof-outcome-table thead th:nth-child(5),
+.so-faculty-page #student-outcomes #studentOutcomeTableBody td:nth-child(5) {
+    width: 15% !important;
+    text-align: center !important;
+}
+
+.so-faculty-page #student-outcomes #studentOutcomeTableBody .sof-row-actions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    flex-wrap: nowrap !important;
+}
+
+.so-faculty-page #student-outcomes #studentOutcomeTableBody .sof-row-actions button:first-child {
+    display: none !important;
+}
+
+.so-faculty-page #student-outcomes #studentOutcomeTableBody .sof-row-actions button {
+    min-width: 54px !important;
+    min-height: 34px !important;
+    padding: 6px 12px !important;
+    margin: 0 !important;
+    font-size: 12px !important;
+    flex: 0 0 auto !important;
+}
+
+.so-faculty-page #student-outcomes #studentOutcomeTableBody .sodh-empty-row td {
+    border: 0 !important;
+    border-radius: 0 !important;
+}
+
+.so-faculty-page .sodh-content-card {
+    overflow: hidden !important;
+}
+
+.so-faculty-page #student-outcomes .sof-outcome-table-wrap::-webkit-scrollbar {
+    width: 6px !important;
+}
+
+.so-faculty-page #student-outcomes .sof-outcome-table-wrap::-webkit-scrollbar-track {
+    background: transparent !important;
+}
+
+.so-faculty-page #student-outcomes .sof-outcome-table-wrap::-webkit-scrollbar-thumb {
+    background: #B7CAD9 !important;
+    border-radius: 10px !important;
 }
 
