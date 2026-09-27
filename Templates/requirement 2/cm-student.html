@@ -1,0 +1,430 @@
+    <!DOCTYPE html>
+    <html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        >
+
+        <title>Syllabus &amp; Outcomes | EduMetrics</title>
+
+        <link
+            rel="stylesheet"
+            href="../../Static/style.css"
+        >
+    </head>
+
+    <body class="so-student-page">
+
+        <header class="so-topbar">
+            <div class="so-brand">
+                <div class="so-brand-logo">
+                    Edu<span>Metrics</span>
+                </div>
+
+                <div class="so-brand-subtitle">
+                    Academic Assessment &amp; Grading System
+                </div>
+            </div>
+
+            <div class="so-user-area">
+                <button
+                    class="so-notification-btn"
+                    type="button"
+                    aria-label="Notifications"
+                >
+                    <img
+                        src="../../Static/images/sidebar/notif.png"
+                        alt="Notifications"
+                        class="so-notification-image"
+                    >
+
+                    <span class="so-notification-dot"></span>
+                </button>
+
+                <div class="so-user-info">
+                    <strong id="studentName"></strong>
+                    <span>Student</span>
+                </div>
+
+                <div
+                    class="so-avatar"
+                    aria-hidden="true"
+                >
+                    <span class="so-avatar-person">●</span>
+                </div>
+
+                <span
+                    class="so-online-dot"
+                    aria-hidden="true"
+                ></span>
+            </div>
+        </header>
+
+        <div class="so-header-lines">
+            <div class="so-header-blue"></div>
+            <div class="so-header-gold"></div>
+        </div>
+
+        <div class="so-shell">
+
+            <aside class="so-sidebar">
+
+                <div class="so-pages-title">
+                    <span class="so-grid-icon so-pages-image-wrap">
+                        <img
+                            src="../../Static/images/sidebar/pages.png"
+                            alt=""
+                            class="so-pages-image"
+                        >
+                    </span>
+
+                    <span>Pages</span>
+                </div>
+
+                <nav
+                    class="so-nav"
+                    aria-label="Student navigation"
+                >
+
+                    <a
+                        href="#"
+                        class="so-nav-item"
+                    >
+                        <span class="so-nav-icon so-nav-image-wrap">
+                            <img
+                                src="../../Static/images/sidebar/home-white.png"
+                                alt=""
+                                class="so-nav-image"
+                            >
+                        </span>
+
+                        <span>Home</span>
+                    </a>
+
+                    <a
+                        href="#"
+                        class="so-nav-item"
+                    >
+                        <span class="so-nav-icon so-nav-image-wrap">
+                            <img
+                                src="../../Static/images/sidebar/course-white.png"
+                                alt=""
+                                class="so-nav-image"
+                            >
+                        </span>
+
+                        <span>Courses</span>
+                    </a>
+
+                    <a
+                        href="#"
+                        class="so-nav-item"
+                    >
+                        <span class="so-nav-icon so-nav-image-wrap">
+                            <img
+                                src="../../Static/images/sidebar/pl-white.png"
+                                alt=""
+                                class="so-nav-image"
+                            >
+                        </span>
+
+                        <span>Platform</span>
+                    </a>
+
+                    <div class="so-nav-group">
+
+                        <button
+                            class="so-nav-item so-products active"
+                            type="button"
+                        >
+                            <span class="so-nav-icon so-nav-image-wrap">
+                                <img
+                                    src="../../Static/images/sidebar/ws-blue.png"
+                                    alt=""
+                                    class="so-nav-image"
+                                >
+                            </span>
+
+                            <span>Workflow</span>
+                        </button>
+
+                        <div class="so-subnav">
+
+                            <a href="#">
+                                Syllabus &amp; Outcomes
+                            </a>
+
+                            <a
+                                href="#"
+                                class="active"
+                            >
+                                Curriculum Mapping
+                            </a>
+
+                            <a href="#">
+                                Class Roster
+                            </a>
+
+                            <a href="#">
+                                Assessment Entry
+                            </a>
+
+                            <a href="#">
+                                Attainment
+                            </a>
+
+                            <a href="#">
+                                CQI Planning
+                            </a>
+
+                            <a href="#">
+                                Gradebook
+                            </a>
+
+                            <a href="#">
+                                Compliance Report
+                            </a>
+
+                        </div>
+                    </div>
+
+                    <a
+                        href="#"
+                        class="so-nav-item"
+                    >
+                        <span class="so-nav-icon so-nav-image-wrap">
+                            <img
+                                src="../../Static/images/sidebar/rs-white.png"
+                                alt=""
+                                class="so-nav-image"
+                            >
+                        </span>
+
+                        <span>Resources</span>
+                    </a>
+
+                    <a
+                        href="#"
+                        class="so-nav-item"
+                    >
+                        <span class="so-nav-icon so-nav-image-wrap">
+                            <img
+                                src="../../Static/images/sidebar/au-white.png"
+                                alt=""
+                                class="so-nav-image"
+                            >
+                        </span>
+
+                        <span>About Us</span>
+                    </a>
+
+                </nav>
+
+                <div class="so-sidebar-brand">
+
+                    <div class="so-sidebar-logo">
+                        Edu<span>Metrics</span>
+                    </div>
+
+                    <small>
+                        Academic Assessment &amp; Grading System
+                    </small>
+
+                </div>
+
+            </aside>
+
+            <main class="so-main cm-student-main">
+    <section class="so-page-heading">
+    <h1>Curriculum Mapping</h1>
+    <p>Manage your course activities and map them to course outcomes.</p>
+    </section>
+
+    <section class="cm-student-filters">
+    <div class="cm-filter-group">
+    <label for="cmSchoolYear">School Year</label>
+    <div class="cm-date-field">
+    <span aria-hidden="true">▣</span>
+    <input id="cmSchoolYear" type="text" value="2026-2027" readonly>
+    </div>
+    </div>
+    <div class="cm-filter-group">
+    <label for="cmDepartment">Department</label>
+    <input id="cmDepartment" type="text" value="Engineering" readonly>
+    </div>
+    <div class="cm-filter-group">
+    <label for="cmProgram">Program</label>
+    <input id="cmProgram" type="text" value="BS CpE" readonly>
+    </div>
+    <div class="cm-filter-group">
+    <label for="cmCourse">Courses</label>
+    <select id="cmCourse">
+    <option value="" selected>All Course</option>
+    </select>
+    </div>
+    <div class="cm-filter-group">
+    <label for="cmSection">Section</label>
+    <select id="cmSection">
+    <option value="COE232" selected>COE232</option>
+    </select>
+    </div>
+    </section>
+
+    <section class="cm-student-summary">
+    <article class="cm-course-card">
+    <div class="cm-card-accent"></div>
+    <div>
+    <span class="cm-course-label">My Course</span>
+    <h2>Software Design - Lab</h2>
+    </div>
+    </article>
+    <article class="cm-stat-card">
+    <div class="cm-card-accent cm-card-accent-soft"></div>
+    <div>
+    <span>COs Met</span>
+    <strong>12</strong>
+    </div>
+    </article>
+    <article class="cm-stat-card">
+    <div class="cm-card-accent cm-card-accent-soft"></div>
+    <div>
+    <span>Need Improvement</span>
+    <strong>36</strong>
+    </div>
+    </article>
+    <article class="cm-stat-card">
+    <div class="cm-card-accent cm-card-accent-soft"></div>
+    <div>
+    <span>Total COs</span>
+    <strong>56</strong>
+    </div>
+    </article>
+    </section>
+
+    <section class="cm-student-content">
+    <div class="cm-tabs" role="tablist">
+    <button class="cm-tab active" type="button" data-cm-tab="course-outcomes">Course Outcomes (CO)</button>
+    <button class="cm-tab" type="button" data-cm-tab="assessment-mapping">Assessment Mapping</button>
+    </div>
+
+    <div class="cm-tab-panel active" id="course-outcomes">
+    <div class="cm-table-wrap">
+    <table class="cm-table">
+    <colgroup>
+    <col style="width:6%">
+    <col style="width:34%">
+    <col style="width:25%">
+    <col style="width:20%">
+    <col style="width:15%">
+    </colgroup>
+    <thead>
+    <tr>
+    <th>CO No.</th>
+    <th>Course Outcome</th>
+    <th>Mapped Assessments</th>
+    <th>Your Attainment</th>
+    <th>Status</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- CHANGE THIS LATER: Prototype display only. Replace this sample Course Outcome row with backend data. -->
+    <tr>
+    <td>CO1</td>
+    <td>Apply fundamental software engineering principles.</td>
+    <td>
+    <div class="cm-assessment-tags">
+    <span>Lab 1</span>
+    <span>Lab 2</span>
+    </div>
+    </td>
+    <td>
+    <div class="cm-attainment">
+    <div class="cm-progress-track"><div class="cm-progress-fill" style="width:91%"></div></div>
+    <small>91%</small>
+    </div>
+    </td>
+    <td><span class="cm-status-met">Met</span></td>
+    </tr>
+    </tbody>
+    </table>
+    </div>
+    </div>
+
+    <div class="cm-tab-panel" id="assessment-mapping">
+    <div class="cm-assessment-toolbar">
+    <p>View course details, assigned faculty, enrolled students, and SO completion rates.</p>
+    <div class="cm-assessment-actions">
+    <label class="cm-assessment-search">
+    <span aria-hidden="true">⌕</span>
+    <input type="search" placeholder="Search course code/name or faculty" aria-label="Search assessment mapping">
+    </label>
+    <button class="cm-export-btn" type="button">
+    <span aria-hidden="true">⇩</span>
+    <span>Export</span>
+    </button>
+    </div>
+    </div>
+
+    <div class="cm-table-wrap cm-assessment-table-wrap">
+    <table class="cm-table cm-assessment-table">
+    <colgroup>
+    <col style="width:13%">
+    <col style="width:10%">
+    <col style="width:13%">
+    <col style="width:10%">
+    <col style="width:9%">
+    <col style="width:9%">
+    <col style="width:11%">
+    <col style="width:15%">
+    <col style="width:10%">
+    </colgroup>
+    <thead>
+    <tr>
+    <th>Assessment</th>
+    <th>Type</th>
+    <th>Mapped CO(s)</th>
+    <th>Date</th>
+    <th>Weight</th>
+    <th>Score</th>
+    <th>Percentage</th>
+    <th>Contribution to CO(s)</th>
+    <th>Details</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- CHANGE THIS LATER: Prototype display only. Replace this sample Assessment Mapping row with backend data. -->
+    <tr>
+    <td>Lab 1</td>
+    <td>Laboratory</td>
+    <td>
+    <div class="cm-mapped-co-tags">
+    <span>CO1</span>
+    <span>CO2</span>
+    </div>
+    </td>
+    <td>Oct. 1, 2026</td>
+    <td>10%</td>
+    <td>18/20</td>
+    <td>90%</td>
+    <td><span class="cm-contribution-high">High</span></td>
+    <td>
+    <button class="cm-view-details-btn" type="button">
+    <span>View Details</span>
+    </button>
+    </td>
+    </tr>
+    </tbody>
+    </table>
+    </div>
+    </div>
+    </section>
+    </main>
+    </div>
+
+    <script src="../../Static/script.js"></script>
+    </body>
+    </html>

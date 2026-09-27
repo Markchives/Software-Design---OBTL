@@ -12581,7 +12581,7 @@ body.workflow-modal-open {
     justify-content: center;
     gap: 8px;
     border-radius: 8px;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
     cursor: pointer;
 }
@@ -14020,7 +14020,7 @@ body.sof-modal-open {
 
 .so-faculty-page .sof-co-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
     border-spacing: 0;
     color: #004179;
     font-size: 11px;
@@ -14518,8 +14518,8 @@ body.sof-modal-open {
 
 .so-faculty-page .sof-so-choice {
     min-width: 68px;
-    height: 36px;
-    padding: 0 12px;
+    height: 43px;
+    padding: 0 14px;
     border: 1px solid #B9D3E8;
     border-radius: 18px;
     background: #fff;
@@ -14952,7 +14952,7 @@ body.sof-modal-open {
     font-family: Arial, Helvetica, sans-serif;
     margin: 0;
     color: #003F73;
-    font-size: 15px;
+    font-size: 17px;
     font-weight: 700;
     line-height: 1.4;
     letter-spacing: 0;
@@ -14998,7 +14998,7 @@ body.sof-modal-open {
     background: #004179;
     color: #FFFFFF;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
     line-height: 1;
     cursor: pointer;
@@ -15185,7 +15185,7 @@ body.sof-modal-open {
                 #D8E2EA;
     border-bottom: 3px solid
                 transparent;
-    background: #FFFFFF;
+    background: #F5F7FA;
     color: #004179;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 19px;
@@ -15196,12 +15196,12 @@ body.sof-modal-open {
 }
 
 .sodh-tab:hover {
-    background: #F8FAFC;
+    background: #EEF3F8;
 }
 
 .sodh-tab.active {
     border-bottom-color: #F4C300;
-    background: #FBFCFD;
+    background: #FFFFFF;
 }
 
 .sodh-tab-panel {
@@ -15576,7 +15576,7 @@ body.sof-modal-open {
     
     min-height: 48px !important;
     padding: 0 18px;
-    font-size: 15px;
+    font-size: 17px;
     font-weight: 700;}
 
     .so-faculty-page .sof-file-row {
@@ -16912,6 +16912,201 @@ body.sof-modal-open {
     }
 }
 
+
+.so-student-page .cm-assessment-toolbar {
+    min-height: 70px;
+    padding: 16px 14px 12px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    background: #FFFFFF;
+}
+
+.so-student-page .cm-assessment-toolbar > p {
+    margin: 0;
+    color: #004179;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.so-student-page .cm-assessment-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.so-student-page .cm-assessment-search {
+    width: 250px;
+    height: 34px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #17679E;
+    border-radius: 18px;
+    background: #FFFFFF;
+    color: #004179;
+}
+
+.so-student-page .cm-assessment-search span {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.so-student-page .cm-assessment-search input {
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #004179;
+    font-size: 11px;
+}
+
+.so-student-page .cm-assessment-search input::placeholder {
+    color: #8296A8;
+}
+
+.so-student-page .cm-export-btn {
+    min-width: 128px;
+    height: 34px;
+    padding: 0 17px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    border: 0;
+    border-radius: 18px;
+    background: #004179;
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.so-student-page .cm-assessment-table-wrap {
+    padding-bottom: 16px;
+}
+
+.so-student-page .cm-assessment-table {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.so-student-page .cm-assessment-table thead tr {
+    height: 34px;
+}
+
+.so-student-page .cm-assessment-table th {
+    padding: 8px 8px;
+    font-size: 11px;
+    text-align: center;
+}
+
+.so-student-page .cm-assessment-table th:first-child,
+.so-student-page .cm-assessment-table td:first-child {
+    padding-left: 20px;
+    text-align: left;
+}
+
+.so-student-page .cm-assessment-table tbody::before {
+    height: 9px;
+}
+
+.so-student-page .cm-mapped-co-tags span {
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.so-student-page .cm-contribution-high {
+    font-size: 13px;
+}
+
+.so-student-page .cm-view-details-btn {
+    font-size: 12px;
+}
+
+.so-student-page .cm-assessment-table td:first-child {
+    border-left: 1px solid #A9CBE8;
+}
+
+.so-student-page .cm-assessment-table td:last-child {
+    border-right: 1px solid #A9CBE8;
+}
+
+.so-student-page .cm-mapped-co-tags {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.so-student-page .cm-mapped-co-tags span {
+    min-width: 52px;
+    height: 31px;
+    padding: 0 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #7FB0D7;
+    border-radius: 6px;
+    background: #FFFFFF;
+    color: #004179;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.so-student-page .cm-contribution-high {
+    min-width: 138px;
+    height: 35px;
+    padding: 0 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    background: #CEF08B;
+    color: #3E6A00;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.so-student-page .cm-view-details-btn {
+    min-width: 134px;
+    height: 35px;
+    padding: 0 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border: 1px solid #17679E;
+    border-radius: 18px;
+    background: #FFFFFF;
+    color: #004179;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.so-student-page .cm-view-details-btn:hover {
+    background: #F5F8FC;
+}
+
+@media (max-width: 900px) {
+    .so-student-page .cm-assessment-toolbar {
+        padding-left: 20px;
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .so-student-page .cm-assessment-actions {
+        width: 100%;
+    }
+
+    .so-student-page .cm-assessment-search {
+        flex: 1;
+        width: auto;
+    }
+}
+
 @media (max-width: 1100px) {
     .support-page {
         height: auto;
@@ -18147,7 +18342,7 @@ body.sof-modal-open {
     background: #F4C300;
     color: #004179;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 15px;
+    font-size: 17px;
     font-weight: 700;
 }
 
@@ -18217,7 +18412,7 @@ body.sof-modal-open {
 .sodh-attainment-value {
     min-width: 52px;
     color: #004179;
-    font-size: 15px;
+    font-size: 17px;
     font-weight: 700;
     text-align: right;
 }
@@ -18254,7 +18449,7 @@ body.sof-modal-open {
 .sodh-completion-value {
     min-width: 42px;
     color: #004179;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
 }
 
@@ -18304,7 +18499,7 @@ body.sof-modal-open {
     background: #004179;
     color: #FFFFFF;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
     cursor: pointer;
 }
@@ -18324,7 +18519,7 @@ body.sof-modal-open {
     border: none;
     border-right: 1px solid #D8E2EA;
     border-bottom: 3px solid transparent;
-    background: #FFFFFF;
+    background: #F5F7FA;
     color: #004179;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 19px !important;
@@ -18333,9 +18528,14 @@ body.sof-modal-open {
     text-align: center;
     white-space: nowrap;
 }
+
+.so-faculty-page .sodh-tabs .sof-tab:hover {
+    background: #EEF3F8;
+}
+
 .so-faculty-page .sodh-tabs .sof-tab.active {
     border-bottom-color: #F4C300 !important;
-    background: #FBFCFD;
+    background: #FFFFFF;
 }
 
 
@@ -18776,3 +18976,444 @@ body.sof-modal-open {
     border-radius: 10px !important;
 }
 
+/* CURRICULUM MAPPING STUDENT */
+.so-student-page .cm-student-main {
+    padding: 26px 28px 12px !important;
+}
+
+.so-student-page .cm-student-filters {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 18px;
+    align-items: end;
+}
+
+.so-student-page .cm-filter-group {
+    min-width: 0;
+}
+
+.so-student-page .cm-filter-group label {
+    display: block;
+    margin-bottom: 7px;
+    color: #004179;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.so-student-page .cm-filter-group input,
+.so-student-page .cm-filter-group select,
+.so-student-page .cm-date-field {
+    width: 100%;
+    height: 44px;
+    border: 1px solid #7FB0D7;
+    border-radius: 7px;
+    background: #FFFFFF;
+    color: #004179;
+    font-size: 14px;
+}
+
+.so-student-page .cm-filter-group input,
+.so-student-page .cm-filter-group select {
+    padding: 0 15px;
+}
+
+.so-student-page .cm-date-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 13px;
+}
+
+.so-student-page .cm-date-field input {
+    height: auto;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    outline: 0;
+    background: transparent;
+}
+
+.so-student-page .cm-student-summary {
+    margin-top: 28px;
+    display: grid;
+    grid-template-columns: 1.65fr 1fr 1fr 1fr;
+    gap: 16px;
+}
+
+.so-student-page .cm-course-card,
+.so-student-page .cm-stat-card {
+    min-height: 96px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 12px;
+    background: #FFFFFF;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.18);
+}
+
+.so-student-page .cm-course-card > div:last-child,
+.so-student-page .cm-stat-card > div:last-child {
+    padding: 14px 24px;
+}
+
+.so-student-page .cm-card-accent {
+    width: 12px;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: #F4C300;
+}
+
+.so-student-page .cm-card-accent-soft {
+    background: #FFE28A;
+}
+
+.so-student-page .cm-course-label {
+    display: block;
+    margin-bottom: 3px;
+    color: #004179;
+    font-size: 14px;
+}
+
+.so-student-page .cm-course-card h2 {
+    margin: 0;
+    color: #004179;
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.so-student-page .cm-stat-card span {
+    display: block;
+    color: #004179;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.so-student-page .cm-stat-card strong {
+    display: block;
+    margin-top: 2px;
+    color: #004179;
+    font-size: 46px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.so-student-page .cm-student-content {
+    min-height: 390px;
+    margin-top: 20px;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #FFFFFF;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.10);
+}
+
+.so-student-page .cm-tabs {
+    height: 54px;
+    display: flex;
+    align-items: flex-end;
+    gap: 0;
+    padding: 0;
+    margin: 0;
+}
+
+.so-student-page .cm-tab {
+    height: 49px;
+    margin: 0;
+    padding: 0 24px;
+    border: 1px solid #D9E1EA;
+    border-bottom: 0;
+    border-radius: 5px 5px 0 0;
+    background: #F5F7FA;
+    color: #004179;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 19px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.so-student-page .cm-tab.active {
+    position: relative;
+    background: #FFFFFF;
+}
+
+.so-student-page .cm-tab.active::after {
+    content: "";
+    height: 3px;
+    position: absolute;
+    right: 0;
+    bottom: -1px;
+    left: 0;
+    background: #F4C300;
+}
+
+.so-student-page .cm-tab-panel {
+    display: none;
+    margin: 0;
+    padding: 0;
+}
+
+.so-student-page .cm-tab-panel.active {
+    display: block;
+}
+
+.so-student-page .cm-table-wrap {
+    margin: 0;
+    padding: 0 0 16px;
+    overflow-x: auto;
+}
+
+.so-student-page .cm-table {
+    width: 100%;
+    margin: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+    color: #004179;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.so-student-page .cm-table thead {
+    background: #FFF6C8;
+}
+
+.so-student-page .cm-table thead tr {
+    height: 43px;
+}
+
+.so-student-page .cm-table th {
+    padding: 13px 14px;
+    border-top: 1px solid #E1E7EC;
+    border-bottom: 1px solid #D8C66C;
+    background: #FFF6C8;
+    color: #004179;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.25;
+    vertical-align: middle;
+}
+
+.so-student-page .cm-table th:nth-child(1),
+.so-student-page .cm-table td:nth-child(1) {
+    text-align: left;
+}
+
+.so-student-page .cm-table th:nth-child(2),
+.so-student-page .cm-table td:nth-child(2) {
+    text-align: left;
+}
+
+.so-student-page .cm-table th:nth-child(3),
+.so-student-page .cm-table td:nth-child(3),
+.so-student-page .cm-table th:nth-child(4),
+.so-student-page .cm-table td:nth-child(4),
+.so-student-page .cm-table th:nth-child(5),
+.so-student-page .cm-table td:nth-child(5) {
+    text-align: center;
+}
+
+.so-student-page .cm-table tbody::before {
+    content: "";
+    display: table-row;
+    height: 10px;
+}
+
+.so-student-page .cm-table td {
+    height: 58px;
+    padding: 10px 14px;
+    white-space: normal;
+    vertical-align: middle;
+    border-top: 1px solid #A9CBE8;
+    border-bottom: 1px solid #A9CBE8;
+    background: #FFFFFF;
+    color: #004179;
+}
+
+.so-student-page .cm-table td:first-child {
+    border-left: 1px solid #A9CBE8;
+    border-radius: 9px 0 0 9px;
+}
+
+.so-student-page .cm-table td:last-child {
+    border-right: 1px solid #A9CBE8;
+    border-radius: 0 9px 9px 0;
+}
+
+.so-student-page .cm-assessment-tags {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.so-student-page .cm-assessment-tags span {
+    min-width: 52px;
+    height: 31px;
+    padding: 0 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #7FB0D7;
+    border-radius: 6px;
+    background: #FFFFFF;
+    color: #004179;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.so-student-page .cm-attainment {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.so-student-page .cm-progress-track {
+    width: 125px;
+    height: 10px;
+    overflow: hidden;
+    border: 1px solid #17679E;
+    border-radius: 10px;
+    background: #FFFFFF;
+}
+
+.so-student-page .cm-progress-fill {
+    height: 100%;
+    border-radius: 10px;
+    background: #005A91;
+}
+
+.so-student-page .cm-attainment small {
+    color: #004179;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.so-student-page .cm-status-met {
+    min-width: 108px;
+    height: 31px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    background: #CEF08B;
+    color: #3E6A00;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.so-student-page .cm-empty-state {
+    padding: 42px 24px;
+    color: #004179;
+}
+
+.so-student-page .cm-empty-state h3 {
+    margin: 0;
+    font-size: 17px;
+}
+
+.so-student-page .cm-empty-state p {
+    margin: 6px 0 0;
+    font-size: 13px;
+}
+
+@media (max-width: 1100px) {
+    .so-student-page .cm-student-filters {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .so-student-page .cm-student-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .so-student-page .cm-student-filters,
+    .so-student-page .cm-student-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .so-student-page .cm-tabs {
+        overflow-x: auto;
+    }
+
+    .so-student-page .cm-tab {
+        flex: 0 0 auto;
+    }
+}
+
+/* CM STUDENT COURSE OUTCOME TABLE HEADER +3PX */
+.so-student-page .cm-table th {
+    font-size: 17px !important;
+}
+
+/* CM STUDENT ASSESSMENT MAPPING ONLY */
+.so-student-page .cm-tabs {
+    position: relative;
+    border-bottom: 1px solid #B9DDF5;
+}
+
+.so-student-page .cm-tab {
+    position: relative;
+    z-index: 1;
+}
+
+.so-student-page .cm-assessment-panel .cm-assessment-toolbar,
+.so-student-page #assessment-mapping .cm-assessment-toolbar {
+    border-bottom: 0 !important;
+    padding-left: 24px !important;
+}
+
+.so-student-page .cm-assessment-panel .cm-assessment-toolbar > p,
+.so-student-page #assessment-mapping .cm-assessment-toolbar > p {
+    margin: 0 !important;
+    font-size: 15px !important;
+    position: static !important;
+}
+
+/* CM STUDENT TABS SAME SIZE */
+.so-student-page .cm-tabs .cm-tab {
+    min-height: 43px !important;
+    padding: 0 24px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    box-sizing: border-box !important;
+}
+
+/* CM STUDENT ASSESSMENT MAPPING EXACT COLUMN CENTER */
+.so-student-page .cm-assessment-table th:nth-child(6),
+.so-student-page .cm-assessment-table td:nth-child(6),
+.so-student-page .cm-assessment-table th:nth-child(7),
+.so-student-page .cm-assessment-table td:nth-child(7),
+.so-student-page .cm-assessment-table th:nth-child(8),
+.so-student-page .cm-assessment-table td:nth-child(8) {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
+.so-student-page .cm-assessment-table td:nth-child(8) {
+    position: relative !important;
+}
+
+.so-student-page .cm-assessment-table td:nth-child(8) .cm-contribution-high,
+.so-student-page .cm-assessment-table td:nth-child(8) > span,
+.so-student-page .cm-assessment-table td:nth-child(8) > div {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.so-student-page .cm-contribution-high {
+    display: flex !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}

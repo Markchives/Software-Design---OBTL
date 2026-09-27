@@ -6611,3 +6611,26 @@
                 ensureSOStudentCourseFilters();
             }
         );
+
+/* CURRICULUM MAPPING STUDENT */
+document.addEventListener("DOMContentLoaded", function () {
+    const page = document.querySelector(".cm-student-main");
+    if (!page) return;
+
+    const tabs = page.querySelectorAll(".cm-tab");
+    const panels = page.querySelectorAll(".cm-tab-panel");
+
+    tabs.forEach(function (tab) {
+        tab.addEventListener("click", function () {
+            const target = tab.dataset.cmTab;
+
+            tabs.forEach(function (item) {
+                item.classList.toggle("active", item === tab);
+            });
+
+            panels.forEach(function (panel) {
+                panel.classList.toggle("active", panel.id === target);
+            });
+        });
+    });
+});
