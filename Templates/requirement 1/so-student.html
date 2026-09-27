@@ -117,7 +117,7 @@
                         >
                     </span>
 
-                    <span>My Courses</span>
+                    <span>Courses</span>
                 </a>
 
                 <a
@@ -309,73 +309,23 @@
 
             </section>
 
-            <section class="so-content-card">
-
-                <div class="so-section-header">
-
-                    <h2>
-                        Pending SO self-assessments
-                    </h2>
-
-                    <div class="so-search">
-
-                        <span class="so-search-icon">
-                            ⌕
-                        </span>
-
-                        <input
-                            type="search"
-                            id="pendingSOSearch"
-                            placeholder="Search"
-                            aria-label="Search pending self-assessments"
-                        >
-
-                    </div>
-
-                </div>
-
-                <div class="so-section-rule"></div>
-
-                <div
-                    class="so-empty-state"
-                    id="pendingSOEmpty"
-                >
-                    <h3>
-                        No pending self-assessments
-                    </h3>
-
-                    <p>
-                        Your assigned SO self-assessments
-                        will appear here once they become available.
-                    </p>
-                </div>
-
-                <div
-                    class="so-pending-list"
-                    id="pendingSOList"
-                    hidden
-                ></div>
-
-            </section>
-
             <section class="so-content-card so-syllabus-card">
                 <div class="so-section-header">
 
                     <h2>
-                        My course syllabus
+                        My Course Syllabus
                     </h2>
 
-                    <div class="so-search">
+                    <div class="so-course-sort">
 
-                        <span class="so-search-icon">
-                            ⌕
-                        </span>
-
-                        <input
-                            type="search"
-                            placeholder="Search"
-                            aria-label="Search syllabus"
+                        <!-- CHANGE THIS LATER: Replace these sample course options with backend course data. -->
+                        <select
+                            id="studentCourseSort"
+                            aria-label="Sort syllabus by course"
                         >
+                            <option value="" selected>All Courses</option>
+                            <!-- CHANGE THIS LATER: Add enrolled courses from backend. -->
+                        </select>
                     </div>
                 </div>
 
@@ -448,6 +398,55 @@
                         </div>
                     </div>
                 </div>
+            </section>
+
+            <section class="so-content-card">
+
+                <div class="so-section-header">
+
+                    <h2>
+                        Pending SO Self-Assessments
+                    </h2>
+                    <div class="so-course-sort">
+
+                        <!-- CHANGE THIS LATER: Course options will come from the student's enrolled courses/backend data. -->
+                        <select
+                            id="pendingSOCourseFilter"
+                            aria-label="Filter pending self-assessments by course"
+                        >
+                            <option value="" selected>All Courses</option>
+                            <!-- CHANGE THIS LATER: Add enrolled courses from backend. -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="so-section-rule"></div>
+                <!-- CHANGE THIS LATER:
+                     Sample frontend data only.
+                     Backend should generate one row for every SO uploaded/assigned by the faculty,
+                     including the course name, due date, and correct SO assessment link.
+                     Course names remain empty until backend course data is connected. -->
+                <div
+                    class="so-pending-list"
+                    id="pendingSOList"
+                    hidden
+                ></div>
+
+                <div
+                    class="so-empty-state"
+                    id="pendingSOEmpty"
+                    hidden
+                >
+                    <h3>
+                        No pending self-assessments
+                    </h3>
+
+                    <p>
+                        Your assigned SO self-assessments
+                        will appear here once they become available.
+                    </p>
+                </div>
+
             </section>
         </main>
     </div>

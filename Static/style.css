@@ -220,7 +220,6 @@
 /* LEFT SIDE BLUE CREATE ACCOUNT PANEL */
 .registration-page
 .registration-form-panel {
-    order: 1;
     width: 70%;
     min-width: 0;
     min-height: 590px;
@@ -406,7 +405,6 @@
 
 .registration-page
 .registration-brand-panel {
-    order: 2;
     width: 40%;
     min-width: 330px;
     min-height: 515px;
@@ -1409,12 +1407,7 @@ body {
     min-height: 100vh;
     margin: 0;
     padding: 0;
-    font-family:
-        Inter,
-        "Segoe UI",
-        Arial,
-        Helvetica,
-        sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
     color: var(--text);
     background: #FFFFFF;
     line-height: 1.5;
@@ -1616,7 +1609,7 @@ img {
 }
 
 .login-dropdown .login-pill {
-    font-family: inherit;
+    font-family: Arial, Helvetica, sans-serif;
     cursor: pointer;
 }
 
@@ -3002,7 +2995,7 @@ b.info-icon.gold-circle {
 
     color: #FFFFFF;
 
-    font-family: inherit;
+    font-family: Arial, Helvetica, sans-serif;
 
     font-size: 22px;
 
@@ -3247,7 +3240,7 @@ span.requirement-passed {
 
     color: #004179;
 
-    font-family: inherit;
+    font-family: Arial, Helvetica, sans-serif;
 
     font-size: 22px;
 
@@ -3552,7 +3545,7 @@ span.requirement-passed {
 
     color: #FFFFFF;
 
-    font-family: inherit;
+    font-family: Arial, Helvetica, sans-serif;
 
     font-size: 21px;
 
@@ -6816,7 +6809,7 @@ z-index: 10 !important;
 .verification-success-page .verification-success-logo {
     margin: 0 0 6px 0 !important;
     color: #004179 !important;
-    font-family: inherit !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     font-size: 54px !important;
     font-weight: 800 !important;
     line-height: 1 !important;
@@ -6834,7 +6827,7 @@ z-index: 10 !important;
 .verification-success-page .verification-success-brand-subtitle {
     margin: 6px 0 0 !important;
     color: #536D83 !important;
-    font-family: inherit !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     font-size: 24px !important;
     font-weight: 400 !important;
     line-height: 1.2 !important;
@@ -6856,7 +6849,7 @@ z-index: 10 !important;
     width: 100% !important;
     margin: 0 !important;
     color: #004179 !important;
-    font-family: inherit !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     font-size: 44px !important;
     font-weight: 750 !important;
     line-height: 1.12 !important;
@@ -6890,7 +6883,7 @@ z-index: 10 !important;
     justify-content: flex-start !important;
     gap: 13px !important;
     color: #004179 !important;
-    font-family: inherit !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     font-size: 26px !important;
     font-weight: 700 !important;
     line-height: 1.2 !important;
@@ -7267,10 +7260,7 @@ button,
 input,
 select,
 textarea {
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 .auth-logo,
@@ -7282,10 +7272,7 @@ h3,
 .form-heading h2,
 .brand-heading,
 .verification-success-heading h1 {
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 /* Smooth interactions */
@@ -7781,7 +7768,7 @@ body.registration-page:not(.verification-success-page) .registration-brand-side 
   .verification-success-page .verification-success-logo {
     margin: 0 0 6px !important;
     color: #004179 !important;
-    font-family: inherit !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     font-size: 55px !important;
     font-weight: 800 !important;
     line-height: 1 !important;
@@ -11148,7 +11135,7 @@ body.workflow-modal-open {
             outline: none;
             background: #FFFFFF;
             color: #294E6B;
-            font-family: inherit;
+            font-family: Arial, Helvetica, sans-serif;
             font-size: 12px;
         }
 
@@ -11365,7 +11352,7 @@ body.workflow-modal-open {
             border-radius: 7px;
             background: #004179;
             color: #FFFFFF;
-            font-family: inherit;
+            font-family: Arial, Helvetica, sans-serif;
             font-size: 12px;
             font-weight: 700;
             cursor: pointer;
@@ -11576,7 +11563,7 @@ body.workflow-modal-open {
             outline: none;
             background: #FFFFFF;
             color: #294E6B;
-            font-family: inherit;
+            font-family: Arial, Helvetica, sans-serif;
             font-size: 12px;
         }
 
@@ -11658,7 +11645,7 @@ body.workflow-modal-open {
             outline: none;
             background: #FAFCFE;
             color: #294E6B;
-            font-family: inherit;
+            font-family: Arial, Helvetica, sans-serif;
             font-size: 13px;
             line-height: 1.6;
         }
@@ -11726,7 +11713,7 @@ body.workflow-modal-open {
             border-radius: 6px;
             background: #FFFFFF;
             color: #004179;
-            font-family: inherit;
+            font-family: Arial, Helvetica, sans-serif;
             font-size: 11px;
             font-weight: 700;
             cursor: pointer;
@@ -11745,7 +11732,7 @@ body.workflow-modal-open {
             outline: none;
             background: #FFFFFF;
             color: #294E6B;
-            font-family: inherit;
+            font-family: Arial, Helvetica, sans-serif;
             font-size: 12px;
         }
 
@@ -11790,7 +11777,7 @@ body.workflow-modal-open {
             align-items: center;
             justify-content: center;
             border-radius: 7px;
-            font-family: inherit;
+            font-family: Arial, Helvetica, sans-serif;
             font-size: 12px;
             font-weight: 700;
             cursor: pointer;
@@ -12040,6 +12027,8 @@ body.workflow-modal-open {
 .so-student-page .so-syllabus-card {
     margin-top: 10px;
     min-height: 0;
+    height: 270px;
+    max-height: 270px;
     padding-right: 8px;
     overflow-y: auto;
     overflow-x: hidden;
@@ -12121,8 +12110,8 @@ body.workflow-modal-open {
 
 .so-student-page .so-summary-grid {
     margin: 22px
-        28px
-        22px;
+        0
+        0;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 16px;
@@ -12155,6 +12144,7 @@ body.workflow-modal-open {
 }
 
 .so-student-page .so-summary-number {
+    font-family: Arial, Helvetica, sans-serif;
     color: #004179;
     font-size: 43px;
     font-weight: 800;
@@ -12163,8 +12153,8 @@ body.workflow-modal-open {
 
 .so-student-page .so-summary-label {
     color: #004179;
-    font-family: inherit;
-    font-size: 16px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 21px;
     font-weight: 700;
     line-height: 1.25;
     letter-spacing: 0;
@@ -12172,17 +12162,26 @@ body.workflow-modal-open {
 
 .so-student-page .so-content-card {
     margin-top: 15px;
-    padding: 14px 20px 16px;
+    padding: 10px 0 10px;
     background: #FFFFFF;
     min-height: 0;
 }
 
 /* Student SO locked viewport: only the two content areas scroll */
 .so-student-page .so-main > .so-content-card {
-    flex: 1 1 0;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+}
+
+.so-student-page .so-main > .so-content-card:first-of-type {
+    flex: 1 1 0;
+    margin-top: 26px;
+}
+
+.so-student-page .so-main > .so-content-card:last-of-type {
+    flex: 1 1 0;
+    margin-top: 26px;
 }
 
 .so-student-page .so-main > .so-content-card .so-pending-list,
@@ -12355,7 +12354,7 @@ body.workflow-modal-open {
 .so-student-page .so-section-header h2 {
     margin: 0;
     color: #004179;
-    font-family: inherit;
+    font-family: Arial, Helvetica, sans-serif;
     font-size: 22px;
     font-weight: 800;
     line-height: 1.15;
@@ -12368,6 +12367,10 @@ body.workflow-modal-open {
     align-items: center;
     justify-content: space-between;
     gap: 25px;
+}
+
+.so-student-page .so-main > .so-content-card:first-of-type .so-section-header h2 {
+    transform: none;
 }
 
 .so-faculty-page button, .so-faculty-page select, .so-faculty-page input {
@@ -12593,7 +12596,7 @@ body.workflow-modal-open {
 .so-faculty-page .sof-empty-state h3 {
     margin: 0 !important;
     color: #004179 !important;
-    font-family: inherit !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     font-size: 20px !important;
     font-weight: 700 !important;
     line-height: 1.25 !important;
@@ -12603,7 +12606,7 @@ body.workflow-modal-open {
     margin: 0;
     margin-top: 5px !important;
     color: #004179 !important;
-    font-family: inherit !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     font-size: 16px !important;
     font-weight: 400 !important;
     line-height: 1.35 !important;
@@ -13084,7 +13087,7 @@ body.workflow-modal-open {
 
 .so-student-page .so-main {
     min-width: 0 !important;
-    padding: 26px 28px 24px !important;
+    padding: 26px 28px 12px !important;
     background: #FFFFFF !important;
     height: 100% !important;
     min-height: 0 !important;
@@ -13315,10 +13318,7 @@ body.workflow-modal-open {
     outline: none !important;
     background: transparent !important;
     color: #C62828 !important;
-    font-family: Inter,
-        "Segoe UI",
-        Arial,
-        sans-serif !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     font-size: 12px !important;
     font-weight: 700 !important;
     line-height: 1 !important;
@@ -13338,9 +13338,7 @@ body.workflow-modal-open {
     min-height: 100vh;
     background: #FFFFFF !important;
     color: #004179;
-    font-family: Arial,
-        Helvetica,
-        sans-serif !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     height: 100vh !important;
     overflow: hidden !important;
     width: 100%;
@@ -13416,9 +13414,7 @@ body.workflow-modal-open {
     font-weight: 700 !important;
     text-decoration: none !important;
     line-height: 1.2 !important;
-    font-family: Arial,
-        Helvetica,
-        sans-serif !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     border: none !important;
     background: transparent !important;
     text-align: left !important;
@@ -13505,9 +13501,7 @@ body.workflow-modal-open {
     align-items: center !important;
     line-height: 1.2 !important;
     text-align: left !important;
-    font-family: Arial,
-        Helvetica,
-        sans-serif !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     height: 48px !important;
     background: transparent !important;
     white-space: nowrap !important;
@@ -13984,7 +13978,7 @@ body.sof-modal-open {
 
 .so-faculty-page .sof-panel-toolbar > p {
     font-size: 16px !important;
-    font-family: inherit !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     font-weight: 400 !important;
     line-height: 1.35 !important;
     color: #004179 !important;
@@ -14253,7 +14247,7 @@ body.sof-modal-open {
     border-radius: 8px !important;
     background: #004179 !important;
     color: #FFFFFF !important;
-    font-family: inherit !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     font-size: 14px !important;
     font-weight: 700 !important;
     line-height: 1 !important;
@@ -14374,7 +14368,7 @@ body.sof-modal-open {
     border-radius: 18px !important;
     background: #FFFFFF !important;
     color: #004179 !important;
-    font-family: inherit !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     font-size: 13px !important;
     font-weight: 500 !important;
     cursor: pointer !important;
@@ -14392,7 +14386,7 @@ body.sof-modal-open {
     border-radius: 18px !important;
     background: #FFFFFF !important;
     color: #FF4545 !important;
-    font-family: inherit !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     font-size: 13px !important;
     font-weight: 500 !important;
     cursor: pointer !important;
@@ -14438,7 +14432,7 @@ body.sof-modal-open {
 .so-faculty-page #syllabus .sof-panel-toolbar > p, .so-faculty-page #course-outcomes .sof-panel-toolbar > p, .so-faculty-page #student-outcomes .sof-so-toolbar > p {
     margin: 0 !important;
     color: #004179 !important;
-    font-family: inherit !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     font-size: 15px !important;
     font-weight: 400 !important;
     line-height: 1.35 !important;
@@ -14456,7 +14450,7 @@ body.sof-modal-open {
     border-radius: 7px !important;
     background: #004179 !important;
     color: #FFFFFF !important;
-    font-family: inherit !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     font-size: 12px !important;
     font-weight: 700 !important;
     line-height: 1 !important;
@@ -14559,7 +14553,7 @@ body.sof-modal-open {
     border-radius: 7px !important;
     outline: none !important;
     color: #004179 !important;
-    font-family: inherit !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     font-size: 13px !important;
     resize: vertical !important;
 }
@@ -14736,7 +14730,7 @@ body.sof-modal-open {
     border-radius: 6px !important;
     background: #004179 !important;
     color: #FFFFFF !important;
-    font-family: inherit !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     font-size: 12px !important;
     font-weight: 700 !important;
     line-height: 1 !important;
@@ -14801,7 +14795,7 @@ body.sof-modal-open {
     table-layout: fixed !important;
     background: #FFFFFF !important;
     color: #00345F !important;
-    font-family: inherit !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     box-sizing: border-box !important;
 }
 
@@ -14916,7 +14910,7 @@ body.sof-modal-open {
     border-radius: 5px !important;
     background: #FFFFFF !important;
     color: #004179 !important;
-    font-family: inherit !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     font-size: 11px !important;
     font-weight: 700 !important;
     cursor: pointer !important;
@@ -15031,8 +15025,10 @@ body.sof-modal-open {
 .so-student-page .so-pending-list {
     display: grid;
     gap: 14px;
-    padding: 18px 8px 18px 0;
+    padding: 10px 8px 12px 0;
     min-height: 0;
+    height: 270px;
+    max-height: 270px;
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: thin;
@@ -15052,7 +15048,7 @@ body.sof-modal-open {
     border: 1px solid #D7E3EC;
     border-radius: 10px;
     background: #FFFFFF;
-    font-family: Inter, "Segoe UI", Arial, Helvetica, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 .so-student-page .so-pending-information {
@@ -15061,10 +15057,11 @@ body.sof-modal-open {
 }
 
 .so-student-page .so-pending-title {
+    font-family: Arial, Helvetica, sans-serif;
     margin: 0;
     color: #003F73;
     font-size: 15px;
-    font-weight: 750;
+    font-weight: 700;
     line-height: 1.4;
     letter-spacing: 0;
 }
@@ -15108,7 +15105,7 @@ body.sof-modal-open {
     border-radius: 8px;
     background: #004179;
     color: #FFFFFF;
-    font-family: Inter, "Segoe UI", Arial, Helvetica, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
     font-size: 13px;
     font-weight: 700;
     line-height: 1;
@@ -15127,10 +15124,16 @@ body.sof-modal-open {
 .sodh-main {
     flex: 1;
     min-width: 0;
-    padding: 32px
+    padding: 26px
                 28px
                 36px;
     background: #F7F8FA;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding-bottom: 18px;
 }
 
 .sodh-main .so-page-heading {
@@ -15178,8 +15181,8 @@ body.sof-modal-open {
 .sodh-summary-label {
     display: block;
     margin-bottom: 2px;
-    color: #405F7A;
-    font-size: 15px;
+    color: #004179;
+    font-size: 20px;
     font-weight: 600;
 
     line-height: 1.35;}
@@ -15225,7 +15228,7 @@ body.sof-modal-open {
                 0
                 5px;
     color: #214B70;
-    font-size: 15px;
+    font-size: 18px;
     font-weight: 700;
 
     margin-bottom: 7px;}
@@ -15241,7 +15244,7 @@ body.sof-modal-open {
     outline: none;
     background: #FFFFFF;
     color: #294B68;
-    font-family: inherit;
+    font-family: Arial, Helvetica, sans-serif;
     font-size: 15px;
     cursor: pointer;
 
@@ -15265,6 +15268,10 @@ body.sof-modal-open {
                     114,
                     0.08
                 );
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .sodh-tabs {
@@ -15288,9 +15295,9 @@ body.sof-modal-open {
                 transparent;
     background: #FFFFFF;
     color: #004179;
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: 700;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 19px;
+    font-weight: 800;
     cursor: pointer;
     transition: background 0.15s ease,
                 border-color 0.15s ease;
@@ -15307,10 +15314,14 @@ body.sof-modal-open {
 
 .sodh-tab-panel {
     display: none;
+    min-height: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
 }
 
 .sodh-tab-panel.active {
-    display: block;
+    display: flex;
+    flex-direction: column;
 }
 
 .sodh-toolbar {
@@ -15368,7 +15379,7 @@ body.sof-modal-open {
     outline: none;
     background: transparent;
     color: #294B68;
-    font-family: inherit;
+    font-family: Arial, Helvetica, sans-serif;
     font-size: 15px;
 }
 
@@ -15384,7 +15395,7 @@ body.sof-modal-open {
     border-radius: 16px;
     background: #004179;
     color: #FFFFFF;
-    font-family: inherit;
+    font-family: Arial, Helvetica, sans-serif;
     font-size: 11px;
     font-weight: 700;
     white-space: nowrap;
@@ -15397,7 +15408,9 @@ body.sof-modal-open {
 
 .sodh-table-wrap {
     width: 100%;
-    overflow-x: auto;
+    overflow: auto;
+    flex: 1 1 auto;
+    min-height: 0;
 }
 
 .sodh-table {
@@ -15407,15 +15420,15 @@ body.sof-modal-open {
 }
 
 .sodh-table thead th {
-    padding: 10px
-                10px;
+    padding: 13px
+                12px;
     border-top: 1px solid
                 #E1E7EC;
     border-bottom: 1px solid
                 #D8C66C;
     background: #FFF6C8;
     color: #004179;
-    font-size: 10px;
+    font-size: 14px;
     font-weight: 800;
     line-height: 1.25;
     text-align: left;
@@ -15437,19 +15450,18 @@ body.sof-modal-open {
 
 .sodh-empty-row td {
     height: 155px !important;
-    padding: 35px
-                20px !important;
+    padding: 35px 20px !important;
     text-align: center !important;
     color: #60778D;
 
-    font-size: 16px;
-    line-height: 1.55;}
+    font-size: 14px !important;
+    line-height: 1.45;}
 
 .sodh-empty-row strong {
     display: block;
     margin-bottom: 5px;
     color: #004179;
-    font-size: 13px;
+    font-size: 18px;
     font-weight: 700;
 }
 
@@ -15790,7 +15802,7 @@ body.sof-modal-open {
     color: #003F73;}
 
     .so-student-page .so-summary-label {
-        font-size: 16px;
+        font-size: 21px;
     
     line-height: 1.35;
     font-weight: 600;
@@ -15943,7 +15955,7 @@ body.sof-modal-open {
                     auto;
     
     padding: 15px 18px;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 700;}
 
     .sodh-toolbar {
@@ -16127,7 +16139,7 @@ body.sof-modal-open {
     outline: none !important;
     background: #FFFFFF !important;
     color: #004179 !important;
-    font-family: inherit !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     font-size: 13px !important;
 }
 
@@ -16159,7 +16171,7 @@ body.sof-modal-open {
     border-radius: 20px !important;
     background: #FFFFFF !important;
     color: #004179 !important;
-    font-family: inherit !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     font-size: 12px !important;
     font-weight: 700 !important;
     cursor: pointer !important;
@@ -16193,7 +16205,7 @@ body.sof-modal-open {
     min-height: 39px !important;
     padding: 8px 17px !important;
     border-radius: 7px !important;
-    font-family: inherit !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     font-size: 13px !important;
     font-weight: 700 !important;
     cursor: pointer !important;
@@ -18221,3 +18233,196 @@ body.sof-modal-open {
     }
 }
 
+/* SO STUDENT COURSE SORT */
+.so-student-page .so-course-sort {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.so-student-page .so-course-sort label {
+    color: #004179;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.so-student-page .so-course-sort select {
+    min-width: 210px;
+    height: 36px;
+    padding: 0 36px 0 13px;
+    border: 1px solid #D6E1EA;
+    border-radius: 18px;
+    outline: none;
+    background: #F2F4F5;
+    color: #004179;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.so-student-page .so-course-sort select:focus {
+    border-color: #F4C300;
+    box-shadow: 0 0 0 3px rgba(244, 195, 0, 0.12);
+}
+
+/* SO STUDENT PENDING SO COURSE COLUMN */
+.so-student-page .so-pending-item {
+    display: grid;
+    grid-template-columns: minmax(260px, 1.35fr) minmax(150px, .65fr) auto;
+    align-items: center;
+    gap: 20px;
+}
+
+.so-student-page .so-pending-course {
+    justify-self: center;
+    color: #004179;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.25;
+    text-align: center;
+}
+
+.so-student-page .so-start-assessment-btn {
+    min-width: 230px;
+    padding: 0 15px 0 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    background: #F4C300;
+    color: #004179;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.so-student-page .so-start-assessment-btn:hover {
+    background: #FFD21C;
+}
+
+.so-student-page .so-assessment-arrow {
+    font-size: 25px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+
+/* SO STUDENT EMPTY COURSE DROPDOWNS */
+.so-student-page .so-course-sort select:empty {
+    color: transparent;
+}
+
+
+/* SO Attainment */
+.sodh-so-code {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 58px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #EAF3FA;
+    color: #004179;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.sodh-so-description {
+    color: #173F63;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+.sodh-attainment {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 260px;
+}
+
+.sodh-attainment-track {
+    position: relative;
+    flex: 1 1 auto;
+    height: 18px;
+    overflow: hidden;
+    border: 2px solid #00508A;
+    border-radius: 999px;
+    background: #FFFFFF;
+}
+
+.sodh-attainment-fill {
+    display: block;
+    width: var(--attainment, 0%);
+    height: 100%;
+    border-radius: inherit;
+    background: #00508A;
+}
+
+.sodh-attainment-value {
+    min-width: 52px;
+    color: #004179;
+    font-size: 15px;
+    font-weight: 700;
+    text-align: right;
+}
+
+.sodh-progress-text {
+    color: #004179;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.sodh-completion {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 150px;
+}
+
+.sodh-completion-track {
+    width: 92px;
+    height: 9px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #E1EAF1;
+}
+
+.sodh-completion-fill {
+    display: block;
+    width: var(--completion, 0%);
+    height: 100%;
+    border-radius: inherit;
+    background: #00508A;
+}
+
+.sodh-completion-value {
+    min-width: 42px;
+    color: #004179;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.sodh-response-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 92px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.sodh-response-status.incomplete {
+    background: #FFF3CD;
+    color: #8A6500;
+}
+
+.sodh-response-status.complete {
+    background: #E6F4EA;
+    color: #237A3B;
+}

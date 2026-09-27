@@ -4365,9 +4365,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const storageKey =
         "eduMetricsStudentOutcomes";
 
-    const pendingSOSearch =
+    const pendingCourseFilter =
         document.getElementById(
-            "pendingSOSearch"
+            "pendingSOCourseFilter"
         );
 
     const pendingSOCount =
@@ -4418,7 +4418,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function formatStudentSODueDate(value) {
         if(!value) {
-            return "No due date";
+            return "Pending";
         }
 
         const date =
@@ -4478,6 +4478,23 @@ document.addEventListener("DOMContentLoaded", function () {
                         "Active"
                     );
                 }
+            )
+            .map(
+                function (outcome) {
+                    return {
+                        ...outcome,
+
+                        /*
+                         * CHANGE THIS LATER:
+                         * Replace this sample course with the course
+                         * saved by the backend/faculty assignment.
+                         * For now, every uploaded SO is Software Design.
+                         */
+                        course:
+                            outcome.course ||
+                            ""
+                    };
+                }
             );
     }
 
@@ -4499,29 +4516,84 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    function renderPendingStudentOutcomes() {
-        const searchValue =
-            pendingSOSearch
-                ? pendingSOSearch.value
-                    .trim()
-                    .toLowerCase()
-                : "";
+    function populatePendingCourseFilter(outcomes) {
+        if(!pendingCourseFilter) {
+            return;
+        }
 
+        const selectedValue =
+            pendingCourseFilter.value;
+
+        const courses =
+            [
+                ...new Set(
+                    outcomes.map(
+                        function (outcome) {
+                            return outcome.course;
+                        }
+                    )
+                )
+            ];
+
+        pendingCourseFilter.innerHTML = "";
+
+        courses.forEach(
+            function (course) {
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+                option.value =
+                    course;
+
+                option.textContent =
+                    course;
+
+                pendingCourseFilter.appendChild(
+                    option
+                );
+            }
+        );
+
+        if(
+            selectedValue &&
+            Array.from(
+                pendingCourseFilter.options
+            ).some(
+                function (option) {
+                    return (
+                        option.value ===
+                        selectedValue
+                    );
+                }
+            )
+        ) {
+            pendingCourseFilter.value =
+                selectedValue;
+        }
+    }
+
+    function renderPendingStudentOutcomes() {
         const activeOutcomes =
             getActiveStudentOutcomes();
+
+        populatePendingCourseFilter(
+            activeOutcomes
+        );
+
+        const selectedCourse =
+            pendingCourseFilter
+                ? pendingCourseFilter.value
+                : "";
 
         const filteredOutcomes =
             activeOutcomes.filter(
                 function (outcome) {
-                    const searchable =
-                        (
-                            (outcome.title || "") +
-                            " " +
-                            (outcome.code || "")
-                        ).toLowerCase();
-
-                    return searchable.includes(
-                        searchValue
+                    return (
+                        !selectedCourse ||
+                        outcome.course ===
+                            selectedCourse
                     );
                 }
             );
@@ -4547,8 +4619,18 @@ document.addEventListener("DOMContentLoaded", function () {
                             <span class="so-pending-status">Pending</span>
                         </div>
                     </div>
-                    <button type="button" class="so-start-assessment-btn" data-link="${escapeStudentSOHTML(outcome.link || "")}">
-                        Start Assessment
+
+                    <div class="so-pending-course">
+                        ${escapeStudentSOHTML(outcome.course)}
+                    </div>
+
+                    <button
+                        type="button"
+                        class="so-start-assessment-btn"
+                        data-link="${escapeStudentSOHTML(outcome.link || "")}"
+                    >
+                        <span>Complete Self-Assessment</span>
+                        <span class="so-assessment-arrow" aria-hidden="true">→</span>
                     </button>
                 `;
 
@@ -4563,6 +4645,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
         pendingSOEmpty.hidden =
             filteredOutcomes.length > 0;
+
+        if(
+            filteredOutcomes.length === 0 &&
+            selectedCourse !== ""
+        ) {
+            pendingSOEmpty.innerHTML = `
+                <h3>No self-assessments for this course</h3>
+                <p>Select another course to view its assigned Student Outcomes.</p>
+            `;
+        }
 
         updateStudentSOSummary(
             activeOutcomes
@@ -4591,9 +4683,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     );
 
-    if(pendingSOSearch) {
-        pendingSOSearch.addEventListener(
-            "input",
+    if(pendingCourseFilter) {
+        pendingCourseFilter.addEventListener(
+            "change",
             renderPendingStudentOutcomes
         );
     }
@@ -4672,6 +4764,647 @@ document.addEventListener("DOMContentLoaded", function () {
             );
         }
     );
+
+    const responseStorageKey =
+        "eduMetricsSOResponses";
+
+    const outcomeStorageKey =
+        "eduMetricsStudentOutcomes";
+
+    const soSummaryTableBody =
+        document.getElementById(
+            "soSummaryTableBody"
+        );
+
+    const studentResponsesTableBody =
+        document.getElementById(
+            "studentResponsesTableBody"
+        );
+
+    const soSummarySearch =
+        document.getElementById(
+            "soSummarySearch"
+        );
+
+    const studentResponseSearch =
+        document.getElementById(
+            "studentResponseSearch"
+        );
+
+    function readArray(key) {
+        try {
+            const stored =
+                localStorage.getItem(key);
+
+            if(!stored) {
+                return [];
+            }
+
+            const parsed =
+                JSON.parse(stored);
+
+            return Array.isArray(parsed)
+                ? parsed
+                : [];
+        }
+        catch(error) {
+            return [];
+        }
+    }
+
+    function safeText(value) {
+        return String(
+            value === undefined ||
+            value === null
+                ? ""
+                : value
+        );
+    }
+
+    function escapeDeptHTML(value) {
+        return safeText(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function normalize(value) {
+        return safeText(value)
+            .trim()
+            .toLowerCase();
+    }
+
+    function selectedFilter(id) {
+        const field =
+            document.getElementById(id);
+
+        return field
+            ? normalize(field.value)
+            : "";
+    }
+
+    function responseMatchesFilters(response) {
+        const info =
+            response.studentInformation ||
+            {};
+
+        const schoolYear =
+            selectedFilter(
+                "schoolYearFilter"
+            );
+
+        const program =
+            selectedFilter(
+                "programFilter"
+            );
+
+        const course =
+            selectedFilter(
+                "courseFilter"
+            );
+
+        const section =
+            selectedFilter(
+                "sectionFilter"
+            );
+
+        return (
+            (!schoolYear ||
+                normalize(info.schoolYear) ===
+                    schoolYear) &&
+            (!program ||
+                normalize(info.program) ===
+                    program) &&
+            (!course ||
+                normalize(info.course) ===
+                    course) &&
+            (!section ||
+                normalize(info.section) ===
+                    section)
+        );
+    }
+
+    function getFilteredResponses() {
+        return readArray(
+            responseStorageKey
+        ).filter(
+            responseMatchesFilters
+        );
+    }
+
+    function emptySummaryRow() {
+        return `
+            <tr class="sodh-empty-row">
+                <td colspan="3">
+                    <strong>No SO results yet</strong>
+                    Student Outcome attainment results
+                    will appear here once assessment
+                    data is available.
+                </td>
+            </tr>
+        `;
+    }
+
+    function emptyStudentRow() {
+        return `
+            <tr class="sodh-empty-row">
+                <td colspan="7">
+                    <strong>No student responses yet</strong>
+                    Student responses will appear here
+                    once assessment responses are available.
+                </td>
+            </tr>
+        `;
+    }
+
+    function renderSOSummary() {
+        if(!soSummaryTableBody) {
+            return;
+        }
+
+        const query =
+            soSummarySearch
+                ? normalize(
+                    soSummarySearch.value
+                )
+                : "";
+
+        const responses =
+            getFilteredResponses();
+
+        const groups = {};
+
+        responses.forEach(
+            function (response) {
+                const so =
+                    safeText(
+                        response.studentOutcome
+                    ).toLowerCase();
+
+                const answers =
+                    response.answers || {};
+
+                const descriptions =
+                    Array.isArray(
+                        response.indicatorDescriptions
+                    )
+                        ? response.indicatorDescriptions
+                        : [];
+
+                Object.keys(answers).forEach(
+                    function (answerKey) {
+                        const indicatorMatch =
+                            answerKey.match(
+                                /(\d+)$/
+                            );
+
+                        const indicatorNumber =
+                            indicatorMatch
+                                ? Number(
+                                    indicatorMatch[1]
+                                )
+                                : 0;
+
+                        const description =
+                            descriptions[
+                                Math.max(
+                                    indicatorNumber - 1,
+                                    0
+                                )
+                            ] ||
+                            (
+                                "Performance Indicator " +
+                                indicatorNumber
+                            );
+
+                        const groupKey =
+                            so +
+                            "|" +
+                            indicatorNumber +
+                            "|" +
+                            description;
+
+                        if(!groups[groupKey]) {
+                            groups[groupKey] = {
+                                so: so,
+                                indicatorNumber:
+                                    indicatorNumber,
+                                description:
+                                    description,
+                                total: 0,
+                                count: 0
+                            };
+                        }
+
+                        const score =
+                            Number(
+                                answers[answerKey]
+                            );
+
+                        if(
+                            Number.isFinite(score) &&
+                            score > 0
+                        ) {
+                            groups[groupKey].total +=
+                                score;
+
+                            groups[groupKey].count +=
+                                1;
+                        }
+                    }
+                );
+            }
+        );
+
+        const rows =
+            Object.values(groups)
+                .filter(
+                    function (group) {
+                        if(!query) {
+                            return true;
+                        }
+
+                        const haystack =
+                            (
+                                "SO (" +
+                                group.so +
+                                ") " +
+                                group.indicatorNumber +
+                                " " +
+                                group.description
+                            ).toLowerCase();
+
+                        return haystack.includes(
+                            query
+                        );
+                    }
+                )
+                .sort(
+                    function (a, b) {
+                        if(a.so !== b.so) {
+                            return a.so.localeCompare(
+                                b.so
+                            );
+                        }
+
+                        return (
+                            a.indicatorNumber -
+                            b.indicatorNumber
+                        );
+                    }
+                );
+
+        if(!rows.length) {
+            soSummaryTableBody.innerHTML =
+                emptySummaryRow();
+
+            return;
+        }
+
+        soSummaryTableBody.innerHTML =
+            rows.map(
+                function (group) {
+                    const average =
+                        group.count
+                            ? (
+                                group.total /
+                                group.count
+                            )
+                            : 0;
+
+                    /* Ratings are 1-3.
+                       Convert the average rating to a 0-100 attainment rate. */
+                    const attainment =
+                        Math.max(
+                            0,
+                            Math.min(
+                                100,
+                                (
+                                    average /
+                                    3
+                                ) * 100
+                            )
+                        );
+
+                    const percent =
+                        Math.round(
+                            attainment
+                        );
+
+                    return `
+                        <tr>
+                            <td>
+                                <span class="sodh-so-code">
+                                    SO (${escapeDeptHTML(group.so)})
+                                    - ${group.indicatorNumber}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="sodh-so-description">
+                                    ${escapeDeptHTML(group.description)}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="sodh-attainment">
+                                    <div
+                                        class="sodh-attainment-track"
+                                        aria-label="Attainment ${percent}%"
+                                    >
+                                        <span
+                                            class="sodh-attainment-fill"
+                                            style="--attainment:${percent}%"
+                                        ></span>
+                                    </div>
+                                    <span class="sodh-attainment-value">
+                                        ${percent}%
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+            ).join("");
+    }
+
+    function getAssignedSOCount(course) {
+        const outcomes =
+            readArray(
+                outcomeStorageKey
+            );
+
+        const courseName =
+            normalize(course);
+
+        const courseOutcomes =
+            outcomes.filter(
+                function (outcome) {
+                    const outcomeCourse =
+                        normalize(
+                            outcome.course
+                        );
+
+                    return (
+                        !courseName ||
+                        !outcomeCourse ||
+                        outcomeCourse ===
+                            courseName
+                    );
+                }
+            );
+
+        const uniqueCodes =
+            new Set(
+                courseOutcomes.map(
+                    function (outcome) {
+                        return normalize(
+                            outcome.code ||
+                            outcome.studentOutcome ||
+                            (
+                                safeText(
+                                    outcome.title
+                                ).match(
+                                    /outcome\s*\((g1|g2|[a-l])\)/i
+                                ) || []
+                            )[1] ||
+                            outcome.id
+                        );
+                    }
+                ).filter(Boolean)
+            );
+
+        return uniqueCodes.size;
+    }
+
+    function renderStudentResponses() {
+        if(!studentResponsesTableBody) {
+            return;
+        }
+
+        const query =
+            studentResponseSearch
+                ? normalize(
+                    studentResponseSearch.value
+                )
+                : "";
+
+        const responses =
+            getFilteredResponses();
+
+        const students = {};
+
+        responses.forEach(
+            function (response) {
+                const info =
+                    response.studentInformation ||
+                    {};
+
+                const key = [
+                    normalize(
+                        info.studentName
+                    ) || "student",
+                    normalize(
+                        info.course
+                    ) || "course",
+                    normalize(
+                        info.section
+                    ) || "section"
+                ].join("|");
+
+                if(!students[key]) {
+                    students[key] = {
+                        info: info,
+                        completed:
+                            new Set()
+                    };
+                }
+
+                if(response.studentOutcome) {
+                    students[key].completed.add(
+                        normalize(
+                            response.studentOutcome
+                        )
+                    );
+                }
+            }
+        );
+
+        const rows =
+            Object.values(students)
+                .filter(
+                    function (student) {
+                        if(!query) {
+                            return true;
+                        }
+
+                        const info =
+                            student.info || {};
+
+                        const haystack = [
+                            info.studentName,
+                            info.program,
+                            info.course,
+                            info.section
+                        ].join(" ")
+                            .toLowerCase();
+
+                        return haystack.includes(
+                            query
+                        );
+                    }
+                );
+
+        if(!rows.length) {
+            studentResponsesTableBody.innerHTML =
+                emptyStudentRow();
+
+            return;
+        }
+
+        studentResponsesTableBody.innerHTML =
+            rows.map(
+                function (student) {
+                    const info =
+                        student.info || {};
+
+                    const completed =
+                        student.completed.size;
+
+                    const assigned =
+                        getAssignedSOCount(
+                            info.course
+                        );
+
+                    const total =
+                        Math.max(
+                            assigned,
+                            completed
+                        );
+
+                    const percent =
+                        total > 0
+                            ? Math.round(
+                                (
+                                    completed /
+                                    total
+                                ) * 100
+                            )
+                            : 0;
+
+                    const isComplete =
+                        total > 0 &&
+                        completed >= total;
+
+                    const status =
+                        isComplete
+                            ? "Complete"
+                            : "Incomplete";
+
+                    const statusClass =
+                        isComplete
+                            ? "complete"
+                            : "incomplete";
+
+                    return `
+                        <tr>
+                            <td>
+                                <strong>
+                                    ${escapeDeptHTML(info.studentName || "—")}
+                                </strong>
+                            </td>
+                            <td>
+                                ${escapeDeptHTML(info.program || "—")}
+                            </td>
+                            <td>
+                                ${escapeDeptHTML(info.course || "—")}
+                            </td>
+                            <td>
+                                ${escapeDeptHTML(info.section || "—")}
+                            </td>
+                            <td>
+                                <span class="sodh-progress-text">
+                                    ${completed} / ${total}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="sodh-completion">
+                                    <div class="sodh-completion-track">
+                                        <span
+                                            class="sodh-completion-fill"
+                                            style="--completion:${percent}%"
+                                        ></span>
+                                    </div>
+                                    <span class="sodh-completion-value">
+                                        ${percent}%
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="sodh-response-status ${statusClass}">
+                                    ${status}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                }
+            ).join("");
+    }
+
+    function renderDepartmentHeadSOData() {
+        renderSOSummary();
+        renderStudentResponses();
+    }
+
+    [
+        "schoolYearFilter",
+        "departmentFilter",
+        "programFilter",
+        "courseFilter",
+        "sectionFilter"
+    ].forEach(
+        function (id) {
+            const field =
+                document.getElementById(id);
+
+            if(field) {
+                field.addEventListener(
+                    "change",
+                    renderDepartmentHeadSOData
+                );
+            }
+        }
+    );
+
+    if(soSummarySearch) {
+        soSummarySearch.addEventListener(
+            "input",
+            renderSOSummary
+        );
+    }
+
+    if(studentResponseSearch) {
+        studentResponseSearch.addEventListener(
+            "input",
+            renderStudentResponses
+        );
+    }
+
+    window.addEventListener(
+        "storage",
+        function (event) {
+            if(
+                event.key ===
+                    responseStorageKey ||
+                event.key ===
+                    outcomeStorageKey
+            ) {
+                renderDepartmentHeadSOData();
+            }
+        }
+    );
+
+    renderDepartmentHeadSOData();
 });
 
 /* STUDENT OUTCOME SELF-ASSESSMENT — SHARED SO(A-L) */
@@ -4776,25 +5509,31 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function getStudentInformation() {
-        const fieldIds = [
-            "studentName",
-            "program",
-            "course",
-            "section",
-            "semester",
-            "schoolYear"
-        ];
+        const fields = {
+            studentName: "soaStudentName",
+            program: "soaProgram",
+            course: "soaCourse",
+            section: "soaSection",
+            semester: "soaSemester",
+            schoolYear: "soaSchoolYear"
+        };
 
         const information = {};
 
-        fieldIds.forEach(function (id) {
+        Object.keys(fields).forEach(function (key) {
             const field =
-                document.getElementById(id);
+                document.getElementById(
+                    fields[key]
+                );
 
-            if(field) {
-                information[id] =
-                    field.value || field.textContent || "";
-            }
+            information[key] =
+                field
+                    ? (
+                        field.value ||
+                        field.textContent ||
+                        ""
+                    ).trim()
+                    : "";
         });
 
         return information;
@@ -4850,11 +5589,47 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             );
 
+            const indicatorDescriptions =
+                Array.from(
+                    document.querySelectorAll(
+                        ".soa-question"
+                    )
+                ).map(
+                    function (question) {
+                        const title =
+                            question.querySelector(
+                                ".soa-question-title"
+                            );
+
+                        if(!title) {
+                            return "";
+                        }
+
+                        const clone =
+                            title.cloneNode(true);
+
+                        const number =
+                            clone.querySelector(
+                                ".soa-question-number"
+                            );
+
+                        if(number) {
+                            number.remove();
+                        }
+
+                        return clone.textContent
+                            .replace(/\s+/g, " ")
+                            .trim();
+                    }
+                );
+
             const assessmentData = {
                 studentOutcome: currentSO,
                 studentInformation:
                     getStudentInformation(),
                 answers: answers,
+                indicatorDescriptions:
+                    indicatorDescriptions,
                 totalScore: total,
                 maximumScore: maximumScore,
                 percentage:
@@ -5222,6 +5997,83 @@ document.addEventListener("DOMContentLoaded", function () {
                 "completedSOAssessment",
                 JSON.stringify(
                     assessmentData
+                )
+            );
+
+            /* CHANGE THIS LATER:
+               Replace localStorage with backend/API storage.
+               The Department Head page reads this frontend data for now. */
+            const responseStorageKey =
+                "eduMetricsSOResponses";
+
+            let storedResponses = [];
+
+            try {
+                const stored =
+                    localStorage.getItem(
+                        responseStorageKey
+                    );
+
+                const parsed =
+                    stored
+                        ? JSON.parse(stored)
+                        : [];
+
+                storedResponses =
+                    Array.isArray(parsed)
+                        ? parsed
+                        : [];
+            }
+            catch(error) {
+                storedResponses = [];
+            }
+
+            const studentInfo =
+                assessmentData.studentInformation ||
+                {};
+
+            const responseId = [
+                (
+                    studentInfo.studentName ||
+                    "student"
+                ).trim().toLowerCase(),
+                (
+                    studentInfo.course ||
+                    "course"
+                ).trim().toLowerCase(),
+                currentSO
+            ].join("|");
+
+            assessmentData.responseId =
+                responseId;
+
+            assessmentData.completedAt =
+                new Date().toISOString();
+
+            const existingIndex =
+                storedResponses.findIndex(
+                    function (response) {
+                        return (
+                            response.responseId ===
+                            responseId
+                        );
+                    }
+                );
+
+            if(existingIndex >= 0) {
+                storedResponses[existingIndex] =
+                    assessmentData;
+            }
+            else {
+                storedResponses.push(
+                    assessmentData
+                );
+            }
+
+            localStorage.setItem(
+                responseStorageKey,
+                JSON.stringify(
+                    storedResponses
                 )
             );
 
