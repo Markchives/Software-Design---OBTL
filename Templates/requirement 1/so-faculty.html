@@ -275,9 +275,9 @@
             </div>
 
         </aside>
-<main class="sof-main">
+<main class="sodh-main sof-main">
 
-            <section class="sof-page-heading">
+            <section class="so-page-heading sof-page-heading">
 
                 <h1>
                     Syllabus &amp; Outcomes
@@ -288,9 +288,9 @@
                 </p>
 
             </section>
-<section class="sof-filter-card">
+<section class="sodh-filter-card sof-filter-card">
 
-                <div class="sof-filter-group sof-course-filter">
+                <div class="sodh-filter-group sof-filter-group sof-course-filter">
 
                     <label for="facultyCourse">
                         Select Course
@@ -306,7 +306,7 @@
 
                 </div>
 
-                <div class="sof-filter-group">
+                <div class="sodh-filter-group sof-filter-group">
 
                     <label for="facultySection">
                         Section
@@ -322,7 +322,7 @@
 
                 </div>
 
-                <div class="sof-filter-group">
+                <div class="sodh-filter-group sof-filter-group">
 
                     <label for="facultyTerm">
                         Academic Term
@@ -338,7 +338,7 @@
 
                 </div>
 
-                <div class="sof-filter-group">
+                <div class="sodh-filter-group sof-filter-group">
 
                     <label for="facultyYear">
                         School Year
@@ -355,21 +355,21 @@
                 </div>
 
                 <button
-                    class="sof-course-details-btn"
+                    class="sof-course-details-btn sodh-faculty-details-btn"
                     type="button"
                 >
                     View Course Details
                 </button>
 
             </section>
-<section class="sof-content-card">
+<section class="sodh-content-card sof-content-card">
 <div
-                    class="sof-tabs"
+                    class="sodh-tabs sof-tabs"
                     role="tablist"
                 >
 
                     <button
-                        class="sof-tab active"
+                        class="sodh-tab sof-tab active"
                         type="button"
                         data-tab="syllabus"
                     >
@@ -377,7 +377,7 @@
                     </button>
 
                     <button
-                        class="sof-tab"
+                        class="sodh-tab sof-tab"
                         type="button"
                         data-tab="course-outcomes"
                     >
@@ -385,7 +385,7 @@
                     </button>
 
                     <button
-                        class="sof-tab"
+                        class="sodh-tab sof-tab"
                         type="button"
                         data-tab="student-outcomes"
                     >
@@ -394,21 +394,17 @@
 
                 </div>
 <div
-                    class="sof-tab-panel active"
+                    class="sodh-tab-panel sof-tab-panel active"
                     id="syllabus"
                 >
 
-                    <div class="sof-panel-toolbar">
+                    <div class="sodh-toolbar sof-panel-toolbar sof-syllabus-toolbar">
 
                         <p>
                             Upload, view, update the course syllabus.
                         </p>
 
                         <div class="sof-panel-actions">
-
-                            <small id="syllabusLastUpdated">
-                                No syllabus uploaded
-                            </small>
 
                             <label class="sof-new-file-btn">
 
@@ -561,11 +557,11 @@
 
                 </div>
 <div
-                    class="sof-tab-panel"
+                    class="sodh-tab-panel sof-tab-panel"
                     id="course-outcomes"
                 >
 
-                    <div class="sof-outcome-toolbar">
+                    <div class="sodh-toolbar sof-outcome-toolbar sof-course-outcome-toolbar">
 
                         <p>
                             Add, edit, delete course outcomes
@@ -589,9 +585,9 @@
 
                     </div>
 
-                    <div class="sof-outcome-table-wrap">
+                    <div class="sodh-table-wrap sof-outcome-table-wrap">
 
-                        <table class="sof-outcome-table">
+                        <table class="sodh-table sof-outcome-table">
 
                             <thead>
 
@@ -618,6 +614,12 @@
                             </thead>
 
                             <tbody id="courseOutcomesTableBody">
+                                <tr class="sodh-empty-row sof-outcome-empty-row">
+                                    <td colspan="4">
+                                        <strong>No course outcome uploaded</strong>
+                                        Course outcomes will appear here once uploaded.
+                                    </td>
+                                </tr>
                             </tbody>
 
                         </table>
@@ -626,11 +628,11 @@
 
                 </div>
 <div
-                    class="sof-tab-panel"
+                    class="sodh-tab-panel sof-tab-panel"
                     id="student-outcomes"
                 >
 
-                    <div class="sof-outcome-toolbar">
+                    <div class="sodh-toolbar sof-outcome-toolbar sof-student-outcome-toolbar">
 
                         <p>
                             Upload and manage student outcome assessments
@@ -656,9 +658,9 @@
 
                     </div>
 
-                    <div class="sof-outcome-table-wrap">
+                    <div class="sodh-table-wrap sof-outcome-table-wrap">
 
-                        <table class="sof-outcome-table">
+                        <table class="sodh-table sof-outcome-table sof-student-outcome-table">
 
                             <thead>
 
@@ -689,6 +691,12 @@
                             </thead>
 
                             <tbody id="studentOutcomeTableBody">
+                                <tr class="sodh-empty-row sof-outcome-empty-row">
+                                    <td colspan="5">
+                                        <strong>No student outcome uploaded</strong>
+                                        Student outcomes will appear here once uploaded.
+                                    </td>
+                                </tr>
                             </tbody>
 
                         </table>
@@ -952,19 +960,19 @@
                 <label for="studentOutcomeSelect">Student Outcome</label>
                 <select id="studentOutcomeSelect">
                     <option value="">Select Student Outcome</option>
-                    <option value="a">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (a)</option>
-                    <option value="b">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (b)</option>
-                    <option value="c">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (c)</option>
-                    <option value="d">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (d)</option>
-                    <option value="e">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (e)</option>
-                    <option value="f">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (f)</option>
-                    <option value="g1">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (g1)</option>
-                    <option value="g2">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (g2)</option>
-                    <option value="h">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (h)</option>
-                    <option value="i">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (i)</option>
-                    <option value="j">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (j)</option>
-                    <option value="k">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (k)</option>
-                    <option value="l">SELF-ASSESSMENT AND REFLECTION ON ATTAINMENT OF STUDENT OUTCOME (l)</option>
+                    <option value="a">Self-Assessment and Reflection on Attainment of Student Outcome (a)</option>
+                    <option value="b">Self-Assessment and Reflection on Attainment of Student Outcome (b)</option>
+                    <option value="c">Self-Assessment and Reflection on Attainment of Student Outcome (c)</option>
+                    <option value="d">Self-Assessment and Reflection on Attainment of Student Outcome (d)</option>
+                    <option value="e">Self-Assessment and Reflection on Attainment of Student Outcome (e)</option>
+                    <option value="f">Self-Assessment and Reflection on Attainment of Student Outcome (f)</option>
+                    <option value="g1">Self-Assessment and Reflection on Attainment of Student Outcome (g1)</option>
+                    <option value="g2">Self-Assessment and Reflection on Attainment of Student Outcome (g2)</option>
+                    <option value="h">Self-Assessment and Reflection on Attainment of Student Outcome (h)</option>
+                    <option value="i">Self-Assessment and Reflection on Attainment of Student Outcome (i)</option>
+                    <option value="j">Self-Assessment and Reflection on Attainment of Student Outcome (j)</option>
+                    <option value="k">Self-Assessment and Reflection on Attainment of Student Outcome (k)</option>
+                    <option value="l">Self-Assessment and Reflection on Attainment of Student Outcome (l)</option>
                 </select>
             </div>
 

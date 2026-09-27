@@ -1987,6 +1987,82 @@ document.addEventListener(
     }
 );
 
+
+/* STUDENT OUTCOME TITLE FORMAT */
+function formatStudentOutcomeTitle(value) {
+    const text = String(value || "").trim();
+
+    const match = text.match(
+        /student outcome\s*\((a|b|c|d|e|f|g1|g2|h|i|j|k|l)\)/i
+    );
+
+    if (match) {
+        return (
+            "Self-Assessment and Reflection on Attainment of Student Outcome (" +
+            match[1].toLowerCase() +
+            ")"
+        );
+    }
+
+    return text;
+}
+
+function normalizeStoredStudentOutcomeTitles() {
+    const storageKey = "eduMetricsStudentOutcomes";
+    const raw = localStorage.getItem(storageKey);
+
+    if (!raw) {
+        return;
+    }
+
+    try {
+        const records = JSON.parse(raw);
+
+        if (!Array.isArray(records)) {
+            return;
+        }
+
+        let changed = false;
+
+        records.forEach(function (record) {
+            if (!record || typeof record !== "object") {
+                return;
+            }
+
+            ["title", "name", "outcomeTitle", "studentOutcome"].forEach(
+                function (key) {
+                    if (
+                        typeof record[key] === "string" &&
+                        /student outcome\s*\(/i.test(record[key])
+                    ) {
+                        const formatted =
+                            formatStudentOutcomeTitle(record[key]);
+
+                        if (formatted !== record[key]) {
+                            record[key] = formatted;
+                            changed = true;
+                        }
+                    }
+                }
+            );
+        });
+
+        if (changed) {
+            localStorage.setItem(
+                storageKey,
+                JSON.stringify(records)
+            );
+        }
+    } catch (error) {
+        console.warn(
+            "Unable to normalize stored Student Outcome titles.",
+            error
+        );
+    }
+}
+
+normalizeStoredStudentOutcomeTitles();
+
 /* SYLLABUS & OUTCOMES -STUDENT + FACULTY SHARED PAGE FUNCTIONS*/
 /* DATE HELPER*/
 function getFormattedDate() {
@@ -6234,3 +6310,105 @@ document.addEventListener(
         }
     }
 );
+
+
+
+/* KEEP RENDERED STUDENT OUTCOME TITLES IN TITLE CASE */
+function normalizeRenderedStudentOutcomeTitles() {
+    const elements = document.querySelectorAll(
+        "#studentOutcomeTableBody td, " +
+        "#pendingSOList strong, " +
+        "#pendingSOList h3, " +
+        "#pendingSOList .so-pending-title"
+    );
+
+    elements.forEach(function (element) {
+        if (
+            element &&
+            /student outcome\s*\(/i.test(element.textContent || "")
+        ) {
+            element.textContent =
+                formatStudentOutcomeTitle(
+                    element.textContent
+                );
+        }
+    });
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+        normalizeRenderedStudentOutcomeTitles();
+
+        const observer =
+            new MutationObserver(
+                normalizeRenderedStudentOutcomeTitles
+            );
+
+        const facultyTable =
+            document.getElementById(
+                "studentOutcomeTableBody"
+            );
+
+        const studentList =
+            document.getElementById(
+                "pendingSOList"
+            );
+
+        [facultyTable, studentList].forEach(
+            function (target) {
+                if (target) {
+                    observer.observe(
+                        target,
+                        {
+                            childList: true,
+                            subtree: true
+                        }
+                    );
+                }
+            }
+        );
+    }
+);
+
+/* SO Student Course Filters */
+function ensureSOStudentCourseFilters() {
+    const courseFilters = [
+        document.getElementById("studentCourseSort"),
+        document.getElementById("pendingSOCourseFilter")
+    ];
+
+    courseFilters.forEach(function (select) {
+        if (!select) {
+            return;
+        }
+
+        const existingAllCourses = Array.from(select.options).find(
+            function (option) {
+                return option.textContent.trim().toLowerCase() === "all courses";
+            }
+        );
+
+        if (!existingAllCourses) {
+            const allCoursesOption = document.createElement("option");
+            allCoursesOption.value = "";
+            allCoursesOption.textContent = "All Courses";
+            select.insertBefore(
+                allCoursesOption,
+                select.firstChild
+            );
+        }
+
+        if (!select.value) {
+            select.value = "";
+        }
+    });
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+        ensureSOStudentCourseFilters();
+    }
+);
+
