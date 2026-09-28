@@ -14949,7 +14949,7 @@ body.workflow-modal-open {
 }
 
 .sodh-main .so-page-heading {
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 .sodh-summary-grid {
@@ -15092,7 +15092,7 @@ body.workflow-modal-open {
     align-items: stretch;
     border-bottom: 1px solid
                 #D8E2EA;
-    background: #FFFFFF;
+    background: #F5F7FA;
 }
 
 .sodh-tab {
@@ -16831,54 +16831,62 @@ body.sof-modal-open {
 }
 
 .so-student-page .cm-assessment-toolbar {
-    min-height: 70px;
-    padding: 16px 14px 12px 36px;
+    min-height: 51px;
+    padding: 12px 18px;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 20px;
+    gap: 16px;
     background: #FFFFFF;
 }
 
 .so-student-page .cm-assessment-toolbar > p {
     margin: 0;
     color: #004179;
-    font-size: 13px;
-    line-height: 1.4;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.5;
 }
 
 .so-student-page .cm-assessment-actions {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+    flex-shrink: 0;
 }
 
 .so-student-page .cm-assessment-search {
-    width: 250px;
-    height: 34px;
-    padding: 0 12px;
+    width: 235px;
+    height: 31px;
+    padding: 0 10px;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
-    gap: 8px;
-    border: 1px solid #17679E;
-    border-radius: 18px;
+    gap: 0;
+    border: 1px solid #A9C5DA;
+    border-radius: 16px;
     background: #FFFFFF;
     color: #004179;
 }
 
 .so-student-page .cm-assessment-search span {
-    font-size: 18px;
+    margin-right: 6px;
+    color: #004179;
+    font-size: 14px;
     line-height: 1;
 }
 
 .so-student-page .cm-assessment-search input {
     width: 100%;
     min-width: 0;
-    border: 0;
-    outline: 0;
+    padding: 0;
+    border: none;
+    outline: none;
     background: transparent;
-    color: #004179;
-    font-size: 11px;
+    color: #294B68;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
 }
 
 .so-student-page .cm-assessment-search input::placeholder {
@@ -16886,19 +16894,22 @@ body.sof-modal-open {
 }
 
 .so-student-page .cm-export-btn {
-    min-width: 128px;
-    height: 34px;
-    padding: 0 17px;
+    min-width: 0;
+    height: 31px;
+    padding: 0 15px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 9px;
-    border: 0;
-    border-radius: 18px;
+    gap: 6px;
+    border: none;
+    border-radius: 16px;
     background: #004179;
     color: #FFFFFF;
-    font-size: 14px;
-    font-weight: 800;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
 }
 
 .so-student-page .cm-assessment-table-wrap {
@@ -18878,15 +18889,28 @@ body.sof-modal-open {
 
 /* CURRICULUM MAPPING STUDENT */
 .so-student-page .cm-student-main {
-    padding: 26px 28px 12px !important;
+    flex: 1;
+    min-width: 0;
+    padding: 26px 28px 18px !important;
+    background: #F7F8FA;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .so-student-page .cm-student-filters {
-    margin-top: 18px;
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 18px;
+    gap: 14px;
     align-items: end;
+    padding: 13px 14px;
+    margin-top: 20px;
+    margin-bottom: 18px;
+    border-radius: 9px;
+    background: #FFFFFF;
+    box-shadow: 0 1px 4px rgba(0, 45, 114, 0.08);
 }
 
 .so-student-page .cm-filter-group {
@@ -18895,9 +18919,10 @@ body.sof-modal-open {
 
 .so-student-page .cm-filter-group label {
     display: block;
-    margin-bottom: 7px;
-    color: #004179;
-    font-size: 14px;
+    margin: 0 0 7px;
+    color: #214B70;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 18px;
     font-weight: 700;
 }
 
@@ -18906,16 +18931,22 @@ body.sof-modal-open {
 .so-student-page .cm-date-field {
     width: 100%;
     height: 44px;
-    border: 1px solid #7FB0D7;
-    border-radius: 7px;
+    min-height: 44px;
+    box-sizing: border-box;
+    border: 1px solid #91B8D7;
+    border-radius: 6px;
+    outline: none;
     background: #FFFFFF;
-    color: #004179;
-    font-size: 14px;
+    color: #294B68;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: normal;
 }
 
 .so-student-page .cm-filter-group input,
 .so-student-page .cm-filter-group select {
-    padding: 0 15px;
+    padding: 0 13px;
 }
 
 .so-student-page .cm-date-field {
@@ -18935,47 +18966,53 @@ body.sof-modal-open {
 }
 
 .so-student-page .cm-student-summary {
-    margin-top: 28px;
     display: grid;
-    grid-template-columns: 1.65fr 1fr 1fr 1fr;
-    gap: 16px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 0;
+    margin-bottom: 18px;
 }
 
 .so-student-page .cm-course-card,
 .so-student-page .cm-stat-card {
-    min-height: 96px;
+    min-height: 82px;
     position: relative;
     display: flex;
     align-items: center;
+    box-sizing: border-box;
     overflow: hidden;
     border-radius: 12px;
     background: #FFFFFF;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 2px 5px rgba(0, 45, 114, 0.16);
 }
 
 .so-student-page .cm-course-card > div:last-child,
 .so-student-page .cm-stat-card > div:last-child {
-    padding: 14px 24px;
+    padding: 20px 22px;
 }
 
 .so-student-page .cm-card-accent {
-    width: 12px;
-    height: 100%;
     position: absolute;
     top: 0;
+    bottom: 0;
     left: 0;
+    width: 9px;
+    height: auto;
     background: #F4C300;
 }
 
 .so-student-page .cm-card-accent-soft {
-    background: #FFE28A;
+    background: #F4C300;
 }
 
 .so-student-page .cm-course-label {
     display: block;
-    margin-bottom: 3px;
+    margin-bottom: 2px;
     color: #004179;
-    font-size: 14px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.35;
 }
 
 .so-student-page .cm-course-card h2 {
@@ -18988,82 +19025,94 @@ body.sof-modal-open {
 
 .so-student-page .cm-stat-card span {
     display: block;
+    margin-bottom: 2px;
     color: #004179;
-    font-size: 14px;
-    font-weight: 800;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.35;
 }
 
 .so-student-page .cm-stat-card strong {
     display: block;
-    margin-top: 2px;
-    color: #004179;
-    font-size: 46px;
+    margin-top: 0;
+    color: #003F73;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 32px;
     font-weight: 800;
     line-height: 1;
 }
 
 .so-student-page .cm-student-content {
-    min-height: 390px;
-    margin-top: 20px;
+    width: 100%;
+    margin-top: 0;
     overflow: hidden;
-    border-radius: 10px;
+    border-radius: 8px;
     background: #FFFFFF;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.10);
+    box-shadow: 0 1px 4px rgba(0, 45, 114, 0.08);
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .so-student-page .cm-tabs {
-    height: 54px;
+    width: 100%;
+    height: auto;
     display: flex;
-    align-items: flex-end;
+    align-items: stretch;
     gap: 0;
     padding: 0;
     margin: 0;
+    border-bottom: 1px solid #D8E2EA;
+    background: #F5F7FA;
 }
 
 .so-student-page .cm-tab {
-    height: 49px;
+    min-width: 150px;
+    height: 43px;
     margin: 0;
-    padding: 0 24px;
-    border: 1px solid #D9E1EA;
-    border-bottom: 0;
-    border-radius: 5px 5px 0 0;
+    padding: 0 22px;
+    border: none;
+    border-right: 1px solid #D8E2EA;
+    border-bottom: 3px solid transparent;
+    border-radius: 0;
     background: #F5F7FA;
     color: #004179;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 19px;
     font-weight: 800;
     cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .so-student-page .cm-tab.active {
     position: relative;
+    border-bottom-color: #F4C300;
     background: #FFFFFF;
-}
-
-.so-student-page .cm-tab.active::after {
-    content: "";
-    height: 3px;
-    position: absolute;
-    right: 0;
-    bottom: -1px;
-    left: 0;
-    background: #F4C300;
 }
 
 .so-student-page .cm-tab-panel {
     display: none;
+    min-height: 0;
     margin: 0;
     padding: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
 }
 
 .so-student-page .cm-tab-panel.active {
-    display: block;
+    display: flex;
+    flex-direction: column;
 }
 
 .so-student-page .cm-table-wrap {
+    width: 100%;
     margin: 0;
-    padding: 0 0 16px;
-    overflow-x: auto;
+    padding: 0;
+    overflow: auto;
+    flex: 1 1 auto;
+    min-height: 0;
 }
 
 .so-student-page .cm-table {
@@ -19073,7 +19122,8 @@ body.sof-modal-open {
     border-spacing: 0;
     table-layout: fixed;
     color: #004179;
-    font-size: 16px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
     font-weight: 700;
 }
 
@@ -19091,6 +19141,7 @@ body.sof-modal-open {
     border-bottom: 1px solid #D8C66C;
     background: #FFF6C8;
     color: #004179;
+    font-family: Arial, Helvetica, sans-serif;
     font-size: 14px;
     font-weight: 800;
     line-height: 1.25;
@@ -19119,7 +19170,7 @@ body.sof-modal-open {
 .so-student-page .cm-table tbody::before {
     content: "";
     display: table-row;
-    height: 10px;
+    height: 9px;
 }
 
 .so-student-page .cm-table td {
@@ -19131,6 +19182,9 @@ body.sof-modal-open {
     border-bottom: 1px solid #A9CBE8;
     background: #FFFFFF;
     color: #004179;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
 }
 
 .so-student-page .cm-table td:first-child {
@@ -19161,7 +19215,8 @@ body.sof-modal-open {
     border-radius: 6px;
     background: #FFFFFF;
     color: #004179;
-    font-size: 11px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
     font-weight: 700;
 }
 
@@ -19202,6 +19257,7 @@ body.sof-modal-open {
     border-radius: 20px;
     background: #CEF08B;
     color: #3E6A00;
+    font-family: Arial, Helvetica, sans-serif;
     font-size: 14px;
     font-weight: 700;
 }
@@ -19244,76 +19300,4 @@ body.sof-modal-open {
     .so-student-page .cm-tab {
         flex: 0 0 auto;
     }
-}
-
-/* CM STUDENT COURSE OUTCOME TABLE HEADER +3PX */
-.so-student-page .cm-table th {
-    font-size: 17px !important;
-}
-
-/* CM STUDENT ASSESSMENT MAPPING ONLY */
-.so-student-page .cm-tabs {
-    position: relative;
-    border-bottom: 1px solid #B9DDF5;
-}
-
-.so-student-page .cm-tab {
-    position: relative;
-    z-index: 1;
-}
-
-.so-student-page .cm-assessment-panel .cm-assessment-toolbar,
-.so-student-page #assessment-mapping .cm-assessment-toolbar {
-    border-bottom: 0 !important;
-    padding-left: 24px !important;
-}
-
-.so-student-page .cm-assessment-panel .cm-assessment-toolbar > p,
-.so-student-page #assessment-mapping .cm-assessment-toolbar > p {
-    margin: 0 !important;
-    font-size: 15px !important;
-    position: static !important;
-}
-
-/* CM STUDENT TABS SAME SIZE */
-.so-student-page .cm-tabs .cm-tab {
-    min-height: 43px !important;
-    padding: 0 24px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    font-size: 20px !important;
-    font-weight: 800 !important;
-    line-height: 1 !important;
-    box-sizing: border-box !important;
-}
-
-/* CM STUDENT ASSESSMENT MAPPING EXACT COLUMN CENTER */
-.so-student-page .cm-assessment-table th:nth-child(6),
-.so-student-page .cm-assessment-table td:nth-child(6),
-.so-student-page .cm-assessment-table th:nth-child(7),
-.so-student-page .cm-assessment-table td:nth-child(7),
-.so-student-page .cm-assessment-table th:nth-child(8),
-.so-student-page .cm-assessment-table td:nth-child(8) {
-    padding-left: 8px !important;
-    padding-right: 8px !important;
-    text-align: center !important;
-    vertical-align: middle !important;
-}
-
-.so-student-page .cm-assessment-table td:nth-child(8) {
-    position: relative !important;
-}
-
-.so-student-page .cm-assessment-table td:nth-child(8) .cm-contribution-high,
-.so-student-page .cm-assessment-table td:nth-child(8) > span,
-.so-student-page .cm-assessment-table td:nth-child(8) > div {
-    margin-left: auto !important;
-    margin-right: auto !important;
-}
-
-.so-student-page .cm-contribution-high {
-    display: flex !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
 }
