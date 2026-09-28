@@ -1,4 +1,4 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
     <html lang="en">
 
     <head>
@@ -248,27 +248,27 @@
     <div class="cm-filter-group">
     <label for="cmSchoolYear">School Year</label>
     <div class="cm-date-field">
-    <input id="cmSchoolYear" type="text" value="2026-2027" readonly>
+    <input id="cmSchoolYear" type="text" value="" placeholder="Select School Year" readonly>
     </div>
     </div>
     <div class="cm-filter-group">
     <label for="cmDepartment">Department</label>
-    <input id="cmDepartment" type="text" value="Engineering" readonly>
+    <input id="cmDepartment" type="text" value="" placeholder="Select Department" readonly>
     </div>
     <div class="cm-filter-group">
     <label for="cmProgram">Program</label>
-    <input id="cmProgram" type="text" value="BS CpE" readonly>
+    <input id="cmProgram" type="text" value="" placeholder="Select Program" readonly>
     </div>
     <div class="cm-filter-group">
     <label for="cmCourse">Courses</label>
     <select id="cmCourse">
-    <option value="" selected>All Course</option>
+    <option value="" selected>Select Course</option>
     </select>
     </div>
     <div class="cm-filter-group">
     <label for="cmSection">Section</label>
     <select id="cmSection">
-    <option value="COE232" selected>COE232</option>
+    <option value="" selected>Select Section</option>
     </select>
     </div>
     </section>
@@ -278,28 +278,28 @@
     <div class="cm-card-accent"></div>
     <div>
     <span class="cm-course-label">My Course</span>
-    <h2>Software Design - Lab</h2>
+    <h2>—</h2>
     </div>
     </article>
     <article class="cm-stat-card">
     <div class="cm-card-accent cm-card-accent-soft"></div>
     <div>
     <span>COs Met</span>
-    <strong>12</strong>
+    <strong>0</strong>
     </div>
     </article>
     <article class="cm-stat-card">
     <div class="cm-card-accent cm-card-accent-soft"></div>
     <div>
     <span>Need Improvement</span>
-    <strong>36</strong>
+    <strong>0</strong>
     </div>
     </article>
     <article class="cm-stat-card">
     <div class="cm-card-accent cm-card-accent-soft"></div>
     <div>
     <span>Total COs</span>
-    <strong>56</strong>
+    <strong>0</strong>
     </div>
     </article>
     </section>
@@ -329,27 +329,12 @@
     <th>Status</th>
     </tr>
     </thead>
-    <tbody>
-    <!-- CHANGE THIS LATER: Prototype display only. Replace this sample Course Outcome row with backend data. -->
-    <tr>
-    <td>CO1</td>
-    <td>Apply fundamental software engineering principles.</td>
-    <td>
-    <div class="cm-assessment-tags">
-    <span>Lab 1</span>
-    <span>Lab 2</span>
-    </div>
-    </td>
-    <td>
-    <div class="cm-attainment">
-    <div class="cm-progress-track"><div class="cm-progress-fill" style="width:91%"></div></div>
-    <small>91%</small>
-    </div>
-    </td>
-    <td><span class="cm-status-met">Met</span></td>
-    </tr>
-    </tbody>
+    <tbody></tbody>
     </table>
+    <div class="cm-empty-state">
+    <h3>No course outcomes yet</h3>
+    <p>Course outcomes will appear here once backend data is connected.</p>
+    </div>
     </div>
     </div>
 
@@ -394,30 +379,12 @@
     <th>Details</th>
     </tr>
     </thead>
-    <tbody>
-    <!-- CHANGE THIS LATER: Prototype display only. Replace this sample Assessment Mapping row with backend data. -->
-    <tr>
-    <td>Lab 1</td>
-    <td>Laboratory</td>
-    <td>
-    <div class="cm-mapped-co-tags">
-    <span>CO1</span>
-    <span>CO2</span>
-    </div>
-    </td>
-    <td>Oct. 1, 2026</td>
-    <td>10%</td>
-    <td>18/20</td>
-    <td>90%</td>
-    <td><span class="cm-contribution-high">High</span></td>
-    <td>
-    <button class="cm-view-details-btn" type="button">
-    <span>View Details</span>
-    </button>
-    </td>
-    </tr>
-    </tbody>
+    <tbody></tbody>
     </table>
+    <div class="cm-empty-state">
+    <h3>No assessment mappings yet</h3>
+    <p>Assessment mappings will appear here once backend data is connected.</p>
+    </div>
     </div>
     </div>
     </section>

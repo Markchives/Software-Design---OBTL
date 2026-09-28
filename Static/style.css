@@ -10945,6 +10945,11 @@ body.workflow-modal-open {
             font-weight: 700;
         }
 
+        @keyframes soaAssessmentIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         /* Main */
 
         .soa-main {
@@ -10977,6 +10982,7 @@ body.workflow-modal-open {
             border-radius: 12px;
             background: #FFFFFF;
             box-shadow: 0 4px 18px rgba(0, 45, 114, 0.10);
+            animation: soaAssessmentIn 0.35s ease both;
         }
 
         .soa-card-header {
@@ -11112,6 +11118,13 @@ body.workflow-modal-open {
             border: 1px solid #D7E3EC;
             border-radius: 10px;
             background: #FFFFFF;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .soa-question:hover {
+            border-color: #B7CEDF;
+            box-shadow: 0 5px 14px rgba(0, 45, 114, 0.07);
+            transform: translateY(-1px);
         }
 
         .soa-question:last-of-type {
@@ -11175,11 +11188,14 @@ body.workflow-modal-open {
             transition:
                 border-color 0.15s ease,
                 background 0.15s ease,
-                box-shadow 0.15s ease;
+                box-shadow 0.18s ease,
+                transform 0.18s ease;
         }
 
         .soa-rating-option:hover .soa-rating-content {
             border-color: #8CB3D0;
+            box-shadow: 0 5px 14px rgba(0, 65, 121, 0.08);
+            transform: translateY(-2px);
         }
 
         .soa-rating-option input:checked + .soa-rating-content {
@@ -11292,10 +11308,17 @@ body.workflow-modal-open {
             font-size: 12px;
             font-weight: 700;
             cursor: pointer;
+            transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
         }
 
         .soa-next-btn:hover {
             background: #00345F;
+            box-shadow: 0 5px 12px rgba(0, 52, 95, 0.18);
+            transform: translateY(-1px);
+        }
+
+        .soa-next-btn:active {
+            transform: translateY(0);
         }
 
         /* Responsive */
@@ -11428,7 +11451,8 @@ body.workflow-modal-open {
             border-radius: 12px;
             background: #FFFFFF;
             box-shadow: 0 4px 18px rgba(0, 45, 114, 0.10);
-        }
+                    animation: soaAssessmentIn 0.35s ease both;
+}
 
         /* Title */
 
@@ -11539,6 +11563,13 @@ body.workflow-modal-open {
             border: 1px solid #D7E3EC;
             border-radius: 10px;
             background: #FFFFFF;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .reflection-question:hover {
+            border-color: #B7CEDF;
+            box-shadow: 0 5px 14px rgba(0, 45, 114, 0.07);
+            transform: translateY(-1px);
         }
 
         .reflection-question-header {
@@ -11583,6 +11614,7 @@ body.workflow-modal-open {
             font-family: Arial, Helvetica, sans-serif;
             font-size: 13px;
             line-height: 1.6;
+            transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
         }
 
         .reflection-question textarea:focus {
@@ -11716,6 +11748,7 @@ body.workflow-modal-open {
             font-size: 12px;
             font-weight: 700;
             cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
         }
 
         .reflection-back-button {
@@ -11726,6 +11759,8 @@ body.workflow-modal-open {
 
         .reflection-back-button:hover {
             background: #F4F7FB;
+            border-color: #8FB1C9;
+            transform: translateY(-1px);
         }
 
         .reflection-submit-button {
@@ -11736,6 +11771,8 @@ body.workflow-modal-open {
 
         .reflection-submit-button:hover {
             background: #00345F;
+            box-shadow: 0 5px 12px rgba(0, 52, 95, 0.18);
+            transform: translateY(-1px);
         }
 
         /* Success */
@@ -15060,10 +15097,15 @@ body.workflow-modal-open {
     font-size: 15px;
     cursor: pointer;
 
-    min-height: 44px;}
+    min-height: 44px;    color-scheme: light;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
 
 .sodh-filter-group select:focus {
     border-color: #004179;
+    background: #FFFFFF;
+    color: #294B68;
+    box-shadow: 0 0 0 2px rgba(0, 65, 121, 0.08);
 }
 
 .sodh-content-card {
@@ -15090,6 +15132,7 @@ body.workflow-modal-open {
     width: 100%;
     display: flex;
     align-items: stretch;
+    gap: 0;
     border-bottom: 1px solid
                 #D8E2EA;
     background: #F5F7FA;
@@ -15101,10 +15144,10 @@ body.workflow-modal-open {
     padding: 0
                 22px;
     border: none;
-    border-right: 1px solid
-                #D8E2EA;
+    border-right: 1px solid #D8E2EA;
     border-bottom: 3px solid
                 transparent;
+    border-radius: 10px 10px 0 0;
     background: #F5F7FA;
     color: #004179;
     font-family: Arial, Helvetica, sans-serif;
@@ -18417,6 +18460,7 @@ body.sof-modal-open {
     border: none;
     border-right: 1px solid #D8E2EA;
     border-bottom: 3px solid transparent;
+    border-radius: 10px 10px 0 0;
     background: #F5F7FA;
     color: #004179;
     font-family: Arial, Helvetica, sans-serif;
@@ -18928,6 +18972,13 @@ body.sof-modal-open {
 
 .so-student-page .cm-filter-group input,
 .so-student-page .cm-filter-group select,
+.so-student-page .cm-filter-group select:focus {
+    border-color: #004179;
+    background: #FFFFFF;
+    color: #294B68;
+    box-shadow: 0 0 0 2px rgba(0, 65, 121, 0.08);
+}
+
 .so-student-page .cm-date-field {
     width: 100%;
     height: 44px;
@@ -18942,6 +18993,8 @@ body.sof-modal-open {
     font-size: 15px;
     font-weight: 400;
     letter-spacing: normal;
+    color-scheme: light;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .so-student-page .cm-filter-group input,
@@ -19076,7 +19129,7 @@ body.sof-modal-open {
     border: none;
     border-right: 1px solid #D8E2EA;
     border-bottom: 3px solid transparent;
-    border-radius: 0;
+    border-radius: 10px 10px 0 0;
     background: #F5F7FA;
     color: #004179;
     font-family: Arial, Helvetica, sans-serif;
@@ -19163,7 +19216,15 @@ body.sof-modal-open {
 .so-student-page .cm-table th:nth-child(4),
 .so-student-page .cm-table td:nth-child(4),
 .so-student-page .cm-table th:nth-child(5),
-.so-student-page .cm-table td:nth-child(5) {
+.so-student-page .cm-table td:nth-child(5),
+.so-student-page .cm-table th:nth-child(6),
+.so-student-page .cm-table td:nth-child(6),
+.so-student-page .cm-table th:nth-child(7),
+.so-student-page .cm-table td:nth-child(7),
+.so-student-page .cm-table th:nth-child(8),
+.so-student-page .cm-table td:nth-child(8),
+.so-student-page .cm-table th:nth-child(9),
+.so-student-page .cm-table td:nth-child(9) {
     text-align: center;
 }
 
@@ -19263,18 +19324,22 @@ body.sof-modal-open {
 }
 
 .so-student-page .cm-empty-state {
-    padding: 42px 24px;
+    width: 100%;
+    padding: 52px 24px;
     color: #004179;
+    text-align: center;
 }
 
 .so-student-page .cm-empty-state h3 {
     margin: 0;
     font-size: 17px;
+    font-weight: 700;
 }
 
 .so-student-page .cm-empty-state p {
     margin: 6px 0 0;
     font-size: 13px;
+    font-weight: 400;
 }
 
 @media (max-width: 1100px) {
