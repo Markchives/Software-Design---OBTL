@@ -1121,5 +1121,48 @@
 
     </div>
 <script src="../../Static/script.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const courseOutcomeBody = document.getElementById("courseOutcomesTableBody");
+
+    function styleAlignedSOs() {
+        if (!courseOutcomeBody) return;
+
+        courseOutcomeBody.querySelectorAll("tr:not(.sof-outcome-empty-row)").forEach(function (row) {
+            const cells = row.querySelectorAll("td");
+            if (cells.length < 3) return;
+
+            const alignedCell = cells[2];
+            if (alignedCell.querySelector(".sof-aligned-so")) return;
+
+            const values = alignedCell.textContent
+                .split(",")
+                .map(function (value) { return value.trim(); })
+                .filter(Boolean);
+
+            if (!values.length) return;
+
+            alignedCell.textContent = "";
+            values.forEach(function (value) {
+                const pill = document.createElement("span");
+                pill.className = "sof-aligned-so";
+                pill.textContent = value;
+                alignedCell.appendChild(pill);
+            });
+        });
+    }
+
+    styleAlignedSOs();
+
+    if (courseOutcomeBody) {
+        new MutationObserver(styleAlignedSOs).observe(courseOutcomeBody, {
+            childList: true,
+            subtree: true
+        });
+    }
+});
+</script>
+
 </body>
 </html>

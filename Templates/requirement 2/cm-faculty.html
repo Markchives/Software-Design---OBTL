@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Curriculum Mapping | EduMetrics Faculty</title>
+<link rel="stylesheet" href="../../Static/style.css">
+</head>
+<body class="so-student-page cm-faculty-page">
+<header class="so-topbar">
+<div class="so-brand"><div class="so-brand-logo">Edu<span>Metrics</span></div><div class="so-brand-subtitle">Academic Assessment &amp; Grading System</div></div>
+<div class="so-user-area">
+<button class="so-notification-btn" type="button" aria-label="Notifications"><img src="../../Static/images/sidebar/notif.png" alt="Notifications" class="so-notification-image"><span class="so-notification-dot"></span></button>
+<div class="so-user-info"><strong id="facultyName"></strong><span>Faculty</span></div>
+<div class="so-avatar" aria-hidden="true"><span class="so-avatar-person">●</span></div><span class="so-online-dot" aria-hidden="true"></span>
+</div>
+</header>
+<div class="so-header-lines"><div class="so-header-blue"></div><div class="so-header-gold"></div></div>
+<div class="so-shell">
+<aside class="so-sidebar">
+<div class="so-pages-title"><span class="so-grid-icon so-pages-image-wrap"><img src="../../Static/images/sidebar/pages.png" alt="" class="so-pages-image"></span><span>Pages</span></div>
+<nav class="so-nav" aria-label="Faculty navigation">
+<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/home-white.png" alt="" class="so-nav-image"></span><span>Home</span></a>
+<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/course-white.png" alt="" class="so-nav-image"></span><span>Courses</span></a>
+<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/pl-white.png" alt="" class="so-nav-image"></span><span>Platform</span></a>
+<div class="so-nav-group">
+<button class="so-nav-item so-products active" type="button"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/ws-blue.png" alt="" class="so-nav-image"></span><span>Workflow</span></button>
+<div class="so-subnav">
+<a href="#">Syllabus &amp; Outcomes</a><a href="#" class="active">Curriculum Mapping</a><a href="#">Class Roster</a><a href="#">Assessment Entry</a><a href="#">Attainment</a><a href="#">CQI Planning</a><a href="#">Gradebook</a><a href="#">Compliance Report</a>
+</div>
+</div>
+<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/rs-white.png" alt="" class="so-nav-image"></span><span>Resources</span></a>
+<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/au-white.png" alt="" class="so-nav-image"></span><span>About Us</span></a>
+</nav>
+<div class="so-sidebar-brand"><div class="so-sidebar-logo">Edu<span>Metrics</span></div><small>Academic Assessment &amp; Grading System</small></div>
+</aside>
+<main class="so-main cm-student-main">
+<section class="so-page-heading">
+<h1>Curriculum Mapping</h1>
+<p>Manage course outcomes, assessment mappings, and student attainment.</p>
+</section>
+<section class="cm-student-filters">
+<div class="cm-filter-group"><label for="cmFacultySchoolYear">School Year</label><div class="cm-date-field"><input id="cmFacultySchoolYear" type="text" placeholder="Select School Year" readonly></div></div>
+<div class="cm-filter-group"><label for="cmFacultyDepartment">Department</label><input id="cmFacultyDepartment" type="text" placeholder="Select Department" readonly></div>
+<div class="cm-filter-group"><label for="cmFacultyProgram">Program</label><input id="cmFacultyProgram" type="text" placeholder="Select Program" readonly></div>
+<div class="cm-filter-group"><label for="cmFacultyCourse">Course</label><select id="cmFacultyCourse"><option value="" selected>Select Course</option></select></div>
+<div class="cm-filter-group"><label for="cmFacultySection">Section</label><select id="cmFacultySection"><option value="" selected>Select Section</option></select></div>
+</section>
+<section class="cm-student-summary cm-faculty-summary">
+<article class="cm-course-card"><div class="cm-card-accent"></div><div><span class="cm-course-label">My Course</span><h2>—</h2></div></article>
+<article class="cm-stat-card"><div class="cm-card-accent cm-card-accent-soft"></div><div><span>Total Course Outcomes</span><strong>0</strong></div></article>
+<article class="cm-stat-card"><div class="cm-card-accent cm-card-accent-soft"></div><div><span>Mapped Assessments</span><strong>0</strong></div></article>
+<article class="cm-stat-card"><div class="cm-card-accent cm-card-accent-soft"></div><div><span>Overall CO Attainment</span><strong>0%</strong></div></article>
+</section>
+<section class="cm-student-content cm-faculty-content">
+<div class="cm-tabs" role="tablist">
+<button class="cm-tab active" type="button" data-cm-tab="assessment-mapping">Assessment Mapping</button>
+<button class="cm-tab" type="button" data-cm-tab="course-outcomes">Course Outcomes</button>
+<button class="cm-tab" type="button" data-cm-tab="students-attainment">Students' Attainment</button>
+</div>
+<div class="cm-tab-panel active" id="assessment-mapping">
+<div class="cm-assessment-toolbar"><p>Add, edit, delete assessments</p><button type="button" class="cm-add-assessment-btn" id="openAssessmentModal"><span>+</span> Add Assessment</button></div>
+<div class="cm-table-wrap"><table class="cm-table cm-assessment-table"><thead><tr><th>Assessment Title</th><th>Assessment Type</th><th>Date</th><th>Mapped CO(s)</th><th>Actions</th></tr></thead><tbody id="facultyAssessmentMappingBody">
+<tr>
+<td>Experiment 1</td>
+<td><span class="cm-type-badge">Laboratory</span></td>
+<td>Oct. 1, 2026</td>
+<td><span class="cm-co-badge">CO1</span> <span class="cm-co-badge">CO4</span></td>
+<td>
+<div class="cm-row-actions">
+<button type="button" class="cm-action-btn cm-edit-btn">✎ Edit</button>
+<button type="button" class="cm-action-btn cm-delete-btn">🗑 Delete</button>
+</div>
+</td>
+</tr>
+<tr>
+<td>Quiz 1</td>
+<td><span class="cm-type-badge">Quiz</span></td>
+<td>Oct. 8, 2026</td>
+<td><span class="cm-co-badge">CO2</span></td>
+<td>
+<div class="cm-row-actions">
+<button type="button" class="cm-action-btn cm-edit-btn">✎ Edit</button>
+<button type="button" class="cm-action-btn cm-delete-btn">🗑 Delete</button>
+</div>
+</td>
+</tr>
+<tr>
+<td>Midterm Project</td>
+<td><span class="cm-type-badge">Project</span></td>
+<td>Oct. 20, 2026</td>
+<td><span class="cm-co-badge">CO2</span> <span class="cm-co-badge">CO3</span></td>
+<td>
+<div class="cm-row-actions">
+<button type="button" class="cm-action-btn cm-edit-btn">✎ Edit</button>
+<button type="button" class="cm-action-btn cm-delete-btn">🗑 Delete</button>
+</div>
+</td>
+</tr>
+</tbody></table></div></div>
+<div class="cm-tab-panel" id="course-outcomes"><div class="cm-table-wrap"><table class="cm-table"><thead><tr><th>CO No.</th><th>Course Outcome</th><th>Mapped Assessments</th><th>Attainment</th><th>Actions</th></tr></thead><tbody id="facultyCourseOutcomesBody"></tbody></table><div class="cm-empty-state"><h3>No course outcomes yet</h3><p>Course outcomes will appear here once backend data is connected.</p></div></div></div>
+<div class="cm-tab-panel" id="students-attainment"><div class="cm-table-wrap"><table class="cm-table"><thead><tr><th>Student</th><th>Student Number</th><th>Course Outcome</th><th>Attainment</th><th>Status</th></tr></thead><tbody id="facultyStudentsAttainmentBody"></tbody></table><div class="cm-empty-state"><h3>No student attainment records yet</h3><p>Student attainment records will appear here once backend data is connected.</p></div></div></div>
+</section>
+</main>
+</div>
+<div class="cm-assessment-modal" id="assessmentModal" aria-hidden="true">
+<div class="cm-assessment-modal-card" role="dialog" aria-modal="true" aria-labelledby="assessmentModalTitle">
+<div class="cm-assessment-modal-header"><div><h2 id="assessmentModalTitle">Add Assessment</h2><p>Enter the assessment details and select the course outcome(s) it measures.</p></div><button type="button" class="cm-assessment-modal-close" id="closeAssessmentModal" aria-label="Close">&times;</button></div>
+<form id="assessmentForm">
+<div class="cm-assessment-form-grid">
+<div class="cm-assessment-field cm-assessment-field-full"><label for="assessmentName">Assessment Name</label><input id="assessmentName" type="text" placeholder="Enter assessment name" required></div>
+<div class="cm-assessment-field"><label for="assessmentType">Assessment Type</label><select id="assessmentType" required><option value="" selected disabled>Select Assessment Type</option><option>Quiz</option><option>Exam</option><option>Assignment</option><option>Assessment</option><option>Laboratory Experiment</option><option>Project</option></select></div>
+<div class="cm-assessment-field"><label for="assessmentDate">Date</label><input id="assessmentDate" type="date" required></div>
+<div class="cm-assessment-field cm-assessment-field-full"><label>Course Outcome(s)</label><p class="cm-assessment-helper">Select one or more COs.</p><div class="cm-co-options"><label><input type="checkbox" name="assessmentCO" value="CO1"><span>CO1</span></label><label><input type="checkbox" name="assessmentCO" value="CO2"><span>CO2</span></label><label><input type="checkbox" name="assessmentCO" value="CO3"><span>CO3</span></label><label><input type="checkbox" name="assessmentCO" value="CO4"><span>CO4</span></label><label><input type="checkbox" name="assessmentCO" value="CO5"><span>CO5</span></label><label><input type="checkbox" name="assessmentCO" value="CO6"><span>CO6</span></label></div><span class="cm-assessment-error" id="assessmentCoError"></span></div>
+</div>
+<div class="cm-assessment-modal-actions"><button type="button" class="cm-assessment-cancel-btn" id="cancelAssessmentModal">Cancel</button><button type="submit" class="cm-assessment-save-btn">Add Assessment</button></div>
+</form>
+</div>
+</div>
+<div class="cm-delete-modal" id="deleteConfirmModal" aria-hidden="true">
+<div class="cm-delete-modal-card" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitle">
+<h2 id="deleteConfirmTitle">Delete assessment?</h2>
+<p id="deleteConfirmMessage">Are you sure you want to delete this assessment?</p>
+<span>This assessment will be removed from the selected course.</span>
+<div class="cm-delete-modal-actions"><button type="button" class="cm-delete-cancel-btn" id="cancelDeleteAssessment">Cancel</button><button type="button" class="cm-delete-confirm-btn" id="confirmDeleteAssessment">Delete</button></div>
+</div>
+</div>
+<script src="../../Static/script.js"></script>
+<script>
+(function(){
+const modal=document.getElementById('assessmentModal');
+const openBtn=document.getElementById('openAssessmentModal');
+const closeBtn=document.getElementById('closeAssessmentModal');
+const cancelBtn=document.getElementById('cancelAssessmentModal');
+const form=document.getElementById('assessmentForm');
+const tbody=document.getElementById('facultyAssessmentMappingBody');
+const coError=document.getElementById('assessmentCoError');
+const deleteModal=document.getElementById('deleteConfirmModal');
+const deleteMessage=document.getElementById('deleteConfirmMessage');
+const cancelDeleteBtn=document.getElementById('cancelDeleteAssessment');
+const confirmDeleteBtn=document.getElementById('confirmDeleteAssessment');
+let rowToDelete=null;
+let rowToEdit=null;
+function openModal(){rowToEdit=null;form.reset();coError.textContent='';document.getElementById('assessmentModalTitle').textContent='Add Assessment';form.querySelector('.cm-assessment-save-btn').textContent='Add Assessment';modal.classList.add('show');modal.setAttribute('aria-hidden','false');document.body.classList.add('cm-modal-open');document.getElementById('assessmentName').focus();}
+function closeModal(){modal.classList.remove('show');modal.setAttribute('aria-hidden','true');document.body.classList.remove('cm-modal-open');form.reset();coError.textContent='';}
+openBtn.addEventListener('click',openModal);closeBtn.addEventListener('click',closeModal);cancelBtn.addEventListener('click',closeModal);
+modal.addEventListener('click',function(e){if(e.target===modal)closeModal();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('show'))closeModal();});
+form.addEventListener('submit',function(e){
+e.preventDefault();
+const selected=[...form.querySelectorAll('input[name="assessmentCO"]:checked')];
+if(!selected.length){coError.textContent='Please select at least one course outcome.';return;}
+coError.textContent='';
+const name=document.getElementById('assessmentName').value.trim();
+const type=document.getElementById('assessmentType').value;
+const dateValue=document.getElementById('assessmentDate').value;
+const date=dateValue?new Date(dateValue+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
+const coBadges=selected.map(item=>'<span class="cm-co-badge">'+item.value+'</span>').join(' ');
+const rowHtml='<td>'+name+'</td><td><span class="cm-type-badge">'+type+'</span></td><td>'+date+'</td><td>'+coBadges+'</td><td><div class="cm-row-actions"><button type="button" class="cm-action-btn cm-edit-btn">✎ Edit</button><button type="button" class="cm-action-btn cm-delete-btn">🗑 Delete</button></div></td>';
+if(rowToEdit){rowToEdit.innerHTML=rowHtml;rowToEdit=null;}else{const row=document.createElement('tr');row.innerHTML=rowHtml;tbody.appendChild(row);}
+closeModal();
+});
+tbody.addEventListener('click',function(e){
+const editBtn=e.target.closest('.cm-edit-btn');
+if(editBtn){
+rowToEdit=editBtn.closest('tr');
+const cells=rowToEdit.cells;
+document.getElementById('assessmentName').value=cells[0].textContent.trim();
+const type=cells[1].textContent.trim();
+document.getElementById('assessmentType').value=type==='Laboratory'?'Laboratory Experiment':type;
+const parsedDate=new Date(cells[2].textContent.trim());
+if(!Number.isNaN(parsedDate.getTime())){const y=parsedDate.getFullYear();const m=String(parsedDate.getMonth()+1).padStart(2,'0');const d=String(parsedDate.getDate()).padStart(2,'0');document.getElementById('assessmentDate').value=y+'-'+m+'-'+d;}
+const mapped=[...cells[3].querySelectorAll('.cm-co-badge')].map(b=>b.textContent.trim());
+form.querySelectorAll('input[name="assessmentCO"]').forEach(input=>input.checked=mapped.includes(input.value));
+coError.textContent='';
+document.getElementById('assessmentModalTitle').textContent='Edit Assessment';
+form.querySelector('.cm-assessment-save-btn').textContent='Save Changes';
+modal.classList.add('show');modal.setAttribute('aria-hidden','false');document.body.classList.add('cm-modal-open');
+return;
+}
+const deleteBtn=e.target.closest('.cm-delete-btn');
+if(!deleteBtn)return;
+rowToDelete=deleteBtn.closest('tr');
+const assessmentName=rowToDelete.cells[0].textContent.trim();
+deleteMessage.textContent='Are you sure you want to delete '+assessmentName+'?';
+deleteModal.classList.add('show');
+deleteModal.setAttribute('aria-hidden','false');
+document.body.classList.add('cm-modal-open');
+});
+function closeDeleteModal(){deleteModal.classList.remove('show');deleteModal.setAttribute('aria-hidden','true');document.body.classList.remove('cm-modal-open');rowToDelete=null;}
+cancelDeleteBtn.addEventListener('click',closeDeleteModal);
+deleteModal.addEventListener('click',function(e){if(e.target===deleteModal)closeDeleteModal();});
+confirmDeleteBtn.addEventListener('click',function(){if(rowToDelete)rowToDelete.remove();closeDeleteModal();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&deleteModal.classList.contains('show'))closeDeleteModal();});
+})();
+</script>
+</body>
+</html>
