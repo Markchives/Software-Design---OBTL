@@ -14,25 +14,59 @@
     >
 </head>
 
-<body class="soa-page">
+<body class="soa-page so-student-page">
 
-    <!-- HEADER-->
-    <header class="soa-topbar">
-        <div class="soa-brand">
-            <div class="soa-brand-logo">
+    <!-- HEADER -->
+    <header class="so-topbar">
+        <div class="so-brand">
+            <div class="so-brand-logo">
                 Edu<span>Metrics</span>
             </div>
 
-            <div class="soa-brand-subtitle">
+            <div class="so-brand-subtitle">
                 Academic Assessment &amp; Grading System
             </div>
         </div>
 
-        <div class="soa-header-right">
-            Student Self-Assessment
-        </div>
+        <div class="so-user-area">
+            <button
+                class="so-notification-btn"
+                type="button"
+                aria-label="Notifications"
+            >
+                <img
+                    src="../../../Static/images/sidebar/notif.png"
+                    alt="Notifications"
+                    class="so-notification-image"
+                >
 
+                <span class="so-notification-dot"></span>
+            </button>
+
+            <div class="so-user-info">
+                <strong id="studentName"></strong>
+                <span>Student</span>
+            </div>
+
+            <div
+                class="so-avatar"
+                aria-hidden="true"
+            >
+                <span class="so-avatar-person">●</span>
+            </div>
+
+            <span
+                class="so-online-dot"
+                aria-hidden="true"
+            ></span>
+        </div>
     </header>
+
+    <div class="so-header-lines">
+        <div class="so-header-blue"></div>
+        <div class="so-header-gold"></div>
+    </div>
+
 
     <!-- MAIN-->
     <main class="soa-main">
@@ -49,10 +83,6 @@
 
             <!-- TITLE-->
             <div class="soa-card-header">
-                <span class="soa-label">
-                    SO (a)
-                </span>
-
                 <h1>
                     Self-Assessment and Reflection on
                     Attainment of Student Outcome (a)

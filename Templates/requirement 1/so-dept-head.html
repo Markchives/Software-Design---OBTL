@@ -602,23 +602,11 @@
                             </thead>
 
                             <tbody id="soSummaryTableBody">
-
-                                <tr class="sodh-empty-row">
-
-                                    <td colspan="3">
-
-                                        <strong>
-                                            No SO results yet
-                                        </strong>
-
-                                        Student Outcome attainment results
-                                        will appear here once assessment
-                                        data is available.
-
-                                    </td>
-
+                                <tr>
+                                    <td><strong>SO (a)</strong></td>
+                                    <td>Apply knowledge of mathematics, science, and engineering to solve complex engineering problems.</td>
+                                    <td><strong>100%</strong></td>
                                 </tr>
-
                             </tbody>
 
                         </table>
@@ -682,22 +670,15 @@
                             </thead>
 
                             <tbody id="studentResponsesTableBody">
-
-                                <tr class="sodh-empty-row">
-
-                                    <td colspan="7">
-
-                                        <strong>
-                                            No student responses yet
-                                        </strong>
-
-                                        Student responses will appear here
-                                        once assessment responses are available.
-
-                                    </td>
-
+                                <tr>
+                                    <td>Michelle Grace Baguilat</td>
+                                    <td>BS Information Technology</td>
+                                    <td>Software Design</td>
+                                    <td>232</td>
+                                    <td>SO (a) — Completed</td>
+                                    <td><strong>100%</strong></td>
+                                    <td><strong>Completed</strong></td>
                                 </tr>
-
                             </tbody>
 
                         </table>
@@ -713,5 +694,19 @@
     </div>
 
     <script src="../../Static/script.js"></script>
+    <script>
+        document.querySelectorAll(".sodh-tab").forEach(function(tab) {
+            tab.addEventListener("click", function() {
+                document.querySelectorAll(".sodh-tab").forEach(function(item) {
+                    item.classList.remove("active");
+                });
+                document.querySelectorAll(".sodh-tab-panel").forEach(function(panel) {
+                    panel.classList.remove("active");
+                });
+                tab.classList.add("active");
+                document.getElementById(tab.dataset.tab).classList.add("active");
+            });
+        });
+    </script>
 </body>
 </html>

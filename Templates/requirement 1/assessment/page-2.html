@@ -390,12 +390,18 @@
 
         .reflection-success {
             display: none;
-            padding: 50px 34px;
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            padding: 20px;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 45, 114, 0.18);
             text-align: center;
         }
 
         .reflection-success.show {
-            display: block;
+            display: flex;
         }
 
         .reflection-success-icon {
@@ -425,6 +431,18 @@
         }
 
         /* Responsive */
+
+        .reflection-success-box {
+            width: min(420px, calc(100% - 32px));
+            padding: 38px 32px 32px;
+            border-radius: 12px;
+            background: #FFFFFF;
+            box-shadow: 0 12px 35px rgba(0, 45, 114, 0.18);
+        }
+
+        .reflection-success-box .reflection-submit-button {
+            margin-top: 24px;
+        }
 
         @media (max-width: 850px) {
             .reflection-student-info {
@@ -476,40 +494,35 @@
     </style>
 </head>
 
-<body class="so-reflection-page">
+<body class="so-reflection-page so-student-page">
 
-    <!-- Header -->
-
-    <header class="reflection-topbar">
-        <div class="reflection-brand">
-            <div class="reflection-brand-logo">
-                Edu<span>Metrics</span>
-            </div>
-
-            <div class="reflection-brand-subtitle">
-                Academic Assessment &amp; Grading System
-            </div>
+    <header class="so-topbar">
+    <div class="so-brand">
+        <div class="so-brand-logo">Edu<span>Metrics</span></div>
+        <div class="so-brand-subtitle">Academic Assessment &amp; Grading System</div>
+    </div>
+    <div class="so-user-area">
+        <button class="so-notification-btn" type="button" aria-label="Notifications">
+            <img src="../../../Static/images/sidebar/notif.png" alt="" class="so-notification-icon">
+        </button>
+        <div class="so-user-info">
+            <strong id="studentName"></strong>
+            <span>Student</span>
         </div>
-
-        <div class="reflection-header-right">
-            Student Self-Assessment
-        </div>
-    </header>
-
-    <!-- Main content -->
+        <div class="so-avatar"><span class="so-online-dot"></span></div>
+    </div>
+</header>
+<div class="so-header-lines">
+    <div class="so-header-blue-line"></div>
+    <div class="so-header-gold-line"></div>
+</div>
 
     <main class="reflection-main">
 
         <section class="reflection-card">
 
-            <!-- Page title -->
-
             <div class="reflection-title-section">
-                <span class="reflection-page-label">
-                    Page 2 · Reflection
-                </span>
-
-                <h1>
+<h1>
                     Self-Assessment and Reflection on
                     Attainment of Student Outcome
                 </h1>
@@ -519,8 +532,6 @@
                     your self-assessment.
                 </p>
             </div>
-
-            <!-- Student information -->
 
             <div class="reflection-student-info">
 
@@ -595,10 +606,7 @@
                         placeholder="School Year"
                     >
                 </div>
-
             </div>
-
-            <!-- Reflection form -->
 
             <div class="reflection-content" id="reflectionForm">
 
@@ -612,8 +620,6 @@
                         submitting your self-assessment.
                     </p>
                 </div>
-
-                <!-- Reflection question 1 -->
 
                 <div class="reflection-question">
                     <div class="reflection-question-header">
@@ -634,8 +640,6 @@
                     ></textarea>
                 </div>
 
-                <!-- Reflection question 2 -->
-
                 <div class="reflection-question">
                     <div class="reflection-question-header">
                         <span class="reflection-number">
@@ -655,8 +659,6 @@
                         placeholder="Type your answer here..."
                     ></textarea>
                 </div>
-
-                <!-- Signature and date -->
 
                 <div class="reflection-signature-section">
 
@@ -696,10 +698,7 @@
                             class="reflection-date-input"
                         >
                     </div>
-
                 </div>
-
-                <!-- Validation message -->
 
                 <div
                     class="reflection-message"
@@ -707,30 +706,20 @@
                 >
                     Please complete all required fields before submitting.
                 </div>
-
             </div>
 
-            <!-- Success message -->
-
-            <div
-                class="reflection-success"
-                id="reflectionSuccess"
-            >
-                <div class="reflection-success-icon">
+            <div class="reflection-success" id="reflectionSuccess">
+                <div class="reflection-success-box">
+                    <div class="reflection-success-icon">
                     ✓
                 </div>
-
-                <h2>
+                    <h2>
                     Assessment Completed
                 </h2>
-
-                <p>
-                    Your self-assessment and reflection have
-                    been completed successfully.
-                </p>
+                    <p>Your self-assessment and reflection have been completed successfully and recorded.</p>
+                    <button type="button" class="reflection-submit-button" id="reflectionDoneButton">Done</button>
+                </div>
             </div>
-
-            <!-- Actions -->
 
             <div
                 class="reflection-actions"
@@ -752,9 +741,7 @@
                     Submit Assessment
                 </button>
             </div>
-
         </section>
-
     </main>
 
     <script>
@@ -771,6 +758,7 @@
             const form = document.getElementById("reflectionForm");
             const success = document.getElementById("reflectionSuccess");
             const actions = document.getElementById("reflectionActions");
+            const doneButton = document.getElementById("reflectionDoneButton");
 
             const signatureCanvas = document.getElementById("studentSignature");
             const signatureContext = signatureCanvas.getContext("2d");
@@ -955,10 +943,11 @@
                     "completedSOAssessment",
                     JSON.stringify(assessmentData)
                 );
-
-                form.style.display = "none";
-                actions.style.display = "none";
                 success.classList.add("show");
+            });
+
+            doneButton.addEventListener("click", function () {
+                window.location.href = "../so-student.html";
             });
 
             resizeSignatureCanvas();

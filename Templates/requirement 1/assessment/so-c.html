@@ -10,27 +10,30 @@
     <link rel="stylesheet" href="../../../Static/style.css">
 </head>
 
-<body class="soa-page">
+<body class="soa-page so-student-page">
 
-    <!-- Header -->
-
-    <header class="soa-topbar">
-        <div class="soa-brand">
-            <div class="soa-brand-logo">
-                Edu<span>Metrics</span>
-            </div>
-
-            <div class="soa-brand-subtitle">
-                Academic Assessment &amp; Grading System
-            </div>
+    <header class="so-topbar">
+    <div class="so-brand">
+        <div class="so-brand-logo">Edu<span>Metrics</span></div>
+        <div class="so-brand-subtitle">Academic Assessment &amp; Grading System</div>
+    </div>
+    <div class="so-user-area">
+        <button class="so-notification-btn" type="button" aria-label="Notifications">
+            <img src="../../../Static/images/sidebar/notif.png" alt="" class="so-notification-icon">
+        </button>
+        <div class="so-user-info">
+            <strong id="studentName"></strong>
+            <span>Student</span>
         </div>
-
-        <div class="soa-header-right">
-            Student Self-Assessment
+        <div class="so-avatar">
+            <span class="so-online-dot"></span>
         </div>
-    </header>
-
-    <!-- Main content -->
+    </div>
+</header>
+<div class="so-header-lines">
+    <div class="so-header-blue-line"></div>
+    <div class="so-header-gold-line"></div>
+</div>
 
     <main class="soa-main">
 
@@ -40,14 +43,8 @@
 
         <section class="soa-card">
 
-            <!-- Assessment header -->
-
             <div class="soa-card-header">
-                <span class="soa-label">
-                    SO (c)
-                </span>
-
-                <h1>
+<h1>
                     Self-Assessment and Reflection on
                     Attainment of Student Outcome (c)
                 </h1>
@@ -58,8 +55,6 @@
                     level of attainment.
                 </p>
             </div>
-
-            <!-- Student outcome -->
 
             <div class="soa-outcome-box">
                 <strong>
@@ -73,8 +68,6 @@
                     manufacturability, and sustainability, in accordance with standards.
                 </p>
             </div>
-
-            <!-- Student information -->
 
             <div class="soa-student-info">
 
@@ -107,10 +100,7 @@
                     <label for="schoolYear">School Year</label>
                     <input id="schoolYear" type="text" placeholder="School Year">
                 </div>
-
             </div>
-
-            <!-- Self-assessment -->
 
             <div class="soa-assessment">
 
@@ -122,8 +112,6 @@
                         based on the performance indicators below.
                     </p>
                 </div>
-
-                <!-- Performance indicator 1 -->
 
                 <article class="soa-question">
                     <div class="soa-question-title">
@@ -177,11 +165,8 @@
                                 </span>
                             </span>
                         </label>
-
                     </div>
                 </article>
-
-                <!-- Performance indicator 2 -->
 
                 <article class="soa-question">
                     <div class="soa-question-title">
@@ -235,11 +220,8 @@
                                 </span>
                             </span>
                         </label>
-
                     </div>
                 </article>
-
-                <!-- Performance indicator 3 -->
 
                 <article class="soa-question">
                     <div class="soa-question-title">
@@ -293,11 +275,8 @@
                                 </span>
                             </span>
                         </label>
-
                     </div>
                 </article>
-
-                <!-- Performance indicator 4 -->
 
                 <article class="soa-question">
                     <div class="soa-question-title">
@@ -353,11 +332,8 @@
                                 </span>
                             </span>
                         </label>
-
                     </div>
                 </article>
-
-                <!-- Performance indicator 5 -->
 
                 <article class="soa-question">
                     <div class="soa-question-title">
@@ -412,11 +388,8 @@
                                 </span>
                             </span>
                         </label>
-
                     </div>
                 </article>
-
-                <!-- Performance indicator 6 -->
 
                 <article class="soa-question">
                     <div class="soa-question-title">
@@ -470,11 +443,8 @@
                                 </span>
                             </span>
                         </label>
-
                     </div>
                 </article>
-
-                <!-- Performance indicator 7 -->
 
                 <article class="soa-question">
                     <div class="soa-question-title">
@@ -531,11 +501,8 @@
                                 </span>
                             </span>
                         </label>
-
                     </div>
                 </article>
-
-                <!-- Score summary -->
 
                 <div class="soa-score-panel">
                     <div class="soa-score-item">
@@ -548,16 +515,11 @@
                         <strong id="soaPercentage">0%</strong>
                     </div>
                 </div>
-
             </div>
-
-            <!-- Validation message -->
 
             <div class="soa-message" id="soaMessage">
                 Please answer all performance indicators before continuing.
             </div>
-
-            <!-- Actions -->
 
             <div class="soa-actions">
                 <button
