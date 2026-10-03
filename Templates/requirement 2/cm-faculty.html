@@ -60,12 +60,13 @@
 </div>
 <div class="cm-tab-panel active" id="assessment-mapping">
 <div class="cm-assessment-toolbar"><p>Add, edit, delete assessments</p><button type="button" class="cm-add-assessment-btn" id="openAssessmentModal"><span>+</span> Add Assessment</button></div>
-<div class="cm-table-wrap"><table class="cm-table cm-assessment-table"><thead><tr><th>Assessment Title</th><th>Assessment Type</th><th>Date</th><th>Mapped CO(s)</th><th>Actions</th></tr></thead><tbody id="facultyAssessmentMappingBody">
+<div class="cm-table-wrap"><table class="cm-table cm-assessment-table"><thead><tr><th>Assessment Title</th><th>Assessment Type</th><th>Date</th><th>Mapped CO(s)</th><th>View Score</th><th>Actions</th></tr></thead><tbody id="facultyAssessmentMappingBody">
 <tr>
 <td>Experiment 1</td>
 <td><span class="cm-type-badge">Laboratory</span></td>
 <td>Oct. 1, 2026</td>
 <td><span class="cm-co-badge">CO1</span> <span class="cm-co-badge">CO4</span></td>
+<td><button type="button" class="cm-view-score-btn">View Score</button></td>
 <td>
 <div class="cm-row-actions">
 <button type="button" class="cm-action-btn cm-edit-btn">✎ Edit</button>
@@ -78,6 +79,7 @@
 <td><span class="cm-type-badge">Quiz</span></td>
 <td>Oct. 8, 2026</td>
 <td><span class="cm-co-badge">CO2</span></td>
+<td><button type="button" class="cm-view-score-btn">View Score</button></td>
 <td>
 <div class="cm-row-actions">
 <button type="button" class="cm-action-btn cm-edit-btn">✎ Edit</button>
@@ -90,6 +92,7 @@
 <td><span class="cm-type-badge">Project</span></td>
 <td>Oct. 20, 2026</td>
 <td><span class="cm-co-badge">CO2</span> <span class="cm-co-badge">CO3</span></td>
+<td><button type="button" class="cm-view-score-btn">View Score</button></td>
 <td>
 <div class="cm-row-actions">
 <button type="button" class="cm-action-btn cm-edit-btn">✎ Edit</button>
@@ -117,6 +120,22 @@
 </form>
 </div>
 </div>
+<div class="cm-score-modal" id="scoreModal" aria-hidden="true">
+<div class="cm-score-modal-card" role="dialog" aria-modal="true" aria-labelledby="scoreModalTitle">
+<div class="cm-score-modal-header"><h2 id="scoreModalTitle">Raw Assessment Scores</h2><button type="button" class="cm-score-modal-close" id="closeScoreModal" aria-label="Close">&times;</button></div>
+<div class="cm-score-modal-body">
+<div class="cm-score-summary">
+<div class="cm-score-summary-card"><span>ASSESSMENT</span><strong id="scoreAssessmentName">Experiment 1</strong></div>
+<div class="cm-score-summary-card"><span>MAPPED CO(S)</span><strong id="scoreMappedCos">CO1 • CO4</strong></div>
+<div class="cm-score-summary-card"><span>STUDENTS</span><strong id="scoreStudentCount">4</strong></div>
+<div class="cm-score-summary-card"><span>MEAN</span><strong id="scoreMean">88%</strong></div>
+</div>
+<div class="cm-score-table-wrap"><table class="cm-score-table"><thead><tr><th>Student</th><th>Raw Score</th><th>Percentage</th></tr></thead><tbody id="scoreTableBody"><tr><td>Angel S. Villanueva</td><td><input type="number" min="0" max="100" value="88" class="cm-raw-score-input"></td><td class="cm-score-percent">88%</td></tr><tr><td>Bea M. Santos</td><td><input type="number" min="0" max="100" value="88" class="cm-raw-score-input"></td><td class="cm-score-percent">88%</td></tr><tr><td>Carl P. Reyes</td><td><input type="number" min="0" max="100" value="88" class="cm-raw-score-input"></td><td class="cm-score-percent">88%</td></tr><tr><td>Dana L. Cruz</td><td><input type="number" min="0" max="100" value="88" class="cm-raw-score-input"></td><td class="cm-score-percent">88%</td></tr></tbody></table></div>
+<div class="cm-score-note"><strong>Raw Score Entry:</strong> scores entered here are connected to this assessment. Saving recalculates the assessment mean and automatically updates the attainment of every mapped CO.</div>
+<div class="cm-score-modal-actions"><button type="button" class="cm-score-cancel-btn" id="cancelScoreModal">Cancel</button><button type="button" class="cm-score-save-btn" id="saveScoresBtn">Save Scores &amp; Recalculate</button></div>
+</div>
+</div>
+</div>
 <div class="cm-delete-modal" id="deleteConfirmModal" aria-hidden="true">
 <div class="cm-delete-modal-card" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitle">
 <h2 id="deleteConfirmTitle">Delete assessment?</h2>
@@ -139,6 +158,14 @@ const deleteModal=document.getElementById('deleteConfirmModal');
 const deleteMessage=document.getElementById('deleteConfirmMessage');
 const cancelDeleteBtn=document.getElementById('cancelDeleteAssessment');
 const confirmDeleteBtn=document.getElementById('confirmDeleteAssessment');
+const scoreModal=document.getElementById('scoreModal');
+const closeScoreBtn=document.getElementById('closeScoreModal');
+const cancelScoreBtn=document.getElementById('cancelScoreModal');
+const saveScoresBtn=document.getElementById('saveScoresBtn');
+const scoreAssessmentName=document.getElementById('scoreAssessmentName');
+const scoreMappedCos=document.getElementById('scoreMappedCos');
+const scoreMean=document.getElementById('scoreMean');
+const scoreTableBody=document.getElementById('scoreTableBody');
 let rowToDelete=null;
 let rowToEdit=null;
 function openModal(){rowToEdit=null;form.reset();coError.textContent='';document.getElementById('assessmentModalTitle').textContent='Add Assessment';form.querySelector('.cm-assessment-save-btn').textContent='Add Assessment';modal.classList.add('show');modal.setAttribute('aria-hidden','false');document.body.classList.add('cm-modal-open');document.getElementById('assessmentName').focus();}
@@ -156,11 +183,19 @@ const type=document.getElementById('assessmentType').value;
 const dateValue=document.getElementById('assessmentDate').value;
 const date=dateValue?new Date(dateValue+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
 const coBadges=selected.map(item=>'<span class="cm-co-badge">'+item.value+'</span>').join(' ');
-const rowHtml='<td>'+name+'</td><td><span class="cm-type-badge">'+type+'</span></td><td>'+date+'</td><td>'+coBadges+'</td><td><div class="cm-row-actions"><button type="button" class="cm-action-btn cm-edit-btn">✎ Edit</button><button type="button" class="cm-action-btn cm-delete-btn">🗑 Delete</button></div></td>';
+const rowHtml='<td>'+name+'</td><td><span class="cm-type-badge">'+type+'</span></td><td>'+date+'</td><td>'+coBadges+'</td><td><button type="button" class="cm-view-score-btn">View Score</button></td><td><div class="cm-row-actions"><button type="button" class="cm-action-btn cm-edit-btn">✎ Edit</button><button type="button" class="cm-action-btn cm-delete-btn">🗑 Delete</button></div></td>';
 if(rowToEdit){rowToEdit.innerHTML=rowHtml;rowToEdit=null;}else{const row=document.createElement('tr');row.innerHTML=rowHtml;tbody.appendChild(row);}
 closeModal();
 });
 tbody.addEventListener('click',function(e){
+const viewBtn=e.target.closest('.cm-view-score-btn');
+if(viewBtn){
+const row=viewBtn.closest('tr');
+scoreAssessmentName.textContent=row.cells[0].textContent.trim();
+scoreMappedCos.textContent=[...row.cells[3].querySelectorAll('.cm-co-badge')].map(item=>item.textContent.trim()).join(' • ');
+scoreModal.classList.add('show');scoreModal.setAttribute('aria-hidden','false');document.body.classList.add('cm-modal-open');
+return;
+}
 const editBtn=e.target.closest('.cm-edit-btn');
 if(editBtn){
 rowToEdit=editBtn.closest('tr');
@@ -187,6 +222,22 @@ deleteModal.classList.add('show');
 deleteModal.setAttribute('aria-hidden','false');
 document.body.classList.add('cm-modal-open');
 });
+function recalculateScores(){
+const inputs=[...scoreTableBody.querySelectorAll('.cm-raw-score-input')];
+let total=0;
+inputs.forEach(input=>{let value=Number(input.value);if(!Number.isFinite(value))value=0;value=Math.max(0,Math.min(100,value));input.value=value;input.closest('tr').querySelector('.cm-score-percent').textContent=Math.round(value)+'%';total+=value;});
+scoreMean.textContent=(inputs.length?Math.round(total/inputs.length):0)+'%';
+}
+
+function closeScoreModal(){scoreModal.classList.remove('show');scoreModal.setAttribute('aria-hidden','true');document.body.classList.remove('cm-modal-open');}
+
+scoreTableBody.addEventListener('input',function(e){if(e.target.classList.contains('cm-raw-score-input'))recalculateScores();});
+closeScoreBtn.addEventListener('click',closeScoreModal);
+cancelScoreBtn.addEventListener('click',closeScoreModal);
+saveScoresBtn.addEventListener('click',function(){recalculateScores();closeScoreModal();});
+scoreModal.addEventListener('click',function(e){if(e.target===scoreModal)closeScoreModal();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&scoreModal.classList.contains('show'))closeScoreModal();});
+
 function closeDeleteModal(){deleteModal.classList.remove('show');deleteModal.setAttribute('aria-hidden','true');document.body.classList.remove('cm-modal-open');rowToDelete=null;}
 cancelDeleteBtn.addEventListener('click',closeDeleteModal);
 deleteModal.addEventListener('click',function(e){if(e.target===deleteModal)closeDeleteModal();});

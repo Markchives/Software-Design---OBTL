@@ -19423,13 +19423,263 @@ body.sof-modal-open {
 }
 
 .so-student-page.cm-faculty-page .cm-assessment-table {
-    border-spacing: 0 8px;
+    border-spacing: 0;
 }
 
-.so-student-page.cm-faculty-page .cm-assessment-table thead {
-    transform: translateY(8px);
+.so-student-page.cm-faculty-page .cm-assessment-table tbody::before {
+    height: 8px;
 }
 
+.so-student-page.cm-faculty-page .cm-assessment-table tbody tr + tr td {
+    border-top: 8px solid #FFFFFF;
+    box-shadow: inset 0 1px 0 #A9CBE8;
+}
+
+.so-student-page.cm-faculty-page .cm-assessment-table th:nth-child(1),
+.so-student-page.cm-faculty-page .cm-assessment-table td:nth-child(1) {
+    width: 20%;
+}
+
+.so-student-page.cm-faculty-page .cm-assessment-table th:nth-child(2),
+.so-student-page.cm-faculty-page .cm-assessment-table td:nth-child(2) {
+    width: 18%;
+}
+
+.so-student-page.cm-faculty-page .cm-assessment-table th:nth-child(3),
+.so-student-page.cm-faculty-page .cm-assessment-table td:nth-child(3) {
+    width: 15%;
+}
+
+.so-student-page.cm-faculty-page .cm-assessment-table th:nth-child(4),
+.so-student-page.cm-faculty-page .cm-assessment-table td:nth-child(4) {
+    width: 18%;
+}
+
+.so-student-page.cm-faculty-page .cm-assessment-table th:nth-child(5),
+.so-student-page.cm-faculty-page .cm-assessment-table td:nth-child(5) {
+    width: 12%;
+    text-align: center;
+}
+
+.so-student-page.cm-faculty-page .cm-assessment-table th:nth-child(6),
+.so-student-page.cm-faculty-page .cm-assessment-table td:nth-child(6) {
+    width: 17%;
+    text-align: center;
+}
+
+.so-student-page.cm-faculty-page .cm-view-score-btn {
+    min-width: 84px;
+    min-height: 30px;
+    padding: 5px 13px;
+    border: none;
+    border-radius: 999px;
+    background: #004179;
+    color: #FFFFFF;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.so-student-page.cm-faculty-page .cm-view-score-btn:hover {
+    background: #00345F;
+}
+
+.cm-score-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10030;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(38, 68, 94, 0.55);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.18s ease, visibility 0.18s ease;
+}
+
+.cm-score-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.cm-score-modal-card {
+    width: min(980px, 100%);
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    border: 1px solid #D9E1EA;
+    border-radius: 14px;
+    background: #FFFFFF;
+    color: #004179;
+    box-shadow: 0 18px 48px rgba(7, 31, 58, 0.22);
+}
+
+.cm-score-modal-header {
+    min-height: 72px;
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #D9E1EA;
+    background: #F4F8FB;
+}
+
+.cm-score-modal-header h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.cm-score-modal-close {
+    width: 34px;
+    height: 34px;
+    border: none;
+    background: transparent;
+    color: #71869A;
+    font-size: 25px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.cm-score-modal-body {
+    padding: 22px 14px 16px;
+}
+
+.cm-score-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.cm-score-summary-card {
+    min-height: 68px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border: 1px solid #D9E5EF;
+    border-radius: 12px;
+    background: #FFFFFF;
+}
+
+.cm-score-summary-card span {
+    color: #7B8FA2;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.cm-score-summary-card strong {
+    margin-top: 3px;
+    color: #004179;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.cm-score-table-wrap {
+    margin-top: 14px;
+    overflow-x: auto;
+}
+
+.cm-score-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    color: #416985;
+    font-size: 13px;
+}
+
+.cm-score-table th {
+    height: 34px;
+    padding: 8px 14px;
+    background: #FFF0B2;
+    color: #416985;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: left;
+}
+
+.cm-score-table th:nth-child(1) {
+    width: 42%;
+}
+
+.cm-score-table th:nth-child(2),
+.cm-score-table th:nth-child(3) {
+    width: 29%;
+}
+
+.cm-score-table td {
+    height: 62px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #EAD899;
+    font-weight: 500;
+}
+
+.cm-raw-score-input {
+    width: 142px;
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid #BFD4E5;
+    border-radius: 8px;
+    outline: none;
+    background: #FFFFFF;
+    color: #416985;
+    font-size: 14px;
+}
+
+.cm-raw-score-input:focus {
+    border-color: #00579A;
+    box-shadow: 0 0 0 3px rgba(0, 87, 154, 0.08);
+}
+
+.cm-score-percent {
+    font-weight: 700 !important;
+}
+
+.cm-score-note {
+    margin-top: 16px;
+    padding: 13px 14px;
+    border: 1px solid #F0D982;
+    border-radius: 11px;
+    background: #FFF9DF;
+    color: #756225;
+    font-size: 13px;
+    line-height: 1.35;
+}
+
+.cm-score-modal-actions {
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.cm-score-cancel-btn,
+.cm-score-save-btn {
+    min-height: 38px;
+    padding: 7px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.cm-score-cancel-btn {
+    border: 1.5px solid #A9CBE8;
+    background: #FFFFFF;
+    color: #416985;
+}
+
+.cm-score-save-btn {
+    border: 1.5px solid #F4C300;
+    background: #F4C300;
+    color: #004179;
+}
+
+.cm-score-save-btn:hover {
+    background: #E8B900;
+    border-color: #E8B900;
+}
 
 .cm-delete-modal {
     position: fixed;
@@ -19792,5 +20042,22 @@ body.sof-modal-open {
 
     .cm-assessment-field-full {
         grid-column: auto;
+    }
+
+    .cm-score-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .cm-score-modal {
+        padding: 12px;
+    }
+
+    .cm-score-modal-body {
+        padding: 16px 10px 12px;
+    }
+
+    .cm-raw-score-input {
+        width: 100%;
+        min-width: 90px;
     }
 }
