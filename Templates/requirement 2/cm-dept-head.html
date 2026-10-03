@@ -100,49 +100,6 @@
 </main>
 </div>
 <script src="../../Static/script.js"></script>
-<script>
-document.querySelectorAll("[data-search-select]").forEach(function(select) {
-    const input=select.querySelector(".cm-searchable-filter");
-    const toggle=select.querySelector(".cm-search-select-toggle");
-    const options=Array.from(select.querySelectorAll(".cm-search-option"));
-    function filterOptions() {
-        const query=input.value.trim().toLowerCase();
-        options.forEach(function(option) {
-            option.hidden=query && !option.dataset.value.toLowerCase().includes(query);
-        });
-    }
-    function openMenu() {
-        document.querySelectorAll(".cm-search-select.open").forEach(function(other) {
-            if(other!==select) {
-                other.classList.remove("open");
-                other.querySelector(".cm-search-select-toggle").setAttribute("aria-expanded","false");
-            }
-        });
-        select.classList.add("open");
-        toggle.setAttribute("aria-expanded","true");
-        filterOptions();
-    }
-    function closeMenu() {
-        select.classList.remove("open");
-        toggle.setAttribute("aria-expanded","false");
-    }
-    input.addEventListener("focus",openMenu);
-    input.addEventListener("input",function(){openMenu();filterOptions();});
-    toggle.addEventListener("click",function(){
-        if(select.classList.contains("open")) closeMenu();
-        else {input.focus();openMenu();}
-    });
-    options.forEach(function(option){
-        option.addEventListener("click",function(){
-            input.value=option.dataset.value;
-            closeMenu();
-            input.dispatchEvent(new Event("change",{bubbles:true}));
-        });
-    });
-    document.addEventListener("click",function(event){
-        if(!select.contains(event.target)) closeMenu();
-    });
-});
-</script>
+
 </body>
 </html>
