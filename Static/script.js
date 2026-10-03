@@ -5325,9 +5325,9 @@
                         );
 
                 if(!rows.length) {
-                    soSummaryTableBody.innerHTML =
-                        emptySummaryRow();
-
+                    /* Keep the demo rows already written in so-dept-head.html.
+                       Once real SO response data exists, the rows below will
+                       automatically be replaced by computed attainment data. */
                     return;
                 }
 
@@ -5524,9 +5524,8 @@
                         );
 
                 if(!rows.length) {
-                    studentResponsesTableBody.innerHTML =
-                        emptyStudentRow();
-
+                    /* Keep the demo student rows already written in
+                       so-dept-head.html until real response data exists. */
                     return;
                 }
 
@@ -6634,3 +6633,430 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
+
+/* FACULTY -> STUDENT COURSE SYLLABUS SHARED FRONTEND STORAGE */
+(function () {
+    const DB_NAME = "EduMetricsSharedFiles";
+    const DB_VERSION = 1;
+    const STORE_NAME = "courseSyllabi";
+
+    function openSyllabusDB() {
+        return new Promise(function (resolve, reject) {
+            const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+            request.onupgradeneeded = function () {
+                const db = request.result;
+                if (!db.objectStoreNames.contains(STORE_NAME)) {
+                    db.createObjectStore(STORE_NAME, { keyPath: "courseKey" });
+                }
+            };
+
+            request.onsuccess = function () {
+                resolve(request.result);
+            };
+
+            request.onerror = function () {
+                reject(request.error);
+            };
+        });
+    }
+
+    function getSelectedFacultyCourse() {
+        const select = document.getElementById("facultyCourse");
+        if (!select) {
+            return { key: "general-course", name: "Course Syllabus" };
+        }
+
+        const option = select.options[select.selectedIndex];
+        const value = String(select.value || "").trim();
+        const text = option ? String(option.textContent || "").trim() : "";
+
+        return {
+            key: value || text || "general-course",
+            name: text && text !== "Select Course" ? text : (value || "Course Syllabus")
+        };
+    }
+
+    async function saveSharedSyllabus(file) {
+        const db = await openSyllabusDB();
+        const course = getSelectedFacultyCourse();
+        const record = {
+            courseKey: course.key,
+            courseName: course.name,
+            fileName: file.name,
+            fileSize: file.size,
+            fileType: file.type || "application/pdf",
+            uploadedAt: new Date().toISOString(),
+            file: file
+        };
+
+        return new Promise(function (resolve, reject) {
+            const transaction = db.transaction(STORE_NAME, "readwrite");
+            transaction.objectStore(STORE_NAME).put(record);
+            transaction.oncomplete = function () {
+                db.close();
+                resolve(record);
+            };
+            transaction.onerror = function () {
+                db.close();
+                reject(transaction.error);
+            };
+        });
+    }
+
+    async function deleteSharedSyllabus() {
+        const db = await openSyllabusDB();
+        const course = getSelectedFacultyCourse();
+
+        return new Promise(function (resolve, reject) {
+            const transaction = db.transaction(STORE_NAME, "readwrite");
+            transaction.objectStore(STORE_NAME).delete(course.key);
+            transaction.oncomplete = function () {
+                db.close();
+                resolve();
+            };
+            transaction.onerror = function () {
+                db.close();
+                reject(transaction.error);
+            };
+        });
+    }
+
+    async function getSharedSyllabi() {
+        const db = await openSyllabusDB();
+
+        return new Promise(function (resolve, reject) {
+            const transaction = db.transaction(STORE_NAME, "readonly");
+            const request = transaction.objectStore(STORE_NAME).getAll();
+            request.onsuccess = function () {
+                resolve(Array.isArray(request.result) ? request.result : []);
+            };
+            request.onerror = function () {
+                reject(request.error);
+            };
+            transaction.oncomplete = function () {
+                db.close();
+            };
+        });
+    }
+
+    function formatSharedFileSize(bytes) {
+        if (!Number.isFinite(bytes) || bytes <= 0) {
+            return "0 MB";
+        }
+        const mb = bytes / (1024 * 1024);
+        return (mb >= 0.1 ? mb.toFixed(1) : mb.toFixed(2)) + " MB";
+    }
+
+    function renderStudentSyllabusRow(record) {
+        const row = document.createElement("div");
+        row.className = "so-student-file-row";
+        row.dataset.course = record.courseKey;
+
+        const info = document.createElement("div");
+        info.className = "so-student-file-info";
+
+        const copy = document.createElement("div");
+        copy.className = "so-student-file-copy";
+
+        const course = document.createElement("span");
+        course.className = "so-student-syllabus-course";
+        course.textContent = record.courseName || "Course";
+
+        const name = document.createElement("strong");
+        name.textContent = record.fileName || "Course_Syllabus.pdf";
+
+        const meta = document.createElement("div");
+        meta.className = "so-student-file-meta";
+        meta.innerHTML = "<span>PDF</span><span>•</span><span></span>";
+        meta.lastElementChild.textContent = formatSharedFileSize(record.fileSize);
+
+        copy.appendChild(course);
+        copy.appendChild(name);
+        copy.appendChild(meta);
+        info.appendChild(copy);
+
+        const actions = document.createElement("div");
+        actions.className = "so-student-file-actions";
+
+        const viewButton = document.createElement("button");
+        viewButton.className = "so-student-view-btn";
+        viewButton.type = "button";
+        viewButton.innerHTML = '<img src="../../Static/images/content/view-blue.png" alt="" class="so-action-icon"><span>View Syllabus</span>';
+
+        const downloadButton = document.createElement("button");
+        downloadButton.className = "so-student-download-btn";
+        downloadButton.type = "button";
+        downloadButton.innerHTML = '<img src="../../Static/images/content/download.png" alt="" class="so-action-icon"><span>Download PDF</span>';
+
+        viewButton.addEventListener("click", function () {
+            if (!record.file) return;
+            const url = URL.createObjectURL(record.file);
+            window.open(url, "_blank");
+            setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+        });
+
+        downloadButton.addEventListener("click", function () {
+            if (!record.file) return;
+            const url = URL.createObjectURL(record.file);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = record.fileName || "Course_Syllabus.pdf";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        });
+
+        actions.appendChild(viewButton);
+        actions.appendChild(downloadButton);
+        row.appendChild(info);
+        row.appendChild(actions);
+        return row;
+    }
+
+    async function renderStudentSharedSyllabi() {
+        const page = document.querySelector(".so-student-page:not(.so-faculty-page)");
+        const list = document.getElementById("studentSyllabusList");
+        const empty = document.getElementById("studentSyllabusEmpty");
+        const filter = document.getElementById("studentCourseSort");
+        const count = document.getElementById("availableSyllabusCount");
+
+        if (!page || !list || !empty) {
+            return;
+        }
+
+        try {
+            const records = await getSharedSyllabi();
+            const selectedCourse = filter ? filter.value : "";
+            const visibleRecords = records.filter(function (record) {
+                return !selectedCourse || record.courseKey === selectedCourse;
+            });
+
+            if (filter) {
+                const previous = filter.value;
+                filter.innerHTML = '<option value="">All Courses</option>';
+                records.forEach(function (record) {
+                    const option = document.createElement("option");
+                    option.value = record.courseKey;
+                    option.textContent = record.courseName || record.courseKey;
+                    filter.appendChild(option);
+                });
+                if (Array.from(filter.options).some(function (option) { return option.value === previous; })) {
+                    filter.value = previous;
+                }
+            }
+
+            const activeCourse = filter ? filter.value : "";
+            const finalRecords = records.filter(function (record) {
+                return !activeCourse || record.courseKey === activeCourse;
+            });
+
+            list.innerHTML = "";
+            finalRecords.forEach(function (record) {
+                list.appendChild(renderStudentSyllabusRow(record));
+            });
+
+            list.hidden = finalRecords.length === 0;
+            empty.hidden = finalRecords.length > 0;
+
+            if (count) {
+                count.textContent = String(records.length);
+            }
+        }
+        catch (error) {
+            console.error("Unable to load shared course syllabi:", error);
+        }
+    }
+
+    document.addEventListener("change", function (event) {
+        if (event.target && event.target.id === "syllabusFile") {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            const isPDF = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+            if (!isPDF) return;
+
+            saveSharedSyllabus(file).catch(function (error) {
+                console.error("Unable to share syllabus with students:", error);
+            });
+        }
+    }, true);
+
+    document.addEventListener("click", function (event) {
+        const button = event.target && event.target.closest
+            ? event.target.closest("#confirmDeleteSyllabus")
+            : null;
+
+        if (!button) return;
+
+        deleteSharedSyllabus().catch(function (error) {
+            console.error("Unable to remove shared syllabus:", error);
+        });
+    }, true);
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const filter = document.getElementById("studentCourseSort");
+        if (filter && filter.dataset.sharedSyllabusInitialized !== "true") {
+            filter.dataset.sharedSyllabusInitialized = "true";
+            filter.addEventListener("change", renderStudentSharedSyllabi);
+        }
+        renderStudentSharedSyllabi();
+    });
+
+    window.addEventListener("storage", function () {
+        renderStudentSharedSyllabi();
+    });
+})();
+
+
+/* SO FACULTY FILTER DROPDOWNS — FINAL FIX */
+(function () {
+    "use strict";
+
+    function closeFacultySearchDropdowns(except) {
+        document.querySelectorAll(".so-faculty-page .sof-search-select.open").forEach(function (wrapper) {
+            if (wrapper !== except) {
+                wrapper.classList.remove("open");
+                const toggle = wrapper.querySelector(".sof-search-toggle");
+                if (toggle) {
+                    toggle.setAttribute("aria-expanded", "false");
+                }
+            }
+        });
+    }
+
+    function enhanceFacultyFilter(select) {
+        if (!select || select.dataset.sofSearchEnhanced === "true") {
+            return;
+        }
+
+        select.dataset.sofSearchEnhanced = "true";
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "sof-search-select";
+
+        const input = document.createElement("input");
+        input.type = "text";
+        input.className = "sof-search-input";
+        input.autocomplete = "off";
+
+        const firstOption = select.options.length ? select.options[0] : null;
+        input.placeholder = firstOption ? firstOption.textContent.trim() : "Select";
+
+        if (select.selectedIndex > 0 && select.options[select.selectedIndex]) {
+            input.value = select.options[select.selectedIndex].textContent.trim();
+        }
+
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "sof-search-toggle";
+        toggle.setAttribute("aria-label", "Open options");
+        toggle.setAttribute("aria-expanded", "false");
+
+        const menu = document.createElement("div");
+        menu.className = "sof-search-menu";
+
+        function renderOptions(query) {
+            menu.innerHTML = "";
+            const search = (query || "").trim().toLowerCase();
+            let visibleCount = 0;
+
+            Array.from(select.options).forEach(function (option, index) {
+                const label = option.textContent.trim();
+
+                if (index === 0 && !option.value) {
+                    return;
+                }
+
+                if (search && !label.toLowerCase().includes(search)) {
+                    return;
+                }
+
+                const item = document.createElement("button");
+                item.type = "button";
+                item.className = "sof-search-option";
+                item.textContent = label;
+
+                item.addEventListener("click", function () {
+                    select.value = option.value;
+                    input.value = label;
+                    wrapper.classList.remove("open");
+                    toggle.setAttribute("aria-expanded", "false");
+                    select.dispatchEvent(new Event("change", { bubbles: true }));
+                });
+
+                menu.appendChild(item);
+                visibleCount += 1;
+            });
+
+            if (visibleCount === 0) {
+                const empty = document.createElement("div");
+                empty.className = "sof-search-empty";
+                empty.textContent = "No results";
+                menu.appendChild(empty);
+            }
+        }
+
+        function openDropdown() {
+            closeFacultySearchDropdowns(wrapper);
+            renderOptions(input.value);
+            wrapper.classList.add("open");
+            toggle.setAttribute("aria-expanded", "true");
+        }
+
+        select.parentNode.insertBefore(wrapper, select);
+        wrapper.appendChild(input);
+        wrapper.appendChild(toggle);
+        wrapper.appendChild(menu);
+        wrapper.appendChild(select);
+        select.classList.add("sof-search-native");
+
+        input.addEventListener("focus", openDropdown);
+        input.addEventListener("click", openDropdown);
+        input.addEventListener("input", openDropdown);
+
+        toggle.addEventListener("click", function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (wrapper.classList.contains("open")) {
+                wrapper.classList.remove("open");
+                toggle.setAttribute("aria-expanded", "false");
+            } else {
+                openDropdown();
+                input.focus();
+            }
+        });
+
+        select.addEventListener("change", function () {
+            const selected = select.options[select.selectedIndex];
+            input.value = select.selectedIndex > 0 && selected
+                ? selected.textContent.trim()
+                : "";
+        });
+    }
+
+    function initializeFacultySearchFilters() {
+        [
+            "facultyCourse",
+            "facultySection",
+            "facultyTerm",
+            "facultyYear"
+        ].forEach(function (id) {
+            enhanceFacultyFilter(document.getElementById(id));
+        });
+    }
+
+    document.addEventListener("click", function (event) {
+        if (!event.target.closest(".so-faculty-page .sof-search-select")) {
+            closeFacultySearchDropdowns(null);
+        }
+    });
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initializeFacultySearchFilters);
+    } else {
+        initializeFacultySearchFilters();
+    }
+})();

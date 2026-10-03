@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Curriculum Mapping | EduMetrics Department Head</title>
+<link rel="stylesheet" href="../../Static/style.css">
+</head>
+<body class="so-student-page cm-dept-head-page">
+<header class="so-topbar">
+<div class="so-brand"><div class="so-brand-logo">Edu<span>Metrics</span></div><div class="so-brand-subtitle">Academic Assessment &amp; Grading System</div></div>
+<div class="so-user-area">
+<button class="so-notification-btn" type="button" aria-label="Notifications"><img src="../../Static/images/sidebar/notif.png" alt="Notifications" class="so-notification-image"><span class="so-notification-dot"></span></button>
+<div class="so-user-info"><strong id="facultyName"></strong><span>Department Head</span></div>
+<div class="so-avatar" aria-hidden="true"><span class="so-avatar-person">●</span></div><span class="so-online-dot" aria-hidden="true"></span>
+</div>
+</header>
+<div class="so-header-lines"><div class="so-header-blue"></div><div class="so-header-gold"></div></div>
+<div class="so-shell">
+<aside class="so-sidebar">
+<div class="so-pages-title"><span class="so-grid-icon so-pages-image-wrap"><img src="../../Static/images/sidebar/pages.png" alt="" class="so-pages-image"></span><span>Pages</span></div>
+<nav class="so-nav" aria-label="Department Head navigation">
+<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/home-white.png" alt="" class="so-nav-image"></span><span>Home</span></a>
+<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/course-white.png" alt="" class="so-nav-image"></span><span>Courses</span></a>
+<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/pl-white.png" alt="" class="so-nav-image"></span><span>Platform</span></a>
+<div class="so-nav-group">
+<button class="so-nav-item so-products active" type="button"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/ws-blue.png" alt="" class="so-nav-image"></span><span>Workflow</span></button>
+<div class="so-subnav">
+<a href="#">Syllabus &amp; Outcomes</a><a href="#" class="active">Curriculum Mapping</a><a href="#">Class Roster</a><a href="#">Assessment Entry</a><a href="#">Attainment</a><a href="#">CQI Planning</a><a href="#">Gradebook</a><a href="#">Compliance Report</a>
+</div>
+</div>
+<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/rs-white.png" alt="" class="so-nav-image"></span><span>Resources</span></a>
+<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/au-white.png" alt="" class="so-nav-image"></span><span>About Us</span></a>
+</nav>
+<div class="so-sidebar-brand"><div class="so-sidebar-logo">Edu<span>Metrics</span></div><small>Academic Assessment &amp; Grading System</small></div>
+</aside>
+<main class="so-main cm-student-main cm-dept-head-main">
+<section class="so-page-heading">
+<h1>Curriculum Mapping</h1>
+<p>Manage course outcomes, assessment mappings, and student attainment.</p>
+</section>
+<section class="cm-student-filters">
+<div class="cm-filter-group"><label for="cmDeptSchoolYear">School Year</label><div class="cm-search-select" data-search-select><input id="cmDeptSchoolYear" class="cm-searchable-filter" type="text" placeholder="Select School Year" autocomplete="off" value="2026-2027"><button type="button" class="cm-search-select-toggle" aria-label="Open School Year options" aria-expanded="false"></button><div class="cm-search-select-menu"><button type="button" class="cm-search-option" data-value="2026-2027">2026-2027</button><button type="button" class="cm-search-option" data-value="2025-2026">2025-2026</button><button type="button" class="cm-search-option" data-value="2024-2025">2024-2025</button><button type="button" class="cm-search-option" data-value="2023-2024">2023-2024</button></div></div></div>
+<div class="cm-filter-group"><label for="cmDeptDepartment">Department</label><div class="cm-search-select" data-search-select><input id="cmDeptDepartment" class="cm-searchable-filter" type="text" placeholder="Select Department" autocomplete="off" value="College of Computing and Information Technologies"><button type="button" class="cm-search-select-toggle" aria-label="Open Department options" aria-expanded="false"></button><div class="cm-search-select-menu"><button type="button" class="cm-search-option" data-value="College of Computing and Information Technologies">College of Computing and Information Technologies</button><button type="button" class="cm-search-option" data-value="College of Engineering">College of Engineering</button><button type="button" class="cm-search-option" data-value="College of Business and Accountancy">College of Business and Accountancy</button></div></div></div>
+<div class="cm-filter-group"><label for="cmDeptProgram">Program</label><div class="cm-search-select" data-search-select><input id="cmDeptProgram" class="cm-searchable-filter" type="text" placeholder="Select Program" autocomplete="off" value="BS Information Technology"><button type="button" class="cm-search-select-toggle" aria-label="Open Program options" aria-expanded="false"></button><div class="cm-search-select-menu"><button type="button" class="cm-search-option" data-value="BS Information Technology">BS Information Technology</button><button type="button" class="cm-search-option" data-value="BS Computer Science">BS Computer Science</button><button type="button" class="cm-search-option" data-value="BS Information Systems">BS Information Systems</button></div></div></div>
+<div class="cm-filter-group"><label for="cmDeptCourse">Course</label><select id="cmDeptCourse"><option selected>Software Design</option></select></div>
+<div class="cm-filter-group"><label for="cmDeptSection">Section</label><select id="cmDeptSection"><option selected>232</option></select></div>
+</section>
+<section class="cm-student-summary cm-faculty-summary">
+<article class="cm-course-card"><div class="cm-card-accent"></div><div><span class="cm-course-label">My Course</span><h2>Software Design</h2><small>ITSD201 • Section 232</small></div></article>
+<article class="cm-stat-card"><div class="cm-card-accent cm-card-accent-soft"></div><div><span>Total Course Outcomes</span><strong>5</strong></div></article>
+<article class="cm-stat-card"><div class="cm-card-accent cm-card-accent-soft"></div><div><span>Mapped Assessments</span><strong>8</strong></div></article>
+<article class="cm-stat-card"><div class="cm-card-accent cm-card-accent-soft"></div><div><span>Overall CO Attainment</span><strong>77%</strong></div></article>
+</section>
+<section class="cm-student-content cm-faculty-content cm-dept-head-content">
+<div class="cm-tabs" role="tablist">
+<button class="cm-tab active" type="button" data-cm-tab="assessment-mapping">Assessment Mapping</button>
+<button class="cm-tab" type="button" data-cm-tab="course-outcomes">Course Outcomes</button>
+<button class="cm-tab" type="button" data-cm-tab="students-attainment">Students' Attainment</button>
+<button class="cm-tab" type="button" data-cm-tab="co-so-mapping">CO - SO Mapping</button>
+<button class="cm-tab" type="button" data-cm-tab="flags-cqi">Flags &amp; CQI</button>
+</div>
+
+<div class="cm-tab-panel active" id="assessment-mapping"><div class="cm-table-wrap"><table class="cm-table cm-dept-assessment-table"><thead><tr><th>Assessment Title</th><th>Assessment Type</th><th>Date</th><th>Mapped CO(s)</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+<tr><td>Experiment 1</td><td><span class="cm-dept-type laboratory">Laboratory</span></td><td>Oct. 1, 2026</td><td><span class="cm-co-badge">CO1</span> <span class="cm-co-badge">CO4</span></td><td><span class="cm-dept-status review">For Review</span></td><td><div class="cm-dept-row-actions"><button class="cm-dept-primary">View Syllabus</button><button class="cm-dept-outline">Review ›</button></div></td></tr>
+<tr><td>Experiment 1</td><td><span class="cm-dept-type laboratory">Laboratory</span></td><td>Oct. 1, 2026</td><td><span class="cm-co-badge">CO1</span> <span class="cm-co-badge">CO4</span></td><td><span class="cm-dept-status verified">Verified</span></td><td><div class="cm-dept-row-actions"><button class="cm-dept-primary">View Syllabus</button><button class="cm-dept-outline">Review ›</button></div></td></tr>
+<tr><td>Project 1</td><td><span class="cm-dept-type project">Project</span></td><td>Oct. 1, 2026</td><td><span class="cm-co-badge">CO1</span> <span class="cm-co-badge">CO4</span></td><td><span class="cm-dept-status review">For Review</span></td><td><div class="cm-dept-row-actions"><button class="cm-dept-primary">View Syllabus</button><button class="cm-dept-outline">Review ›</button></div></td></tr>
+<tr><td>Experiment 1</td><td><span class="cm-dept-type laboratory">Laboratory</span></td><td>Oct. 1, 2026</td><td><span class="cm-co-badge">CO1</span> <span class="cm-co-badge">CO4</span></td><td><span class="cm-dept-status review">For Review</span></td><td><div class="cm-dept-row-actions"><button class="cm-dept-primary">View Syllabus</button><button class="cm-dept-outline">Review ›</button></div></td></tr>
+<tr><td>Project 1</td><td><span class="cm-dept-type project">Project</span></td><td>Oct. 1, 2026</td><td><span class="cm-co-badge">CO1</span> <span class="cm-co-badge">CO4</span></td><td><span class="cm-dept-status verified">Verified</span></td><td><div class="cm-dept-row-actions"><button class="cm-dept-primary">View Syllabus</button><button class="cm-dept-outline">Review ›</button></div></td></tr>
+<tr><td>Project 1</td><td><span class="cm-dept-type project">Project</span></td><td>Oct. 1, 2026</td><td><span class="cm-co-badge">CO1</span> <span class="cm-co-badge">CO4</span></td><td><span class="cm-dept-status verified">Verified</span></td><td><div class="cm-dept-row-actions"><button class="cm-dept-primary">View Syllabus</button><button class="cm-dept-outline">Review ›</button></div></td></tr>
+</tbody></table></div></div>
+
+<div class="cm-tab-panel" id="course-outcomes"><div class="cm-table-wrap"><table class="cm-table cm-course-outcomes-table"><thead><tr><th>CO No.</th><th>Course Outcome</th><th>Mapped Activities</th><th>Class Attainment</th><th>Target</th><th>Status</th><th>Action</th></tr></thead><tbody>
+<tr><td>CO1</td><td>Apply fundamental software engineering principles in the development of software solutions</td><td><span class="cm-dept-map-card">Lab 1</span> <span class="cm-dept-map-card">Lab 2</span> <span class="cm-dept-map-card">Lab 3</span></td><td><span class="cm-class-attainment-score cm-score-pass">88%</span></td><td>≥ 70</td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><button class="cm-dept-outline">↗ View</button></td></tr>
+<tr><td>CO2</td><td>Analyze software requirements and translate them into appropriate system designs</td><td><span class="cm-dept-map-card">Quiz 1</span> <span class="cm-dept-map-card">Midterm Project</span></td><td><span class="cm-class-attainment-score cm-score-pass">76%</span></td><td>≥ 70</td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><button class="cm-dept-outline">↗ View</button></td></tr>
+<tr><td>CO3</td><td>Design and evaluate software solutions based on specified requirements</td><td><span class="cm-dept-map-card">Midterm Project</span></td><td><span class="cm-class-attainment-score cm-score-pass">88%</span></td><td>≥ 70</td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><button class="cm-dept-outline">↗ View</button></td></tr>
+<tr><td>CO4</td><td>Demonstrate effective teamwork and communication in software development activities</td><td><span class="cm-dept-map-card">Experiment 1</span> <span class="cm-dept-map-card">Project</span></td><td><span class="cm-class-attainment-score cm-score-pass">67%</span></td><td>≥ 70</td><td><span class="cm-dept-status needs">Needs Improvement</span></td><td><div class="cm-dept-row-actions"><button class="cm-dept-outline">↗ View</button><button class="cm-dept-danger">CQI Basis</button></div></td></tr>
+<tr><td>CO5</td><td>Apply professional and ethical practices in software development</td><td><span class="cm-dept-map-card">Final Project</span></td><td><span class="cm-class-attainment-score cm-score-pass">65%</span></td><td>≥ 70</td><td><span class="cm-dept-status needs">Needs Improvement</span></td><td><div class="cm-dept-row-actions"><button class="cm-dept-outline">↗ View</button><button class="cm-dept-danger">CQI Basis</button></div></td></tr>
+</tbody></table></div></div>
+
+<div class="cm-tab-panel" id="students-attainment"><div class="cm-table-wrap"><table class="cm-table cm-students-attainment-table"><thead><tr><th>#</th><th>Student ID</th><th>Student Name</th><th>CO1</th><th>CO2</th><th>CO3</th><th>CO4</th><th>CO5</th><th>Status</th><th>Action</th></tr></thead><tbody>
+<tr><td>1</td><td>2023-111111</td><td>Angel S. Villanueva</td><td><span class="cm-dept-score cm-score-pass">88%</span></td><td><span class="cm-dept-score cm-score-pass">88%</span></td><td><span class="cm-dept-score cm-score-pass">76%</span></td><td><span class="cm-dept-score cm-score-pass">88%</span></td><td><span class="cm-dept-score cm-score-pass">88%</span></td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><button class="cm-dept-outline">↗ View</button></td></tr>
+<tr><td>2</td><td>2023-111112</td><td>Bea M. Santos</td><td><span class="cm-dept-score cm-score-pass">88%</span></td><td><span class="cm-dept-score cm-score-pass">78%</span></td><td><span class="cm-dept-score cm-score-fail">57%</span></td><td><span class="cm-dept-score cm-score-pass">88%</span></td><td><span class="cm-dept-score cm-score-pass">88%</span></td><td><span class="cm-dept-status needs">Needs Improvement</span></td><td><button class="cm-dept-outline">↗ View</button></td></tr>
+<tr><td>3</td><td>2023-111113</td><td>Carl P. Reyes</td><td><span class="cm-dept-score cm-score-pass">88%</span></td><td><span class="cm-dept-score cm-score-pass">88%</span></td><td><span class="cm-dept-score cm-score-pass">88%</span></td><td><span class="cm-dept-score cm-score-pass">73%</span></td><td><span class="cm-dept-score cm-score-pass">88%</span></td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><button class="cm-dept-outline">↗ View</button></td></tr>
+<tr><td>4</td><td>2023-111114</td><td>Dana L. Cruz</td><td><span class="cm-dept-score cm-score-pass">88%</span></td><td><span class="cm-dept-score cm-score-fail">57%</span></td><td><span class="cm-dept-score cm-score-fail">51%</span></td><td><span class="cm-dept-score cm-score-pass">88%</span></td><td><span class="cm-dept-score cm-score-pass">71%</span></td><td><span class="cm-dept-status needs">Needs Improvement</span></td><td><button class="cm-dept-outline">↗ View</button></td></tr>
+</tbody></table></div></div>
+
+<div class="cm-tab-panel" id="co-so-mapping"><div class="cm-table-wrap"><table class="cm-table cm-dept-coso-table"><thead><tr><th>CO No.</th><th>Course Outcomes (CO)</th><th>Aligned SO(s)</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+<tr><td>CO1</td><td>Apply fundamental software engineering principles in the development of software solutions</td><td><span class="cm-dept-so-card">SO (A)</span> <span class="cm-dept-so-card">SO (B)</span></td><td><span class="cm-dept-status review">For Review</span></td><td><button class="cm-dept-primary">Review Mapping ›</button></td></tr>
+<tr><td>CO2</td><td>Analyze software requirements and translate them into appropriate system designs</td><td><span class="cm-dept-so-card">SO (A)</span> <span class="cm-dept-so-card">SO (B)</span></td><td><span class="cm-dept-status verified">Verified</span></td><td><button class="cm-dept-primary">Review Mapping ›</button></td></tr>
+<tr><td>CO3</td><td>Design and evaluate software solutions based on specified requirements</td><td><span class="cm-dept-so-card">SO (C)</span></td><td><span class="cm-dept-status verified">Verified</span></td><td><button class="cm-dept-primary">Review Mapping ›</button></td></tr>
+<tr><td>CO4</td><td>Demonstrate effective teamwork and communication in software development activities</td><td><span class="cm-dept-so-card">SO (D)</span> <span class="cm-dept-so-card">SO (E)</span></td><td><span class="cm-dept-status review">For Review</span></td><td><button class="cm-dept-primary">Review Mapping ›</button></td></tr>
+</tbody></table></div></div>
+
+<div class="cm-tab-panel" id="flags-cqi"><div class="cm-table-wrap"><table class="cm-table cm-dept-cqi-table"><thead><tr><th>CO No.</th><th>Attainment</th><th>Target</th><th>Issue</th><th>Status</th><th>Action</th></tr></thead><tbody>
+<tr><td>CO3</td><td><span class="cm-dept-score cm-score-fail">57%</span></td><td>≥ 70</td><td>Low attainment; review mapped assessment evidence.</td><td><span class="cm-dept-status review">Need Improvement</span></td><td><div class="cm-dept-action-stack"><button class="cm-dept-primary">Review CO</button><button class="cm-dept-danger">Create CQI</button></div></td></tr>
+<tr><td>CO5</td><td><span class="cm-dept-score cm-score-fail">55%</span></td><td>≥ 70</td><td>Low attainment; CQI action should be considered.</td><td><span class="cm-dept-status required">CQI Required</span></td><td><div class="cm-dept-action-stack"><button class="cm-dept-primary">Review CO</button><button class="cm-dept-danger">Create CQI</button></div></td></tr>
+</tbody></table></div></div>
+</section>
+</main>
+</div>
+<script src="../../Static/script.js"></script>
+<script>
+document.querySelectorAll("[data-search-select]").forEach(function(select) {
+    const input=select.querySelector(".cm-searchable-filter");
+    const toggle=select.querySelector(".cm-search-select-toggle");
+    const options=Array.from(select.querySelectorAll(".cm-search-option"));
+    function filterOptions() {
+        const query=input.value.trim().toLowerCase();
+        options.forEach(function(option) {
+            option.hidden=query && !option.dataset.value.toLowerCase().includes(query);
+        });
+    }
+    function openMenu() {
+        document.querySelectorAll(".cm-search-select.open").forEach(function(other) {
+            if(other!==select) {
+                other.classList.remove("open");
+                other.querySelector(".cm-search-select-toggle").setAttribute("aria-expanded","false");
+            }
+        });
+        select.classList.add("open");
+        toggle.setAttribute("aria-expanded","true");
+        filterOptions();
+    }
+    function closeMenu() {
+        select.classList.remove("open");
+        toggle.setAttribute("aria-expanded","false");
+    }
+    input.addEventListener("focus",openMenu);
+    input.addEventListener("input",function(){openMenu();filterOptions();});
+    toggle.addEventListener("click",function(){
+        if(select.classList.contains("open")) closeMenu();
+        else {input.focus();openMenu();}
+    });
+    options.forEach(function(option){
+        option.addEventListener("click",function(){
+            input.value=option.dataset.value;
+            closeMenu();
+            input.dispatchEvent(new Event("change",{bubbles:true}));
+        });
+    });
+    document.addEventListener("click",function(event){
+        if(!select.contains(event.target)) closeMenu();
+    });
+});
+</script>
+</body>
+</html>

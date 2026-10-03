@@ -40,9 +40,9 @@
 <p>Manage course outcomes, assessment mappings, and student attainment.</p>
 </section>
 <section class="cm-student-filters">
-<div class="cm-filter-group"><label for="cmFacultySchoolYear">School Year</label><div class="cm-date-field"><input id="cmFacultySchoolYear" type="text" placeholder="Select School Year" readonly></div></div>
-<div class="cm-filter-group"><label for="cmFacultyDepartment">Department</label><input id="cmFacultyDepartment" type="text" placeholder="Select Department" readonly></div>
-<div class="cm-filter-group"><label for="cmFacultyProgram">Program</label><input id="cmFacultyProgram" type="text" placeholder="Select Program" readonly></div>
+<div class="cm-filter-group"><label for="cmFacultySchoolYear">School Year</label><div class="cm-search-select" data-search-select><input id="cmFacultySchoolYear" class="cm-searchable-filter" type="text" placeholder="Select School Year" autocomplete="off"><button type="button" class="cm-search-select-toggle" aria-label="Open School Year options" aria-expanded="false"></button><div class="cm-search-select-menu"><button type="button" class="cm-search-option" data-value="2026-2027">2026-2027</button><button type="button" class="cm-search-option" data-value="2025-2026">2025-2026</button><button type="button" class="cm-search-option" data-value="2024-2025">2024-2025</button><button type="button" class="cm-search-option" data-value="2023-2024">2023-2024</button></div></div></div>
+<div class="cm-filter-group"><label for="cmFacultyDepartment">Department</label><div class="cm-search-select" data-search-select><input id="cmFacultyDepartment" class="cm-searchable-filter" type="text" placeholder="Select Department" autocomplete="off"><button type="button" class="cm-search-select-toggle" aria-label="Open Department options" aria-expanded="false"></button><div class="cm-search-select-menu"><button type="button" class="cm-search-option" data-value="College of Computing and Information Technologies">College of Computing and Information Technologies</button><button type="button" class="cm-search-option" data-value="College of Engineering">College of Engineering</button><button type="button" class="cm-search-option" data-value="College of Business and Accountancy">College of Business and Accountancy</button></div></div></div>
+<div class="cm-filter-group"><label for="cmFacultyProgram">Program</label><div class="cm-search-select" data-search-select><input id="cmFacultyProgram" class="cm-searchable-filter" type="text" placeholder="Select Program" autocomplete="off"><button type="button" class="cm-search-select-toggle" aria-label="Open Program options" aria-expanded="false"></button><div class="cm-search-select-menu"><button type="button" class="cm-search-option" data-value="BS Information Technology">BS Information Technology</button><button type="button" class="cm-search-option" data-value="BS Computer Science">BS Computer Science</button><button type="button" class="cm-search-option" data-value="BS Information Systems">BS Information Systems</button></div></div></div>
 <div class="cm-filter-group"><label for="cmFacultyCourse">Course</label><select id="cmFacultyCourse"><option value="" selected>Select Course</option></select></div>
 <div class="cm-filter-group"><label for="cmFacultySection">Section</label><select id="cmFacultySection"><option value="" selected>Select Section</option></select></div>
 </section>
@@ -101,8 +101,19 @@
 </td>
 </tr>
 </tbody></table></div></div>
-<div class="cm-tab-panel" id="course-outcomes"><div class="cm-table-wrap"><table class="cm-table"><thead><tr><th>CO No.</th><th>Course Outcome</th><th>Mapped Assessments</th><th>Attainment</th><th>Actions</th></tr></thead><tbody id="facultyCourseOutcomesBody"></tbody></table><div class="cm-empty-state"><h3>No course outcomes yet</h3><p>Course outcomes will appear here once backend data is connected.</p></div></div></div>
-<div class="cm-tab-panel" id="students-attainment"><div class="cm-table-wrap"><table class="cm-table"><thead><tr><th>Student</th><th>Student Number</th><th>Course Outcome</th><th>Attainment</th><th>Status</th></tr></thead><tbody id="facultyStudentsAttainmentBody"></tbody></table><div class="cm-empty-state"><h3>No student attainment records yet</h3><p>Student attainment records will appear here once backend data is connected.</p></div></div></div>
+<div class="cm-tab-panel" id="course-outcomes"><div class="cm-table-wrap"><table class="cm-table cm-course-outcomes-table"><thead><tr><th>CO No.</th><th>Course Outcome</th><th>Mapped Activities</th><th>Class Attainment</th><th>Target</th><th>Status</th><th>Action</th></tr></thead><tbody id="facultyCourseOutcomesBody">
+<tr><td>CO1</td><td>Apply fundamental software engineering principles</td><td><span class="cm-co-badge">Lab 1</span> <span class="cm-co-badge">Lab 2</span> <span class="cm-co-badge">Lab 3</span></td><td><strong>88%</strong></td><td>≥ 70</td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><button type="button" class="cm-view-score-btn">↗ View</button></td></tr>
+<tr><td>CO2</td><td>Analyze software requirements and translate them into appropriate system designs</td><td><span class="cm-co-badge">Quiz 1</span> <span class="cm-co-badge">Midterm Project</span></td><td><strong>78%</strong></td><td>≥ 70</td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><button type="button" class="cm-view-score-btn">↗ View</button></td></tr>
+<tr><td>CO3</td><td>Design and evaluate software solutions based on specified requirements</td><td><span class="cm-co-badge">Midterm Project</span></td><td><strong>67%</strong></td><td>≥ 70</td><td><span class="cm-attainment-status cm-status-needs">Needs Improvement</span></td><td><button type="button" class="cm-view-score-btn">↗ View</button></td></tr>
+<tr><td>CO4</td><td>Demonstrate effective teamwork and communication in software development activities</td><td><span class="cm-co-badge">Experiment 1</span> <span class="cm-co-badge">Project</span></td><td><strong>88%</strong></td><td>≥ 70</td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><button type="button" class="cm-view-score-btn">↗ View</button></td></tr>
+<tr><td>CO5</td><td>Apply professional and ethical practices in the development of software systems</td><td><span class="cm-co-badge">Final Project</span></td><td><strong>88%</strong></td><td>≥ 70</td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><button type="button" class="cm-view-score-btn">↗ View</button></td></tr>
+</tbody></table></div></div>
+<div class="cm-tab-panel" id="students-attainment"><div class="cm-table-wrap"><table class="cm-table cm-students-attainment-table"><thead><tr><th>#</th><th>Student ID</th><th>Student Name</th><th>CO1</th><th>CO2</th><th>CO3</th><th>CO4</th><th>CO5</th><th>Status</th><th>Action</th></tr></thead><tbody id="facultyStudentsAttainmentBody">
+<tr><td>1</td><td>2023-111111</td><td>Angel S. Villanueva</td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">76%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><button type="button" class="cm-view-score-btn">↗ View</button></td></tr>
+<tr><td>2</td><td>2023-111112</td><td>Bea M. Santos</td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">78%</span></td><td><span class="cm-attainment-score cm-score-pass">67%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-status cm-status-needs">Needs Improvement</span></td><td><button type="button" class="cm-view-score-btn">↗ View</button></td></tr>
+<tr><td>3</td><td>2023-111113</td><td>Carl P. Reyes</td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">73%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><button type="button" class="cm-view-score-btn">↗ View</button></td></tr>
+<tr><td>4</td><td>2023-111114</td><td>Dana L. Cruz</td><td><span class="cm-attainment-score cm-score-pass">91%</span></td><td><span class="cm-attainment-score cm-score-pass">85%</span></td><td><span class="cm-attainment-score cm-score-pass">82%</span></td><td><span class="cm-attainment-score cm-score-pass">79%</span></td><td><span class="cm-attainment-score cm-score-pass">90%</span></td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><button type="button" class="cm-view-score-btn">↗ View</button></td></tr>
+</tbody></table></div></div>
 </section>
 </main>
 </div>
@@ -244,6 +255,50 @@ deleteModal.addEventListener('click',function(e){if(e.target===deleteModal)close
 confirmDeleteBtn.addEventListener('click',function(){if(rowToDelete)rowToDelete.remove();closeDeleteModal();});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&deleteModal.classList.contains('show'))closeDeleteModal();});
 })();
+</script>
+<script>
+document.querySelectorAll("[data-search-select]").forEach(function(select) {
+    const input=select.querySelector(".cm-searchable-filter");
+    const toggle=select.querySelector(".cm-search-select-toggle");
+    const options=Array.from(select.querySelectorAll(".cm-search-option"));
+    function filterOptions() {
+        const query=input.value.trim().toLowerCase();
+        options.forEach(function(option) {
+            option.hidden=query && !option.dataset.value.toLowerCase().includes(query);
+        });
+    }
+    function openMenu() {
+        document.querySelectorAll(".cm-search-select.open").forEach(function(other) {
+            if(other!==select) {
+                other.classList.remove("open");
+                other.querySelector(".cm-search-select-toggle").setAttribute("aria-expanded","false");
+            }
+        });
+        select.classList.add("open");
+        toggle.setAttribute("aria-expanded","true");
+        filterOptions();
+    }
+    function closeMenu() {
+        select.classList.remove("open");
+        toggle.setAttribute("aria-expanded","false");
+    }
+    input.addEventListener("focus",openMenu);
+    input.addEventListener("input",function(){openMenu();filterOptions();});
+    toggle.addEventListener("click",function(){
+        if(select.classList.contains("open")) closeMenu();
+        else {input.focus();openMenu();}
+    });
+    options.forEach(function(option){
+        option.addEventListener("click",function(){
+            input.value=option.dataset.value;
+            closeMenu();
+            input.dispatchEvent(new Event("change",{bubbles:true}));
+        });
+    });
+    document.addEventListener("click",function(event){
+        if(!select.contains(event.target)) closeMenu();
+    });
+});
 </script>
 </body>
 </html>
