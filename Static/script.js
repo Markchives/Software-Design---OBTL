@@ -1,4 +1,449 @@
-    console.info("EduMetrics script loaded: faculty SO fix 2026-09-27");
+/* CM DEPT HEAD — CLEAN POPUP CONTROLLER */
+(function () {
+    "use strict";
+
+    const page = document.querySelector(".cm-dept-head-page");
+    if (!page) return;
+
+    const reviewModal = document.getElementById("cmDeptAssessmentReviewModal");
+    const actionModal = document.getElementById("cmDeptActionModal");
+
+    function el(id) {
+        return document.getElementById(id);
+    }
+
+    function clean(value) {
+        return String(value == null ? "" : value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+    }
+
+    function field(label, value, wide) {
+        return '<div class="cm-dept-action-field' +
+            (wide ? ' cm-dept-action-wide' : '') +
+            '"><span>' + clean(label) + '</span><strong>' +
+            clean(value || "—") + '</strong></div>';
+    }
+
+    function showReview(button) {
+        const row = button.closest("tr");
+        if (!row || !reviewModal) return;
+
+        const mapped = Array.from(row.cells[3].querySelectorAll(".cm-co-badge"))
+            .map(function (badge) {
+                return badge.textContent.trim();
+            })
+            .join(" • ");
+
+        el("cmDeptReviewAssessment").textContent = row.cells[0].textContent.trim();
+        el("cmDeptReviewType").textContent = row.cells[1].textContent.trim();
+        el("cmDeptReviewDate").textContent = row.cells[2].textContent.trim();
+        el("cmDeptReviewCos").textContent = mapped || "—";
+
+        reviewModal.dataset.reviewRowIndex = String(row.rowIndex);
+        reviewModal.classList.add("show");
+        reviewModal.setAttribute("aria-hidden", "false");
+        document.body.classList.add("cm-dept-modal-open");
+    }
+
+    function hideReview() {
+        if (!reviewModal) return;
+        reviewModal.classList.remove("show");
+        reviewModal.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("cm-dept-modal-open");
+    }
+
+    function showAction(options) {
+        if (!actionModal) return;
+
+        el("cmDeptActionTitle").textContent = options.title || "Details";
+        el("cmDeptActionSubtitle").textContent = options.subtitle || "";
+        el("cmDeptActionSummary").innerHTML = options.summary || "";
+
+        const note = el("cmDeptActionNote");
+        note.innerHTML = options.note || "";
+        note.hidden = !options.note;
+
+        const form = el("cmDeptCqiForm");
+        form.hidden = !options.showCqiForm;
+
+        const textarea = el("cmDeptCqiAction");
+        if (textarea) textarea.value = "";
+
+        const confirm = el("cmDeptActionConfirm");
+        confirm.textContent = options.confirmText || "Close";
+        confirm.dataset.mode = options.mode || "close";
+        confirm.dataset.rowIndex =
+            options.rowIndex == null ? "" : String(options.rowIndex);
+
+        actionModal.classList.add("show");
+        actionModal.setAttribute("aria-hidden", "false");
+        document.body.classList.add("cm-dept-modal-open");
+    }
+
+    function hideAction() {
+        if (!actionModal) return;
+        actionModal.classList.remove("show");
+        actionModal.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("cm-dept-modal-open");
+    }
+
+    page.addEventListener("click", function (event) {
+        const button = event.target.closest("button");
+        if (!button) return;
+
+        let row;
+
+        if (button.classList.contains("cm-dept-review-btn")) {
+            event.preventDefault();
+            showReview(button);
+            return;
+        }
+
+        row = button.closest("tr");
+        if (!row) return;
+
+        if (button.classList.contains("cm-dept-view-syllabus-btn")) {
+            event.preventDefault();
+
+            const mapped = Array.from(row.cells[3].querySelectorAll(".cm-co-badge"))
+                .map(function (badge) {
+                    return badge.textContent.trim();
+                })
+                .join(" • ");
+
+            showAction({
+                title: "Syllabus Mapping View",
+                subtitle: "Review the syllabus information connected to this assessment.",
+                summary:
+                    field("ASSESSMENT", row.cells[0].textContent.trim()) +
+                    field("TYPE", row.cells[1].textContent.trim()) +
+                    field("DATE", row.cells[2].textContent.trim()) +
+                    field("MAPPED CO(S)", mapped),
+                note:
+                    "<strong>Syllabus reference:</strong> This assessment is linked to the approved course syllabus and its mapped Course Outcomes.",
+                confirmText: "Close"
+            });
+            return;
+        }
+
+        if (button.classList.contains("cm-dept-view-btn")) {
+            event.preventDefault();
+
+            if (button.closest("#course-outcomes")) {
+                const activities = Array.from(
+                    row.cells[2].querySelectorAll(".cm-dept-map-card")
+                ).map(function (item) {
+                    return item.textContent.trim();
+                }).join(" • ");
+
+                const needsImprovement =
+                    row.cells[5].textContent.indexOf("Needs Improvement") !== -1;
+
+                showAction({
+                    title: "Course Outcome Review",
+                    subtitle: "Review the selected Course Outcome and its class attainment.",
+                    summary:
+                        field("CO NO.", row.cells[0].textContent.trim()) +
+                        field("CLASS ATTAINMENT", row.cells[3].textContent.trim()) +
+                        field("TARGET", row.cells[4].textContent.trim()) +
+                        field("STATUS", row.cells[5].textContent.trim()) +
+                        field("COURSE OUTCOME", row.cells[1].textContent.trim(), true) +
+                        field("MAPPED ACTIVITIES", activities, true),
+                    note: needsImprovement
+                        ? "<strong>CQI basis:</strong> The class attainment is below the required 70% target."
+                        : "<strong>Result:</strong> The Course Outcome meets the required attainment target.",
+                    confirmText: "Close"
+                });
+                return;
+            }
+
+            if (button.closest("#students-attainment")) {
+                showAction({
+                    title: "Student Attainment Review",
+                    subtitle: "Review the student's attainment across all Course Outcomes.",
+                    summary:
+                        field("STUDENT ID", row.cells[1].textContent.trim()) +
+                        field("STUDENT NAME", row.cells[2].textContent.trim()) +
+                        field("STATUS", row.cells[8].textContent.trim()) +
+                        field("CO1", row.cells[3].textContent.trim()) +
+                        field("CO2", row.cells[4].textContent.trim()) +
+                        field("CO3", row.cells[5].textContent.trim()) +
+                        field("CO4", row.cells[6].textContent.trim()) +
+                        field("CO5", row.cells[7].textContent.trim()),
+                    note:
+                        "<strong>Review note:</strong> Scores below the required attainment level should be considered when reviewing CQI needs.",
+                    confirmText: "Close"
+                });
+                return;
+            }
+        }
+
+        if (button.classList.contains("cm-dept-cqi-basis-btn")) {
+            event.preventDefault();
+
+            showAction({
+                title: "CQI Basis",
+                subtitle: "Review why this Course Outcome requires improvement.",
+                summary:
+                    field("CO NO.", row.cells[0].textContent.trim()) +
+                    field("CLASS ATTAINMENT", row.cells[3].textContent.trim()) +
+                    field("TARGET", row.cells[4].textContent.trim()) +
+                    field("STATUS", row.cells[5].textContent.trim()),
+                note:
+                    "<strong>CQI basis:</strong> The class attainment is below the required 70% target. Review the mapped activities and assessment evidence before planning an improvement action.",
+                confirmText: "Close"
+            });
+            return;
+        }
+
+        if (button.classList.contains("cm-dept-review-mapping-btn")) {
+            event.preventDefault();
+
+            const sos = Array.from(
+                row.cells[2].querySelectorAll(".cm-dept-so-card")
+            ).map(function (item) {
+                return item.textContent.trim();
+            }).join(" • ");
+
+            showAction({
+                title: "CO - SO Mapping Review",
+                subtitle: "Verify the alignment of the Course Outcome with the selected Student Outcome(s).",
+                summary:
+                    field("CO NO.", row.cells[0].textContent.trim()) +
+                    field("ALIGNED SO(S)", sos) +
+                    field("STATUS", row.cells[3].textContent.trim()) +
+                    field("COURSE OUTCOME", row.cells[1].textContent.trim(), true),
+                note:
+                    "<strong>Review note:</strong> Confirm that the selected SO alignment is appropriate for the Course Outcome before verification.",
+                confirmText: "Verify Mapping",
+                mode: "verify-coso",
+                rowIndex: row.rowIndex
+            });
+            return;
+        }
+
+        if (button.classList.contains("cm-dept-review-co-btn")) {
+            event.preventDefault();
+
+            showAction({
+                title: "Flagged Course Outcome Review",
+                subtitle: "Review the attainment issue before creating a CQI action.",
+                summary:
+                    field("CO NO.", row.cells[0].textContent.trim()) +
+                    field("ATTAINMENT", row.cells[1].textContent.trim()) +
+                    field("TARGET", row.cells[2].textContent.trim()) +
+                    field("STATUS", row.cells[4].textContent.trim()) +
+                    field("ISSUE", row.cells[3].textContent.trim(), true),
+                note:
+                    "<strong>Review note:</strong> This Course Outcome is below the target and should be reviewed together with its mapped assessment evidence.",
+                confirmText: "Close"
+            });
+            return;
+        }
+
+        if (button.classList.contains("cm-dept-create-cqi-btn")) {
+            event.preventDefault();
+
+            showAction({
+                title: "Create CQI Action",
+                subtitle: "Create a continuous quality improvement action for the flagged Course Outcome.",
+                summary:
+                    field("CO NO.", row.cells[0].textContent.trim()) +
+                    field("ATTAINMENT", row.cells[1].textContent.trim()) +
+                    field("TARGET", row.cells[2].textContent.trim()) +
+                    field("STATUS", row.cells[4].textContent.trim()) +
+                    field("ISSUE", row.cells[3].textContent.trim(), true),
+                note:
+                    "<strong>CQI basis:</strong> The recorded attainment is below the required 70% target.",
+                showCqiForm: true,
+                confirmText: "Save CQI",
+                mode: "save-cqi",
+                rowIndex: row.rowIndex
+            });
+        }
+    });
+
+    document.addEventListener("click", function (event) {
+        if (event.target.closest("[data-close-dept-review]") ||
+            event.target === reviewModal) {
+            hideReview();
+            return;
+        }
+
+        if (event.target.closest("[data-close-dept-action]") ||
+            event.target === actionModal) {
+            hideAction();
+            return;
+        }
+
+        if (event.target.closest("#cmDeptVerifyMapping")) {
+            const table = document.querySelector(".cm-dept-assessment-table");
+            const row = table &&
+                table.rows[Number(reviewModal.dataset.reviewRowIndex)];
+
+            if (row) {
+                const status = row.cells[4].querySelector(".cm-dept-status");
+                if (status) {
+                    status.textContent = "Verified";
+                    status.classList.remove("review");
+                    status.classList.add("verified");
+                }
+            }
+
+            hideReview();
+            return;
+        }
+
+        if (event.target.closest("#cmDeptActionConfirm")) {
+            const confirm = el("cmDeptActionConfirm");
+            const mode = confirm.dataset.mode;
+
+            if (mode === "verify-coso") {
+                const table = document.querySelector(".cm-dept-coso-table");
+                const row = table &&
+                    table.rows[Number(confirm.dataset.rowIndex)];
+
+                if (row) {
+                    const status = row.cells[3].querySelector(".cm-dept-status");
+                    if (status) {
+                        status.textContent = "Verified";
+                        status.classList.remove("review");
+                        status.classList.add("verified");
+                    }
+                }
+            }
+
+            if (mode === "save-cqi") {
+                const textarea = el("cmDeptCqiAction");
+                if (!textarea.value.trim()) {
+                    textarea.focus();
+                    return;
+                }
+
+                const table = document.querySelector(".cm-dept-cqi-table");
+                const row = table &&
+                    table.rows[Number(confirm.dataset.rowIndex)];
+
+                if (row) {
+                    const status = row.cells[4].querySelector(".cm-dept-status");
+                    if (status) {
+                        status.textContent = "CQI Created";
+                        status.classList.remove("review", "required");
+                        status.classList.add("verified");
+                    }
+                }
+            }
+
+            hideAction();
+        }
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            hideReview();
+            hideAction();
+        }
+    });
+})();
+
+/* CM FACULTY — COURSE OUTCOME POPUPS */
+function getCourseOutcomeRowData(button) {
+    const row = button.closest("tr");
+    if (!row || !row.cells || row.cells.length < 7) return null;
+
+    return {
+        number: row.cells[0].textContent.trim(),
+        description: row.cells[1].textContent.trim(),
+        activities: Array.from(row.cells[2].querySelectorAll(".cm-co-badge"))
+            .map(function (item) { return item.textContent.trim(); })
+            .join(", "),
+        attainment: row.cells[3].textContent.trim(),
+        target: row.cells[4].textContent.trim(),
+        status: row.cells[5].textContent.trim()
+    };
+}
+
+function showCourseOutcomeModal(modal) {
+    if (!modal) return;
+    modal.classList.add("show");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("cm-modal-open");
+}
+
+function hideCourseOutcomeModal(modal) {
+    if (!modal) return;
+    modal.classList.remove("show");
+    modal.setAttribute("aria-hidden", "true");
+
+    if (!document.querySelector(".cm-attainment-modal.show")) {
+        document.body.classList.remove("cm-modal-open");
+    }
+}
+
+function openCourseOutcomeView(button) {
+    const data = getCourseOutcomeRowData(button);
+    const modal = document.getElementById("courseOutcomeViewModal");
+    if (!data || !modal) return;
+
+    document.getElementById("coViewNumber").textContent = data.number;
+    document.getElementById("coViewAttainment").textContent = data.attainment;
+    document.getElementById("coViewTarget").textContent = data.target;
+    document.getElementById("coViewStatus").textContent = data.status;
+    document.getElementById("coViewDescription").textContent = data.description;
+    document.getElementById("coViewActivities").textContent = data.activities || "—";
+
+    showCourseOutcomeModal(modal);
+}
+
+function openCourseOutcomeCqi(button) {
+    const data = getCourseOutcomeRowData(button);
+    const modal = document.getElementById("courseOutcomeCqiModal");
+    if (!data || !modal) return;
+
+    document.getElementById("coCqiNumber").textContent = data.number;
+    document.getElementById("coCqiAttainment").textContent = data.attainment;
+    document.getElementById("coCqiReason").textContent =
+        data.number + " has a class attainment of " + data.attainment +
+        ", which is below the required 70% attainment target.";
+
+    showCourseOutcomeModal(modal);
+}
+
+/* One delegated listener only — handles all Course Outcome View/CQI buttons. */
+document.addEventListener("click", function (event) {
+    const viewButton = event.target.closest(".cm-co-view-btn");
+    if (viewButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        openCourseOutcomeView(viewButton);
+        return;
+    }
+
+    const cqiButton = event.target.closest(".cm-co-cqi-btn");
+    if (cqiButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        openCourseOutcomeCqi(cqiButton);
+        return;
+    }
+
+    const closeButton = event.target.closest("[data-close-co-modal]");
+    if (closeButton) {
+        hideCourseOutcomeModal(
+            document.getElementById(closeButton.getAttribute("data-close-co-modal"))
+        );
+        return;
+    }
+
+    if (event.target.classList.contains("cm-attainment-modal")) {
+        hideCourseOutcomeModal(event.target);
+    }
+});
+
+console.info("EduMetrics script loaded: faculty SO fix 2026-09-27");
 
         /* EduMetrics - Academic Assessment & Grading System */
 
@@ -6910,203 +7355,7 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 
 
-/* SO FACULTY FILTER DROPDOWNS — FINAL FIX */
-(function () {
-    "use strict";
-
-    function closeFacultySearchDropdowns(except) {
-        document.querySelectorAll(".so-faculty-page .sof-search-select.open").forEach(function (wrapper) {
-            if (wrapper !== except) {
-                wrapper.classList.remove("open");
-                const toggle = wrapper.querySelector(".sof-search-toggle");
-                if (toggle) {
-                    toggle.setAttribute("aria-expanded", "false");
-                }
-            }
-        });
-    }
-
-    function enhanceFacultyFilter(select) {
-        if (!select || select.dataset.sofSearchEnhanced === "true") {
-            return;
-        }
-
-        select.dataset.sofSearchEnhanced = "true";
-
-        const wrapper = document.createElement("div");
-        wrapper.className = "sof-search-select";
-
-        const input = document.createElement("input");
-        input.type = "text";
-        input.className = "sof-search-input";
-        input.autocomplete = "off";
-
-        const firstOption = select.options.length ? select.options[0] : null;
-        input.placeholder = firstOption ? firstOption.textContent.trim() : "Select";
-
-        if (select.selectedIndex > 0 && select.options[select.selectedIndex]) {
-            input.value = select.options[select.selectedIndex].textContent.trim();
-        }
-
-        const toggle = document.createElement("button");
-        toggle.type = "button";
-        toggle.className = "sof-search-toggle";
-        toggle.setAttribute("aria-label", "Open options");
-        toggle.setAttribute("aria-expanded", "false");
-
-        const menu = document.createElement("div");
-        menu.className = "sof-search-menu";
-
-        function renderOptions(query) {
-            menu.innerHTML = "";
-            const search = (query || "").trim().toLowerCase();
-            let visibleCount = 0;
-
-            Array.from(select.options).forEach(function (option, index) {
-                const label = option.textContent.trim();
-
-                if (index === 0 && !option.value) {
-                    return;
-                }
-
-                if (search && !label.toLowerCase().includes(search)) {
-                    return;
-                }
-
-                const item = document.createElement("button");
-                item.type = "button";
-                item.className = "sof-search-option";
-                item.textContent = label;
-
-                item.addEventListener("click", function () {
-                    select.value = option.value;
-                    input.value = label;
-                    wrapper.classList.remove("open");
-                    toggle.setAttribute("aria-expanded", "false");
-                    select.dispatchEvent(new Event("change", { bubbles: true }));
-                });
-
-                menu.appendChild(item);
-                visibleCount += 1;
-            });
-
-            if (visibleCount === 0) {
-                const empty = document.createElement("div");
-                empty.className = "sof-search-empty";
-                empty.textContent = "No results";
-                menu.appendChild(empty);
-            }
-        }
-
-        function openDropdown() {
-            closeFacultySearchDropdowns(wrapper);
-            renderOptions(input.value);
-            wrapper.classList.add("open");
-            toggle.setAttribute("aria-expanded", "true");
-        }
-
-        select.parentNode.insertBefore(wrapper, select);
-        wrapper.appendChild(input);
-        wrapper.appendChild(toggle);
-        wrapper.appendChild(menu);
-        wrapper.appendChild(select);
-        select.classList.add("sof-search-native");
-
-        input.addEventListener("focus", openDropdown);
-        input.addEventListener("click", openDropdown);
-        input.addEventListener("input", openDropdown);
-
-        toggle.addEventListener("click", function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-
-            if (wrapper.classList.contains("open")) {
-                wrapper.classList.remove("open");
-                toggle.setAttribute("aria-expanded", "false");
-            } else {
-                openDropdown();
-                input.focus();
-            }
-        });
-
-        select.addEventListener("change", function () {
-            const selected = select.options[select.selectedIndex];
-            input.value = select.selectedIndex > 0 && selected
-                ? selected.textContent.trim()
-                : "";
-        });
-    }
-
-    function initializeFacultySearchFilters() {
-        [
-            "facultyCourse",
-            "facultySection",
-            "facultyTerm",
-            "facultyYear"
-        ].forEach(function (id) {
-            enhanceFacultyFilter(document.getElementById(id));
-        });
-    }
-
-    document.addEventListener("click", function (event) {
-        if (!event.target.closest(".so-faculty-page .sof-search-select")) {
-            closeFacultySearchDropdowns(null);
-        }
-    });
-
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initializeFacultySearchFilters);
-    } else {
-        initializeFacultySearchFilters();
-    }
-})();
-
-
-(function(){
-document.querySelectorAll("[data-search-select]").forEach(function(select) {
-    const input=select.querySelector(".cm-searchable-filter");
-    const toggle=select.querySelector(".cm-search-select-toggle");
-    const options=Array.from(select.querySelectorAll(".cm-search-option"));
-    function filterOptions() {
-        const query=input.value.trim().toLowerCase();
-        options.forEach(function(option) {
-            option.hidden=query && !option.dataset.value.toLowerCase().includes(query);
-        });
-    }
-    function openMenu() {
-        document.querySelectorAll(".cm-search-select.open").forEach(function(other) {
-            if(other!==select) {
-                other.classList.remove("open");
-                other.querySelector(".cm-search-select-toggle").setAttribute("aria-expanded","false");
-            }
-        });
-        select.classList.add("open");
-        toggle.setAttribute("aria-expanded","true");
-        filterOptions();
-    }
-    function closeMenu() {
-        select.classList.remove("open");
-        toggle.setAttribute("aria-expanded","false");
-    }
-    input.addEventListener("focus",openMenu);
-    input.addEventListener("input",function(){openMenu();filterOptions();});
-    toggle.addEventListener("click",function(){
-        if(select.classList.contains("open")) closeMenu();
-        else {input.focus();openMenu();}
-    });
-    options.forEach(function(option){
-        option.addEventListener("click",function(){
-            input.value=option.dataset.value;
-            closeMenu();
-            input.dispatchEvent(new Event("change",{bubbles:true}));
-        });
-    });
-    document.addEventListener("click",function(event){
-        if(!select.contains(event.target)) closeMenu();
-    });
-});
-})();
-
+/* Native select dropdowns are used for all workflow filters. */
 
 (function(){
 (function(){
@@ -7131,7 +7380,7 @@ const scoreMean=document.getElementById('scoreMean');
 const scoreTableBody=document.getElementById('scoreTableBody');
 let rowToDelete=null;
 let rowToEdit=null;
-function openModal(){rowToEdit=null;form.reset();coError.textContent='';document.getElementById('assessmentModalTitle').textContent='Add Assessment';form.querySelector('.cm-assessment-save-btn').textContent='Add Assessment';modal.classList.add('show');modal.setAttribute('aria-hidden','false');document.body.classList.add('cm-modal-open');document.getElementById('assessmentName').focus();}
+function openModal(){rowToEdit=null;form.reset();coError.textContent='';document.getElementById('assessmentModalTitle').textContent='Add Assessment';document.getElementById('assessmentCoHelper').textContent='Select one or more COs.';form.querySelector('.cm-assessment-save-btn').textContent='Add Assessment';modal.classList.add('show');modal.setAttribute('aria-hidden','false');document.body.classList.add('cm-modal-open');document.getElementById('assessmentName').focus();}
 function closeModal(){modal.classList.remove('show');modal.setAttribute('aria-hidden','true');document.body.classList.remove('cm-modal-open');form.reset();coError.textContent='';}
 openBtn.addEventListener('click',openModal);closeBtn.addEventListener('click',closeModal);cancelBtn.addEventListener('click',closeModal);
 modal.addEventListener('click',function(e){if(e.target===modal)closeModal();});
@@ -7156,6 +7405,8 @@ if(viewBtn){
 const row=viewBtn.closest('tr');
 scoreAssessmentName.textContent=row.cells[0].textContent.trim();
 scoreMappedCos.textContent=[...row.cells[3].querySelectorAll('.cm-co-badge')].map(item=>item.textContent.trim()).join(' • ');
+const scoreStudentCount=document.getElementById('scoreStudentCount');if(scoreStudentCount){scoreStudentCount.textContent=String(scoreTableBody.querySelectorAll('tr').length);}
+recalculateScores();
 scoreModal.classList.add('show');scoreModal.setAttribute('aria-hidden','false');document.body.classList.add('cm-modal-open');
 return;
 }
@@ -7172,8 +7423,10 @@ const mapped=[...cells[3].querySelectorAll('.cm-co-badge')].map(b=>b.textContent
 form.querySelectorAll('input[name="assessmentCO"]').forEach(input=>input.checked=mapped.includes(input.value));
 coError.textContent='';
 document.getElementById('assessmentModalTitle').textContent='Edit Assessment';
+document.getElementById('assessmentCoHelper').textContent='Choose the CO(s) mapped to this assessment.';
 form.querySelector('.cm-assessment-save-btn').textContent='Save Changes';
 modal.classList.add('show');modal.setAttribute('aria-hidden','false');document.body.classList.add('cm-modal-open');
+const firstCo=form.querySelector('input[name="assessmentCO"]');if(firstCo){firstCo.focus();}
 return;
 }
 const deleteBtn=e.target.closest('.cm-delete-btn');
@@ -7207,4 +7460,50 @@ deleteModal.addEventListener('click',function(e){if(e.target===deleteModal)close
 confirmDeleteBtn.addEventListener('click',function(){if(rowToDelete)rowToDelete.remove();closeDeleteModal();});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&deleteModal.classList.contains('show'))closeDeleteModal();});
 })();
+})();
+
+/* CM FACULTY — STUDENT ATTAINMENT VIEW + CQI BASIS */
+(function(){
+const body=document.getElementById('facultyStudentsAttainmentBody');
+const detailModal=document.getElementById('attainmentDetailModal');
+const cqiModal=document.getElementById('cqiBasisModal');
+if(!body||!detailModal||!cqiModal)return;
+const coNames=['CO1','CO2','CO3','CO4','CO5'];
+function rowData(row){
+const cells=row.cells;
+const scores=coNames.map((co,index)=>({co:co,value:parseInt(cells[index+3].textContent,10)||0}));
+return{id:cells[1].textContent.trim(),name:cells[2].textContent.trim(),status:cells[8].textContent.trim(),scores:scores};
+}
+function openAttainmentModal(modal){
+modal.classList.add('show');modal.setAttribute('aria-hidden','false');document.body.classList.add('cm-modal-open');
+}
+function closeAttainmentModal(modal){
+modal.classList.remove('show');modal.setAttribute('aria-hidden','true');
+if(!document.querySelector('.cm-attainment-modal.show'))document.body.classList.remove('cm-modal-open');
+}
+function scoreRows(scores,onlyCqi){
+return scores.filter(item=>!onlyCqi||item.value<=59).map(item=>'<div class="cm-attainment-detail-row"><strong>'+item.co+'</strong><span>'+item.value+'%</span><em class="'+(item.value<=59?'needs':'met')+'">'+(item.value<=59?'CQI Basis':'Met')+'</em></div>').join('');
+}
+body.addEventListener('click',function(event){
+const view=event.target.closest('.cm-attainment-view-btn');
+const cqi=event.target.closest('.cm-cqi-basis-btn');
+if(!view&&!cqi)return;
+const data=rowData(event.target.closest('tr'));
+if(view){
+document.getElementById('attainmentStudentId').textContent=data.id;
+document.getElementById('attainmentStudentName').textContent=data.name;
+document.getElementById('attainmentStudentStatus').textContent=data.status;
+document.getElementById('attainmentCoDetails').innerHTML=scoreRows(data.scores,false);
+openAttainmentModal(detailModal);
+return;
+}
+document.getElementById('cqiStudentId').textContent=data.id;
+document.getElementById('cqiStudentName').textContent=data.name;
+const failed=data.scores.filter(item=>item.value<=59);
+document.getElementById('cqiBasisDetails').innerHTML=failed.length?scoreRows(failed,true):'<div class="cm-cqi-empty">No CO is at 59% or below.</div>';
+openAttainmentModal(cqiModal);
+});
+document.querySelectorAll('[data-close-attainment]').forEach(button=>button.addEventListener('click',function(){closeAttainmentModal(document.getElementById(button.dataset.closeAttainment));}));
+[detailModal,cqiModal].forEach(modal=>modal.addEventListener('click',function(event){if(event.target===modal)closeAttainmentModal(modal);}));
+document.addEventListener('keydown',function(event){if(event.key==='Escape'){[detailModal,cqiModal].forEach(modal=>{if(modal.classList.contains('show'))closeAttainmentModal(modal);});}});
 })();

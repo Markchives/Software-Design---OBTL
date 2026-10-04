@@ -15344,12 +15344,38 @@ body.workflow-modal-open {
     vertical-align: middle;
 }
 
+.sodh-main:not(.sof-main) .sodh-table {
+    margin: -8px 0 0;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+}
+
+.sodh-main:not(.sof-main) .sodh-table tbody::before {
+    content: "";
+    display: table-row;
+    height: 1px;
+}
+
 .sodh-main:not(.sof-main) .sodh-table tbody td {
+    height: 48px;
+    border-top: 1px solid #A9CBE8;
+    border-bottom: 1px solid #A9CBE8;
+    background: #FFFFFF;
     color: #004179;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 14px;
     font-weight: 400;
     line-height: 1.35;
+}
+
+.sodh-main:not(.sof-main) .sodh-table tbody td:first-child {
+    border-left: 1px solid #A9CBE8;
+    border-radius: 9px 0 0 9px;
+}
+
+.sodh-main:not(.sof-main) .sodh-table tbody td:last-child {
+    border-right: 1px solid #A9CBE8;
+    border-radius: 0 9px 9px 0;
 }
 
 .sodh-main:not(.sof-main) .sodh-course-table tbody td:first-child,
@@ -20354,11 +20380,12 @@ body.sof-modal-open {
     color: #F04E45;
 }
 
-.so-student-page.cm-dept-head-page .cm-dept-action-stack {
+.so-student-page.cm-dept-head-page .cm-dept-action-stack,
+.so-student-page.cm-dept-head-page .cm-dept-row-actions {
     display: inline-flex;
     flex-direction: column;
     align-items: center;
-    gap: 7px;
+    gap: 10px;
 }
 
 .so-student-page.cm-dept-head-page .cm-dept-assessment-table td,
@@ -20387,14 +20414,10 @@ body.sof-modal-open {
 .so-student-page.cm-dept-head-page .cm-dept-cqi-table th:nth-child(5) { width: 13%; }
 .so-student-page.cm-dept-head-page .cm-dept-cqi-table th:nth-child(6) { width: 12%; }
 
-.so-student-page.cm-faculty-page .cm-search-select,
-.so-student-page.cm-dept-head-page .cm-search-select {
-    position: relative;
-    width: 100%;
-}
-
-.so-student-page.cm-faculty-page .cm-searchable-filter,
-.so-student-page.cm-dept-head-page .cm-searchable-filter {
+/* WORKFLOW DROPDOWNS — ONE UNIFORM NATIVE DESIGN */
+.so-student-page .sodh-filter-group select,
+.so-student-page .sof-filter-group select,
+.so-student-page .cm-filter-group select {
     width: 100%;
     height: 44px;
     min-height: 44px;
@@ -20403,302 +20426,490 @@ body.sof-modal-open {
     border: 1px solid #91B8D7;
     border-radius: 6px;
     outline: none;
-    background: #FFFFFF;
+    background-color: #FFFFFF;
     color: #294B68;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 15px;
     font-weight: 400;
+    line-height: 44px;
+    cursor: pointer;
+    appearance: auto;
+    -webkit-appearance: menulist;
 }
 
-.so-student-page.cm-faculty-page .cm-searchable-filter:focus,
-.so-student-page.cm-dept-head-page .cm-searchable-filter:focus {
+.so-student-page .sodh-filter-group select:focus,
+.so-student-page .sof-filter-group select:focus,
+.so-student-page .cm-filter-group select:focus {
     border-color: #0064A8;
     box-shadow: 0 0 0 2px rgba(0, 100, 168, 0.08);
 }
 
-.so-student-page.cm-faculty-page .cm-search-select-toggle,
-.so-student-page.cm-dept-head-page .cm-search-select-toggle {
-    position: absolute;
-    top: 1px;
-    right: 1px;
-    width: 40px;
-    height: 42px;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: #294B68;
-    font-size: 20px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-
-.so-student-page.cm-faculty-page .cm-search-select-menu,
-.so-student-page.cm-dept-head-page .cm-search-select-menu {
-    display: none;
-    position: absolute;
-    top: calc(100% + 4px);
-    left: 0;
-    right: 0;
-    z-index: 80;
-    max-height: 210px;
-    overflow-y: auto;
-    padding: 5px;
-    border: 1px solid #91B8D7;
-    border-radius: 6px;
-    background: #FFFFFF;
-    box-shadow: 0 8px 20px rgba(0, 65, 121, 0.12);
-}
-
-.so-student-page.cm-faculty-page .cm-search-select.open .cm-search-select-menu,
-.so-student-page.cm-dept-head-page .cm-search-select.open .cm-search-select-menu {
-    display: block;
-}
-
-.so-student-page.cm-faculty-page .cm-search-option,
-.so-student-page.cm-dept-head-page .cm-search-option {
-    display: block;
-    width: 100%;
-    padding: 9px 10px;
-    border: 0;
-    border-radius: 4px;
-    background: #FFFFFF;
-    color: #004179;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 14px;
-    font-weight: 400;
-    text-align: left;
-    cursor: pointer;
-}
-
-.so-student-page.cm-faculty-page .cm-search-option:hover,
-.so-student-page.cm-dept-head-page .cm-search-option:hover {
-    background: #F2F7FB;
-}
-
-.so-student-page.cm-dept-head-page .cm-class-attainment-score {
-    display: inline-flex;
+/* CM FACULTY — STUDENT ATTAINMENT VIEW + CQI BASIS */
+.so-student-page.cm-faculty-page .cm-attainment-actions {
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-width: 76px;
-    min-height: 28px;
-    padding: 5px 14px;
-    box-sizing: border-box;
+    gap: 7px;
+}
+
+.so-student-page.cm-faculty-page .cm-cqi-basis-btn {
+    min-width: 84px;
+    min-height: 30px;
+    padding: 5px 13px;
+    border: 1px solid #E1AE1A;
     border-radius: 999px;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 12px;
+    background: #FFF0B3;
+    color: #A66E00;
+    font-size: 13px;
     font-weight: 700;
     line-height: 1;
     white-space: nowrap;
 }
 
-.so-student-page.cm-dept-head-page .cm-class-attainment-score.cm-score-pass {
+.cm-attainment-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10040;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(38, 68, 94, 0.55);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.18s ease, visibility 0.18s ease;
+}
+
+.cm-attainment-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.cm-attainment-modal-card {
+    width: min(760px, 100%);
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    border: 1px solid #D9E1EA;
+    border-radius: 14px;
+    background: #FFFFFF;
+    color: #004179;
+    box-shadow: 0 18px 48px rgba(7, 31, 58, 0.22);
+}
+
+.cm-attainment-modal-header {
+    padding: 18px 22px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    border-bottom: 1px solid #D9E1EA;
+    background: #F4F8FB;
+}
+
+.cm-attainment-modal-header h2,
+.cm-attainment-modal-header p {
+    margin: 0;
+}
+
+.cm-attainment-modal-header h2 {
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.cm-attainment-modal-header p {
+    margin-top: 4px;
+    color: #617D94;
+    font-size: 13px;
+}
+
+.cm-attainment-modal-close {
+    border: 0;
+    background: transparent;
+    color: #71869A;
+    font-size: 25px;
+    font-weight: 700;
+}
+
+.cm-attainment-modal-body {
+    padding: 20px 22px;
+}
+
+.cm-attainment-modal-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.cm-attainment-modal-summary > div {
+    min-height: 62px;
+    padding: 12px 14px;
+    border: 1px solid #D9E5EF;
+    border-radius: 10px;
+}
+
+.cm-attainment-modal-summary span,
+.cm-attainment-modal-summary strong {
+    display: block;
+}
+
+.cm-attainment-modal-summary span {
+    color: #7B8FA2;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.cm-attainment-modal-summary strong {
+    margin-top: 4px;
+    font-size: 14px;
+}
+
+.cm-attainment-detail-list {
+    margin-top: 14px;
+    display: grid;
+    gap: 8px;
+}
+
+.cm-attainment-detail-row {
+    min-height: 46px;
+    padding: 8px 12px;
+    display: grid;
+    grid-template-columns: 1fr 90px 120px;
+    align-items: center;
+    border: 1px solid #B7D2E8;
+    border-radius: 9px;
+}
+
+.cm-attainment-detail-row span,
+.cm-attainment-detail-row em {
+    text-align: center;
+}
+
+.cm-attainment-detail-row em {
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-style: normal;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.cm-attainment-detail-row em.met {
     background: #D9F3A3;
     color: #5E8614;
 }
 
-.so-student-page.cm-dept-head-page .cm-class-attainment-score.cm-score-fail {
-    background: #FFD2D2;
-    color: #F04E45;
+.cm-attainment-detail-row em.needs {
+    background: #FFF0B3;
+    color: #B57900;
 }
 
-.so-student-page.cm-dept-head-page .cm-dept-row-actions {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+.cm-cqi-rule {
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border: 1px solid #F0D982;
+    border-radius: 10px;
+    background: #FFF9DF;
+    color: #756225;
+    font-size: 13px;
+    line-height: 1.4;
 }
 
-.so-student-page.cm-dept-head-page .cm-dept-assessment-table td:last-child,
-.so-student-page.cm-dept-head-page .cm-course-outcomes-table td:last-child,
-.so-student-page.cm-dept-head-page .cm-dept-coso-table td:last-child,
-.so-student-page.cm-dept-head-page .cm-dept-cqi-table td:last-child {
+.cm-cqi-empty {
+    padding: 14px;
+    border: 1px solid #D9E5EF;
+    border-radius: 9px;
     text-align: center;
 }
 
-
-/* SEARCHABLE FILTER DROPDOWNS — FINAL FIX */
-.so-student-page.cm-faculty-page .cm-search-select-toggle,
-.so-student-page.cm-dept-head-page .cm-search-select-toggle {
-    top: 1px;
-    right: 1px;
-    width: 40px;
-    height: 42px;
-    transform: none !important;
-    color: transparent;
-    font-size: 0;
+.cm-attainment-modal-actions {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
 }
 
-.so-student-page.cm-faculty-page .cm-search-select-toggle::before,
-.so-student-page.cm-dept-head-page .cm-search-select-toggle::before {
-    content: "";
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    width: 8px;
-    height: 8px;
-    border-right: 2px solid #294B68;
-    border-bottom: 2px solid #294B68;
-    transform: rotate(45deg) !important;
+
+/* CM FACULTY — COURSE OUTCOME POPUP DETAILS */
+.so-student-page.cm-faculty-page .cm-course-outcome-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
 }
 
-.so-student-page.cm-faculty-page .cm-search-select.open .cm-search-select-toggle,
-.so-student-page.cm-dept-head-page .cm-search-select.open .cm-search-select-toggle,
-.so-student-page.cm-faculty-page .cm-search-select.open .cm-search-select-toggle::before,
-.so-student-page.cm-dept-head-page .cm-search-select.open .cm-search-select-toggle::before {
-    transform: none !important;
+.cm-co-description-box {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border: 1px solid #D9E5EF;
+    border-radius: 10px;
 }
 
-.so-student-page.cm-faculty-page .cm-search-select.open .cm-search-select-toggle::before,
-.so-student-page.cm-dept-head-page .cm-search-select.open .cm-search-select-toggle::before {
-    transform: rotate(45deg) !important;
-}
-
-.so-faculty-page .sof-search-select {
-    position: relative;
-    width: 100%;
-}
-
-.so-faculty-page .sof-search-input {
-    box-sizing: border-box;
-    width: 100%;
-    height: 44px;
-    min-height: 44px;
-    padding: 0 42px 0 13px;
-    border: 1px solid #91B8D7;
-    border-radius: 6px;
-    outline: none;
-    background: #FFFFFF;
-    color: #294B68;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 15px;
-    font-weight: 400;
-}
-
-.so-faculty-page .sof-search-input:focus {
-    border-color: #0064A8;
-    box-shadow: 0 0 0 2px rgba(0, 100, 168, 0.08);
-}
-
-.so-faculty-page .sof-search-toggle {
-    position: absolute;
-    top: 1px;
-    right: 1px;
-    width: 40px;
-    height: 42px;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    cursor: pointer;
-    z-index: 3;
-}
-
-.so-faculty-page .sof-search-toggle::before {
-    content: "";
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    width: 8px;
-    height: 8px;
-    border-right: 2px solid #294B68;
-    border-bottom: 2px solid #294B68;
-    transform: rotate(45deg);
-}
-
-.so-faculty-page .sof-search-menu {
-    display: none;
-    position: absolute;
-    top: calc(100% + 4px);
-    left: 0;
-    right: 0;
-    z-index: 120;
-    max-height: 210px;
-    overflow-y: auto;
-    padding: 5px;
-    border: 1px solid #91B8D7;
-    border-radius: 6px;
-    background: #FFFFFF;
-    box-shadow: 0 8px 20px rgba(0, 65, 121, 0.12);
-}
-
-.so-faculty-page .sof-search-select.open .sof-search-menu {
+.cm-co-description-box span,
+.cm-co-description-box strong {
     display: block;
 }
 
-.so-faculty-page .sof-search-option {
-    width: 100%;
-    padding: 9px 10px;
-    border: 0;
-    border-radius: 4px;
-    background: #FFFFFF;
-    color: #294B68;
-    font-family: Arial, Helvetica, sans-serif;
+.cm-co-description-box span {
+    color: #7B8FA2;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.cm-co-description-box strong {
+    margin-top: 5px;
+    color: #004179;
     font-size: 14px;
-    text-align: left;
+    line-height: 1.4;
+}
+
+
+/* CM DEPT HEAD — ASSESSMENT MAPPING REVIEW MODAL */
+.cm-dept-head-page .cm-dept-review-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 31, 61, 0.28);
+}
+.cm-dept-head-page .cm-dept-review-modal.show { display: flex; }
+.cm-dept-head-page .cm-dept-review-card {
+    width: min(840px, 94vw);
+    max-height: 90vh;
+    overflow: auto;
+    border-radius: 10px;
+    background: #FFFFFF;
+    box-shadow: 0 18px 50px rgba(0, 41, 79, 0.22);
+}
+.cm-dept-head-page .cm-dept-review-header {
+    min-height: 64px;
+    padding: 0 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #DCE8F2;
+    background: #F5F9FC;
+}
+.cm-dept-head-page .cm-dept-review-header h2 {
+    margin: 0;
+    color: #0B4F82;
+    font-size: 20px;
+    font-weight: 800;
+}
+.cm-dept-head-page .cm-dept-review-close {
+    border: 0;
+    background: transparent;
+    color: #7890A4;
+    font-size: 24px;
+    font-weight: 700;
     cursor: pointer;
 }
-
-.so-faculty-page .sof-search-option:hover,
-.so-faculty-page .sof-search-option:focus {
-    background: #EEF6FC;
+.cm-dept-head-page .cm-dept-review-body { padding: 20px 14px 14px; }
+.cm-dept-head-page .cm-dept-review-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
 }
-
-.so-faculty-page .sof-search-empty {
-    padding: 9px 10px;
-    color: #6E8294;
-    font-family: Arial, Helvetica, sans-serif;
+.cm-dept-head-page .cm-dept-review-field {
+    min-height: 64px;
+    padding: 13px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    border: 1px solid #DCE8F2;
+    border-radius: 10px;
+}
+.cm-dept-head-page .cm-dept-review-field span {
+    color: #7890A4;
+    font-size: 10px;
+    font-weight: 800;
+}
+.cm-dept-head-page .cm-dept-review-field strong {
+    color: #245B86;
     font-size: 14px;
+    font-weight: 800;
+}
+.cm-dept-head-page .cm-dept-review-note {
+    margin-top: 14px;
+    padding: 13px 12px;
+    border: 1px solid #F1D98A;
+    border-radius: 10px;
+    background: #FFF8DD;
+    color: #806C32;
+    font-size: 12px;
+    line-height: 1.45;
+}
+.cm-dept-head-page .cm-dept-review-actions {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 9px;
+}
+.cm-dept-head-page .cm-dept-review-cancel,
+.cm-dept-head-page .cm-dept-review-verify {
+    min-height: 34px;
+    padding: 0 14px;
+    border-radius: 18px;
+    font-weight: 800;
+    cursor: pointer;
+}
+.cm-dept-head-page .cm-dept-review-cancel {
+    border: 1px solid #76A9CF;
+    background: #FFFFFF;
+    color: #245B86;
+}
+.cm-dept-head-page .cm-dept-review-verify {
+    border: 1px solid #F4C300;
+    background: #F4C300;
+    color: #245B86;
+}
+body.cm-dept-review-open { overflow: hidden; }
+@media (max-width: 650px) {
+    .cm-dept-head-page .cm-dept-review-grid { grid-template-columns: 1fr; }
 }
 
-.so-faculty-page .sof-search-native {
-    position: absolute !important;
-    width: 1px !important;
-    height: 1px !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
+
+/* CM DEPT HEAD — ALL ACTION POPUPS */
+.cm-dept-head-page .cm-dept-action-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10020;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 31, 61, 0.30);
 }
-
-.so-faculty-page .sof-filter-card {
-    position: relative;
-    z-index: 30;
+.cm-dept-head-page .cm-dept-action-modal.show { display: flex; }
+.cm-dept-head-page .cm-dept-action-modal-card {
+    width: min(850px, 94vw);
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 10px;
+    background: #FFFFFF;
+    box-shadow: 0 18px 50px rgba(0, 41, 79, 0.22);
 }
-
-
-/* DROPDOWN ARROWS — SMALL UNIFORM FINAL */
-.so-student-page.cm-faculty-page .cm-search-select-toggle,
-.so-student-page.cm-dept-head-page .cm-search-select-toggle,
-.so-faculty-page .sof-search-toggle {
-    width: 30px !important;
-    height: 42px !important;
-    right: 1px !important;
-    top: 1px !important;
-    transform: none !important;
+.cm-dept-head-page .cm-dept-action-modal-header {
+    min-height: 68px;
+    padding: 13px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    border-bottom: 1px solid #DCE8F2;
+    background: #F5F9FC;
 }
-
-.so-student-page.cm-faculty-page .cm-search-select-toggle::before,
-.so-student-page.cm-dept-head-page .cm-search-select-toggle::before,
-.so-faculty-page .sof-search-toggle::before {
-    content: "" !important;
-    position: absolute !important;
-    top: 16px !important;
-    left: 10px !important;
-    width: 6px !important;
-    height: 6px !important;
-    border-right: 2px solid #163E63 !important;
-    border-bottom: 2px solid #163E63 !important;
-    transform: rotate(45deg) !important;
-    transition: none !important;
+.cm-dept-head-page .cm-dept-action-modal-header h2 {
+    margin: 0;
+    color: #0B4F82;
+    font-size: 20px;
+    font-weight: 800;
 }
-
-.so-student-page.cm-faculty-page .cm-search-select.open .cm-search-select-toggle,
-.so-student-page.cm-dept-head-page .cm-search-select.open .cm-search-select-toggle,
-.so-faculty-page .sof-search-select.open .sof-search-toggle {
-    transform: none !important;
+.cm-dept-head-page .cm-dept-action-modal-header p {
+    margin: 3px 0 0;
+    color: #58758E;
+    font-size: 12px;
 }
-
-.so-student-page.cm-faculty-page .cm-search-select.open .cm-search-select-toggle::before,
-.so-student-page.cm-dept-head-page .cm-search-select.open .cm-search-select-toggle::before,
-.so-faculty-page .sof-search-select.open .sof-search-toggle::before {
-    transform: rotate(45deg) !important;
+.cm-dept-head-page .cm-dept-action-modal-close {
+    border: 0;
+    background: transparent;
+    color: #7890A4;
+    font-size: 25px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.cm-dept-head-page .cm-dept-action-modal-body { padding: 18px 14px 14px; }
+.cm-dept-head-page .cm-dept-action-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+.cm-dept-head-page .cm-dept-action-field {
+    min-height: 62px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    border: 1px solid #DCE8F2;
+    border-radius: 9px;
+}
+.cm-dept-head-page .cm-dept-action-field.cm-dept-action-wide { grid-column: 1 / -1; }
+.cm-dept-head-page .cm-dept-action-field span {
+    color: #7890A4;
+    font-size: 10px;
+    font-weight: 800;
+}
+.cm-dept-head-page .cm-dept-action-field strong {
+    color: #245B86;
+    font-size: 13px;
+    line-height: 1.4;
+}
+.cm-dept-head-page .cm-dept-action-note {
+    margin-top: 13px;
+    padding: 12px;
+    border: 1px solid #F1D98A;
+    border-radius: 9px;
+    background: #FFF8DD;
+    color: #806C32;
+    font-size: 12px;
+    line-height: 1.45;
+}
+.cm-dept-head-page .cm-dept-cqi-form {
+    margin-top: 13px;
+}
+.cm-dept-head-page .cm-dept-cqi-form label {
+    display: block;
+    margin-bottom: 6px;
+    color: #004179;
+    font-size: 12px;
+    font-weight: 800;
+}
+.cm-dept-head-page .cm-dept-cqi-form textarea {
+    width: 100%;
+    min-height: 95px;
+    padding: 10px 12px;
+    resize: vertical;
+    border: 1px solid #9FC6E6;
+    border-radius: 8px;
+    outline: none;
+    color: #004179;
+    font: inherit;
+}
+.cm-dept-head-page .cm-dept-cqi-form textarea:focus {
+    border-color: #005B9A;
+    box-shadow: 0 0 0 2px rgba(0, 91, 154, 0.08);
+}
+.cm-dept-head-page .cm-dept-action-modal-actions {
+    margin-top: 14px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+}
+.cm-dept-head-page .cm-dept-action-cancel,
+.cm-dept-head-page .cm-dept-action-confirm {
+    min-height: 34px;
+    padding: 0 15px;
+    border-radius: 18px;
+    font-weight: 800;
+    cursor: pointer;
+}
+.cm-dept-head-page .cm-dept-action-cancel {
+    border: 1px solid #76A9CF;
+    background: #FFFFFF;
+    color: #245B86;
+}
+.cm-dept-head-page .cm-dept-action-confirm {
+    border: 1px solid #F4C300;
+    background: #F4C300;
+    color: #245B86;
+}
+body.cm-dept-modal-open { overflow: hidden; }
+@media (max-width: 650px) {
+    .cm-dept-head-page .cm-dept-action-summary { grid-template-columns: 1fr; }
+    .cm-dept-head-page .cm-dept-action-field.cm-dept-action-wide { grid-column: auto; }
 }
