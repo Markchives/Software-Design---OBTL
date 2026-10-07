@@ -1,3 +1,185 @@
+/* REQUIREMENT 3 — CLASS ROSTER FACULTY */
+(function () {
+    "use strict";
+
+    const page = document.querySelector(".cr-faculty-page");
+    if (!page) return;
+
+    const body = document.getElementById("crfRosterBody");
+    const search = document.getElementById("crfSearch");
+    const sort = document.getElementById("crfSort");
+    const category = document.getElementById("crfCategory");
+    const empty = document.getElementById("crfEmpty");
+    const importModal = document.getElementById("crfImportModal");
+    const removeModal = document.getElementById("crfRemoveModal");
+    let pendingRemoveRow = null;
+
+    function setModal(modal, show) {
+        if (!modal) return;
+        modal.classList.toggle("show", show);
+        modal.setAttribute("aria-hidden", show ? "false" : "true");
+        document.body.classList.toggle("crf-modal-open",
+            document.querySelector(".crf-modal.show") !== null);
+    }
+
+    function rosterRows() {
+        return body ? Array.from(body.querySelectorAll("tr")) : [];
+    }
+
+    function renumber() {
+        rosterRows().forEach(function (row, index) {
+            if (row.cells[0]) row.cells[0].textContent = String(index + 1);
+        });
+    }
+
+    function renderRoster() {
+        if (!body) return;
+        const q = (search ? search.value : "").trim().toLowerCase();
+        const filter = category ? category.value : "all";
+        const mode = sort ? sort.value : "az";
+        const rows = rosterRows();
+
+        rows.sort(function (a, b) {
+            const nameA = a.cells[2].textContent.trim().toLowerCase();
+            const nameB = b.cells[2].textContent.trim().toLowerCase();
+            if (mode === "za") return nameB.localeCompare(nameA);
+            if (mode === "id") return a.cells[1].textContent.trim().localeCompare(
+                b.cells[1].textContent.trim(), undefined, { numeric: true });
+            return nameA.localeCompare(nameB);
+        });
+
+        rows.forEach(function (row) {
+            const matchesSearch = row.textContent.toLowerCase().includes(q);
+            const matchesCategory = filter === "all" || row.dataset.category === filter;
+            row.hidden = !(matchesSearch && matchesCategory);
+            body.appendChild(row);
+        });
+
+        renumber();
+        if (empty) empty.hidden = rows.some(function (row) { return !row.hidden; });
+    }
+
+    function showImportStep(step) {
+        document.querySelectorAll(".crf-import-screen").forEach(function (screen) {
+            screen.classList.toggle("active", screen.dataset.screen === String(step));
+        });
+        document.querySelectorAll(".crf-step").forEach(function (item) {
+            item.classList.toggle("active", Number(item.dataset.step) <= step);
+        });
+    }
+
+    if (search) search.addEventListener("input", renderRoster);
+    if (sort) sort.addEventListener("change", renderRoster);
+    if (category) category.addEventListener("change", renderRoster);
+
+    document.addEventListener("click", function (event) {
+        const openImport = event.target.closest("#crfImportOpen");
+        if (openImport) {
+            event.preventDefault();
+            event.stopPropagation();
+            showImportStep(1);
+            setModal(importModal, true);
+            return;
+        }
+
+        if (event.target.closest("#crfSampleRoster")) {
+            showImportStep(2);
+            return;
+        }
+
+        if (event.target.closest("#crfChooseAnother")) {
+            const file = document.getElementById("crfRosterFile");
+            if (file) file.value = "";
+            showImportStep(1);
+            return;
+        }
+
+        if (event.target.closest("#crfConfirmImport")) {
+            showImportStep(3);
+            return;
+        }
+
+        if (event.target.closest("#crfImportDone")) {
+            setModal(importModal, false);
+            showImportStep(1);
+            return;
+        }
+
+        const removeButton = event.target.closest(".crf-remove-btn");
+        if (removeButton) {
+            pendingRemoveRow = removeButton.closest("tr");
+            const name = pendingRemoveRow && pendingRemoveRow.cells[2]
+                ? pendingRemoveRow.cells[2].textContent.trim() : "this student";
+            const target = document.getElementById("crfRemoveName");
+            if (target) target.textContent = name;
+            setModal(removeModal, true);
+            return;
+        }
+
+        if (event.target.closest("#crfRemoveConfirm")) {
+            if (pendingRemoveRow) pendingRemoveRow.remove();
+            pendingRemoveRow = null;
+            setModal(removeModal, false);
+            renderRoster();
+            return;
+        }
+
+        const close = event.target.closest("[data-crf-close]");
+        if (close) {
+            if (close.dataset.crfClose === "import") setModal(importModal, false);
+            if (close.dataset.crfClose === "remove") {
+                pendingRemoveRow = null;
+                setModal(removeModal, false);
+            }
+            return;
+        }
+
+        if (event.target === importModal) setModal(importModal, false);
+        if (event.target === removeModal) {
+            pendingRemoveRow = null;
+            setModal(removeModal, false);
+        }
+
+        if (event.target.closest("#crfDownload")) {
+            const visible = rosterRows().filter(function (row) { return !row.hidden; });
+            const lines = [["#", "Student ID", "Student Name", "Email", "Category", "Enrollment Status"]];
+            visible.forEach(function (row) {
+                lines.push(Array.from(row.cells).slice(0, 6).map(function (cell) {
+                    return cell.textContent.trim();
+                }));
+            });
+            const csv = lines.map(function (line) {
+                return line.map(function (value) {
+                    return '"' + String(value).replace(/"/g, '""') + '"';
+                }).join(",");
+            }).join("\n");
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "class-roster-COE232.csv";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    });
+
+    const rosterFile = document.getElementById("crfRosterFile");
+    if (rosterFile) {
+        rosterFile.addEventListener("change", function () {
+            if (rosterFile.files && rosterFile.files.length) showImportStep(2);
+        });
+    }
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key !== "Escape") return;
+        pendingRemoveRow = null;
+        setModal(importModal, false);
+        setModal(removeModal, false);
+    });
+
+    renderRoster();
+})();
+
 /* CM DEPT HEAD — CLEAN POPUP CONTROLLER */
 (function () {
     "use strict";
@@ -3498,6 +3680,16 @@ console.info("EduMetrics script loaded: faculty SO fix 2026-09-27");
                     "courseOutcomeDescription"
                 );
 
+            const courseOutcomeDescriptionPreview =
+                document.getElementById(
+                    "courseOutcomeDescriptionPreview"
+                );
+
+            const courseOutcomeDescriptionPreviewText =
+                document.getElementById(
+                    "courseOutcomeDescriptionPreviewText"
+                );
+
             const cancelCourseOutcomeButton =
                 document.getElementById(
                     "cancelCourseOutcomeButton"
@@ -3689,6 +3881,16 @@ console.info("EduMetrics script loaded: faculty SO fix 2026-09-27");
                                 courseOutcomeDescription.value =
                                     "";
                             }
+
+                            if (courseOutcomeDescriptionPreview) {
+                                courseOutcomeDescriptionPreview.hidden =
+                                    true;
+                            }
+
+                            if (courseOutcomeDescriptionPreviewText) {
+                                courseOutcomeDescriptionPreviewText.textContent =
+                                    "";
+                            }
                             return;
                         }
 
@@ -3723,6 +3925,16 @@ console.info("EduMetrics script loaded: faculty SO fix 2026-09-27");
                 }
                 if (courseOutcomeDescription) {
                     courseOutcomeDescription.value =
+                        "";
+                }
+
+                if (courseOutcomeDescriptionPreview) {
+                    courseOutcomeDescriptionPreview.hidden =
+                        true;
+                }
+
+                if (courseOutcomeDescriptionPreviewText) {
+                    courseOutcomeDescriptionPreviewText.textContent =
                         "";
                 }
                 clearAlignedSOs();
@@ -7507,3 +7719,67 @@ document.querySelectorAll('[data-close-attainment]').forEach(button=>button.addE
 [detailModal,cqiModal].forEach(modal=>modal.addEventListener('click',function(event){if(event.target===modal)closeAttainmentModal(modal);}));
 document.addEventListener('keydown',function(event){if(event.key==='Escape'){[detailModal,cqiModal].forEach(modal=>{if(modal.classList.contains('show'))closeAttainmentModal(modal);});}});
 })();
+
+
+/* REQUIREMENT 3 — CLASS ROSTER STUDENT */
+(function () {
+    "use strict";
+
+    const page = document.querySelector(".cr-student-page");
+    if (!page) return;
+
+    const body = document.getElementById("crRosterBody");
+    const search = document.getElementById("crSearch");
+    const sort = document.getElementById("crSort");
+    const empty = document.getElementById("crEmpty");
+
+    if (!body || !search || !sort) return;
+
+    const originalRows = Array.from(body.querySelectorAll("tr"));
+
+    function renumber(rows) {
+        rows.forEach(function (row, index) {
+            if (row.cells[0]) row.cells[0].textContent = String(index + 1);
+        });
+    }
+
+    function renderRoster() {
+        const query = search.value.trim().toLowerCase();
+        const mode = sort.value;
+
+        const rows = originalRows.filter(function (row) {
+            return row.textContent.toLowerCase().includes(query);
+        });
+
+        rows.sort(function (a, b) {
+            const nameA = a.cells[1].textContent.trim().toLowerCase();
+            const nameB = b.cells[1].textContent.trim().toLowerCase();
+
+            if (mode === "za") return nameB.localeCompare(nameA);
+            if (mode === "id") {
+                return a.cells[0].textContent.trim().localeCompare(
+                    b.cells[0].textContent.trim(),
+                    undefined,
+                    { numeric: true }
+                );
+            }
+            return nameA.localeCompare(nameB);
+        });
+
+        body.replaceChildren();
+        rows.forEach(function (row) {
+            body.appendChild(row);
+        });
+
+        renumber(rows);
+
+        if (empty) empty.hidden = rows.length !== 0;
+    }
+
+    search.addEventListener("input", renderRoster);
+    sort.addEventListener("change", renderRoster);
+    renderRoster();
+})();
+
+
+

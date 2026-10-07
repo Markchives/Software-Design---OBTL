@@ -745,40 +745,23 @@
                 </label>
 
                 <select id="courseOutcomeExistingSelect">
+                        <option value="">Select Course Outcome</option>
+                        <option value="CO1" data-description="Evaluate how personal, family, and community values, morals, and ethics influence professional behavior and decision-making, and create strategies to demonstrate proper conduct, responsibilities, and accountability in IT practice.">CO1 — Evaluate values, morals, ethics, and professional conduct</option>
+                        <option value="CO2" data-description="Evaluate Philippine IT laws, policies, and intellectual property frameworks, and justify their correct application in real-world computing, electronic transactions, and data privacy scenarios.">CO2 — Evaluate Philippine IT laws, policies, and intellectual property</option>
+                        <option value="CO3" data-description="Evaluate contemporary IT issues, lifelong learning strategies, and business or management trade-offs, and justify informed decisions balancing technical, ethical, and societal considerations.">CO3 — Evaluate contemporary IT issues and informed decision-making</option>
+                        <option value="CO4" data-description="Execute effective leadership and collaborate seamlessly within multidisciplinary teams using Agile, Scrum, and Kanban frameworks.">CO4 — Leadership and collaboration using Agile, Scrum, and Kanban</option>
+                        <option value="CO5" data-description="Build and deploy full-stack web and embedded systems by applying professional code versioning (GitHub), modern databases, and CI/CD pipelines, while articulating their technical limitations.">CO5 — Build and deploy full-stack web and embedded systems</option>
+                        <option value="CO6" data-description="Implement engineering management principles by utilizing JIRA for sprint planning, Kanban flow, budgeting, and controlling team-based software projects.">CO6 — Engineering management using JIRA, Kanban, and budgeting</option>
+                        <option value="CO7" data-description="Simulate the architecture, organization, and function of a microcontroller.">CO7 — Simulate microcontroller architecture and function</option>
+                        <option value="CO8" data-description="Integrate software and hardware components in systems design and development.">CO8 — Integrate software and hardware components</option>
+                        <option value="CO9" data-description="Design an embedded system applying Microcontroller based on a given problem.">CO9 — Design a microcontroller-based embedded system</option>
+                        <option value="CO10" data-description="Develop an embedded system as a team to accomplish a given problem.">CO10 — Develop an embedded system as a team</option>
+                    </select>
 
-                    <option value="">
-                        Select Course Outcome
-                    </option>
-
-                    <option
-                        value="CO1"
-                        data-description="Apply fundamental knowledge and concepts relevant to the course."
-                    >
-                        CO1 — Apply fundamental knowledge and concepts relevant to the course.
-                    </option>
-
-                    <option
-                        value="CO2"
-                        data-description="Analyze problems and develop appropriate solutions using learned concepts."
-                    >
-                        CO2 — Analyze problems and develop appropriate solutions using learned concepts.
-                    </option>
-
-                    <option
-                        value="CO3"
-                        data-description="Demonstrate effective application of course principles in practical activities."
-                    >
-                        CO3 — Demonstrate effective application of course principles in practical activities.
-                    </option>
-
-                    <option
-                        value="CO4"
-                        data-description="Evaluate solutions and communicate results effectively."
-                    >
-                        CO4 — Evaluate solutions and communicate results effectively.
-                    </option>
-
-                </select>
+                <div class="sof-course-outcome-preview" id="courseOutcomeDescriptionPreview" hidden>
+                    <span>Course Outcome Description</span>
+                    <p id="courseOutcomeDescriptionPreviewText"></p>
+                </div>
 
             </div>
 <input

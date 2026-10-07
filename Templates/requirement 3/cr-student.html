@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Class Roster Enrollment | EduMetrics</title>
+<link rel="stylesheet" href="../../Static/style.css">
+</head>
+<body class="so-student-page cr-student-page">
+<header class="so-topbar">
+<div class="so-brand"><div class="so-brand-logo">Edu<span>Metrics</span></div><div class="so-brand-subtitle">Academic Assessment &amp; Grading System</div></div>
+<div class="so-user-area">
+<button class="so-notification-btn" type="button" aria-label="Notifications"><img src="../../Static/images/sidebar/notif.png" alt="Notifications" class="so-notification-image"><span class="so-notification-dot"></span></button>
+<div class="so-user-info"><strong id="facultyName"></strong><span>Student</span></div>
+<div class="so-avatar" aria-hidden="true"><span class="so-avatar-person">●</span></div><span class="so-online-dot" aria-hidden="true"></span>
+</div>
+</header>
+<div class="so-header-lines"><div class="so-header-blue"></div><div class="so-header-gold"></div></div>
+
+<div class="so-shell">
+<aside class="so-sidebar">
+<div class="so-pages-title"><span class="so-grid-icon so-pages-image-wrap"><img src="../../Static/images/sidebar/pages.png" alt="" class="so-pages-image"></span><span>Pages</span></div>
+<nav class="so-nav" aria-label="Student navigation">
+<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/home-white.png" alt="" class="so-nav-image"></span><span>Home</span></a>
+<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/course-white.png" alt="" class="so-nav-image"></span><span>My Courses</span></a>
+<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/pl-white.png" alt="" class="so-nav-image"></span><span>Platform</span></a>
+<div class="so-nav-group">
+<button class="so-nav-item so-products active" type="button"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/ws-blue.png" alt="" class="so-nav-image"></span><span>Workflow</span></button>
+<div class="so-subnav">
+<a href="#">Syllabus &amp; Outcomes</a>
+<a href="#">Curriculum Mapping</a>
+<a href="#" class="active">Class Roster</a>
+<a href="#">Assessment Entry</a>
+<a href="#">Attainment</a>
+<a href="#">CQI Planning</a>
+<a href="#">Gradebook</a>
+<a href="#">Compliance Report</a>
+</div>
+</div>
+<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/rs-white.png" alt="" class="so-nav-image"></span><span>Resources</span></a>
+<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/au-white.png" alt="" class="so-nav-image"></span><span>About Us</span></a>
+</nav>
+<div class="so-sidebar-brand"><div class="so-sidebar-logo">Edu<span>Metrics</span></div><small>Academic Assessment &amp; Grading System</small></div>
+</aside>
+
+<main class="so-main cr-student-main">
+<section class="so-page-heading cr-heading">
+<h1>Class Roster Enrollment</h1>
+<p>Manage and enroll students for your assigned sections</p>
+</section>
+
+<section class="cm-student-filters">
+<div class="cm-filter-group"><label for="crSchoolYear">School Year</label><select id="crSchoolYear"><option selected>2026-2027</option><option>2025-2026</option><option>2024-2025</option></select></div>
+<div class="cm-filter-group"><label for="crDepartment">Department</label><input id="crDepartment" type="text" value="Engineering" readonly></div>
+<div class="cm-filter-group"><label for="crProgram">Program</label><input id="crProgram" type="text" value="BS CpE" readonly></div>
+<div class="cm-filter-group"><label for="crCourse">Course</label><select id="crCourse"><option selected>Software Design - Lab</option></select></div>
+<div class="cm-filter-group"><label for="crSection">Section</label><input id="crSection" type="search" list="crSectionList" value="COE232" autocomplete="off"><datalist id="crSectionList"><option value="COE232"></option><option value="COE231"></option><option value="COE233"></option></datalist></div>
+</section>
+
+<section class="cm-student-summary cr-cm-summary">
+<article class="cm-course-card"><div class="cm-card-accent"></div><div><span class="cm-course-label">My Course</span><h2>Software Design - Lab</h2></div></article>
+<article class="cm-stat-card"><div class="cm-card-accent cm-card-accent-soft"></div><div><span>Section</span><strong>COE 232</strong></div></article>
+<article class="cm-stat-card"><div class="cm-card-accent cm-card-accent-soft"></div><div><span>Total Students</span><strong>31</strong></div></article>
+</section>
+
+<section class="cr-roster-panel">
+<div class="cr-toolbar">
+<div class="cr-sort-wrap"><label for="crSort">Sort By</label><select id="crSort"><option value="az">Students Name A-Z</option><option value="za">Students Name Z-A</option><option value="id">Student ID</option></select></div>
+<label class="cr-search"><span aria-hidden="true">⌕</span><input id="crSearch" type="search" placeholder="Search student name"></label>
+</div>
+
+<div class="cr-table-wrap">
+<table class="cr-table">
+<thead><tr><th>#</th><th>Student Name</th><th>Email</th><th>Job Title</th><th>Department</th></tr></thead>
+<tbody id="crRosterBody">
+<tr><td>1</td><td>Angel S. Villanueva</td><td>angel.villanueva@students.national-u.edu.ph</td><td>Student</td><td>Engineering</td></tr>
+<tr><td>2</td><td>Bea M. Santos</td><td>bea.santos@students.national-u.edu.ph</td><td>Student</td><td>Engineering</td></tr>
+<tr><td>3</td><td>Carl P. Reyes</td><td>carl.reyes@students.national-u.edu.ph</td><td>Student</td><td>Engineering</td></tr>
+<tr><td>4</td><td>Dana L. Cruz</td><td>dana.cruz@students.national-u.edu.ph</td><td>Student</td><td>Engineering</td></tr>
+<tr><td>5</td><td>Ella M. Garcia</td><td>ella.garcia@students.national-u.edu.ph</td><td>Student</td><td>Engineering</td></tr>
+<tr><td>6</td><td>Francis D. Lim</td><td>francis.lim@students.national-u.edu.ph</td><td>Student</td><td>Engineering</td></tr>
+<tr><td>7</td><td>Gabriel A. Mendoza</td><td>gabriel.mendoza@students.national-u.edu.ph</td><td>Student</td><td>Engineering</td></tr>
+<tr><td>8</td><td>Hannah C. Ramos</td><td>hannah.ramos@students.national-u.edu.ph</td><td>Student</td><td>Engineering</td></tr>
+</tbody>
+</table>
+<div class="cr-empty" id="crEmpty" hidden>No students found.</div>
+</div>
+</section>
+</main>
+</div>
+<script src="../../Static/script.js"></script>
+</body>
+</html>
