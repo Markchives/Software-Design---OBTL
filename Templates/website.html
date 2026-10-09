@@ -14,172 +14,8 @@
     <!-- MAIN STYLESHEET -->
     <link
         rel="stylesheet"
-        href="../Static/style.css"
+        href="../Static/style.css?v=20261009-native-login"
     >
-
-    <style>
-        /*HEADER */
-
-        .header-action {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 9px;
-            padding: 8px 5px;
-            border: none;
-            background: transparent;
-            color: #123B68;
-            font-size: 15px;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .header-action-icon {
-            width: 25px;
-            height: 25px;
-            min-width: 25px;
-            display: block;
-            color: currentColor;
-        }
-
-        .header-action:hover {
-            color: #0A294A;
-        }
-
-
-        /* LOGIN */
-        .login-dropdown {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            z-index: 100;
-        }
-
-        .login-dropdown .login-pill {
-            border: 2px solid #123B68;
-            cursor: pointer;
-            font-family: inherit;
-        }
-
-
-        /* DROPDOWN MENU */
-        .login-dropdown-menu {
-            position: absolute;
-            top: calc(100% + 7px);
-            right: 0;
-            width: 175px;
-            display: none;
-            flex-direction: column;
-            padding: 7px;
-            background: #123B68;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 10px;
-            box-shadow:
-                0 12px 28px rgba(7, 31, 58, 0.20);
-            overflow: hidden;
-            z-index: 9999;
-        }
-
-        .login-dropdown-menu.show {
-            display: flex;
-        }
-
-
-        /* DROPDOWN OPTIONS */
-        .login-dropdown-menu a {
-            width: 100%;
-            min-height: 38px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 8px 10px;
-            border-radius: 6px;
-            background: transparent;
-            color: #FFFFFF;
-            font-size: 12px;
-            font-weight: 700;
-            line-height: 1.2;
-            text-align: center;
-            text-decoration: none;
-            transition:
-                background 0.18s ease,
-                color 0.18s ease;
-        }
-
-        .login-dropdown-menu a:hover {
-            background: #F4C300;
-            color: #123B68;
-        }
-
-        .login-dropdown-menu a + a {
-            margin-top: 2px;
-        }
-
-        /* LOGIN GOLD ARROW */
-        .login-dropdown .login-pill b {
-            width: 15px;
-            height: 15px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            color: transparent;
-            font-size: 0;
-            transition: transform 0.2s ease;
-        }
-
-        .login-dropdown .login-pill b::after {
-            content: "";
-            width: 7px;
-            height: 7px;
-            position: absolute;
-            border-right: 2px solid #F4C300;
-            border-bottom: 2px solid #F4C300;
-            transform: rotate(45deg) translate(-1px, -1px);
-            transition: transform 0.2s ease;
-        }
-
-        .login-dropdown.open .login-pill b {
-            transform: rotate(180deg);
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 950px) {
-
-            .header-action {
-                font-size: 13px;
-                gap: 7px;
-            }
-
-            .header-action-icon {
-                width: 21px;
-                height: 21px;
-                min-width: 21px;
-            }
-
-            .login-dropdown-menu {
-                width: 165px;
-            }
-        }
-
-
-        @media (max-width: 650px) {
-
-            .header-action {
-                display: none;
-            }
-
-            .login-dropdown-menu {
-                width: 165px;
-                top: calc(100% + 6px);
-            }
-
-            .login-dropdown-menu a {
-                min-height: 36px;
-                font-size: 11px;
-            }
-        }
-    </style>
 </head>
 
 <body>
@@ -245,22 +81,11 @@
                 </button>
                 
                 <!-- LOGIN ROLE -->
-                <div
-                    class="login-dropdown"
-                    id="loginDropdown"
-                >
-                    <button
-                        type="button"
-                        class="login-pill"
-                        id="loginDropdownButton"
-                        aria-expanded="false"
-                        aria-haspopup="true"
-                        aria-controls="loginDropdownMenu"
-                        onclick="toggleLoginDropdown(event)"
-                    >
+                <details class="login-dropdown" id="loginDropdown">
+                    <summary class="login-pill">
                         <span>Log in</span>
                         <b aria-hidden="true"></b>
-                    </button>
+                    </summary>
 
                     <div
                         class="login-dropdown-menu"
@@ -299,7 +124,7 @@
                             Admin &amp; Security
                         </a>
                     </div>
-                </div>
+                </details>
             </div>
         </header>
 
@@ -400,9 +225,8 @@
 
                 <!-- PLATFORM -->
                 <a
-                    href="#"
+                    href="webpage/platform.html"
                     class="info-card"
-                    onclick="handleInfoClick(event, 'platform')"
                 >
 
                     <img
@@ -460,9 +284,8 @@
 
                 <!-- RESOURCES -->
                 <a
-                    href="#"
+                    href="webpage/resources.html"
                     class="info-card"
-                    onclick="handleInfoClick(event, 'resources')"
                 >
 
                     <img
@@ -490,9 +313,8 @@
 
                 <!-- ABOUT US -->
                 <a
-                    href="#"
+                    href="webpage/about us.html"
                     class="info-card"
-                    onclick="handleInfoClick(event, 'about')"
                 >
 
                     <img
@@ -552,96 +374,6 @@
             </button>
         </div>
     </div>
-
-    <!-- JS -->
-    <script src="../Static/script.js"></script>
-
-    <!-- LOGIN DROPDOWN JS -->
-    <script>
-
-        function toggleLoginDropdown(event) {
-            event.stopPropagation();
-            const dropdown =
-                document.getElementById("loginDropdown");
-            const menu =
-                document.getElementById("loginDropdownMenu");
-            const button =
-                document.getElementById("loginDropdownButton");
-
-            if (!dropdown || !menu || !button) {
-                return;
-            }
-
-            const willOpen =
-                !menu.classList.contains("show");
-            menu.classList.toggle(
-                "show",
-                willOpen
-            );
-            dropdown.classList.toggle(
-                "open",
-                willOpen
-            );
-
-            button.setAttribute(
-                "aria-expanded",
-                willOpen ? "true" : "false"
-            );
-        }
-
-        /* CLOSEDOWN */
-        document.addEventListener(
-            "click",
-            function (event) {
-
-                const dropdown =
-                    document.getElementById("loginDropdown");
-
-                if (!dropdown) {
-                    return;
-                }
-
-                if (!dropdown.contains(event.target)) {
-                    closeLoginDropdown();
-                }
-            }
-        );
-
-        /* CLOSE WITH ESC */
-        document.addEventListener(
-            "keydown",
-            function (event) {
-
-                if (event.key === "Escape") {
-                    closeLoginDropdown();
-                }
-
-            }
-        );
-
-        /* CLOSE FUNCTION */
-        function closeLoginDropdown() {
-
-            const dropdown =
-                document.getElementById("loginDropdown");
-            const menu =
-                document.getElementById("loginDropdownMenu");
-            const button =
-                document.getElementById("loginDropdownButton");
-            if (menu) {
-                menu.classList.remove("show");
-            }
-            if (dropdown) {
-                dropdown.classList.remove("open");
-            }
-            if (button) {
-                button.setAttribute(
-                    "aria-expanded",
-                    "false"
-                );
-            }
-        }
-
-    </script>
+    <script src="../Static/script.js?v=20261009-login-dropdown-final" defer></script>
 </body>
 </html>

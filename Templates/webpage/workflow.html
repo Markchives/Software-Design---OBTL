@@ -1,559 +1,270 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workflow | EduMetrics</title>
-
-    <!-- MAIN CSS -->
-    <link
-        rel="stylesheet"
-        href="../../Static/style.css"
-    >
-
+    <link rel="stylesheet" href="../../Static/style.css">
 </head>
-
-
 <body class="workflow-page">
-
-
-    <!-- =====================================================
-         HEADER
-         ===================================================== -->
-
     <header class="site-header auth-site-header workflow-site-header">
-
-
-        <!-- LOGO -->
-        <a
-            href="../website.html"
-            class="brand-area auth-header-brand"
-            aria-label="EduMetrics home"
-        >
-
-            <div class="brand">
-                <span>Edu</span>Metrics
-            </div>
-
-            <p>
-                Academic Assessment &amp; Grading System
-            </p>
-
+        <a href="../website.html" class="brand-area auth-header-brand" aria-label="EduMetrics home">
+            <div class="brand"><span>Edu</span>Metrics</div>
+            <p>Academic Assessment &amp; Grading System</p>
         </a>
-
-
-        <!-- HEADER ACTIONS -->
-        <div class="top-actions auth-header-actions">
-
-
-            <!-- SUPPORT -->
-            <button
-                type="button"
-                class="text-btn header-action"
-            >
-
-                <img
-                    src="../../Static/images/icons/support.png"
-                    alt=""
-                    class="header-action-icon"
-                >
+        <div class="top-actions auth-header-actions workflow-header-actions">
+            <a href="support.html" class="text-btn header-action" aria-label="Help & Support">
+                <img src="../../Static/images/icons/support.png" alt="" class="header-action-icon">
                 <span>Help &amp; Support</span>
-            </button>
+            </a>
+
+            <details class="workflow-login-dropdown login-dropdown" id="loginDropdown">
+                <summary class="workflow-login-pill login-pill">
+                    <span>Log in</span>
+                    <b aria-hidden="true"></b>
+                </summary>
+                <div class="workflow-login-menu login-dropdown-menu" id="loginDropdownMenu" role="menu">
+                    <a href="../login page.html?role=student" role="menuitem">Student</a>
+                    <a href="../login page.html?role=faculty" role="menuitem">Faculty</a>
+                    <a href="../login page.html?role=department-head" role="menuitem">Department Head</a>
+                    <a href="../login page.html?role=admin-security" role="menuitem">Admin &amp; Security</a>
+                </div>
+            </details>
+            </div>
         </div>
     </header>
 
-    <!--MAIN-->
-
     <main class="workflow-main">
+        <div class="workflow-breadcrumb-wrap">
+            <div class="workflow-container">
+                <nav class="workflow-breadcrumb" aria-label="Breadcrumb">
+                    <a href="../website.html">Home</a>
+                    <span class="workflow-breadcrumb-separator">/</span>
+                    <span class="workflow-breadcrumb-current">Workflow</span>
+                </nav>
+                <div class="workflow-breadcrumb-line"></div>
+            </div>
+        </div>
 
+        <section class="workflow-hero">
+            <div class="workflow-container workflow-hero-grid">
+                <div class="workflow-hero-copy">
+                    <p class="workflow-eyebrow">EduMetrics Workflow</p>
+                    <h1>From curriculum<br>intent to <span>continuous<br>improvement.</span></h1>
+                    <p>EduMetrics connects the major steps of academic assessment into one traceable workflow. Each stage builds the evidence needed for the next review, measurement, and improvement decision.</p>
 
-        <!-- BREADCRUMB-->
-        <nav
-            class="workflow-breadcrumb"
-            aria-label="Breadcrumb"
-        >
+                    <div class="workflow-hero-actions">
+                        <a href="#academic-workflow" class="workflow-primary-btn">Explore the workflow →</a>
+                        <a href="#workflow-output" class="workflow-secondary-btn">View resources</a>
+                    </div>
+                </div>
 
-            <a href="../website.html">Home</a>
-            <span>/</span>
-            <span class="workflow-breadcrumb-current">
-                Workflow
-            </span>
-        </nav>
+                <div class="workflow-visual" aria-label="EduMetrics workflow overview">
+                    <div class="workflow-flow">
+                        <div class="workflow-flow-step">
+                            <small>01</small>
+                            <img src="../../Static/images/workflow/curriculum-mapping.png" alt="">
+                            <strong>Map</strong>
+                        </div>
+                        <span class="workflow-flow-arrow">→</span>
+                        <div class="workflow-flow-step">
+                            <small>02</small>
+                            <img src="../../Static/images/workflow/assessment-entry.png" alt="">
+                            <strong>Assess</strong>
+                        </div>
+                        <span class="workflow-flow-arrow">→</span>
+                        <div class="workflow-flow-step">
+                            <small>03</small>
+                            <img src="../../Static/images/workflow/attainment.png" alt="">
+                            <strong>Measure</strong>
+                        </div>
+                        <span class="workflow-flow-arrow">→</span>
+                        <div class="workflow-flow-step">
+                            <small>04</small>
+                            <img src="../../Static/images/workflow/cqi-planning.png" alt="">
+                            <strong>Improve</strong>
+                        </div>
+                    </div>
 
-        <div class="workflow-breadcrumb-line"></div>
-
-        <!-- INTRO-->
-
-        <section class="workflow-intro">
-            <h1>
-                Academic Assessment
-                <br>
-                &amp; Grading Tools
-            </h1>
-
-            <p>
-                EduMetrics connects curriculum mapping, assessment,
-                <br>
-                outcome attainment, grading, CQI, and compliance
-                <br>
-                reporting in one integrated platform.
-            </p>
-
+                    <div class="workflow-flow-labels">
+                        <span>Assessment evidence</span>
+                        <span>CO attainment</span>
+                        <span>CQI action</span>
+                    </div>
+                </div>
+            </div>
         </section>
 
+        <section class="workflow-section" id="academic-workflow">
+            <div class="workflow-container">
+                <div class="workflow-section-heading">
+                    <h2>The EduMetrics academic workflow</h2>
+                    <p>A connected sequence from approved curriculum information to evidence-based improvement.</p>
+                </div>
 
+                <div class="workflow-stage-grid">
+                    <article class="workflow-stage-card">
+                        <div class="workflow-stage-top">
+                            <div class="workflow-stage-icon">
+                                <img src="../../Static/images/workflow/curriculum-mapping.png" alt="">
+                            </div>
+                            <span class="workflow-stage-number">01</span>
+                        </div>
+                        <h3>Map</h3>
+                        <p>Review the course syllabus, define Course Outcomes, and connect activities and assessments to the appropriate COs and Student Outcomes.</p>
+                        <div class="workflow-tags">
+                            <span class="workflow-tag">Course Syllabus</span>
+                            <span class="workflow-tag">CO Mapping</span>
+                            <span class="workflow-tag">CO–SO</span>
+                        </div>
+                    </article>
 
-        <!-- WORKFLOW PANEL-->
+                    <article class="workflow-stage-card">
+                        <div class="workflow-stage-top">
+                            <div class="workflow-stage-icon">
+                                <img src="../../Static/images/workflow/assessment-entry.png" alt="">
+                            </div>
+                            <span class="workflow-stage-number">02</span>
+                        </div>
+                        <h3>Assess</h3>
+                        <p>Create assessment evidence and enter raw scores for each student. Faculty retain control of their assigned course and section records.</p>
+                        <div class="workflow-tags">
+                            <span class="workflow-tag">Quizzes</span>
+                            <span class="workflow-tag">Laboratories</span>
+                            <span class="workflow-tag">Major Exams</span>
+                        </div>
+                    </article>
 
-        <section class="workflow-tools-panel">
-            <div class="workflow-section-title">
-                <span class="workflow-title-line"></span>
-                <h2>Workflow</h2>
+                    <article class="workflow-stage-card">
+                        <div class="workflow-stage-top">
+                            <div class="workflow-stage-icon">
+                                <img src="../../Static/images/workflow/attainment.png" alt="">
+                            </div>
+                            <span class="workflow-stage-number">03</span>
+                        </div>
+                        <h3>Measure</h3>
+                        <p>Use mapped assessment results to calculate CO attainment, compare performance with the target, and identify current class weaknesses.</p>
+                        <div class="workflow-tags">
+                            <span class="workflow-tag">Attainment</span>
+                            <span class="workflow-tag">Target</span>
+                            <span class="workflow-tag">Flags</span>
+                        </div>
+                    </article>
+
+                    <article class="workflow-stage-card">
+                        <div class="workflow-stage-top">
+                            <div class="workflow-stage-icon">
+                                <img src="../../Static/images/workflow/cqi-planning.png" alt="">
+                            </div>
+                            <span class="workflow-stage-number">04</span>
+                        </div>
+                        <h3>Improve</h3>
+                        <p>Use below-target outcomes as evidence for CQI analysis, document improvement actions, and monitor the response to those actions.</p>
+                        <div class="workflow-tags">
+                            <span class="workflow-tag">CQI Analysis</span>
+                            <span class="workflow-tag">Action Plan</span>
+                            <span class="workflow-tag">Follow-up</span>
+                        </div>
+                    </article>
+                </div>
             </div>
+        </section>
 
-            <!-- WORKFLOW GRID-->
-            <div class="workflow-grid">
-
-                <!-- SYLLABUS & OUTCOMES-->
-                <a
-                    href="#"
-                    class="workflow-card"
-                    data-tool="Syllabus &amp; Outcomes"
-                >
-
-                    <div class="workflow-card-icon">
-                        <img src="../../Static/images/workflow/syllabus-&-outcomes.png" alt="">
+        <section class="workflow-section workflow-section-soft">
+            <div class="workflow-container">
+                <div class="workflow-section-heading">
+                    <h2>Who participates at each stage?</h2>
+                    <p>EduMetrics separates responsibilities while keeping the evidence connected.</p>
+                </div>
+<div class="workflow-role-list">
+                    <div class="workflow-role-row">
+                        <div class="workflow-role-name faculty">Faculty</div>
+                        <div class="workflow-role-actions">
+                            <span class="workflow-role-chip">Manage activities</span>
+                            <span class="workflow-role-chip">Map to CO</span>
+                            <span class="workflow-role-chip">Enter raw scores</span>
+                            <span class="workflow-role-chip">Review attainment</span>
+                            <span class="workflow-role-chip">Support CQI</span>
+                        </div>
                     </div>
 
-
-                    <div class="workflow-card-content">
-
-                        <h3>
-                            Syllabus &amp;
-                            <br>
-                            Outcomes
-                        </h3>
-
-                        <p>
-                            Set course outcomes
-                            <br>
-                            and assessment
-                        </p>
-
+                    <div class="workflow-role-row">
+                        <div class="workflow-role-name head">Department Head</div>
+                        <div class="workflow-role-actions">
+                            <span class="workflow-role-chip">Review mappings</span>
+                            <span class="workflow-role-chip">Review raw scores</span>
+                            <span class="workflow-role-chip">Flag unusual entries</span>
+                            <span class="workflow-role-chip">Verify</span>
+                            <span class="workflow-role-chip">Monitor CQI</span>
+                        </div>
                     </div>
 
-                    <span
-                        class="workflow-card-arrow"
-                        aria-hidden="true"
-                    >
-                        →
-                    </span>
-                </a>
-
-
-                <!-- CURRICULUM MAPPING -->
-
-                <a
-                    href="#"
-                    class="workflow-card"
-                    data-tool="Curriculum Mapping"
-                >
-
-                    <div class="workflow-card-icon">
-                        <img src="../../Static/images/workflow/curriculum-mapping.png" alt="">
+                    <div class="workflow-role-row">
+                        <div class="workflow-role-name student">Student</div>
+                        <div class="workflow-role-actions">
+                            <span class="workflow-role-chip">View approved information</span>
+                            <span class="workflow-role-chip">Access assigned views</span>
+                        </div>
                     </div>
 
-
-                    <div class="workflow-card-content">
-
-                        <h3>
-                            Curriculum
-                            <br>
-                            Mapping
-                        </h3>
-
-                        <p>
-                            Map courses and
-                            <br>
-                            outcomes
-                        </p>
+                    <div class="workflow-role-row">
+                        <div class="workflow-role-name admin">Administrator</div>
+                        <div class="workflow-role-actions">
+                            <span class="workflow-role-chip">Manage access</span>
+                            <span class="workflow-role-chip">Audit records</span>
+                            <span class="workflow-role-chip">Support maintenance</span>
+                        </div>
                     </div>
+                </div>
+            </div>
+        </section>
 
-                    <span
-                        class="workflow-card-arrow"
-                        aria-hidden="true"
-                    >
-                        →
-                    </span>
-                </a>
+        <section class="workflow-section" id="workflow-output">
+            <div class="workflow-container">
+                <div class="workflow-section-heading">
+                    <h2>What the workflow produces</h2>
+                    <p>Every stage leaves a clear record that supports academic review and decision-making.</p>
+                </div>
+<div class="workflow-output-grid">
+                    <article class="workflow-output-card">
+                        <h3>Traceable assessment evidence</h3>
+                        <p>Activities and assessments remain connected to their mapped Course Outcomes.</p>
+                    </article>
 
+                    <article class="workflow-output-card">
+                        <h3>Transparent attainment</h3>
+                        <p>CO performance can be reviewed against configured targets and flagged when improvement is needed.</p>
+                    </article>
 
-                <!-- CLASS ROSTER-->
+                    <article class="workflow-output-card">
+                        <h3>Evidence for CQI</h3>
+                        <p>Below-target outcomes provide a documented starting point for analysis and improvement planning.</p>
+                    </article>
 
-                <a
-                    href="#"
-                    class="workflow-card"
-                    data-tool="Class Roster"
-                >
-
-                    <div class="workflow-card-icon">
-                        <img src="../../Static/images/workflow/class-roster.png" alt="">
-                    </div>
-
-                    <div class="workflow-card-content">
-
-                        <h3>
-                            Class Roster
-                        </h3>
-
-                        <p>
-                            Manage enrolled
-                            <br>
-                            students and courses
-                        </p>
-
-                    </div>
-
-
-                    <span
-                        class="workflow-card-arrow"
-                        aria-hidden="true"
-                    >
-                        →
-                    </span>
-
-                </a>
-
-
-                <!-- ASSESSMENT ENTRY-->
-
-                <a
-                    href="#"
-                    class="workflow-card"
-                    data-tool="Assessment Entry"
-                >
-
-                    <div class="workflow-card-icon">
-                        <img src="../../Static/images/workflow/assessment-entry.png" alt="">
-                    </div>
-
-                    <div class="workflow-card-content">
-
-                        <h3>
-                            Assessment
-                            <br>
-                            Entry
-                        </h3>
-
-                        <p>
-                            Record raw
-                            <br>
-                            assessment scores
-                        </p>
-
-                    </div>
-
-
-                    <span
-                        class="workflow-card-arrow"
-                        aria-hidden="true"
-                    >
-                        →
-                    </span>
-                </a>
-
-
-                <!-- ATTAINMENT-->
-
-                <a
-                    href="#"
-                    class="workflow-card"
-                    data-tool="Attainment"
-                >
-
-                    <div class="workflow-card-icon">
-                        <img src="../../Static/images/workflow/attainment.png" alt="">
-                    </div>
-
-
-                    <div class="workflow-card-content">
-
-                        <h3>
-                            Attainment
-                        </h3>
-
-                        <p>
-                            Calculate and visualize
-                            <br>
-                            outcome attainment
-                        </p>
-
-                    </div>
-
-
-                    <span
-                        class="workflow-card-arrow"
-                        aria-hidden="true"
-                    >
-                        →
-                    </span>
-                </a>
-
-                <!-- CQI PLANNING-->
-
-                <a
-                    href="#"
-                    class="workflow-card"
-                    data-tool="CQI Planning"
-                >
-
-                    <div class="workflow-card-icon">
-                        <img src="../../Static/images/workflow/cqi-planning.png" alt="">
-                    </div>
-
-
-                    <div class="workflow-card-content">
-
-                        <h3>
-                            CQI Planning
-                        </h3>
-
-                        <p>
-                            Document improvement
-                            <br>
-                            actions based on results
-                        </p>
-
-                    </div>
-
-
-                    <span
-                        class="workflow-card-arrow"
-                        aria-hidden="true"
-                    >
-                        →
-                    </span>
-                </a>
-
-
-                <!-- GRADEBOOK-->
-                <a
-                    href="#"
-                    class="workflow-card"
-                    data-tool="Gradebook"
-                >
-
-                    <div class="workflow-card-icon">
-                        <img src="../../Static/images/workflow/gradebook.png" alt="">
-                    </div>
-
-
-                    <div class="workflow-card-content">
-
-                        <h3>
-                            Gradebook
-                        </h3>
-
-                        <p>
-                            Manage student and
-                            <br>
-                            course records
-                        </p>
-
-                    </div>
-
-
-                    <span
-                        class="workflow-card-arrow"
-                        aria-hidden="true"
-                    >
-                        →
-                    </span>
-                </a>
-
-
-                <!-- COMPLIANCE REPORTS-->
-                <a
-                    href="#"
-                    class="workflow-card"
-                    data-tool="Compliance Reports"
-                >
-
-                    <div class="workflow-card-icon">
-                        <img src="../../Static/images/workflow/compliance-reports.png" alt="">
-                    </div>
-
-
-                    <div class="workflow-card-content">
-
-                        <h3>
-                            Compliance
-                            <br>
-                            Reports
-                        </h3>
-
-                        <p>
-                            Generate assessment
-                            <br>
-                            and outcome records
-                        </p>
-                    </div>
-
-
-                    <span
-                        class="workflow-card-arrow"
-                        aria-hidden="true"
-                    >
-                        →
-                    </span>
-                </a>
-
+                    <article class="workflow-output-card">
+                        <h3>Role-aware review</h3>
+                        <p>Faculty, Department Heads, Students, and Administrators receive views appropriate to their responsibilities.</p>
+                    </article>
+                </div>
             </div>
         </section>
     </main>
 
-    <!-- LOGIN REQUIRED MODAL-->
-    <div
-        class="workflow-login-modal"
-        id="workflowLoginModal"
-        hidden
-    >
-        <!-- DARK BACKDROP -->
-        <div
-            class="workflow-login-backdrop"
-            data-close-login-modal
-        ></div>
-
-        <!-- POPUP -->
-        <div
-            class="workflow-login-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="workflowLoginTitle"
-            aria-describedby="workflowLoginMessage"
-        >
-            <!-- TITLE -->
-            <h2 id="workflowLoginTitle">
-                Log in to access this tool
-            </h2>
-
-            <!-- MESSAGE -->
-            <p id="workflowLoginMessage">
-
-                Please log in to your EduMetrics account to access
-
-                <strong id="workflowSelectedTool">
-                    this academic tool
-                </strong>
-                and continue using its features.
-            </p>
-
-            <!-- SMALL NOTE -->
-            <p class="workflow-login-note">
-                Your available tools and features will depend on your account role.
-            </p>
-
-            <!-- BUTTONS -->
-            <div class="workflow-login-actions">
-
-                <button
-                    type="button"
-                    class="workflow-login-cancel"
-                    id="workflowLoginCancel"
-                >
-                    Not Now
-                </button>
-
-                <a
-                    href="../website.html"
-                    class="workflow-login-button"
-                >
-                    Return to Webpage
-                    <span aria-hidden="true">→</span>
-                </a>
+    <footer class="workflow-footer">
+        <div class="workflow-container workflow-footer-inner">
+            <div class="workflow-footer-brand">
+                <strong><span>Edu</span>Metrics</strong>
+                <p>Academic Assessment &amp; Grading System</p>
             </div>
+
+            <nav class="workflow-footer-nav" aria-label="Footer navigation">
+                <a href="../website.html">Platform</a>
+                <a href="#academic-workflow">Workflow</a>
+                <a href="#workflow-output">Resources</a>
+                <a href="../website.html">About us</a>
+            </nav>
         </div>
-    </div>
-
-    <!-- LOGIN REQUIRED SCRIPT-->
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const workflowCards =
-                document.querySelectorAll(".workflow-card");
-            const loginModal =
-                document.getElementById("workflowLoginModal");
-            const selectedTool =
-                document.getElementById("workflowSelectedTool");
-            const cancelButton =
-                document.getElementById("workflowLoginCancel");
-            const backdrop =
-                loginModal.querySelector(".workflow-login-backdrop");
-
-            /* OPEN MODAL*/
-            function openLoginModal(toolName) {
-                selectedTool.textContent =
-                    toolName || "this academic tool";
-                loginModal.hidden = false;
-                document.body.classList.add(
-                    "workflow-modal-open"
-                );
-             cancelButton.focus();
-            }
-
-            /* CLOSE MODAL*/
-            function closeLoginModal() {
-                loginModal.hidden = true;
-                document.body.classList.remove(
-                    "workflow-modal-open"
-                );
-            }
-
-            /* WORKFLOW CARD CLICK */
-            workflowCards.forEach(function (card) {
-                card.addEventListener(
-                    "click",
-                    function (event) {
-                        event.preventDefault();
-                        const toolName =
-                            card.dataset.tool;
-                        openLoginModal(toolName);
-                    }
-                );
-            });
-
-
-            /* CANCEL BUTTON */
-            cancelButton.addEventListener(
-                "click",
-                closeLoginModal
-            );
-
-            /* CLICK OUTSIDE POPUP */
-            backdrop.addEventListener(
-                "click",
-                closeLoginModal
-            );
-
-            /* ESC KEY*/
-            document.addEventListener(
-                "keydown",
-                function (event) {
-                    if (
-                        event.key === "Escape" &&
-                        !loginModal.hidden
-                    ) {
-                        closeLoginModal();
-                    }
-                }
-            );
-        });
-    </script>
+    </footer>
+    <script src="../../Static/script.js?v=20261009-native-dropdown-v4"></script>
 </body>
 </html>
