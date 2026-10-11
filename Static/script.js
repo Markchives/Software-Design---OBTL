@@ -212,8 +212,8 @@
             return;
         const mapped = Array.from(row.cells[3].querySelectorAll(".cm-co-badge"))
             .map(function (badge) {
-            return badge.textContent.trim();
-        })
+                return badge.textContent.trim();
+            })
             .join(" • ");
         el("cmDeptReviewAssessment").textContent = row.cells[0].textContent.trim();
         el("cmDeptReviewType").textContent = row.cells[1].textContent.trim();
@@ -281,8 +281,8 @@
             event.preventDefault();
             const mapped = Array.from(row.cells[3].querySelectorAll(".cm-co-badge"))
                 .map(function (badge) {
-                return badge.textContent.trim();
-            })
+                    return badge.textContent.trim();
+                })
                 .join(" • ");
             showAction({
                 title: "Syllabus Mapping View",
@@ -534,7 +534,7 @@ function openCourseOutcomeCqi(button) {
     document.getElementById("coCqiAttainment").textContent = data.attainment;
     document.getElementById("coCqiReason").textContent =
         data.number + " has a class attainment of " + data.attainment +
-            ", which is below the required 70% attainment target.";
+        ", which is below the required 70% attainment target.";
     showCourseOutcomeModal(modal);
 }
 
@@ -683,7 +683,7 @@ function updatePasswordRequirement(elementId, passed, text) {
         (passed
             ? "✓ "
             : "○ ") +
-            text;
+        text;
     element.classList.toggle("requirement-passed", passed);
 }
 
@@ -712,12 +712,12 @@ function maskEmail(email) {
     if (username.length <= 2) {
         maskedUsername =
             username.charAt(0) +
-                "*".repeat(Math.max(username.length - 1, 1));
+            "*".repeat(Math.max(username.length - 1, 1));
     }
     else {
         maskedUsername =
             username.substring(0, 2) +
-                "*".repeat(Math.max(username.length - 2, 2));
+            "*".repeat(Math.max(username.length - 2, 2));
     }
     return (maskedUsername +
         "@" +
@@ -922,7 +922,7 @@ function handleForgotPassword(event) {
     if (event) {
         event.preventDefault();
     }
-    showLoginModal("Forgot Password", "Password recovery will be available once the account security system is connected.", "?");
+    window.location.href = "/forgot-password.html";
 }
 
 /* TERMS AND CONDITIONS*/
@@ -979,8 +979,8 @@ function getOtpValue() {
     const otpInputs = getOtpInputs();
     return otpInputs
         .map(function (input) {
-        return input.value;
-    })
+            return input.value;
+        })
         .join("");
 }
 
@@ -1002,7 +1002,7 @@ function setupOtpInputs() {
                 value;
             if (value &&
                 index <
-                    otpInputs.length - 1) {
+                otpInputs.length - 1) {
                 otpInputs[index + 1].focus();
             }
         });
@@ -1022,7 +1022,7 @@ function setupOtpInputs() {
             if (event.key ===
                 "ArrowRight" &&
                 index <
-                    otpInputs.length - 1) {
+                otpInputs.length - 1) {
                 event.preventDefault();
                 otpInputs[index + 1].focus();
             }
@@ -1057,7 +1057,7 @@ function setupOtpInputs() {
 function generateVerificationCode() {
     return String(Math.floor(100000 +
         Math.random() *
-            900000));
+        900000));
 }
 
 function saveVerificationCode(code) {
@@ -1153,10 +1153,10 @@ function startResendCountdown(seconds = 30) {
     if (resendTimer) {
         resendTimer.innerHTML =
             "Resend available in " +
-                "<strong id=\"countdown\">" +
-                remaining +
-                "</strong>" +
-                " seconds";
+            "<strong id=\"countdown\">" +
+            remaining +
+            "</strong>" +
+            " seconds";
     }
     eduMetricsCountdownInterval =
         setInterval(function () {
@@ -1183,49 +1183,68 @@ function startResendCountdown(seconds = 30) {
         }, 1000);
 }
 
-/* VERIFY LOGIN CODE*/
-function verifyCode() {
-    clearOTPError();
-    const code = getOTP();
-    if (code.length !== 6) {
-        showOTPError("Please enter the complete 6-digit verification code.");
-        return;
-    }
-    if (!/^\d{6}$/.test(code)) {
-        showOTPError("Verification code must contain numbers only.");
-        return;
-    }
 
-    /*
-     PROTYPE VERIFICATION, PALITAN NA LANG*/
-    if (code !==
-        "123456") {
-        showOTPError("Invalid verification code. Please try again.");
-        return;
-    }
-    const verificationEmail = sessionStorage.getItem("verificationEmail") || "";
-    const verificationRole = sessionStorage.getItem("verificationRole") ||
-        getSelectedRole() ||
-        "student";
-    sessionStorage.setItem("verificationCompleted", "true");
-    sessionStorage.setItem("verificationType", "login");
-    sessionStorage.setItem("verifiedEmail", verificationEmail);
-    sessionStorage.setItem("verifiedRole", verificationRole);
-    window.location.href =
-        "verification-success.html";
-}
 
 /* RESEND LOGIN VERIFICATION CODE */
-function resendCode() {
-    const resendButton = getElement("resendButton");
-    if (!resendButton ||
-        resendButton.disabled) {
+async function resendCode() {
+    const resendButton = document.getElementById("resendButton");
+
+    if (!resendButton || resendButton.disabled) {
         return;
     }
-    showVerificationModal("Code Resent", "A new verification code has been requested. For this prototype, use 123456.", "✓");
-    clearOTP();
-    startResendCountdown(30);
+
+    const email = sessionStorage.getItem("verificationEmail");
+
+    if (!email) {
+        showVerificationModal(
+            "Missing email",
+            "Please return to login and try again.",
+            "!"
+        );
+        return;
+    }
+
+    resendButton.disabled = true;
+
+    try {
+        const response = await fetch("/api/auth/login/resend-otp", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ email: email })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            showVerificationModal(
+                "Resend failed",
+                result.error || "Could not resend the verification code.",
+                "!"
+            );
+            resendButton.disabled = false;
+            return;
+        }
+
+        clearOtpInputs();
+        startResendCountdown(30);
+
+        showVerificationModal(
+            "Code Resent",
+            "Check your email for the new six-digit verification code.",
+            "✓"
+        );
+    } catch (error) {
+        showVerificationModal(
+            "Resend failed",
+            "Could not connect to the server. Please try again.",
+            "!"
+        );
+        resendButton.disabled = false;
+    }
 }
+
 
 /* SESSION STORAGE HELPERS */
 function saveVerificationData(email, role, purpose) {
@@ -1276,9 +1295,9 @@ function restoreSelectedRole(selectId) {
     }
     const option = Array.from(select.options)
         .find(function (item) {
-        return (item.value ===
-            savedRole);
-    });
+            return (item.value ===
+                savedRole);
+        });
     if (option) {
         select.value =
             savedRole;
@@ -1375,7 +1394,7 @@ function initializeRegistrationBackButton() {
     saveSelectedRole(role);
     backButton.href =
         "login page.html?role=" +
-            encodeURIComponent(role);
+        encodeURIComponent(role);
 }
 
 /* LOGIN ROLE FROM URL */
@@ -1391,9 +1410,9 @@ function initializeLoginRoleFromURL() {
     if (loginRole) {
         const option = Array.from(loginRole.options)
             .find(function (item) {
-            return (item.value ===
-                urlRole);
-        });
+                return (item.value ===
+                    urlRole);
+            });
         if (option) {
             loginRole.value =
                 urlRole;
@@ -1447,7 +1466,7 @@ function initializeLoginVerificationPage() {
     if (emailLabel) {
         emailLabel.textContent =
             email ||
-                "your email address";
+            "your email address";
     }
 
     /* BACK URL*/
@@ -1465,8 +1484,8 @@ function initializeLoginVerificationPage() {
     /* PAGE TITLE*/
     document.title =
         "EduMetrics | " +
-            formatRole(role) +
-            " Verification";
+        formatRole(role) +
+        " Verification";
 
     /*START RESEND TIMER*/
     if (getElement("resendButton")) {
@@ -1537,7 +1556,7 @@ document.addEventListener("click", function (event) {
     const infoModal = getElement("infoModal");
     if (infoModal &&
         event.target ===
-            infoModal) {
+        infoModal) {
         closeInfoModal();
     }
 
@@ -1545,7 +1564,7 @@ document.addEventListener("click", function (event) {
     const loginModal = getElement("loginMessageModal");
     if (loginModal &&
         event.target ===
-            loginModal) {
+        loginModal) {
         closeLoginModal();
     }
 
@@ -1553,7 +1572,7 @@ document.addEventListener("click", function (event) {
     const verificationModal = getElement("verificationModal");
     if (verificationModal &&
         event.target ===
-            verificationModal) {
+        verificationModal) {
         closeVerificationModal();
     }
 
@@ -1561,7 +1580,7 @@ document.addEventListener("click", function (event) {
     const termsModal = getElement("termsModal");
     if (termsModal &&
         event.target ===
-            termsModal) {
+        termsModal) {
         closeTerms();
     }
 });
@@ -1605,9 +1624,9 @@ document.addEventListener("DOMContentLoaded", function () {
     /* LOGIN VERIFICATION PAGE*/
     initializeLoginVerificationPage();
 
-    /* OTP INITIALIZATION*/
+    /* OTP INITIALIZATION */
     if (document.querySelector(".otp-input")) {
-        initializeOTPInputs();
+        setupOtpInputs();
     }
 });
 
@@ -1800,7 +1819,7 @@ function initializeFacultySyllabus() {
         if (syllabusLastUpdated) {
             syllabusLastUpdated.textContent =
                 "Last Updated: " +
-                    getFormattedDate();
+                getFormattedDate();
         }
         hideElement(facultySyllabusEmpty);
         showElement(facultySyllabusFileRow);
@@ -1975,10 +1994,10 @@ function initFacultySyllabusOutcomes() {
     function getTodayFormatted() {
         return new Date()
             .toLocaleDateString("en-US", {
-            month: "long",
-            day: "numeric",
-            year: "numeric"
-        });
+                month: "long",
+                day: "numeric",
+                year: "numeric"
+            });
     }
 
     /* TABS*/
@@ -2061,7 +2080,7 @@ function initFacultySyllabusOutcomes() {
             if (syllabusLastUpdated) {
                 syllabusLastUpdated.textContent =
                     "Last Updated: " +
-                        getTodayFormatted();
+                    getTodayFormatted();
             }
             if (syllabusEmpty) {
                 syllabusEmpty.hidden =
@@ -2217,26 +2236,26 @@ function initFacultySyllabusOutcomes() {
     function getSelectedAlignedSOs() {
         return Array.from(document.querySelectorAll("#courseOutcomeSoOptions .sof-so-option"))
             .filter(function (option) {
-            const style = window.getComputedStyle(option);
-            return (option.classList.contains("selected") ||
-                option.classList.contains("is-selected") ||
-                option.getAttribute("aria-pressed") === "true" ||
-                option.dataset.selected === "true" ||
-                style.backgroundColor === "rgb(0, 65, 121)");
-        })
+                const style = window.getComputedStyle(option);
+                return (option.classList.contains("selected") ||
+                    option.classList.contains("is-selected") ||
+                    option.getAttribute("aria-pressed") === "true" ||
+                    option.dataset.selected === "true" ||
+                    style.backgroundColor === "rgb(0, 65, 121)");
+            })
             .map(function (option) {
-            return (option.dataset.so ||
-                option.value ||
-                option.textContent.trim());
-        });
+                return (option.dataset.so ||
+                    option.value ||
+                    option.textContent.trim());
+            });
     }
 
     function clearAlignedSOs() {
         getAlignedSOOptions()
             .forEach(function (option) {
-            option.classList.remove("selected", "is-selected");
-            option.setAttribute("aria-pressed", "false");
-        });
+                option.classList.remove("selected", "is-selected");
+                option.setAttribute("aria-pressed", "false");
+            });
     }
 
     function setAlignedSOs(values) {
@@ -2245,37 +2264,37 @@ function initFacultySyllabusOutcomes() {
             : [];
         getAlignedSOOptions()
             .forEach(function (option) {
-            const value = option.dataset.so ||
-                option.value ||
-                option.textContent.trim();
-            const selected = selectedValues.includes(value);
-            option.classList.toggle("selected", selected);
-            option.classList.toggle("is-selected", selected);
-            option.setAttribute("aria-pressed", selected ? "true" : "false");
-        });
+                const value = option.dataset.so ||
+                    option.value ||
+                    option.textContent.trim();
+                const selected = selectedValues.includes(value);
+                option.classList.toggle("selected", selected);
+                option.classList.toggle("is-selected", selected);
+                option.setAttribute("aria-pressed", selected ? "true" : "false");
+            });
     }
 
     /* SO BUTTON MULTI-SELECT*/
     getAlignedSOOptions()
         .forEach(function (option) {
-        if (option.dataset.soMultiSelectInitialized ===
-            "true") {
-            return;
-        }
-        option.dataset.soMultiSelectInitialized =
-            "true";
-        if (!option.hasAttribute("aria-pressed")) {
-            option.setAttribute("aria-pressed", "false");
-        }
-        option.addEventListener("click", function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-            const selected = !this.classList.contains("selected");
-            this.classList.toggle("selected", selected);
-            this.classList.toggle("is-selected", selected);
-            this.setAttribute("aria-pressed", selected ? "true" : "false");
+            if (option.dataset.soMultiSelectInitialized ===
+                "true") {
+                return;
+            }
+            option.dataset.soMultiSelectInitialized =
+                "true";
+            if (!option.hasAttribute("aria-pressed")) {
+                option.setAttribute("aria-pressed", "false");
+            }
+            option.addEventListener("click", function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                const selected = !this.classList.contains("selected");
+                this.classList.toggle("selected", selected);
+                this.classList.toggle("is-selected", selected);
+                this.setAttribute("aria-pressed", selected ? "true" : "false");
+            });
         });
-    });
 
     /* COURSE OUTCOME SELECT*/
     if (courseOutcomeSelect) {
@@ -2308,7 +2327,7 @@ function initFacultySyllabusOutcomes() {
             if (courseOutcomeDescription) {
                 courseOutcomeDescription.value =
                     option.dataset.description ||
-                        "";
+                    "";
             }
         });
     }
@@ -2428,9 +2447,9 @@ function initFacultySyllabusOutcomes() {
             const duplicate = Array.from(courseOutcomesTableBody
                 .querySelectorAll("tr"))
                 .some(function (row) {
-                return (row.dataset.coNumber ===
-                    coNumber);
-            });
+                    return (row.dataset.coNumber ===
+                        coNumber);
+                });
             if (duplicate) {
                 alert(coNumber +
                     " has already been added.");
@@ -2521,8 +2540,8 @@ function initFacultySyllabusOutcomes() {
                             .textContent
                             .split(",")
                             .map(function (item) {
-                            return item.trim();
-                        })
+                                return item.trim();
+                            })
                             .filter(Boolean);
                 }
                 if (courseOutcomeSelect) {
@@ -2575,9 +2594,9 @@ function initFacultySyllabusOutcomes() {
                 if (deleteName) {
                     deleteName.textContent =
                         row.dataset.coNumber ||
-                            row.cells[0]
-                                .textContent
-                                .trim();
+                        row.cells[0]
+                            .textContent
+                            .trim();
                 }
                 openModal(deleteModal);
             }
@@ -3043,9 +3062,9 @@ function initFacultySyllabusOutcomes() {
             }
             const outcomes = getStoredStudentOutcomes()
                 .filter(function (outcome) {
-                return (outcome.id !==
-                    deletingStudentOutcomeId);
-            });
+                    return (outcome.id !==
+                        deletingStudentOutcomeId);
+                });
             saveStoredStudentOutcomes(outcomes);
             closeDeleteStudentOutcome();
             renderStoredStudentOutcomes();
@@ -3170,23 +3189,23 @@ document.addEventListener("DOMContentLoaded", function () {
     function getActiveStudentOutcomes() {
         return getStudentOutcomes()
             .filter(function (outcome) {
-            return (outcome.status ===
-                "Active");
-        })
+                return (outcome.status ===
+                    "Active");
+            })
             .map(function (outcome) {
-            return {
-                ...outcome,
+                return {
+                    ...outcome,
 
-                /*
-                 * CHANGE THIS LATER:
-                 * Replace this sample course with the course
-                 * saved by the backend/faculty assignment.
-                 * For now, every uploaded SO is Software Design.
-                 */
-                course: outcome.course ||
-                    ""
-            };
-        });
+                    /*
+                     * CHANGE THIS LATER:
+                     * Replace this sample course with the course
+                     * saved by the backend/faculty assignment.
+                     * For now, every uploaded SO is Software Design.
+                     */
+                    course: outcome.course ||
+                        ""
+                };
+            });
     }
 
     function updateStudentSOSummary(outcomes) {
@@ -3220,16 +3239,16 @@ document.addEventListener("DOMContentLoaded", function () {
         pendingCourseFilter.appendChild(allCoursesOption);
         courses
             .filter(function (course) {
-            return Boolean(course);
-        })
+                return Boolean(course);
+            })
             .forEach(function (course) {
-            const option = document.createElement("option");
-            option.value =
-                course;
-            option.textContent =
-                course;
-            pendingCourseFilter.appendChild(option);
-        });
+                const option = document.createElement("option");
+                option.value =
+                    course;
+                option.textContent =
+                    course;
+                pendingCourseFilter.appendChild(option);
+            });
         if (selectedValue &&
             Array.from(pendingCourseFilter.options).some(function (option) {
                 return (option.value ===
@@ -3249,7 +3268,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const filteredOutcomes = activeOutcomes.filter(function (outcome) {
             return (!selectedCourse ||
                 outcome.course ===
-                    selectedCourse);
+                selectedCourse);
         });
         pendingSOList.innerHTML =
             "";
@@ -3406,16 +3425,16 @@ document.addEventListener("DOMContentLoaded", function () {
         const section = selectedFilter("sectionFilter");
         return ((!schoolYear ||
             normalize(info.schoolYear) ===
-                schoolYear) &&
+            schoolYear) &&
             (!program ||
                 normalize(info.program) ===
-                    program) &&
+                program) &&
             (!course ||
                 normalize(info.course) ===
-                    course) &&
+                course) &&
             (!section ||
                 normalize(info.section) ===
-                    section));
+                section));
     }
 
     function getFilteredResponses() {
@@ -3496,24 +3515,24 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         const rows = Object.values(groups)
             .filter(function (group) {
-            if (!query) {
-                return true;
-            }
-            const haystack = ("SO (" +
-                group.so +
-                ") " +
-                group.indicatorNumber +
-                " " +
-                group.description).toLowerCase();
-            return haystack.includes(query);
-        })
+                if (!query) {
+                    return true;
+                }
+                const haystack = ("SO (" +
+                    group.so +
+                    ") " +
+                    group.indicatorNumber +
+                    " " +
+                    group.description).toLowerCase();
+                return haystack.includes(query);
+            })
             .sort(function (a, b) {
-            if (a.so !== b.so) {
-                return a.so.localeCompare(b.so);
-            }
-            return (a.indicatorNumber -
-                b.indicatorNumber);
-        });
+                if (a.so !== b.so) {
+                    return a.so.localeCompare(b.so);
+                }
+                return (a.indicatorNumber -
+                    b.indicatorNumber);
+            });
         if (!rows.length) {
             /* Keep the demo rows already written in so-dept-head.html.
                Once real SO response data exists, the rows below will
@@ -3574,7 +3593,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return (!courseName ||
                 !outcomeCourse ||
                 outcomeCourse ===
-                    courseName);
+                courseName);
         });
         const uniqueCodes = new Set(courseOutcomes.map(function (outcome) {
             return normalize(outcome.code ||
@@ -3614,19 +3633,19 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         const rows = Object.values(students)
             .filter(function (student) {
-            if (!query) {
-                return true;
-            }
-            const info = student.info || {};
-            const haystack = [
-                info.studentName,
-                info.program,
-                info.course,
-                info.section
-            ].join(" ")
-                .toLowerCase();
-            return haystack.includes(query);
-        });
+                if (!query) {
+                    return true;
+                }
+                const info = student.info || {};
+                const haystack = [
+                    info.studentName,
+                    info.program,
+                    info.course,
+                    info.section
+                ].join(" ")
+                    .toLowerCase();
+                return haystack.includes(query);
+            });
         if (!rows.length) {
             /* Keep the demo student rows already written in
                so-dept-head.html until real response data exists. */
@@ -3721,7 +3740,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (event.key ===
             responseStorageKey ||
             event.key ===
-                outcomeStorageKey) {
+            outcomeStorageKey) {
             renderDepartmentHeadSOData();
         }
     });
@@ -3741,11 +3760,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const message = document.getElementById("soaMessage");
     const indicatorNames = Array.from(ratingInputs)
         .map(function (input) {
-        return input.name;
-    })
+            return input.name;
+        })
         .filter(function (name, index, names) {
-        return name && names.indexOf(name) === index;
-    });
+            return name && names.indexOf(name) === index;
+        });
     const numberOfIndicators = indicatorNames.length;
     const maximumScore = numberOfIndicators * 3;
     const fileName = window.location.pathname
@@ -3864,7 +3883,7 @@ document.addEventListener("DOMContentLoaded", function () {
         sessionStorage.setItem("currentSOAssessment", JSON.stringify(assessmentData));
         window.location.href =
             "page-2.html?so=" +
-                encodeURIComponent(currentSO);
+            encodeURIComponent(currentSO);
     });
     calculateScore();
 });
@@ -4495,6 +4514,9 @@ document.addEventListener("DOMContentLoaded", function () {
 (function () {
     const modal = document.getElementById('assessmentModal');
     const openBtn = document.getElementById('openAssessmentModal');
+
+    if (!modal) return;
+
     const closeBtn = document.getElementById('closeAssessmentModal');
     const cancelBtn = document.getElementById('cancelAssessmentModal');
     const form = document.getElementById('assessmentForm');
@@ -4521,11 +4543,15 @@ document.addEventListener("DOMContentLoaded", function () {
     openBtn.addEventListener('click', openModal);
     closeBtn.addEventListener('click', closeModal);
     cancelBtn.addEventListener('click', closeModal);
-    modal.addEventListener('click', function (e) { if (e.target === modal)
-        closeModal(); });
+    modal.addEventListener('click', function (e) {
+        if (e.target === modal)
+            closeModal();
+    });
 
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('show'))
-        closeModal(); });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.classList.contains('show'))
+            closeModal();
+    });
     form.addEventListener('submit', function (e) {
         e.preventDefault();
         const selected = [...form.querySelectorAll('input[name="assessmentCO"]:checked')];
@@ -4610,32 +4636,46 @@ document.addEventListener("DOMContentLoaded", function () {
     function recalculateScores() {
         const inputs = [...scoreTableBody.querySelectorAll('.cm-raw-score-input')];
         let total = 0;
-        inputs.forEach(input => { let value = Number(input.value); if (!Number.isFinite(value))
-            value = 0; value = Math.max(0, Math.min(100, value)); input.value = value; input.closest('tr').querySelector('.cm-score-percent').textContent = Math.round(value) + '%'; total += value; });
+        inputs.forEach(input => {
+            let value = Number(input.value); if (!Number.isFinite(value))
+                value = 0; value = Math.max(0, Math.min(100, value)); input.value = value; input.closest('tr').querySelector('.cm-score-percent').textContent = Math.round(value) + '%'; total += value;
+        });
         scoreMean.textContent = (inputs.length ? Math.round(total / inputs.length) : 0) + '%';
     }
 
     function closeScoreModal() { scoreModal.classList.remove('show'); scoreModal.setAttribute('aria-hidden', 'true'); document.body.classList.remove('cm-modal-open'); }
-    scoreTableBody.addEventListener('input', function (e) { if (e.target.classList.contains('cm-raw-score-input'))
-        recalculateScores(); });
+    scoreTableBody.addEventListener('input', function (e) {
+        if (e.target.classList.contains('cm-raw-score-input'))
+            recalculateScores();
+    });
     closeScoreBtn.addEventListener('click', closeScoreModal);
     cancelScoreBtn.addEventListener('click', closeScoreModal);
     saveScoresBtn.addEventListener('click', function () { recalculateScores(); closeScoreModal(); });
-    scoreModal.addEventListener('click', function (e) { if (e.target === scoreModal)
-        closeScoreModal(); });
+    scoreModal.addEventListener('click', function (e) {
+        if (e.target === scoreModal)
+            closeScoreModal();
+    });
 
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && scoreModal.classList.contains('show'))
-        closeScoreModal(); });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && scoreModal.classList.contains('show'))
+            closeScoreModal();
+    });
 
     function closeDeleteModal() { deleteModal.classList.remove('show'); deleteModal.setAttribute('aria-hidden', 'true'); document.body.classList.remove('cm-modal-open'); rowToDelete = null; }
     cancelDeleteBtn.addEventListener('click', closeDeleteModal);
-    deleteModal.addEventListener('click', function (e) { if (e.target === deleteModal)
-        closeDeleteModal(); });
-    confirmDeleteBtn.addEventListener('click', function () { if (rowToDelete)
-        rowToDelete.remove(); closeDeleteModal(); });
+    deleteModal.addEventListener('click', function (e) {
+        if (e.target === deleteModal)
+            closeDeleteModal();
+    });
+    confirmDeleteBtn.addEventListener('click', function () {
+        if (rowToDelete)
+            rowToDelete.remove(); closeDeleteModal();
+    });
 
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && deleteModal.classList.contains('show'))
-        closeDeleteModal(); });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && deleteModal.classList.contains('show'))
+            closeDeleteModal();
+    });
 })();
 
 /* CM FACULTY — STUDENT ATTAINMENT VIEW + CQI BASIS */
@@ -4690,13 +4730,19 @@ document.addEventListener("DOMContentLoaded", function () {
         openAttainmentModal(cqiModal);
     });
     document.querySelectorAll('[data-close-attainment]').forEach(button => button.addEventListener('click', function () { closeAttainmentModal(document.getElementById(button.dataset.closeAttainment)); }));
-    [detailModal, cqiModal].forEach(modal => modal.addEventListener('click', function (event) { if (event.target === modal)
-        closeAttainmentModal(modal); }));
+    [detailModal, cqiModal].forEach(modal => modal.addEventListener('click', function (event) {
+        if (event.target === modal)
+            closeAttainmentModal(modal);
+    }));
 
-    document.addEventListener('keydown', function (event) { if (event.key === 'Escape') {
-        [detailModal, cqiModal].forEach(modal => { if (modal.classList.contains('show'))
-            closeAttainmentModal(modal); });
-    } });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            [detailModal, cqiModal].forEach(modal => {
+                if (modal.classList.contains('show'))
+                    closeAttainmentModal(modal);
+            });
+        }
+    });
 })();
 
 /* REQUIREMENT 3 — CLASS ROSTER STUDENT */

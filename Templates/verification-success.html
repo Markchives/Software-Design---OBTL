@@ -4,17 +4,11 @@
 <head>
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>EduMetrics | Account Verified</title>
 
-    <link
-        rel="stylesheet"
-        href="../Static/style.css"
-    >
+    <link rel="stylesheet" href="../Static/style.css">
 </head>
 
 <body class="auth-page verification-success-page">
@@ -22,11 +16,7 @@
     <!-- HEADER-->
     <header class="site-header auth-site-header">
 
-        <a
-            href="website.html"
-            class="brand-area auth-header-brand"
-            aria-label="EduMetrics home"
-        >
+        <a href="website.html" class="brand-area auth-header-brand" aria-label="EduMetrics home">
             <div class="brand">
                 <span>Edu</span>Metrics
             </div>
@@ -40,25 +30,14 @@
         <div class="top-actions auth-header-actions">
 
             <!-- SUPPORT -->
-            <button
-                type="button"
-                class="text-btn header-action"
-                onclick="showHeaderMessage('Support')"
-            >
-                <img
-                    src="../Static/images/icons/support.png"
-                    alt=""
-                    class="header-action-icon"
-                >
+            <button type="button" class="text-btn header-action" onclick="showHeaderMessage('Support')">
+                <img src="../Static/images/icons/support.png" alt="" class="header-action-icon">
 
                 <span>Help &amp; Support</span>
             </button>
 
             <!-- ROLE -->
-            <div
-                class="login-pill auth-role-pill"
-                aria-label="Account role"
-            >
+            <div class="login-pill auth-role-pill" aria-label="Account role">
                 <span id="successRoleLabel">
                     Student
                 </span>
@@ -72,16 +51,8 @@
         <div class="login-stage verification-success-stage">
 
             <!-- BACK -->
-            <a
-                href="login page.html"
-                class="back-button"
-                id="successBackButton"
-                aria-label="Back to login"
-            >
-                <span
-                    class="back-arrow"
-                    aria-hidden="true"
-                >
+            <a href="login page.html" class="back-button" id="successBackButton" aria-label="Back to login">
+                <span class="back-arrow" aria-hidden="true">
                     ←
                 </span>
 
@@ -102,12 +73,8 @@
                         <!-- SUCCESS ICON -->
                         <div class="verification-success-icon-wrap">
 
-                            <img
-                                src="../Static/images/icons/success.png"
-                                alt=""
-                                class="verification-success-check-image"
-                                aria-hidden="true"
-                            >
+                            <img src="../Static/images/icons/success.png" alt=""
+                                class="verification-success-check-image" aria-hidden="true">
 
                         </div>
 
@@ -130,21 +97,15 @@
                         </div>
 
                         <!-- BUTTON -->
-                        <button
-                            type="button"
-                            id="primaryButton"
-                            class="verification-success-button"
-                            onclick="continueToLogin()"
-                        >
+                        <button type="button" id="primaryButton" class="verification-success-button"
+                            onclick="continueToLogin()">
                             Go to Log in
                         </button>
                     </div>
                 </div>
 
                 <!-- RIGHT BEIGE PANEL -->
-                <div
-                    class="auth-brand-panel registration-brand-panel verification-success-brand-panel"
-                >
+                <div class="auth-brand-panel registration-brand-panel verification-success-brand-panel">
 
                     <!-- LOGO -->
                     <div class="auth-logo">
@@ -179,11 +140,8 @@
                         <!-- CURRICULUM MAPPING -->
                         <div class="brand-feature">
 
-                            <img
-                                src="../Static/images/icons/curriculum mapping.png"
-                                alt=""
-                                class="brand-feature-icon-image"
-                            >
+                            <img src="../Static/images/icons/curriculum mapping.png" alt=""
+                                class="brand-feature-icon-image">
 
                             <span>
                                 Curriculum Mapping
@@ -194,11 +152,8 @@
                         <!-- ASSESSMENT & GRADING -->
                         <div class="brand-feature">
 
-                            <img
-                                src="../Static/images/icons/assessment & grading.png"
-                                alt=""
-                                class="brand-feature-icon-image"
-                            >
+                            <img src="../Static/images/icons/assessment & grading.png" alt=""
+                                class="brand-feature-icon-image">
 
                             <span>
                                 Assessment &amp; Grading
@@ -208,11 +163,8 @@
                         <!-- OUTCOME ATTAINMENT -->
                         <div class="brand-feature">
 
-                            <img
-                                src="../Static/images/icons/outcome attainment.png"
-                                alt=""
-                                class="brand-feature-icon-image"
-                            >
+                            <img src="../Static/images/icons/outcome attainment.png" alt=""
+                                class="brand-feature-icon-image">
 
                             <span>
                                 Outcome Attainment
@@ -223,11 +175,7 @@
                         <!-- CQI ANALYTICS -->
                         <div class="brand-feature">
 
-                            <img
-                                src="../Static/images/icons/cqi analytics.png"
-                                alt=""
-                                class="brand-feature-icon-image"
-                            >
+                            <img src="../Static/images/icons/cqi analytics.png" alt="" class="brand-feature-icon-image">
 
                             <span>
                                 CQI Analytics
@@ -241,29 +189,16 @@
 
     <!--MODAL
          HIDDEN BY DEFAULT-->
-    <div
-        id="verificationModal"
-        class="auth-modal"
-        aria-hidden="true"
-        hidden
-    >
+    <div id="verificationModal" class="auth-modal" aria-hidden="true" hidden>
 
         <div class="auth-modal-box">
 
-            <button
-                type="button"
-                class="modal-close-button"
-                onclick="closeSuccessModal()"
-                aria-label="Close"
-            >
+            <button type="button" class="modal-close-button" onclick="closeSuccessModal()" aria-label="Close">
                 ×
             </button>
 
 
-            <div
-                id="verificationModalIcon"
-                class="modal-status-icon"
-            >
+            <div id="verificationModalIcon" class="modal-status-icon">
                 !
             </div>
 
@@ -278,11 +213,7 @@
             </p>
 
 
-            <button
-                type="button"
-                class="modal-primary-button"
-                onclick="closeSuccessModal()"
-            >
+            <button type="button" class="modal-primary-button" onclick="closeSuccessModal()">
                 OK
             </button>
 
@@ -390,7 +321,7 @@
 
             successRoleLabel.textContent =
                 successRoleNames[
-                    verifiedRole
+                verifiedRole
                 ] ||
                 "Student";
 
@@ -430,69 +361,69 @@
 
         /* LOGIN VERIFICATION SUCCESS */
 
-else if (
-    verificationType === "login"
-) {
+        else if (
+            verificationType === "login"
+        ) {
 
-    /* Add separate class for LOGIN success design */
-    document.body.classList.add(
-        "login-success-mode"
-    );
+            /* Add separate class for LOGIN success design */
+            document.body.classList.add(
+                "login-success-mode"
+            );
 
 
-    /* LEFT PANEL ICONS */
-    const loginSuccessFeatureIcons =
-        document.querySelectorAll(
-            ".verification-success-brand-panel .brand-feature-icon-image"
-        );
+            /* LEFT PANEL ICONS */
+            const loginSuccessFeatureIcons =
+                document.querySelectorAll(
+                    ".verification-success-brand-panel .brand-feature-icon-image"
+                );
 
-    const loginSuccessIconSources = [
-        "../Static/images/icons/cm.png",
-        "../Static/images/icons/a&g.png",
-        "../Static/images/icons/oa.png",
-        "../Static/images/icons/cqi.png"
-    ];
+            const loginSuccessIconSources = [
+                "../Static/images/icons/cm.png",
+                "../Static/images/icons/a&g.png",
+                "../Static/images/icons/oa.png",
+                "../Static/images/icons/cqi.png"
+            ];
 
-    loginSuccessFeatureIcons.forEach(
-        function (icon, index) {
+            loginSuccessFeatureIcons.forEach(
+                function (icon, index) {
 
-            if (loginSuccessIconSources[index]) {
+                    if (loginSuccessIconSources[index]) {
 
-                icon.src =
-                    loginSuccessIconSources[index];
+                        icon.src =
+                            loginSuccessIconSources[index];
+
+                    }
+
+                }
+            );
+
+
+            /* PAGE TITLE */
+            document.title =
+                "EduMetrics | Account Verified";
+
+            /* SUCCESS TITLE */
+            if (successTitle) {
+                successTitle.textContent =
+                    "Account Verified!";
+            }
+
+            /* SUCCESS MESSAGE */
+            if (successMessage) {
+
+                successMessage.innerHTML =
+                    "Your account has been successfully verified.<br>" +
+                    "You can now continue to your dashboard.";
 
             }
 
+            /* BUTTON */
+            if (primaryButton) {
+
+                primaryButton.textContent =
+                    "Continue";
+            }
         }
-    );
-
-
-    /* PAGE TITLE */
-    document.title =
-        "EduMetrics | Account Verified";
-
-    /* SUCCESS TITLE */
-    if (successTitle) {
-        successTitle.textContent =
-            "Account Verified!";
-    }
-
-    /* SUCCESS MESSAGE */
-    if (successMessage) {
-
-        successMessage.innerHTML =
-            "Your account has been successfully verified.<br>" +
-            "You can now continue to your dashboard.";
-
-    }
-
-    /* BUTTON */
-    if (primaryButton) {
-
-        primaryButton.textContent =
-            "Continue";
-    }
-}
         /*DEFAULT VERIFICATION SUCCESS */
         else {
 
@@ -519,31 +450,37 @@ else if (
             }
         }
 
-        /* CONTINUE BUTTON*/
+
+
         function continueToLogin() {
+            if (verificationType === "login") {
+                const rolePages = {
+                    "student": "/requirement%201/so-student.html",
+                    "faculty": "/requirement%201/so-faculty.html",
+                    "department-head": "/requirement%201/so-dept-head.html"
+                    //"admin-security": "/requirement%201/so-admin-security.html"
+                };
 
-            if (
-                verificationType === "login"
-            ) {
+                const destination = rolePages[verifiedRole];
 
-                window.location.href =
-                    "login page.html?role=" +
-                    encodeURIComponent(
-                        verifiedRole
+                if (!destination) {
+                    alert(
+                        "No landing page is configured for this role yet. " +
+                        "Please contact the administrator."
                     );
+                    return;
+                }
 
+                window.location.href = destination;
                 return;
-
             }
 
-
-            window.location.href =
-                "login page.html?role=" +
-                encodeURIComponent(
-                    verifiedRole
-                );
-
+            // Signup verification should still return to login.
+            window.location.href = "/login%20page.html?role=" +
+                encodeURIComponent(verifiedRole);
         }
+
+
         /* BACK BUTTON */
         if (successBackButton) {
             successBackButton.href =
@@ -658,4 +595,5 @@ else if (
         }
     </script>
 </body>
+
 </html>

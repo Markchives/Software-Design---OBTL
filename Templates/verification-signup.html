@@ -3,16 +3,15 @@
 
 <head>
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EduMetrics | Verify Registration</title>
-    <link
-        rel="stylesheet"
-        href="../Static/style.css"
-    >
+
+    <meta name="supabase-url" content="{{ supabase_url }}">
+    <meta name="supabase-publishable-key" content="{{ supabase_key }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body class="registration-page verification-signup-page">
@@ -21,11 +20,7 @@
     <header class="site-header auth-site-header">
 
         <!-- BRAND -->
-        <a
-            href="website.html"
-            class="brand-area auth-header-brand"
-            aria-label="EduMetrics home"
-        >
+        <a href="website.html" class="brand-area auth-header-brand" aria-label="EduMetrics home">
             <div class="brand"><span>Edu</span>Metrics </div>
             <p>Academic Assessment &amp; Grading System</p>
         </a>
@@ -34,29 +29,18 @@
         <div class="top-actions auth-header-actions">
 
             <!-- SUPPORT -->
-            <button
-                type="button"
-                class="text-btn header-action"
-                onclick="
+            <button type="button" class="text-btn header-action" onclick="
                     showVerificationMessage(
                         'Support',
                         'Support options will be available once this section is connected.'
                     )
-                "
-            >
-                <img
-                    src="../Static/images/icons/support.png"
-                    alt=""
-                    class="header-action-icon"
-                >
+                ">
+                <img src="../Static/images/icons/support.png" alt="" class="header-action-icon">
                 <span>Help &amp; Support</span>
             </button>
-            
+
             <!-- ROLE -->
-            <div
-                class="login-pill auth-role-pill"
-                aria-label="Account role"
-            >
+            <div class="login-pill auth-role-pill" aria-label="Account role">
                 <span id="verificationHeaderRole">Student</span>
             </div>
         </div>
@@ -68,34 +52,22 @@
 
             <!-- BACK -->
             <div class="registration-top-row">
-                <a
-                    href="registration.html"
-                    id="verificationBackButton"
-                    class="registration-back"
-                >
+                <a href="registration.html" id="verificationBackButton" class="registration-back">
                     <span class="registration-back-arrow"> ←</span>
                     <span> Back </span>
                 </a>
             </div>
 
             <!-- VERIFICATION CARD -->
-            <section
-                class="auth-card registration-card verification-signup-card"
-                aria-label="Verify EduMetrics account"
-            >
+            <section class="auth-card registration-card verification-signup-card"
+                aria-label="Verify EduMetrics account">
 
                 <!-- LEFT PANEL -->
-                <div
-                    class="auth-form-panel registration-form-panel verification-signup-panel"
-                >
+                <div class="auth-form-panel registration-form-panel verification-signup-panel">
                     <div class="verification-signup-content">
                         <!-- EMAIL ICON -->
                         <div class="verification-signup-icon-wrap">
-                            <img
-                                src="../Static/images/icons/logver.png"
-                                alt=""
-                                class="verification-signup-icon"
-                            >
+                            <img src="../Static/images/icons/logver.png" alt="" class="verification-signup-icon">
                         </div>
 
                         <!-- HEADING -->
@@ -106,92 +78,43 @@
                         </div>
 
                         <!-- OTP -->
-                        <div
-                            class="verification-signup-otp"
-                            id="otpContainer"
-                        >
-                            <input
-                                type="text"
-                                class="otp-input"
-                                maxlength="1"
-                                inputmode="numeric"
-                                autocomplete="one-time-code"
-                                aria-label="Verification digit 1"
-                            >
+                        <div class="verification-signup-otp" id="otpContainer">
+                            <input type="text" class="otp-input" maxlength="1" inputmode="numeric"
+                                autocomplete="one-time-code" aria-label="Verification digit 1">
 
-                            <input
-                                type="text"
-                                class="otp-input"
-                                maxlength="1"
-                                inputmode="numeric"
-                                aria-label="Verification digit 2"
-                            >
+                            <input type="text" class="otp-input" maxlength="1" inputmode="numeric"
+                                aria-label="Verification digit 2">
 
-                            <input
-                                type="text"
-                                class="otp-input"
-                                maxlength="1"
-                                inputmode="numeric"
-                                aria-label="Verification digit 3"
-                            >
-                            <input
-                                type="text"
-                                class="otp-input"
-                                maxlength="1"
-                                inputmode="numeric"
-                                aria-label="Verification digit 4"
-                            >
-                            <input
-                                type="text"
-                                class="otp-input"
-                                maxlength="1"
-                                inputmode="numeric"
-                                aria-label="Verification digit 5"
-                            >
-                            <input
-                                type="text"
-                                class="otp-input"
-                                maxlength="1"
-                                inputmode="numeric"
-                                aria-label="Verification digit 6"
-                            >
+                            <input type="text" class="otp-input" maxlength="1" inputmode="numeric"
+                                aria-label="Verification digit 3">
+                            <input type="text" class="otp-input" maxlength="1" inputmode="numeric"
+                                aria-label="Verification digit 4">
+                            <input type="text" class="otp-input" maxlength="1" inputmode="numeric"
+                                aria-label="Verification digit 5">
+                            <input type="text" class="otp-input" maxlength="1" inputmode="numeric"
+                                aria-label="Verification digit 6">
                         </div>
 
                         <!-- ERROR -->
-                        <p
-                            id="otpError"
-                            class="verification-signup-error"
-                        ></p>
+                        <p id="otpError" class="verification-signup-error"></p>
 
                         <!-- VERIFY -->
-                                                <button
-                                                    type="button"
-                                                    id="verifyButton"
-                                                    class="primary-auth-button verification-signup-button"
-                                                    onclick="verifySignupCode()"
-                                                >
-                                                    Verify
-                                                </button>
+                        <button type="button" id="verifyButton" class="primary-auth-button verification-signup-button"
+                            onclick="verifySignupCode()">
+                            Verify
+                        </button>
 
                         <!-- RESEND -->
                         <div class="verification-signup-resend">
                             <span> Didn't receive the code?</span>
-                            <button
-                                type="button"
-                                id="resendButton"
-                                class="resend-button"
-                                onclick="resendSignupCode()"
-                                disabled
-                            >
+                            <button type="button" id="resendButton" class="resend-button" onclick="resendSignupCode()"
+                                disabled>
                                 Resend
                             </button>
                         </div>
 
                         <!-- TIMER -->
-                        <p
-                            id="resendTimer"
-                            class="verification-signup-timer"
-                        >
+                        <p id="resendTimer" class="verification-signup-timer">
                             Resend available in
                             <strong id="countdown">
                                 30
@@ -200,20 +123,14 @@
                         </p>
 
                         <!-- BACK TO SIGN UP -->
-                        <a
-                            href="registration.html"
-                            id="backToSignupLink"
-                            class="verification-signup-back-link"
-                        >
+                        <a href="registration.html" id="backToSignupLink" class="verification-signup-back-link">
                             Back to sign up
                         </a>
                     </div>
                 </div>
 
                 <!-- RIGHT PANEL -->
-                <div
-                    class="auth-brand-panel registration-brand-panel"
-                >
+                <div class="auth-brand-panel registration-brand-panel">
                     <!-- LOGO -->
                     <div class="auth-logo"> <span class="gold-text">Edu</span>Metrics</div>
                     <p class="auth-brand-subtitle">Academic Assessment &amp; Grading System </p>
@@ -234,41 +151,28 @@
 
                         <!-- CURRICULUM MAPPING -->
                         <div class="brand-feature">
-                            <img
-                                src="../Static/images/icons/curriculum mapping.png"
-                                alt=""
-                                class="brand-feature-icon-image"
-                            >
+                            <img src="../Static/images/icons/curriculum mapping.png" alt=""
+                                class="brand-feature-icon-image">
                             <span>Curriculum Mapping</span>
                         </div>
 
                         <!-- ASSESSMENT -->
                         <div class="brand-feature">
-                            <img
-                                src="../Static/images/icons/assessment & grading.png"
-                                alt=""
-                                class="brand-feature-icon-image"
-                            >
+                            <img src="../Static/images/icons/assessment & grading.png" alt=""
+                                class="brand-feature-icon-image">
                             <span>Assessment &amp; Grading</span>
                         </div>
 
                         <!-- OUTCOME -->
                         <div class="brand-feature">
-                            <img
-                                src="../Static/images/icons/outcome attainment.png"
-                                alt=""
-                                class="brand-feature-icon-image"
-                            >
+                            <img src="../Static/images/icons/outcome attainment.png" alt=""
+                                class="brand-feature-icon-image">
                             <span>Outcome Attainment</span>
                         </div>
 
                         <!-- ANALYTICS -->
                         <div class="brand-feature">
-                            <img
-                                src="../Static/images/icons/cqi analytics.png"
-                                alt=""
-                                class="brand-feature-icon-image"
-                            >
+                            <img src="../Static/images/icons/cqi analytics.png" alt="" class="brand-feature-icon-image">
                             <span> CQI Analytics</span>
                         </div>
                     </div>
@@ -278,29 +182,17 @@
     </main>
 
     <!-- VERIFICATION MODAL-->
-    <div
-        id="verificationModal"
-        class="registration-modal"
-        aria-hidden="true"
-    >
+    <div id="verificationModal" class="registration-modal" aria-hidden="true">
         <div class="registration-modal-box">
-            <button
-                type="button"
-                class="registration-modal-close"
-                onclick="closeVerificationModal()"
-                aria-label="Close"
-            >
+            <button type="button" class="registration-modal-close" onclick="closeVerificationModal()"
+                aria-label="Close">
                 ×
             </button>
             <h2 id="verificationModalTitle">Verification </h2>
             <p id="verificationModalMessage">Please check your verification code. </p>
 
-            <button
-                type="button"
-                id="verificationModalButton"
-                class="registration-modal-button"
-                onclick="closeVerificationModal()"
-            >
+            <button type="button" id="verificationModalButton" class="registration-modal-button"
+                onclick="closeVerificationModal()">
                 OK
             </button>
         </div>
@@ -340,7 +232,7 @@
         if (verificationHeaderRole) {
             verificationHeaderRole.textContent =
                 verificationRoleNames[
-                    verificationRole
+                verificationRole
                 ];
         }
         sessionStorage.setItem(
@@ -354,7 +246,7 @@
         document.title =
             "EduMetrics | " +
             verificationRoleNames[
-                verificationRole
+            verificationRole
             ] +
             " Registration Verification";
 
@@ -424,12 +316,12 @@
                         event.target.value =
                             event.target.value.replace(
                                 /[^0-9]/g,
-                            ""
+                                ""
                             );
                         if (
                             event.target.value &&
                             index <
-                                otpInputs.length - 1
+                            otpInputs.length - 1
                         ) {
                             otpInputs[
                                 index + 1
@@ -470,7 +362,7 @@
                         if (
                             event.key === "ArrowRight" &&
                             index <
-                                otpInputs.length - 1
+                            otpInputs.length - 1
                         ) {
                             otpInputs[
                                 index + 1
@@ -489,9 +381,9 @@
                                 event.clipboardData ||
                                 window.clipboardData
                             )
-                            .getData("text")
-                            .replace(/\D/g, "")
-                            .substring(0, 6);
+                                .getData("text")
+                                .replace(/\D/g, "")
+                                .substring(0, 6);
                         if (!pasted) {
                             return;
                         }
@@ -506,7 +398,7 @@
 
                                     if (
                                         otpInputs[
-                                            digitIndex
+                                        digitIndex
                                         ]
                                     ) {
                                         otpInputs[
@@ -575,11 +467,13 @@
             );
         }
 
+
         /* VERIFY */
-        function verifySignupCode() {
+        async function verifySignupCode() {
             clearSignupOTPError();
-            const code =
-                getSignupOTP();
+
+            const code = getSignupOTP();
+
             if (code.length !== 6) {
                 showSignupOTPError(
                     "Please enter the complete 6-digit verification code."
@@ -594,37 +488,59 @@
                 return;
             }
 
-            /*PROTOTYPE CODE*/
-            if (code !== "123456") {
-                showSignupOTPError(
-                    "Invalid verification code. Please try again."
-                );
-                return;
-            }
-            sessionStorage.setItem(
-                "verificationCompleted",
-                "true"
-            );
-            sessionStorage.setItem(
-                "verificationType",
-                "signup"
-            );
 
-            sessionStorage.setItem(
-                "accountVerified",
-                "true"
-            );
-            sessionStorage.setItem(
-                "verifiedEmail",
-                verificationEmail
-            );
-            sessionStorage.setItem(
-                "verifiedRole",
-                verificationRole
-            );
-            window.location.href =
-                "verification-success.html";
+            try {
+                const response = await fetch(
+                    "/api/auth/verify-otp",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            email: verificationEmail,
+                            token: code,
+                            purpose: "signup"
+                        })
+                    }
+                );
+
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        result.error ||
+                        "Verification failed. Please check your code and try again."
+                    );
+                }
+
+                sessionStorage.setItem(
+                    "verificationCompleted", "true"
+                );
+                sessionStorage.setItem(
+                    "verificationType", "signup"
+                );
+                sessionStorage.setItem(
+                    "accountVerified", "true"
+                );
+                sessionStorage.setItem(
+                    "verifiedEmail", verificationEmail
+                );
+                sessionStorage.setItem(
+                    "verifiedRole", verificationRole
+                );
+
+                window.location.href = "/verification-success.html";
+
+            } catch (error) {
+                showSignupOTPError(
+                    error.message ||
+                    "Could not verify your email. Please try again."
+                );
+            }
         }
+
 
         /* RESEND TIMER*/
         let countdown = 30;
@@ -683,32 +599,66 @@
                 "</strong> seconds";
         }
 
+
         /* RESEND */
-        function resendSignupCode() {
-            if (
-                !resendButton ||
-                resendButton.disabled
-            ) {
+        async function resendSignupCode() {
+            if (!resendButton || resendButton.disabled) {
                 return;
             }
 
-            showVerificationModal(
-                "Code Resent",
-                "A new verification code has been requested. For this prototype, use 123456."
-            );
-
-            otpInputs.forEach(
-                function (input) {
-                    input.value = "";
-                }
-            );
-
             clearSignupOTPError();
-            if (otpInputs.length > 0) {
-                otpInputs[0].focus();
+            resendButton.disabled = true;
+
+            try {
+
+                const response = await fetch(
+                    "/api/auth/resend-otp",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            email: verificationEmail
+                        })
+                    }
+                );
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        result.error ||
+                        "Could not resend the verification code."
+                    );
+                }
+
+                showVerificationModal(
+                    "Code Requested",
+                    result.message ||
+                    "A new verification code has been requested. Check your email."
+                );
+
+                otpInputs.forEach(function (input) {
+                    input.value = "";
+                });
+
+                if (otpInputs.length > 0) {
+                    otpInputs[0].focus();
+                }
+
+                startSignupCountdown();
+
+            } catch (error) {
+                showSignupOTPError(
+                    error.message ||
+                    "Could not resend the code. Please try again."
+                );
+
+                resendButton.disabled = false;
             }
-            startSignupCountdown();
         }
+
 
         /* MODAL */
         const verificationModal =
@@ -726,8 +676,7 @@
         function showVerificationModal(
             title,
             message
-        ) 
-        {
+        ) {
             if (!verificationModal) {
                 return;
             }
@@ -818,4 +767,5 @@
     <!-- SHARED JS -->
     <script src="../Static/script.js"></script>
 </body>
+
 </html>

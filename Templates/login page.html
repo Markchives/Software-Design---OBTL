@@ -4,17 +4,11 @@
 <head>
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>EduMetrics | Student Log In</title>
 
-    <link
-        rel="stylesheet"
-        href="../Static/style.css"
-    >
+    <link rel="stylesheet" href="../Static/style.css">
 </head>
 
 <body class="auth-page">
@@ -22,11 +16,7 @@
     <!-- HEADER -->
     <header class="site-header auth-site-header">
         <!-- LOGO -->
-        <a
-            href="website.html"
-            class="brand-area auth-header-brand"
-            aria-label="EduMetrics home"
-        >
+        <a href="website.html" class="brand-area auth-header-brand" aria-label="EduMetrics home">
             <div class="brand">
                 <span>Edu</span>Metrics
             </div>
@@ -38,16 +28,8 @@
         <div class="top-actions auth-header-actions">
 
             <!-- SUPPORT -->
-            <button
-                type="button"
-                class="text-btn header-action"
-                onclick="showHeaderMessage('Support')"
-            >
-                <img
-                    src="../Static/images/icons/support.png"
-                    alt=""
-                    class="header-action-icon"
-                >
+            <button type="button" class="text-btn header-action" onclick="showHeaderMessage('Support')">
+                <img src="../Static/images/icons/support.png" alt="" class="header-action-icon">
 
                 <span>Help &amp; Support</span>
             </button>
@@ -62,18 +44,11 @@
     <main class="auth-container">
 
         <div class="login-stage">
-            <a
-                href="website.html"
-                class="back-button"
-                aria-label="Back to website"
-            >
-                <span
-                    class="back-arrow"
-                    aria-hidden="true"
-                >
+            <a href="/" class="back-button" aria-label="Back to role selection">
+                <span class="back-arrow" aria-hidden="true">
                     ←
                 </span>
-                <span>Back </span>
+                <span>Back</span>
             </a>
 
             <!-- OVERLAPPING -->
@@ -110,22 +85,16 @@
                         <!-- CURRICULUM MAPPING -->
                         <div class="brand-feature">
 
-                            <img
-                                src="../Static/images/icons/cm.png"
-                                alt="Curriculum Mapping"
-                                class="brand-feature-icon-image"
-                            >
+                            <img src="../Static/images/icons/cm.png" alt="Curriculum Mapping"
+                                class="brand-feature-icon-image">
                             <span>Curriculum Mapping</span>
                         </div>
 
                         <!-- ASSESSMENT & GRADING -->
                         <div class="brand-feature">
 
-                            <img
-                                src="../Static/images/icons/a&g.png"
-                                alt="Assessment and Grading"
-                                class="brand-feature-icon-image"
-                            >
+                            <img src="../Static/images/icons/a&g.png" alt="Assessment and Grading"
+                                class="brand-feature-icon-image">
 
                             <span>Assessment &amp; Grading</span>
                         </div>
@@ -133,11 +102,8 @@
                         <!-- OUTCOME ATTAINMENT -->
                         <div class="brand-feature">
 
-                            <img
-                                src="../Static/images/icons/oa.png"
-                                alt="Outcome Attainment"
-                                class="brand-feature-icon-image"
-                            >
+                            <img src="../Static/images/icons/oa.png" alt="Outcome Attainment"
+                                class="brand-feature-icon-image">
 
                             <span>Outcome Attainment</span>
 
@@ -146,11 +112,8 @@
                         <!-- CQI ANALYTICS -->
                         <div class="brand-feature">
 
-                            <img
-                                src="../Static/images/icons/cqi.png"
-                                alt="CQI Analytics"
-                                class="brand-feature-icon-image"
-                            >
+                            <img src="../Static/images/icons/cqi.png" alt="CQI Analytics"
+                                class="brand-feature-icon-image">
 
                             <span>CQI Analytics</span>
                         </div>
@@ -170,29 +133,15 @@
                     <div class="social-login social-login-icons">
 
                         <!-- GOOGLE -->
-                        <button
-                            type="button"
-                            class="social-button social-icon-button"
-                            onclick="socialLogin('Google')"
-                            aria-label="Continue with Google"
-                        >
-                            <img
-                                src="../Static/images/icons/gmail.png"
-                                alt="Google"
-                            >
+                        <button type="button" class="social-button social-icon-button" onclick="socialLogin('Google')"
+                            aria-label="Continue with Google">
+                            <img src="../Static/images/icons/gmail.png" alt="Google">
                         </button>
 
                         <!-- MICROSOFT -->
-                        <button
-                            type="button"
-                            class="social-button social-icon-button"
-                            onclick="socialLogin('Microsoft')"
-                            aria-label="Continue with Microsoft"
-                        >
-                            <img
-                                src="../Static/images/icons/microsoft.png"
-                                alt="Microsoft"
-                            >
+                        <button type="button" class="social-button social-icon-button"
+                            onclick="socialLogin('Microsoft')" aria-label="Continue with Microsoft">
+                            <img src="../Static/images/icons/microsoft.png" alt="Microsoft">
                         </button>
 
                     </div>
@@ -205,25 +154,15 @@
                     </div>
 
                     <!-- LOGIN FORM -->
-                    <form
-                        id="loginForm"
-                        class="auth-form"
-                        novalidate
-                    >
+                    <form id="loginForm" class="auth-form" novalidate>
                         <!-- EMAIL -->
                         <div class="form-group">
                             <label for="loginEmail">Email</label>
                             <div class="input-wrapper">
 
                                 <!-- EMAIL ICON -->
-                                <span
-                                    class="input-icon"
-                                    aria-hidden="true"
-                                >
-                                    <svg
-                                        viewBox="0 0 24 24"
-                                        aria-hidden="true"
-                                    >
+                                <span class="input-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
                                         <path d="M3 5.5h18v13H3z"></path>
 
                                         <path d="m4 7 8 6 8-6"></path>
@@ -231,20 +170,11 @@
                                 </span>
 
 
-                                <input
-                                    type="email"
-                                    id="loginEmail"
-                                    name="email"
-                                    placeholder="Enter your email"
-                                    autocomplete="email"
-                                    required
-                                >
+                                <input type="email" id="loginEmail" name="email" placeholder="Enter your email"
+                                    autocomplete="email" required>
                             </div>
 
-                            <small
-                                id="loginEmailError"
-                                class="form-error"
-                            ></small>
+                            <small id="loginEmailError" class="form-error"></small>
                         </div>
 
                         <!-- PASSWORD -->
@@ -253,149 +183,85 @@
                             <div class="input-wrapper">
 
                                 <!-- LOCK ICON -->
-                                <span
-                                    class="input-icon"
-                                    aria-hidden="true"
-                                >
-                                    <svg
-                                        viewBox="0 0 24 24"
-                                        aria-hidden="true"
-                                    >
-                                        <rect
-                                            x="5"
-                                            y="10"
-                                            width="14"
-                                            height="10"
-                                            rx="2"
-                                        ></rect>
+                                <span class="input-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <rect x="5" y="10" width="14" height="10" rx="2"></rect>
 
-                                        <path
-                                            d="M8 10V7a4 4 0 0 1 8 0v3"
-                                        ></path>
+                                        <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
                                     </svg>
                                 </span>
 
                                 <!-- PASSWORD -->
-                                <input
-                                    type="password"
-                                    id="loginPassword"
-                                    name="password"
-                                    placeholder="Enter your password"
-                                    autocomplete="current-password"
-                                    required
-                                >
+                                <input type="password" id="loginPassword" name="password"
+                                    placeholder="Enter your password" autocomplete="current-password" required>
 
                                 <!-- SHOW / HIDE PASSWORD -->
-                                <button
-                                    type="button"
-                                    class="password-toggle"
-                                    onclick="toggleLoginPassword()"
-                                    aria-label="Show password"
-                                >
-                                    <svg
-                                        viewBox="0 0 24 24"
-                                        aria-hidden="true"
-                                    >
-                                        <path
-                                            d="M2.5 12s3.5-5 9.5-5 9.5 5 9.5 5-3.5 5-9.5 5-9.5-5-9.5-5z"
-                                        ></path>
+                                <button type="button" class="password-toggle" onclick="toggleLoginPassword()"
+                                    aria-label="Show password">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M2.5 12s3.5-5 9.5-5 9.5 5 9.5 5-3.5 5-9.5 5-9.5-5-9.5-5z"></path>
 
-                                        <circle
-                                            cx="12"
-                                            cy="12"
-                                            r="2.5"
-                                        ></circle>
+                                        <circle cx="12" cy="12" r="2.5"></circle>
                                     </svg>
                                 </button>
                             </div>
 
-                            <small
-                                id="loginPasswordError"
-                                class="form-error"
-                            ></small>
+                            <small id="loginPasswordError" class="form-error"></small>
                         </div>
 
-                        <!-- FORGOT PASSWORD -->
+
+                        <!-- LOGIN OPTIONS -->
                         <div class="login-options">
 
                             <!-- REMEMBER ME -->
-                            <label class="remember-option">
-
-                                <input
-                                    type="checkbox"
-                                    id="rememberMe"
-                                    name="rememberMe"
-                                >
-
-                                <span>
-                                    Remember me
-                                </span>
-
+                            <label class="remember-option" for="rememberMe">
+                                <input type="checkbox" id="rememberMe" name="rememberMe">
+                                <span>Remember me</span>
                             </label>
 
                             <!-- FORGOT PASSWORD -->
-                            <a
-                                href="#"
-                                class="forgot-password"
-                                onclick="handleForgotPassword(event)"
-                            >
+                            <a href="/forgot-password.html" class="forgot-password" id="forgotPasswordLink">
                                 Forgot password?
                             </a>
+
                         </div>
 
+
                         <!-- LOGIN BUTTON-->
-                        <button
-                            type="submit"
-                            class="primary-auth-button"
-                        >
+                        <button type="submit" class="primary-auth-button">
                             Log in
                         </button>
                     </form>
 
                     <!-- REGISTER -->
-                        <div class="register-prompt">
+                    <div class="register-prompt">
 
-                            <span>
-                                Don't have an account?
-                            </span>
+                        <span>
+                            Don't have an account?
+                        </span>
 
-                            <a
-                                href="registration.html"
-                                id="createAccountLink"
-                            >
-                                Create one
-                            </a>
-                        </div>
+                        <a href="register" id="createAccountLink">
+                            Create one
+                        </a>
                     </div>
                 </div>
-            </section>
+        </div>
+        </section>
         </div>
     </main>
 
     <!-- MESSAGE MODAL= -->
-    <div
-        id="loginMessageModal"
-        class="auth-modal"
-        aria-hidden="true"
-    >
+    <div id="loginMessageModal" class="auth-modal" aria-hidden="true">
 
         <div class="auth-modal-box">
 
             <!-- CLOSE -->
-            <button
-                type="button"
-                class="modal-close-button"
-                onclick="closeLoginModal()"
-                aria-label="Close"
-            >
+            <button type="button" class="modal-close-button" onclick="closeLoginModal()" aria-label="Close">
                 ×
             </button>
 
             <!-- ICON -->
-            <div
-                id="loginModalIcon"
-                class="modal-status-icon"
-            >
+            <div id="loginModalIcon" class="modal-status-icon">
                 !
             </div>
 
@@ -410,11 +276,7 @@
             </p>
 
             <!-- OK -->
-            <button
-                type="button"
-                class="modal-primary-button"
-                onclick="closeLoginModal()"
-            >
+            <button type="button" class="modal-primary-button" onclick="closeLoginModal()">
                 OK
             </button>
         </div>
@@ -466,7 +328,7 @@
 
         if (createAccountLink) {
             createAccountLink.href =
-                "registration.html?role=" +
+                "/register?role=" +
                 encodeURIComponent(role);
         }
 
@@ -538,7 +400,7 @@
         /* LOGIN FORM SUBMISSION*/
         loginForm.addEventListener(
             "submit",
-            function(event) {
+            async function (event) {
 
                 event.preventDefault();
                 clearLoginErrors();
@@ -617,8 +479,90 @@
                 );
 
                 /* VERIFICATION PAGE*/
-                window.location.href =
-                    "verification-login.html";
+
+
+                try {
+                    const rememberMe = document.getElementById("rememberMe").checked;
+
+                    sessionStorage.setItem("rememberMe", String(rememberMe));
+
+                    const response = await fetch("/api/auth/login", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            email: email,
+                            password: password,
+                            role: role,
+                            rememberMe: rememberMe
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        showLoginModal(
+                            "Login failed",
+                            result.error || "Unable to log in.",
+                            "!"
+                        );
+                        return;
+                    }
+
+                    if (result.status === "verification_required") {
+                        sessionStorage.setItem("verificationEmail", email);
+                        sessionStorage.setItem("verificationPurpose", "signup");
+                        window.location.href = "/verification-signup.html";
+                        return;
+                    }
+
+                    if (result.status === "login_otp_required") {
+                        sessionStorage.setItem("verificationEmail", email);
+                        sessionStorage.setItem("verificationPurpose", "login");
+                        window.location.href = "/verification-login.html";
+                        return;
+                    }
+
+
+                    if (result.status === "authenticated") {
+                        const rolePages = {
+                            "student": "/requirement%201/so-student.html",
+                            "faculty": "/requirement%201/so-faculty.html",
+                            "department-head": "/requirement%201/so-dept-head.html"
+                        };
+
+                        const destination = rolePages[role];
+
+                        if (!destination) {
+                            showLoginModal(
+                                "Dashboard unavailable",
+                                "No dashboard is configured for this role yet. Please contact the administrator.",
+                                "!"
+                            );
+                            return;
+                        }
+
+                        window.location.href = destination;
+                        return;
+                    }
+
+
+                    showLoginModal(
+                        "Login",
+                        result.message || "Unexpected login response.",
+                        "!"
+                    );
+
+                } catch (error) {
+                    showLoginModal(
+                        "Connection error",
+                        "Could not connect to the login service. Please try again.",
+                        "!"
+                    );
+                }
+
+
             }
         );
 
@@ -661,12 +605,22 @@
         /* FORGOT PASSWORD */
         function handleForgotPassword(event) {
             event.preventDefault();
-            showLoginModal(
-                "Forgot Password",
-                "Password recovery will be available once the account security system is connected.",
-                "?"
+
+            const currentParams = new URLSearchParams(
+                window.location.search
             );
+
+            const selectedRole = currentParams.get("role") || role;
+
+            alert("Selected role: " + selectedRole);
+
+            window.location.href =
+                "/forgot-password.html?role=" +
+                encodeURIComponent(selectedRole);
         }
+
+
+
 
         /* SHOW MODAL */
         function showLoginModal(
@@ -727,7 +681,7 @@
         /* CLICK OURSIDE MODAL */
         document.addEventListener(
             "click",
-            function(event) {
+            function (event) {
 
                 const modal =
                     document.getElementById(
@@ -745,7 +699,7 @@
         /* ESC TO CLOSE */
         document.addEventListener(
             "keydown",
-            function(event) {
+            function (event) {
                 if (
                     event.key === "Escape"
                 ) {
@@ -754,10 +708,22 @@
             }
         );
 
+        document.getElementById("forgotPasswordLink").addEventListener("click", function (event) {
+            event.preventDefault();
+
+            const currentParams = new URLSearchParams(window.location.search);
+            const selectedRole = currentParams.get("role") || "student";
+
+            window.location.href =
+                "/forgot-password.html?role=" +
+                encodeURIComponent(selectedRole);
+        });
+
     </script>
 
     <!-- SHARED JAVASCRIPT -->
     <script src="../Static/script.js"></script>
 
 </body>
+
 </html>
