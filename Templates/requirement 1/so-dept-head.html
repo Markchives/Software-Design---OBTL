@@ -1,866 +1,481 @@
 <!DOCTYPE html>
+
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>Syllabus &amp; Outcomes | EduMetrics Department Head</title>
-
-    <link
-        rel="stylesheet"
-        href="../../Static/style.css"
-    >
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Syllabus &amp; Outcomes | EduMetrics Department Head</title>
+<link href="../../Static/style.css" rel="stylesheet"/>
 </head>
-
-<body class="so-student-page so-dept-head-page">
-
-    <header class="so-topbar">
-
-        <div class="so-brand">
-
-            <div class="so-brand-logo">
+<body class="so-student-page so-dept-head-page dept-head-unified">
+<header class="so-topbar">
+<div class="so-brand">
+<div class="so-brand-logo">
                 Edu<span>Metrics</span>
-            </div>
-
-            <div class="so-brand-subtitle">
+</div>
+<div class="so-brand-subtitle">
                 Academic Assessment &amp; Grading System
             </div>
-
-        </div>
-
-        <div class="so-user-area">
-
-            <button
-                class="so-notification-btn"
-                type="button"
-                aria-label="Notifications"
-            >
-                <img
-                    src="../../Static/images/sidebar/notif.png"
-                    alt="Notifications"
-                    class="so-notification-image"
-                >
-
-                <span class="so-notification-dot"></span>
-            </button>
-
-            <div class="so-user-info">
-                <strong id="departmentHeadName"></strong>
-
-                <span>
-                    Department Head
-                </span>
-            </div>
-
-            <div
-                class="so-avatar"
-                aria-hidden="true"
-            >
-                <span class="so-avatar-person">
-                    ●
-                </span>
-            </div>
-
-            <span
-                class="so-online-dot"
-                aria-hidden="true"
-            ></span>
-
-        </div>
-
-    </header>
-
-    <div class="so-header-lines">
-        <div class="so-header-blue"></div>
-        <div class="so-header-gold"></div>
-    </div>
-
-    <div class="so-shell">
-
-        <aside class="so-sidebar">
-
-            <div class="so-pages-title">
-
-                <span class="so-grid-icon so-pages-image-wrap">
-
-                    <img
-                        src="../../Static/images/sidebar/pages.png"
-                        alt=""
-                        class="so-pages-image"
-                    >
-
-                </span>
-
-                <span>Pages</span>
-
-            </div>
-
-            <nav
-                class="so-nav"
-                aria-label="Department Head navigation"
-            >
-
-                <a
-                    href="#"
-                    class="so-nav-item"
-                >
-
-                    <span class="so-nav-icon so-nav-image-wrap">
-
-                        <img
-                            src="../../Static/images/sidebar/home-white.png"
-                            alt=""
-                            class="so-nav-image"
-                        >
-
-                    </span>
-
-                    <span>Home</span>
-
-                </a>
-
-                <a
-                    href="#"
-                    class="so-nav-item"
-                >
-
-                    <span class="so-nav-icon so-nav-image-wrap">
-
-                        <img
-                            src="../../Static/images/sidebar/course-white.png"
-                            alt=""
-                            class="so-nav-image"
-                        >
-
-                    </span>
-
-                    <span>Courses</span>
-
-                </a>
-
-                <a
-                    href="#"
-                    class="so-nav-item"
-                >
-
-                    <span class="so-nav-icon so-nav-image-wrap">
-
-                        <img
-                            src="../../Static/images/sidebar/pl-white.png"
-                            alt=""
-                            class="so-nav-image"
-                        >
-
-                    </span>
-
-                    <span>Platform</span>
-
-                </a>
-
-                <div class="so-nav-group">
-
-                    <button
-                        class="so-nav-item so-products active"
-                        type="button"
-                    >
-
-                        <span class="so-nav-icon so-nav-image-wrap">
-
-                            <img
-                                src="../../Static/images/sidebar/ws-blue.png"
-                                alt=""
-                                class="so-nav-image"
-                            >
-
-                        </span>
-
-                        <span>Workflow</span>
-
-                    </button>
-
-                    <div class="so-subnav">
-
-                        <a
-                            href="#"
-                            class="active"
-                        >
+</div>
+<div class="so-user-area">
+<div class="edu-header-calendar-wrap"><button aria-expanded="false" aria-label="Open calendar" class="edu-header-calendar-btn" type="button"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><rect height="16" rx="2" width="18" x="3" y="5"></rect><path d="M7 3v4M17 3v4M3 10h18"></path></svg></button><div class="edu-header-calendar-popup" hidden=""><label>Calendar <input aria-label="Choose calendar date" type="date"/></label><p>Academic events are not connected yet.</p></div></div><button aria-label="Notifications" class="so-notification-btn" type="button">
+<img alt="Notifications" class="so-notification-image" src="../../Static/images/sidebar/notif.png"/>
+<span class="so-notification-dot"></span>
+</button>
+<div class="so-user-info">
+<strong id="departmentHeadName">Department Head</strong>
+<span>Department Head</span>
+</div>
+<div aria-hidden="true" class="so-avatar">DH</div>
+<span aria-hidden="true" class="so-online-dot"></span>
+</div>
+</header>
+<div class="so-header-lines">
+<div class="so-header-blue"></div>
+<div class="so-header-gold"></div>
+</div>
+<div class="so-shell">
+<aside class="so-sidebar">
+<div class="so-pages-title">
+<span class="so-grid-icon so-pages-image-wrap">
+<img alt="" class="so-pages-image" src="../../Static/images/sidebar/pages.png"/>
+</span>
+<span>Pages</span>
+</div>
+<nav aria-label="Department Head navigation" class="so-nav">
+<a class="so-nav-item" href="#">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/home-white.png"/>
+</span>
+<span>Home</span>
+</a>
+<a class="so-nav-item" href="#">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/course-white.png"/>
+</span>
+<span>Courses</span>
+</a>
+<a class="so-nav-item" href="#">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/pl-white.png"/>
+</span>
+<span>Platform</span>
+</a>
+<div class="so-nav-group">
+<button class="so-nav-item so-products active" type="button">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/ws-blue.png"/>
+</span>
+<span>Workflow</span>
+</button>
+<div class="so-subnav">
+<a class="active" href="../requirement 1/so-dept-head.html">
                             Syllabus &amp; Outcomes
                         </a>
-
-                        <a href="#">
+<a href="../requirement 2/cm-dept-head.html">
                             Curriculum Mapping
                         </a>
-
-                        <a href="#">
+<a href="../requirement 3/cr-dept-head.html">
                             Class Roster
                         </a>
-
-                        <a href="#">
+<a href="../requirement 4/ra-dept-head.html">
                             Assessment Entry
                         </a>
-
-                        <a href="#">
+<a href="#">
                             Attainment
                         </a>
-
-                        <a href="#">
+<a href="#">
                             CQI Planning
                         </a>
-
-                        <a href="#">
+<a href="#">
                             Gradebook
                         </a>
-
-                        <a href="#">
+<a href="#">
                             Compliance Report
                         </a>
-
-                    </div>
-
-                </div>
-
-                <a
-                    href="#"
-                    class="so-nav-item"
-                >
-
-                    <span class="so-nav-icon so-nav-image-wrap">
-
-                        <img
-                            src="../../Static/images/sidebar/rs-white.png"
-                            alt=""
-                            class="so-nav-image"
-                        >
-
-                    </span>
-
-                    <span>Resources</span>
-
-                </a>
-
-                <a
-                    href="#"
-                    class="so-nav-item"
-                >
-
-                    <span class="so-nav-icon so-nav-image-wrap">
-
-                        <img
-                            src="../../Static/images/sidebar/au-white.png"
-                            alt=""
-                            class="so-nav-image"
-                        >
-
-                    </span>
-
-                    <span>About Us</span>
-
-                </a>
-
-            </nav>
-
-            <div class="so-sidebar-brand">
-
-                <div class="so-sidebar-logo">
+</div>
+</div>
+<a class="so-nav-item" href="#">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/rs-white.png"/>
+</span>
+<span>Resources</span>
+</a>
+<a class="so-nav-item" href="#">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/au-white.png"/>
+</span>
+<span>About Us</span>
+</a>
+</nav>
+<div class="so-sidebar-brand">
+<div class="so-sidebar-logo">
                     Edu<span>Metrics</span>
-                </div>
-
-                <small>
+</div>
+<small>
                     Academic Assessment &amp; Grading System
                 </small>
-
-            </div>
-
-        </aside>
-
-        <main class="sodh-main">
-
-            <section class="so-page-heading">
-
-                <h1>
+</div>
+</aside>
+<main class="sodh-main dh-main">
+<section class="so-page-heading dh-heading">
+<h1>
                     Syllabus &amp; Outcomes
                 </h1>
-
-                <p>
+<p>
                     Manage your course syllabus and CO/SO assessments.
                 </p>
-
-            </section>
-
-            <section class="sodh-filter-card">
-
-                <div class="sodh-filter-group">
-
-                    <label for="deptSchoolYear">
+</section>
+<section class="sodh-filter-card dh-filters">
+<div class="sodh-filter-group">
+<label for="deptSchoolYear">
                         School Year
                     </label>
-
-                    <select id="deptSchoolYear">
-                        <option value="">
+<select id="deptSchoolYear">
+<option value="">
                             Select School Year
                         </option>
-                    </select>
-
-                </div>
-
-                <div class="sodh-filter-group">
-
-                    <label for="deptDepartment">
+</select>
+</div>
+<div class="sodh-filter-group">
+<label for="deptDepartment">
                         Department
                     </label>
-
-                    <select id="deptDepartment">
-                        <option value="">
+<select id="deptDepartment">
+<option value="">
                             All Departments
                         </option>
-                    </select>
-
-                </div>
-
-                <div class="sodh-filter-group">
-
-                    <label for="deptProgram">
+</select>
+</div>
+<div class="sodh-filter-group">
+<label for="deptProgram">
                         Program
                     </label>
-
-                    <select id="deptProgram">
-                        <option value="">
+<select id="deptProgram">
+<option value="">
                             All Programs
                         </option>
-                    </select>
-
-                </div>
-
-                <div class="sodh-filter-group">
-
-                    <label for="deptCourse">
+</select>
+</div>
+<div class="sodh-filter-group">
+<label for="deptCourse">
                         Course
                     </label>
-
-                    <select id="deptCourse">
-                        <option value="">
+<select id="deptCourse">
+<option value="">
                             All Courses
                         </option>
-                    </select>
-
-                </div>
-
-                <div class="sodh-filter-group">
-
-                    <label for="deptSection">
+</select>
+</div>
+<div class="sodh-filter-group">
+<label for="deptSection">
                         Section
                     </label>
-
-                    <select id="deptSection">
-                        <option value="">
+<select id="deptSection">
+<option value="">
                             All Sections
                         </option>
-                    </select>
-
-                </div>
-
-            </section>
-
-            <section class="sodh-summary-grid">
-
-                <article class="sodh-summary-card">
-
-                    <div class="sodh-summary-accent"></div>
-
-                    <span class="sodh-summary-label">
-                        Total Students
-                    </span>
-
-                    <strong
-                        class="sodh-summary-number"
-                        id="totalStudents"
-                    >
-                        126
-                    </strong>
-
-                </article>
-
-                <article class="sodh-summary-card">
-
-                    <div class="sodh-summary-accent"></div>
-
-                    <span class="sodh-summary-label">
-                        Total Programs
-                    </span>
-
-                    <strong
-                        class="sodh-summary-number"
-                        id="totalPrograms"
-                    >
-                        3
-                    </strong>
-
-                </article>
-
-                <article class="sodh-summary-card">
-
-                    <div class="sodh-summary-accent"></div>
-
-                    <span class="sodh-summary-label">
-                        Total Courses
-                    </span>
-
-                    <strong
-                        class="sodh-summary-number"
-                        id="totalCourses"
-                    >
-                        4
-                    </strong>
-
-                </article>
-
-                <article class="sodh-summary-card">
-
-                    <div class="sodh-summary-accent"></div>
-
-                    <span class="sodh-summary-label">
-                        Total Sections
-                    </span>
-
-                    <strong
-                        class="sodh-summary-number"
-                        id="totalSections"
-                    >
-                        5
-                    </strong>
-
-                </article>
-
-            </section>
-
-            <section class="sodh-content-card">
-
-                <div
-                    class="sodh-tabs"
-                    role="tablist"
-                >
-
-                    <button
-                        class="sodh-tab active"
-                        type="button"
-                        data-tab="course-list"
-                    >
+</select>
+</div>
+</section>
+<section class="dh-summary">
+<article class="dh-stat"><span class="dh-stat-label">Total Students</span><strong class="dh-stat-value" id="totalStudents">126</strong></article>
+<article class="dh-stat"><span class="dh-stat-label">Total Programs</span><strong class="dh-stat-value" id="totalPrograms">3</strong></article>
+<article class="dh-stat"><span class="dh-stat-label">Total Courses</span><strong class="dh-stat-value" id="totalCourses">4</strong></article>
+<article class="dh-stat"><span class="dh-stat-label">Total Sections</span><strong class="dh-stat-value" id="totalSections">5</strong></article>
+</section>
+<section class="sodh-content-card dh-panel">
+<div class="sodh-tabs dh-tabs" role="tablist">
+<button class="sodh-tab active dh-tab" data-tab="course-list" type="button">
                         Course List
                     </button>
-
-                    <button
-                        class="sodh-tab"
-                        type="button"
-                        data-tab="so-summary"
-                    >
+<button class="sodh-tab dh-tab" data-tab="so-summary" type="button">
                         SO Summary
                     </button>
-
-                    <button
-                        class="sodh-tab"
-                        type="button"
-                        data-tab="student-responses"
-                    >
+<button class="sodh-tab dh-tab" data-tab="student-responses" type="button">
                         Student Responses
                     </button>
-
-                </div>
-
-                <div
-                    class="sodh-tab-panel active"
-                    id="course-list"
-                >
-
-                    <div class="sodh-toolbar">
-
-                        <p>
+</div>
+<div class="sodh-tab-panel active" id="course-list">
+<div class="sodh-toolbar">
+<p>
                             View course details, assigned faculty,
                             enrolled students, and SO completion rates.
                         </p>
-
-                        <div class="sodh-toolbar-actions">
-
-                            <label class="sodh-search">
-
-                                <span>⌕</span>
-
-                                <input
-                                    type="search"
-                                    id="courseSearch"
-                                    placeholder="Search"
-                                >
-
-                            </label>
-
-                            <button
-                                class="sodh-export-btn"
-                                type="button"
-                            >
-                                ⇩&nbsp; Export
+<div class="sodh-toolbar-actions">
+<label class="sodh-search">
+<span>⌕</span>
+<input id="courseSearch" placeholder="Search" type="search"/>
+</label>
+<button class="sodh-export-btn" type="button">
+                                ⇩  Export
                             </button>
-
-                        </div>
-
-                    </div>
-
-                    <div class="sodh-table-wrap">
-
-                        <table class="sodh-table sodh-course-table">
-
-                            <thead>
-
-                                <tr>
-                                    <th>Course Code</th>
-                                    <th>Course Name</th>
-                                    <th>Program</th>
-                                    <th>Section</th>
-                                    <th>Assigned Faculty</th>
-                                    <th>Enrolled Students</th>
-                                    <th>SO Completion Rate</th>
-                                </tr>
-
-                            </thead>
-
-                            <tbody id="departmentCourseTableBody">
-
-                                <tr>
-                                    <td><strong>ITSD201</strong></td>
-                                    <td>Software Design</td>
-                                    <td>BS Information Technology</td>
-                                    <td>232</td>
-                                    <td>Prof. Jeff Santos</td>
-                                    <td>42</td>
-                                    <td>
-                                        <div class="sodh-completion">
-                                            <div class="sodh-progress">
-                                                <div class="sodh-progress-fill" style="width:78%;"></div>
-                                            </div>
-                                            <strong>78%</strong>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>ITNET202</strong></td>
-                                    <td>Computer Networks</td>
-                                    <td>BS Information Technology</td>
-                                    <td>231</td>
-                                    <td>Prof. Andrea Cruz</td>
-                                    <td>38</td>
-                                    <td>
-                                        <div class="sodh-completion">
-                                            <div class="sodh-progress">
-                                                <div class="sodh-progress-fill" style="width:92%;"></div>
-                                            </div>
-                                            <strong>92%</strong>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>CSDB203</strong></td>
-                                    <td>Database Systems</td>
-                                    <td>BS Computer Science</td>
-                                    <td>221</td>
-                                    <td>Prof. Mark Reyes</td>
-                                    <td>31</td>
-                                    <td>
-                                        <div class="sodh-completion">
-                                            <div class="sodh-progress">
-                                                <div class="sodh-progress-fill" style="width:84%;"></div>
-                                            </div>
-                                            <strong>84%</strong>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>ISPM204</strong></td>
-                                    <td>Project Management</td>
-                                    <td>BS Information Systems</td>
-                                    <td>211</td>
-                                    <td>Prof. Carla Mendoza</td>
-                                    <td>15</td>
-                                    <td>
-                                        <div class="sodh-completion">
-                                            <div class="sodh-progress">
-                                                <div class="sodh-progress-fill" style="width:67%;"></div>
-                                            </div>
-                                            <strong>67%</strong>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                </div>
-
-                <div
-                    class="sodh-tab-panel"
-                    id="so-summary"
-                >
-
-                    <div class="sodh-toolbar">
-
-                        <p>
+</div>
+</div>
+<div class="sodh-table-wrap">
+<table class="sodh-table sodh-course-table">
+<thead>
+<tr>
+<th>Course Code</th>
+<th>Course Name</th>
+<th>Program</th>
+<th>Section</th>
+<th>Assigned Faculty</th>
+<th>Enrolled Students</th>
+<th>SO Completion Rate</th>
+</tr>
+</thead>
+<tbody id="departmentCourseTableBody">
+<tr>
+<td><strong>ITSD201</strong></td>
+<td>Software Design</td>
+<td>BS Information Technology</td>
+<td>232</td>
+<td>Prof. Jeff Santos</td>
+<td>42</td>
+<td>
+<div class="sodh-completion">
+<div class="sodh-progress">
+<div class="sodh-progress-fill" style="width:78%;"></div>
+</div>
+<strong>78%</strong>
+</div>
+</td>
+</tr>
+<tr>
+<td><strong>ITNET202</strong></td>
+<td>Computer Networks</td>
+<td>BS Information Technology</td>
+<td>231</td>
+<td>Prof. Andrea Cruz</td>
+<td>38</td>
+<td>
+<div class="sodh-completion">
+<div class="sodh-progress">
+<div class="sodh-progress-fill" style="width:92%;"></div>
+</div>
+<strong>92%</strong>
+</div>
+</td>
+</tr>
+<tr>
+<td><strong>CSDB203</strong></td>
+<td>Database Systems</td>
+<td>BS Computer Science</td>
+<td>221</td>
+<td>Prof. Mark Reyes</td>
+<td>31</td>
+<td>
+<div class="sodh-completion">
+<div class="sodh-progress">
+<div class="sodh-progress-fill" style="width:84%;"></div>
+</div>
+<strong>84%</strong>
+</div>
+</td>
+</tr>
+<tr>
+<td><strong>ISPM204</strong></td>
+<td>Project Management</td>
+<td>BS Information Systems</td>
+<td>211</td>
+<td>Prof. Carla Mendoza</td>
+<td>15</td>
+<td>
+<div class="sodh-completion">
+<div class="sodh-progress">
+<div class="sodh-progress-fill" style="width:67%;"></div>
+</div>
+<strong>67%</strong>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sodh-tab-panel" id="so-summary">
+<div class="sodh-toolbar">
+<p>
                             View student outcome summary and SO completion rates.
                         </p>
-
-                        <div class="sodh-toolbar-actions">
-
-                            <label class="sodh-search">
-
-                                <span>⌕</span>
-
-                                <input
-                                    type="search"
-                                    id="soSummarySearch"
-                                    placeholder="Search"
-                                >
-
-                            </label>
-
-                            <button
-                                class="sodh-export-btn"
-                                type="button"
-                            >
-                                ⇩&nbsp; Export
+<div class="sodh-toolbar-actions">
+<label class="sodh-search">
+<span>⌕</span>
+<input id="soSummarySearch" placeholder="Search" type="search"/>
+</label>
+<button class="sodh-export-btn" type="button">
+                                ⇩  Export
                             </button>
-
-                        </div>
-
-                    </div>
-
-                    <div class="sodh-table-wrap">
-
-                        <table class="sodh-table sodh-so-summary-table">
-
-                            <thead>
-
-                                <tr>
-                                    <th>Student Outcome (SO)</th>
-                                    <th>Description</th>
-                                    <th>Attainment Rate</th>
-                                </tr>
-
-                            </thead>
-
-                            <tbody id="soSummaryTableBody">
-
-                                <tr>
-                                    <td><strong>SO (A)</strong></td>
-                                    <td>Apply knowledge to real-world problems.</td>
-                                    <td>
-                                        <div style="display:flex;align-items:center;gap:16px;min-width:320px;">
-                                            <div style="flex:1;height:14px;border:1.5px solid #00508a;border-radius:999px;overflow:hidden;background:#fff;">
-                                                <div style="width:91%;height:100%;background:#00508a;border-radius:999px;"></div>
-                                            </div>
-                                            <span style="min-width:38px;">91%</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>SO (B)</strong></td>
-                                    <td>Analyze complex computing problems and identify appropriate solutions.</td>
-                                    <td>
-                                        <div style="display:flex;align-items:center;gap:16px;min-width:320px;">
-                                            <div style="flex:1;height:14px;border:1.5px solid #00508a;border-radius:999px;overflow:hidden;background:#fff;">
-                                                <div style="width:86%;height:100%;background:#00508a;border-radius:999px;"></div>
-                                            </div>
-                                            <span style="min-width:38px;">86%</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>SO (C)</strong></td>
-                                    <td>Design and evaluate computing-based solutions for specified requirements.</td>
-                                    <td>
-                                        <div style="display:flex;align-items:center;gap:16px;min-width:320px;">
-                                            <div style="flex:1;height:14px;border:1.5px solid #00508a;border-radius:999px;overflow:hidden;background:#fff;">
-                                                <div style="width:82%;height:100%;background:#00508a;border-radius:999px;"></div>
-                                            </div>
-                                            <span style="min-width:38px;">82%</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>SO (D)</strong></td>
-                                    <td>Communicate effectively in professional computing environments.</td>
-                                    <td>
-                                        <div style="display:flex;align-items:center;gap:16px;min-width:320px;">
-                                            <div style="flex:1;height:14px;border:1.5px solid #00508a;border-radius:999px;overflow:hidden;background:#fff;">
-                                                <div style="width:79%;height:100%;background:#00508a;border-radius:999px;"></div>
-                                            </div>
-                                            <span style="min-width:38px;">79%</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>SO (E)</strong></td>
-                                    <td>Recognize professional responsibilities and apply ethical principles.</td>
-                                    <td>
-                                        <div style="display:flex;align-items:center;gap:16px;min-width:320px;">
-                                            <div style="flex:1;height:14px;border:1.5px solid #00508a;border-radius:999px;overflow:hidden;background:#fff;">
-                                                <div style="width:88%;height:100%;background:#00508a;border-radius:999px;"></div>
-                                            </div>
-                                            <span style="min-width:38px;">88%</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>SO (F)</strong></td>
-                                    <td>Function effectively as a member or leader of a team.</td>
-                                    <td>
-                                        <div style="display:flex;align-items:center;gap:16px;min-width:320px;">
-                                            <div style="flex:1;height:14px;border:1.5px solid #00508a;border-radius:999px;overflow:hidden;background:#fff;">
-                                                <div style="width:90%;height:100%;background:#00508a;border-radius:999px;"></div>
-                                            </div>
-                                            <span style="min-width:38px;">90%</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                </div>
-
-                <div
-                    class="sodh-tab-panel"
-                    id="student-responses"
-                >
-
-                    <div class="sodh-toolbar">
-
-                        <p>
+</div>
+</div>
+<div class="sodh-table-wrap">
+<table class="sodh-table sodh-so-summary-table">
+<thead>
+<tr>
+<th>Student Outcome (SO)</th>
+<th>Description</th>
+<th>Attainment Rate</th>
+</tr>
+</thead>
+<tbody id="soSummaryTableBody">
+<tr>
+<td><strong>SO (A)</strong></td>
+<td>Apply knowledge to real-world problems.</td>
+<td>
+<div style="display:flex;align-items:center;gap:16px;min-width:320px;">
+<div style="flex:1;height:14px;border:1.5px solid #00508a;border-radius:999px;overflow:hidden;background:#fff;">
+<div style="width:91%;height:100%;background:#00508a;border-radius:999px;"></div>
+</div>
+<span style="min-width:38px;">91%</span>
+</div>
+</td>
+</tr>
+<tr>
+<td><strong>SO (B)</strong></td>
+<td>Analyze complex computing problems and identify appropriate solutions.</td>
+<td>
+<div style="display:flex;align-items:center;gap:16px;min-width:320px;">
+<div style="flex:1;height:14px;border:1.5px solid #00508a;border-radius:999px;overflow:hidden;background:#fff;">
+<div style="width:86%;height:100%;background:#00508a;border-radius:999px;"></div>
+</div>
+<span style="min-width:38px;">86%</span>
+</div>
+</td>
+</tr>
+<tr>
+<td><strong>SO (C)</strong></td>
+<td>Design and evaluate computing-based solutions for specified requirements.</td>
+<td>
+<div style="display:flex;align-items:center;gap:16px;min-width:320px;">
+<div style="flex:1;height:14px;border:1.5px solid #00508a;border-radius:999px;overflow:hidden;background:#fff;">
+<div style="width:82%;height:100%;background:#00508a;border-radius:999px;"></div>
+</div>
+<span style="min-width:38px;">82%</span>
+</div>
+</td>
+</tr>
+<tr>
+<td><strong>SO (D)</strong></td>
+<td>Communicate effectively in professional computing environments.</td>
+<td>
+<div style="display:flex;align-items:center;gap:16px;min-width:320px;">
+<div style="flex:1;height:14px;border:1.5px solid #00508a;border-radius:999px;overflow:hidden;background:#fff;">
+<div style="width:79%;height:100%;background:#00508a;border-radius:999px;"></div>
+</div>
+<span style="min-width:38px;">79%</span>
+</div>
+</td>
+</tr>
+<tr>
+<td><strong>SO (E)</strong></td>
+<td>Recognize professional responsibilities and apply ethical principles.</td>
+<td>
+<div style="display:flex;align-items:center;gap:16px;min-width:320px;">
+<div style="flex:1;height:14px;border:1.5px solid #00508a;border-radius:999px;overflow:hidden;background:#fff;">
+<div style="width:88%;height:100%;background:#00508a;border-radius:999px;"></div>
+</div>
+<span style="min-width:38px;">88%</span>
+</div>
+</td>
+</tr>
+<tr>
+<td><strong>SO (F)</strong></td>
+<td>Function effectively as a member or leader of a team.</td>
+<td>
+<div style="display:flex;align-items:center;gap:16px;min-width:320px;">
+<div style="flex:1;height:14px;border:1.5px solid #00508a;border-radius:999px;overflow:hidden;background:#fff;">
+<div style="width:90%;height:100%;background:#00508a;border-radius:999px;"></div>
+</div>
+<span style="min-width:38px;">90%</span>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sodh-tab-panel" id="student-responses">
+<div class="sodh-toolbar">
+<p>
                             View student responses and assessment details.
                         </p>
-
-                        <div class="sodh-toolbar-actions">
-
-                            <label class="sodh-search">
-
-                                <span>⌕</span>
-
-                                <input
-                                    type="search"
-                                    id="studentResponseSearch"
-                                    placeholder="Search"
-                                >
-
-                            </label>
-
-                            <button
-                                class="sodh-export-btn"
-                                type="button"
-                            >
-                                ⇩&nbsp; Export
+<div class="sodh-toolbar-actions">
+<label class="sodh-search">
+<span>⌕</span>
+<input id="studentResponseSearch" placeholder="Search" type="search"/>
+</label>
+<button class="sodh-export-btn" type="button">
+                                ⇩  Export
                             </button>
-
-                        </div>
-
-                    </div>
-
-                    <div class="sodh-table-wrap">
-
-                        <table class="sodh-table sodh-student-response-table">
-
-                            <thead>
-
-                                <tr>
-                                    <th>Student Name</th>
-                                    <th>Program</th>
-                                    <th>Course</th>
-                                    <th>Section</th>
-                                    <th>SO Progress</th>
-                                    <th>Completion Rate</th>
-                                    <th>Status</th>
-                                </tr>
-
-                            </thead>
-
-                            <tbody id="studentResponsesTableBody">
-
-                                <tr>
-                                    <td>Michelle Grace Baguilat</td>
-                                    <td>BS Information Technology</td>
-                                    <td>Software Design</td>
-                                    <td>232</td>
-                                    <td>SO (a)–SO (f) — Completed</td>
-                                    <td><strong>100%</strong></td>
-                                    <td><span class="sodh-status complete">Complete</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Angela Mae Cruz</td>
-                                    <td>BS Information Technology</td>
-                                    <td>Software Design</td>
-                                    <td>232</td>
-                                    <td>5 of 6 SOs answered</td>
-                                    <td><strong>83%</strong></td>
-                                    <td><span class="sodh-status in-progress">In Progress</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Joshua Miguel Reyes</td>
-                                    <td>BS Information Technology</td>
-                                    <td>Computer Networks</td>
-                                    <td>231</td>
-                                    <td>SO (a)–SO (f) — Completed</td>
-                                    <td><strong>100%</strong></td>
-                                    <td><span class="sodh-status complete">Complete</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Samantha Louise Garcia</td>
-                                    <td>BS Computer Science</td>
-                                    <td>Database Systems</td>
-                                    <td>221</td>
-                                    <td>4 of 6 SOs answered</td>
-                                    <td><strong>67%</strong></td>
-                                    <td><span class="sodh-status in-progress">In Progress</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Paolo Andre Santos</td>
-                                    <td>BS Information Systems</td>
-                                    <td>Project Management</td>
-                                    <td>211</td>
-                                    <td>No SO response yet</td>
-                                    <td><strong>0%</strong></td>
-                                    <td><span class="sodh-status incomplete">Incomplete</span></td>
-                                </tr>
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-        </main>
-
-    </div>
-
-    <script src="../../Static/script.js"></script>
-    <script>
-        document.querySelectorAll(".sodh-tab").forEach(function(tab) {
-            tab.addEventListener("click", function() {
-                document.querySelectorAll(".sodh-tab").forEach(function(item) {
-                    item.classList.remove("active");
-                });
-                document.querySelectorAll(".sodh-tab-panel").forEach(function(panel) {
-                    panel.classList.remove("active");
-                });
-                tab.classList.add("active");
-                document.getElementById(tab.dataset.tab).classList.add("active");
-            });
-        });
-    </script>
+</div>
+</div>
+<div class="sodh-table-wrap">
+<table class="sodh-table sodh-student-response-table">
+<thead>
+<tr>
+<th>Student Name</th>
+<th>Program</th>
+<th>Course</th>
+<th>Section</th>
+<th>SO Progress</th>
+<th>Completion Rate</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody id="studentResponsesTableBody">
+<tr>
+<td>Michelle Grace Baguilat</td>
+<td>BS Information Technology</td>
+<td>Software Design</td>
+<td>232</td>
+<td>SO (a)–SO (f) — Completed</td>
+<td><strong>100%</strong></td>
+<td><span class="sodh-status complete">Complete</span></td>
+</tr>
+<tr>
+<td>Angela Mae Cruz</td>
+<td>BS Information Technology</td>
+<td>Software Design</td>
+<td>232</td>
+<td>5 of 6 SOs answered</td>
+<td><strong>83%</strong></td>
+<td><span class="sodh-status in-progress">In Progress</span></td>
+</tr>
+<tr>
+<td>Joshua Miguel Reyes</td>
+<td>BS Information Technology</td>
+<td>Computer Networks</td>
+<td>231</td>
+<td>SO (a)–SO (f) — Completed</td>
+<td><strong>100%</strong></td>
+<td><span class="sodh-status complete">Complete</span></td>
+</tr>
+<tr>
+<td>Samantha Louise Garcia</td>
+<td>BS Computer Science</td>
+<td>Database Systems</td>
+<td>221</td>
+<td>4 of 6 SOs answered</td>
+<td><strong>67%</strong></td>
+<td><span class="sodh-status in-progress">In Progress</span></td>
+</tr>
+<tr>
+<td>Paolo Andre Santos</td>
+<td>BS Information Systems</td>
+<td>Project Management</td>
+<td>211</td>
+<td>No SO response yet</td>
+<td><strong>0%</strong></td>
+<td><span class="sodh-status incomplete">Incomplete</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</main>
+</div>
+<script src="../../Static/script.js"></script>
 </body>
 </html>

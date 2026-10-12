@@ -18,6 +18,8 @@
             </div>
 </div>
 <div class="so-user-area">
+<div class="edu-header-calendar-wrap"><button class="edu-header-calendar-btn" type="button" aria-label="Open calendar" aria-expanded="false" aria-haspopup="dialog"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M7 3v4M17 3v4M3 10h18"></path></svg></button><div class="edu-header-calendar-popup" role="dialog" aria-label="Calendar" hidden><label>Calendar <input type="date" aria-label="Choose calendar date"></label><p>Academic events are not connected yet.</p></div></div>
+
 <button aria-label="Notifications" class="so-notification-btn" type="button">
 <img alt="Notifications" class="so-notification-image" src="../../Static/images/sidebar/notif.png"/>
 <span class="so-notification-dot"></span>
@@ -104,23 +106,4 @@
 </section>
 </main></div>
 <script src="../../Static/script.js"></script>
-<script>
-/* Demo-only filtering. Backend must provide authenticated student records and release flags. */
-(function () {
-  const tbody = document.getElementById('raRows');
-  const search = document.getElementById('raSearch');
-  const type = document.getElementById('raType');
-  const sort = document.getElementById('raSort');
-  const rows = Array.from(tbody.querySelectorAll('tr'));
-  function render() {
-    const query = search.value.trim().toLowerCase();
-    const filtered = rows.filter(row => row.textContent.toLowerCase().includes(query) && (type.value === 'all' || row.dataset.type === type.value));
-    filtered.sort((a,b) => sort.value === 'name' ? a.cells[0].textContent.localeCompare(b.cells[0].textContent) : sort.value === 'oldest' ? a.dataset.date.localeCompare(b.dataset.date) : b.dataset.date.localeCompare(a.dataset.date));
-    tbody.replaceChildren(...filtered);
-    document.getElementById('raEmpty').hidden = filtered.length !== 0;
-  }
-  [search,type,sort].forEach(el => el.addEventListener(el === search ? 'input' : 'change',render));
-  render();
-})();
-</script>
 </body></html>

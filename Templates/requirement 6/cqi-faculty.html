@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CQI Planning | EduMetrics Faculty</title>
+<link href="../../Static/style.css" rel="stylesheet"/>
+</head>
+<body class="so-student-page course-workspace-page cr-student-page ra-student-page cqi-faculty-page faculty-workspace-aligned">
+<header class="so-topbar">
+<div class="so-brand">
+<div class="so-brand-logo">
+                Edu<span>Metrics</span>
+</div>
+<div class="so-brand-subtitle">
+                Academic Assessment &amp; Grading System
+            </div>
+</div>
+<div class="so-user-area">
+<div class="edu-header-calendar-wrap"><button aria-expanded="false" aria-haspopup="dialog" aria-label="Open calendar" class="edu-header-calendar-btn" type="button"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><rect height="16" rx="2" width="18" x="3" y="5"></rect><path d="M7 3v4M17 3v4M3 10h18"></path></svg></button><div aria-label="Calendar" class="edu-header-calendar-popup" hidden="" role="dialog"><label>Calendar <input aria-label="Choose calendar date" type="date"/></label><p>Academic events are not connected yet.</p></div></div>
+<button aria-label="Notifications" class="so-notification-btn" type="button">
+<img alt="Notifications" class="so-notification-image" src="../../Static/images/sidebar/notif.png"/>
+<span class="so-notification-dot"></span>
+</button>
+<div class="so-user-info">
+<strong id="facultyName"></strong>
+<span>Faculty</span>
+</div>
+<div aria-hidden="true" class="so-avatar">
+<span class="so-avatar-person">●</span>
+</div>
+<span aria-hidden="true" class="so-online-dot"></span>
+</div>
+</header>
+<div class="so-header-lines">
+<div class="so-header-blue"></div>
+<div class="so-header-gold"></div>
+</div>
+<div class="so-shell">
+<aside class="so-sidebar">
+<div class="so-pages-title">
+<span class="so-grid-icon so-pages-image-wrap">
+<img alt="" class="so-pages-image" src="../../Static/images/sidebar/pages.png"/>
+</span>
+<span>Pages</span>
+</div>
+<nav aria-label="Faculty navigation" class="so-nav">
+<a class="so-nav-item" href="dashboard-faculty.html">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/home-white.png"/>
+</span>
+<span>Dashboard</span>
+</a>
+<a class="so-nav-item active" href="dashboard-faculty.html#my-courses">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/course-white.png"/>
+</span>
+<span>My Courses</span>
+</a>
+<a class="so-nav-item" href="../webpage/platform.html">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/pl-white.png"/>
+</span>
+<span>Platform</span>
+</a>
+<a class="so-nav-item" href="../webpage/resources.html">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/rs-white.png"/>
+</span>
+<span>Resources</span>
+</a>
+<a class="so-nav-item" href="../webpage/about us.html">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/au-white.png"/>
+</span>
+<span>About Us</span>
+</a>
+</nav>
+<div class="so-sidebar-brand">
+<div class="so-sidebar-logo">
+                    Edu<span>Metrics</span>
+</div>
+<small>
+                    Academic Assessment &amp; Grading System
+                </small>
+</div>
+</aside>
+<main class="so-main">
+<div class="cw-breadcrumb">My Courses <span class="cw-breadcrumb-separator">/</span> <span class="cw-breadcrumb-current">Software Lab</span></div><div class="cw-workspace"><section aria-label="Selected course" class="cw-hero"><div><div class="cw-eyebrow">COURSE WORKSPACE</div><h2>Software Lab</h2><p>CPE 321 · BSCPE 3A · 1st Semester 2026–2027</p></div><span class="cw-demo-badge">DEMO COURSE</span></section><nav aria-label="Course modules" class="cw-module-nav"><a class="cw-module-tab" href="so-faculty.html"><span class="cw-module-number">01</span> Syllabus &amp; Outcomes</a><a class="cw-module-tab" href="cm-faculty.html"><span class="cw-module-number">02</span> Curriculum Mapping</a><a class="cw-module-tab" href="cr-faculty.html"><span class="cw-module-number">03</span> Class Roster</a><a class="cw-module-tab" href="assessment-faculty.html"><span class="cw-module-number">04</span> Assessment Entry</a><a class="cw-module-tab" href="attainment-faculty.html"><span class="cw-module-number">05</span> Attainment</a><a aria-current="page" class="cw-module-tab active" href="cqi-faculty.html"><span class="cw-module-number">06</span> CQI Planning</a><a class="cw-module-tab" href="gradebook-faculty.html"><span class="cw-module-number">07</span> Gradebook</a><a class="cw-module-tab" href="compliance-faculty.html"><span class="cw-module-number">08</span> Compliance Report</a></nav></div>
+
+<section class="so-summary-grid" aria-label="CQI plan summary">
+<article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Draft Plans</span><strong class="so-summary-number" id="cqifDraftCount">1</strong></article>
+<article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Below-target COs</span><strong class="so-summary-number" id="cqifBelowCount">2</strong></article>
+<article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Awaiting Review</span><strong class="so-summary-number" id="cqifReviewCount">1</strong></article>
+</section>
+<section aria-labelledby="cqiFacultyHeading" class="cr-roster-panel cqi-faculty-panel"><header class="so-section-header cqi-faculty-heading"><div><h2 id="cqiFacultyHeading">My CQI Action Plans</h2><p>Only CQI plans for your assigned course and section are listed.</p></div><button class="cqi-faculty-create" id="cqiFacultyCreate" type="button">+ Create CQI Plan</button></header>
+<div class="cr-toolbar cqi-faculty-toolbar"><label class="cr-search cqi-faculty-search"><span aria-hidden="true">⌕</span><input aria-label="Search CQI plans" id="cqiFacultySearch" placeholder="Search CQI ID, course, or CO..." type="search"/></label><div class="cr-sort-wrap cqi-faculty-filter"><label for="cqiFacultyStatus">Status</label><select id="cqiFacultyStatus"><option value="all">All Statuses</option><option value="draft">Draft</option><option value="submitted">Submitted</option></select></div></div>
+<div class="ra-table-frame cqi-faculty-table-frame"><div class="cr-table-header"><table class="cr-table cqi-faculty-table"><colgroup><col/><col/><col/><col/><col/><col/><col/></colgroup><thead><tr><th>CQI ID</th><th>Target CO</th><th>Attainment / Target</th><th>Outcome Concern</th><th>Propose Action</th><th>Status</th><th>Action</th></tr></thead></table></div><div class="cr-table-wrap"><table class="cr-table cqi-faculty-table"><colgroup><col/><col/><col/><col/><col/><col/><col/></colgroup><tbody id="cqiFacultyRows">
+<tr data-attainment="67%" data-co="CO3" data-course="Software Design – Lab" data-goal="Raise CO3 attainment from 67% to at least 75%." data-id="CQI-COE232-003" data-note="Students struggled to apply advanced software design patterns in the project assessment." data-section="COE232" data-status="submitted" data-target="70%"><td><strong>CQI-COE232-003</strong></td><td><strong>CO3</strong></td><td><strong>67%</strong><small>Target ≥ 70%</small></td><td>Students struggled to apply advanced software design patterns in the project assessment.</td><td>Raise CO3 attainment from 67% to at least 75%.</td><td><span class="cqi-faculty-status is-submitted">Submitted</span></td><td><div class="cqi-faculty-row-actions"><button data-cqif-edit="" type="button"><span aria-hidden="true">✎</span> Edit</button><button class="cqi-faculty-delete" data-cqif-delete="" type="button"><span aria-hidden="true">🗑</span> Delete</button></div></td></tr>
+<tr data-attainment="65%" data-co="CO5" data-course="Software Design – Lab" data-goal="Raise CO5 attainment from 65% to at least 75%." data-id="CQI-COE232-005" data-note="Students need more practice evaluating software quality metrics." data-section="COE232" data-status="draft" data-target="70%"><td><strong>CQI-COE232-005</strong></td><td><strong>CO5</strong></td><td><strong>65%</strong><small>Target ≥ 70%</small></td><td>Students need more practice evaluating software quality metrics.</td><td>Raise CO5 attainment from 65% to at least 75%.</td><td><span class="cqi-faculty-status is-draft">Draft</span></td><td><div class="cqi-faculty-row-actions"><button data-cqif-edit="" type="button"><span aria-hidden="true">✎</span> Edit</button><button class="cqi-faculty-delete" data-cqif-delete="" type="button"><span aria-hidden="true">🗑</span> Delete</button></div></td></tr>
+</tbody></table></div></div><p class="cqi-faculty-empty" hidden="" id="cqiFacultyEmpty">No CQI plans match your search.</p><p aria-live="polite" class="cqi-faculty-feedback" id="cqiFacultyFeedback" role="status"></p></section><div class="cqi-faculty-modal" hidden id="cqiFacultyDeleteModal"><section class="cqi-faculty-dialog cqi-faculty-confirm" role="alertdialog" aria-modal="true" aria-labelledby="cqiFacultyDeleteTitle" aria-describedby="cqifDeleteDescription"><h2 id="cqiFacultyDeleteTitle">Delete CQI plan?</h2><p class="cqi-faculty-confirm-question">Are you sure you want to delete <strong id="cqifDeleteName"></strong>?</p><p id="cqifDeleteDescription" class="cqi-faculty-confirm-note">This CQI action plan will be removed from your course records.</p><footer class="cqi-faculty-dialog-footer"><button type="button" class="cqi-faculty-cancel" data-cqif-close>Cancel</button><button type="button" class="cqi-faculty-delete-confirm" id="cqifDeleteConfirm">Delete</button></footer></section></div>
+<div class="cqi-faculty-modal" hidden="" id="cqiFacultyModal"><section aria-labelledby="cqiFacultyModalTitle" aria-modal="true" class="cqi-faculty-dialog" role="dialog"><header class="cqi-faculty-dialog-head"><div><span class="cqi-faculty-kicker">CONTINUOUS QUALITY IMPROVEMENT</span><h2 id="cqiFacultyModalTitle">Edit CQI Plan</h2><p>Manage the improvement plan for your assigned course.</p></div><button aria-label="Close dialog" class="cqi-faculty-x" data-cqif-close="" type="button">×</button></header><form id="cqiFacultyForm"><div class="cqi-faculty-form-grid"><label>CQI ID<input id="cqifId" maxlength="40" required=""/></label><label>Course<input id="cqifCourse" required=""/></label><label>Section<input id="cqifSection" required=""/></label><label>Target CO<input id="cqifCo" placeholder="CO3" required=""/></label><label>Current Attainment<input id="cqifAttainment" placeholder="67%" required=""/></label><label>Attainment Target<input id="cqifTarget" placeholder="70%" required=""/></label><label class="cqi-faculty-wide">Outcome Concern<textarea id="cqifNote" required="" rows="3"></textarea></label><label class="cqi-faculty-wide">Propose Action<textarea id="cqifGoal" required="" rows="3"></textarea></label><label>Status<select id="cqifStatus"><option value="draft">Draft</option><option value="submitted">Submitted</option></select></label></div><footer class="cqi-faculty-dialog-footer"><button class="cqi-faculty-cancel" data-cqif-close="" type="button">Cancel</button><button class="cqi-faculty-save" type="submit">Save Plan</button></footer></form></section></div>
+
+</main>
+</div>
+<script src="../../Static/script.js"></script>
+</body>
+</html>

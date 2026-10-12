@@ -1,3 +1,363 @@
+(function initRaDepartmentHeadTabs() {
+  function setup() {
+    // Tabs are handled by the existing shared .sodh-tab / data-tab handler.
+    if (!document.getElementById('ra-review-table')) return;
+
+    const rows = Array.from(document.querySelectorAll('#ra-review-table tbody tr'));
+    const search = document.getElementById('ra-search');
+    const status = document.getElementById('ra-status-filter');
+    const course = document.getElementById('ra-course');
+    const faculty = document.getElementById('ra-faculty');
+    function filter() {
+      const q = (search?.value || '').toLowerCase();
+      const st = status?.value || '';
+      const c = course?.value || '';
+      const f = faculty?.value || '';
+      rows.forEach(row => {
+        row.hidden = !(row.textContent.toLowerCase().includes(q)
+          && (!st || row.dataset.status === st)
+          && (!c || row.dataset.course === c)
+          && (!f || row.dataset.faculty === f));
+      });
+    }
+    [search, status, course, faculty].forEach(el => {
+      if (el) el.addEventListener(el === search ? 'input' : 'change', filter);
+    });
+    const dialog = document.getElementById('ra-dialog');
+    document.querySelectorAll('[data-view],[data-query]').forEach(button => {
+      button.addEventListener('click', () => {
+        if (!dialog || typeof dialog.showModal !== 'function') return;
+        const query = button.dataset.query;
+        const title = document.getElementById('ra-dialog-title');
+        const body = document.getElementById('ra-dialog-body');
+        if (!title || !body) return;
+        title.textContent = query ? 'Faculty Query (Demo)' : 'Assessment Scores (View Only)';
+        body.textContent = query
+          ? `Prepare a query for ${query.split('|')[1]} regarding ${query.split('|')[0]}. Sending requires a backend connection.`
+          : `${button.dataset.view}: detailed student scores will appear here when connected to assessment records.`;
+        dialog.showModal();
+      });
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setup, { once: true });
+  } else {
+    setup();
+  }
+})();
+
+/* CQI Department Head — single evidence/review controller */
+(function () {
+  function initCQIDepartmentHead() {
+    var page = document.querySelector('.cqi-dept-head-page');
+    if (!page) return;
+    var table = page.querySelector('#cqiDhTable');
+    if (!table || !table.tBodies.length) return;
+    var rows = Array.from(table.tBodies[0].rows);
+    var search = page.querySelector('#cqiDhSearch');
+    var course = page.querySelector('#cqiDhCourse');
+    var status = page.querySelector('#cqiDhStatus');
+    var topCourse = page.querySelector('#cqiDhCourseTop');
+    var topSection = page.querySelector('#cqiDhSection');
+    var dialog = page.querySelector('#cqiDhDialog');
+    var details = page.querySelector('#cqiDhDialogDetails');
+    var feedbackPanel = page.querySelector('#cqiDhFeedbackPanel');
+    var mainActions = page.querySelector('#cqiDhMainActions');
+    var notes = page.querySelector('#cqiDhReviewNotes');
+    var validation = page.querySelector('#cqiDhValidation');
+    var selected = null;
+    function apply() {
+      var term = search.value.trim().toLowerCase();
+      var visible = 0;
+      rows.forEach(function (row) {
+        var match = (!term || (row.textContent + ' ' + row.dataset.id + ' ' + row.dataset.faculty).toLowerCase().includes(term)) &&
+          (!course.value || row.dataset.course === course.value) &&
+          (!status.value || row.dataset.status === status.value) &&
+          (!topCourse || !topCourse.value || row.dataset.course === topCourse.value) &&
+          (!topSection || !topSection.value || row.dataset.section === topSection.value);
+        row.hidden = !match;
+        if (match) visible++;
+      });
+      var empty = page.querySelector('#cqiDhEmpty');
+      if (empty) empty.hidden = visible !== 0;
+    }
+    [search, course, status, topCourse, topSection].filter(Boolean).forEach(function (el) {
+      el.addEventListener(el === search ? 'input' : 'change', apply);
+    });
+    var reviewStorageKey = 'edumetrics-cqi-dept-reviews-v1';
+    function loadReviews() {
+      try {
+        var saved = JSON.parse(localStorage.getItem(reviewStorageKey) || '{}');
+        rows.forEach(function (row) {
+          var state = saved[row.dataset.id];
+          if (!state) return;
+          if (state.status) row.dataset.status = state.status;
+          if (state.feedback) row.dataset.reviewNotes = state.feedback;
+          var badge = row.querySelector('.cqi-dh-status');
+          if (badge && state.status) {
+            badge.textContent = state.status;
+            badge.className = 'cqi-dh-status ' + state.status.toLowerCase().replace(/\s+/g, '-');
+          }
+        });
+      } catch (error) { /* Ignore disabled storage. */ }
+    }
+    function saveReview(row) {
+      try {
+        var saved = JSON.parse(localStorage.getItem(reviewStorageKey) || '{}');
+        saved[row.dataset.id] = {status: row.dataset.status, feedback: row.dataset.reviewNotes || ''};
+        localStorage.setItem(reviewStorageKey, JSON.stringify(saved));
+      } catch (error) { /* Demo still works for this page load. */ }
+    }
+    function updateCounts() {
+      [['cqiDhTotal', rows.length], ['cqiDhReview', rows.filter(function (r) { return r.dataset.status === 'Submitted'; }).length],
+       ['cqiDhApproved', rows.filter(function (r) { return r.dataset.status === 'Approved'; }).length],
+       ['cqiDhOngoing', rows.filter(function (r) { return r.dataset.status === 'Ongoing'; }).length]].forEach(function (item) {
+        var el = page.querySelector('#' + item[0]);
+        if (el) el.textContent = item[1];
+      });
+    }
+    function closeDialog() {
+      if (dialog.open && typeof dialog.close === 'function') dialog.close();
+      else dialog.removeAttribute('open');
+    }
+    function setReviewMode(enabled) {
+      feedbackPanel.hidden = !enabled;
+      mainActions.hidden = enabled;
+      validation.hidden = true;
+      if (enabled) notes.focus();
+    }
+    function addDetail(label, value) {
+      var item = document.createElement('div');
+      var full = ['Outcome Concern', 'Expected Improvement', 'Previous Review Feedback', 'Supporting Evidence'].includes(label);
+      item.className = 'cqi-dh-detail' + (full ? ' cqi-dh-detail-wide' : '');
+      var heading = document.createElement('span');
+      heading.className = 'cqi-dh-detail-label';
+      heading.textContent = label;
+      var content = document.createElement('p');
+      content.className = 'cqi-dh-detail-value';
+      content.textContent = value || 'Not provided';
+      item.append(heading, content);
+      details.appendChild(item);
+    }
+    table.addEventListener('click', function (event) {
+      var button = event.target.closest('button[data-action="evidence"]');
+      if (!button) return;
+      selected = button.closest('tr');
+      if (!selected) return;
+      var data = selected.dataset;
+      details.replaceChildren();
+      addDetail('CQI ID', data.id);
+      addDetail('Course / Section', data.course + ' · ' + data.section);
+      addDetail('Faculty', data.faculty);
+      addDetail('CO Attainment', data.co + ' · ' + data.attainment + ' (Target ≥ ' + data.target + ')');
+      addDetail('Outcome Concern', data.note);
+      addDetail('Expected Improvement', data.goal);
+      addDetail('Current Status', data.status);
+      if (data.reviewNotes) addDetail('Previous Review Feedback', data.reviewNotes);
+      addDetail('Supporting Evidence', 'No evidence files are connected in this demo.');
+      notes.value = data.reviewNotes || '';
+      setReviewMode(false);
+      var editable = data.status === 'Submitted';
+      page.querySelector('#cqiDhReviewAction').disabled = !editable;
+      page.querySelector('#cqiDhApprove').disabled = !editable;
+      if (typeof dialog.showModal === 'function') dialog.showModal();
+      else dialog.setAttribute('open', '');
+    });
+    function setStatus(next) {
+      if (!selected) return;
+      selected.dataset.status = next;
+      var badge = selected.querySelector('.cqi-dh-status');
+      if (badge) { badge.textContent = next; badge.className = 'cqi-dh-status ' + next.toLowerCase().replace(/\s+/g, '-'); }
+      saveReview(selected);
+      updateCounts();
+      apply();
+      closeDialog();
+    }
+    page.querySelector('#cqiDhReviewAction').addEventListener('click', function () { setReviewMode(true); });
+    page.querySelector('#cqiDhBack').addEventListener('click', function () { setReviewMode(false); });
+    page.querySelector('#cqiDhReturn').addEventListener('click', function () {
+      if (!selected) return;
+      var feedback = notes.value.trim();
+      if (!feedback) { validation.hidden = false; notes.focus(); return; }
+      selected.dataset.reviewNotes = feedback;
+      setStatus('For Revision');
+    });
+    page.querySelector('#cqiDhApprove').addEventListener('click', function () { setStatus('Approved'); });
+    ['cqiDhClose', 'cqiDhX'].forEach(function (id) { page.querySelector('#' + id).addEventListener('click', closeDialog); });
+    dialog.addEventListener('click', function (event) { if (event.target === dialog) closeDialog(); });
+    loadReviews();
+    updateCounts();
+    apply();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initCQIDepartmentHead);
+  else initCQIDepartmentHead();
+})();
+
+/* CQI FACULTY — scoped CRUD demo controller (one initializer) */
+(function(){
+  'use strict';
+  const page=document.querySelector('.cqi-faculty-page');
+  if(!page)return;
+  const $=id=>document.getElementById(id);
+  const body=$('cqiFacultyRows'),modal=$('cqiFacultyModal'),deleteModal=$('cqiFacultyDeleteModal');
+  const search=$('cqiFacultySearch'),status=$('cqiFacultyStatus'),feedback=$('cqiFacultyFeedback');
+  let current=null,pendingDelete=null,returnFocus=null;
+  const fields={id:'cqifId',course:'cqifCourse',section:'cqifSection',co:'cqifCo',attainment:'cqifAttainment',target:'cqifTarget',note:'cqifNote',goal:'cqifGoal',status:'cqifStatus'};
+  const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function show(which){returnFocus=document.activeElement;which.hidden=false;document.body.style.overflow='hidden';(which.querySelector('input,button'))?.focus();}
+  function close(){modal.hidden=true;deleteModal.hidden=true;document.body.style.overflow='';returnFocus?.focus();}
+  function updateSummary(){
+    const rows=Array.from(body.rows);
+    const below=new Set(rows.filter(row=>{
+      const value=parseFloat(row.dataset.attainment),target=parseFloat(row.dataset.target);
+      return Number.isFinite(value)&&Number.isFinite(target)&&value<target;
+    }).map(row=>row.dataset.co));
+    $('cqifDraftCount').textContent=String(rows.filter(row=>row.dataset.status==='draft').length);
+    $('cqifBelowCount').textContent=String(below.size);
+    $('cqifReviewCount').textContent=String(rows.filter(row=>row.dataset.status==='submitted').length);
+  }
+  function filter(){updateSummary();const q=search.value.trim().toLowerCase(),s=status.value;let count=0;Array.from(body.rows).forEach(row=>{const ok=(!q||(row.textContent+' '+row.dataset.course+' '+row.dataset.section+' '+row.dataset.note).toLowerCase().includes(q))&&(s==='all'||row.dataset.status===s);row.hidden=!ok;if(ok)count++;});$('cqiFacultyEmpty').hidden=count>0;}
+  function edit(row){current=row;Object.entries(fields).forEach(([key,id])=>{$(id).value=row?row.dataset[key]||'':key==='status'?'draft':'';});$('cqiFacultyModalTitle').textContent=row?'Edit CQI Plan':'Create CQI Plan';show(modal);}
+  function rowMarkup(d){const state=d.status==='submitted'?'Submitted':'Draft';return '<td><strong>'+esc(d.id)+'</strong></td><td><strong>'+esc(d.co)+'</strong></td><td><strong>'+esc(d.attainment)+'</strong><small>Target ≥ '+esc(d.target)+'</small></td><td>'+esc(d.note)+'</td><td>'+esc(d.goal)+'</td><td><span class="cqi-faculty-status is-'+esc(d.status)+'">'+state+'</span></td><td><div class="cqi-faculty-row-actions"><button type="button" data-cqif-edit><span aria-hidden="true">✎</span> Edit</button><button type="button" class="cqi-faculty-delete" data-cqif-delete><span aria-hidden="true">🗑</span> Delete</button></div></td>';}
+  $('cqiFacultyCreate').addEventListener('click',()=>edit(null));
+  body.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const row=b.closest('tr');if(b.matches('[data-cqif-edit]'))edit(row);else if(b.matches('[data-cqif-delete]')){pendingDelete=row;$('cqifDeleteName').textContent=row.dataset.id;show(deleteModal);}});
+  $('cqiFacultyForm').addEventListener('submit',e=>{e.preventDefault();const d={};Object.entries(fields).forEach(([key,id])=>d[key]=$(id).value.trim());if(!d.id||!d.course||!d.section||!d.co||!d.goal||!d.note||!d.attainment||!d.target)return;
+    const collision=Array.from(body.rows).some(r=>r!==current&&r.dataset.id.toLowerCase()===d.id.toLowerCase());if(collision){$('cqifId').setCustomValidity('CQI ID already exists');$('cqifId').reportValidity();return;} $('cqifId').setCustomValidity('');
+    const row=current||body.insertRow();Object.entries(d).forEach(([key,value])=>row.dataset[key]=value);row.innerHTML=rowMarkup(d);feedback.textContent=current?'CQI plan updated in this demo.':'CQI plan created in this demo.';close();filter();});
+  $('cqifId').addEventListener('input',()=>{$('cqifId').setCustomValidity('');});
+  $('cqifDeleteConfirm').addEventListener('click',()=>{if(pendingDelete){pendingDelete.remove();pendingDelete=null;feedback.textContent='CQI plan deleted from this demo.';}close();filter();});
+  document.querySelectorAll('[data-cqif-close]').forEach(b=>b.addEventListener('click',close));
+  [modal,deleteModal].forEach(m=>m.addEventListener('click',e=>{if(e.target===m)close();}));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(!modal.hidden||!deleteModal.hidden))close();});
+  search.addEventListener('input',filter);status.addEventListener('change',filter);filter();
+})();
+
+/* CQI STUDENT — one scoped controller for search, status filter and read-only action modal. */
+(function () {
+    "use strict";
+    const page = document.querySelector(".cqi-student-page");
+    if (!page) return;
+    const search = page.querySelector("#cqiStudentSearch");
+    const status = page.querySelector("#cqiStudentStatus");
+    const rows = Array.from(page.querySelectorAll("#cqiStudentRows tr"));
+    const empty = page.querySelector("#cqiStudentEmpty");
+    const modal = page.querySelector("#cqiStudentModal");
+    let previousFocus = null;
+    function filterRows() {
+        const query = search.value.trim().toLowerCase();
+        const selected = status.value;
+        let visible = 0;
+        rows.forEach(row => {
+            const matches = row.textContent.toLowerCase().includes(query) &&
+                (selected === "all" || row.dataset.status === selected);
+            row.hidden = !matches;
+            if (matches) visible++;
+        });
+        empty.hidden = visible > 0;
+    }
+    function closeModal() {
+        if (modal.hidden) return;
+        modal.hidden = true;
+        document.body.style.overflow = "";
+        if (previousFocus) previousFocus.focus();
+    }
+    function openModal(row) {
+        const fields = {
+            cqiDetailId: row.dataset.id,
+            cqiDetailCourse: row.dataset.course + " · " + row.dataset.section,
+            cqiDetailCo: row.dataset.co,
+            cqiDetailGoal: row.dataset.goal,
+            cqiDetailBasis: row.dataset.basis,
+            cqiDetailPlan: row.dataset.plan
+        };
+        Object.entries(fields).forEach(([id, value]) => {
+            const target = page.querySelector("#" + id);
+            if (target) target.textContent = value || "—";
+        });
+        previousFocus = document.activeElement;
+        modal.hidden = false;
+        document.body.style.overflow = "hidden";
+        modal.querySelector(".cqi-student-close").focus();
+    }
+    search.addEventListener("input", filterRows);
+    status.addEventListener("change", filterRows);
+    page.addEventListener("click", event => {
+        const view = event.target.closest("[data-cqi-view]");
+        if (view) {
+            const row = view.closest("tr");
+            if (row) openModal(row);
+            return;
+        }
+        if (event.target.closest("[data-cqi-close]") || event.target === modal) closeModal();
+    });
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape" && !modal.hidden) closeModal();
+    });
+    filterRows();
+})();
+
+
+/* SHARED CM STUDENT ATTAINMENT MODAL — both faculty and department head */
+(function () {
+    const page = document.querySelector('.cm-faculty-page, .cm-dept-head-page');
+    if (!page) return;
+    let overlay = null, previousFocus = null;
+    const escapeHtml = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    function close() {
+        if (!overlay) return;
+        overlay.classList.remove('is-open');
+        overlay.setAttribute('aria-hidden','true');
+        document.body.style.overflow = '';
+        if (previousFocus) previousFocus.focus();
+    }
+    function open(row) {
+        const cells = row.cells;
+        const scores = (row.dataset.coScores || '').split(',').map(Number).filter(Number.isFinite);
+        const known = scores.length;
+        const met = scores.filter(v => v >= 70).length;
+        const average = known ? Math.round(scores.reduce((a,b)=>a+b,0)/known) : null;
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.className = 'cm-outcome-overlay';
+            overlay.setAttribute('aria-hidden','true');
+            document.body.appendChild(overlay);
+            overlay.addEventListener('click', e => {if(e.target === overlay || e.target.closest('.cm-outcome-close')) close();});
+            document.addEventListener('keydown',e => {if(e.key === 'Escape' && overlay.classList.contains('is-open')) close();});
+        }
+        const rows = Array.from({length:10},(_,i) => {
+            const value = scores[i], available = i < known;
+            const status = !available ? 'Not recorded' : value >= 70 ? 'Met' : 'Needs Improvement';
+            return '<div class="cm-outcome-detail-item"><strong>CO'+(i+1)+'</strong>'+
+                '<span class="cm-outcome-track"><span class="cm-outcome-fill" style="width:'+(available?value:0)+'%"></span></span>'+
+                '<strong>'+(available?value+'%':'—')+'</strong><em>'+status+'</em></div>';
+        }).join('');
+        overlay.innerHTML = '<section class="cm-outcome-dialog" role="dialog" aria-modal="true" aria-labelledby="cmOutcomeTitle">'+
+            '<div class="cm-outcome-modal-head"><div><h2 id="cmOutcomeTitle">Student Outcome Attainment</h2>'+
+            '<p><strong>'+escapeHtml(cells[2].textContent.trim())+'</strong> · '+escapeHtml(cells[1].textContent.trim())+
+            ' · '+escapeHtml(row.dataset.course || 'Course not specified')+' · '+escapeHtml(row.dataset.section || 'Section not specified')+
+            '</p></div><button type="button" class="cm-outcome-close" aria-label="Close">×</button></div>'+
+            '<div class="cm-outcome-metrics"><div class="cm-outcome-metric"><small>Average (recorded COs)</small><strong>'+(average===null?'—':average+'%')+'</strong></div>'+
+            '<div class="cm-outcome-metric"><small>Outcomes Met</small><strong>'+met+'/10</strong></div>'+
+            '<div class="cm-outcome-metric"><small>Recorded Outcomes</small><strong>'+known+'/10</strong></div></div>'+
+            '<div class="cm-outcome-detail-list">'+rows+'</div>'+
+            '<p class="cm-outcome-note">Demo data currently contains CO1–CO5 only. CO6–CO10 are shown as not recorded; the average excludes missing outcomes. Met threshold: 70%.</p></section>';
+        previousFocus = document.activeElement;
+        overlay.classList.add('is-open');
+        overlay.setAttribute('aria-hidden','false');
+        document.body.style.overflow = 'hidden';
+        overlay.querySelector('.cm-outcome-close').focus();
+    }
+    // Capture prevents older generic View handlers from opening a second modal.
+    document.addEventListener('click', e => {
+        const btn = e.target.closest('.cm-outcome-detail-trigger');
+        if (!btn) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        const row = btn.closest('tr');
+        if (row) open(row);
+    }, true);
+})();
+
 /* WORKFLOW 8-STEP EXPLORER */
 (function () {
     "use strict";
@@ -415,23 +775,7 @@
                 });
                 return;
             }
-            if (button.closest("#students-attainment")) {
-                showAction({
-                    title: "Student Attainment Review",
-                    subtitle: "Review the student's attainment across all Course Outcomes.",
-                    summary: field("STUDENT ID", row.cells[1].textContent.trim()) +
-                        field("STUDENT NAME", row.cells[2].textContent.trim()) +
-                        field("STATUS", row.cells[8].textContent.trim()) +
-                        field("CO1", row.cells[3].textContent.trim()) +
-                        field("CO2", row.cells[4].textContent.trim()) +
-                        field("CO3", row.cells[5].textContent.trim()) +
-                        field("CO4", row.cells[6].textContent.trim()) +
-                        field("CO5", row.cells[7].textContent.trim()),
-                    note: "<strong>Review note:</strong> Scores below the required attainment level should be considered when reviewing CQI needs.",
-                    confirmText: "Close"
-                });
-                return;
-            }
+
         }
         if (button.classList.contains("cm-dept-cqi-basis-btn")) {
             event.preventDefault();
@@ -5686,64 +6030,20 @@ document.addEventListener("DOMContentLoaded", function () {
     $('crdhDownload').addEventListener('click', () => { const keys = ['id', 'name', 'email', 'section', 'faculty', 'category', 'status']; const csv = [keys.join(','), ...filtered().map(x => keys.map(k => '"' + String(x[k]).replace(/"/g, '""') + '"').join(','))].join('\r\n'); const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = 'department-roster.csv'; a.click(); URL.revokeObjectURL(url); }); $('crdhImport').addEventListener('click', () => $('crdhFile').click()); $('crdhFile').addEventListener('change', async e => { const file = e.target.files[0]; if (!file) return; const text = await file.text(); const lines = text.trim().split(/\r?\n/).slice(1); let count = 0; for (const line of lines) { const cols = line.split(',').map(v => v.trim().replace(/^"|"$/g, '')); if (cols.length < 2 || !cols[0] || data.some(x => x.id === cols[0])) continue; data.push({ id: cols[0], name: cols[1], email: cols[2] || '', section: cols[3] || 'COE232', faculty: cols[4] || 'Engr. J. T. Leonen', category: cols[5] || 'Registered', status: cols[6] === 'Enrolled' ? 'Enrolled' : 'Not Enrolled' }); count++; } $('crdhNote').textContent = `Imported ${count} demo records. CSV parser supports simple rows (not quoted commas).`; e.target.value = ''; render(); }); render();
 })();
 
-(function initRaDepartmentHeadTabs() {
-    function setup() {
-        // Tabs are handled by the existing shared .sodh-tab / data-tab handler.
-        if (!document.getElementById('ra-review-table')) return;
 
-        const rows = Array.from(document.querySelectorAll('#ra-review-table tbody tr'));
-        const search = document.getElementById('ra-search');
-        const status = document.getElementById('ra-status-filter');
-        const course = document.getElementById('ra-course');
-        const faculty = document.getElementById('ra-faculty');
-        function filter() {
-            const q = (search?.value || '').toLowerCase();
-            const st = status?.value || '';
-            const c = course?.value || '';
-            const f = faculty?.value || '';
-            rows.forEach(row => {
-                row.hidden = !(row.textContent.toLowerCase().includes(q)
-                    && (!st || row.dataset.status === st)
-                    && (!c || row.dataset.course === c)
-                    && (!f || row.dataset.faculty === f));
-            });
-        }
-        [search, status, course, faculty].forEach(el => {
-            if (el) el.addEventListener(el === search ? 'input' : 'change', filter);
-        });
-        const dialog = document.getElementById('ra-dialog');
-        document.querySelectorAll('[data-view],[data-query]').forEach(button => {
-            button.addEventListener('click', () => {
-                if (!dialog || typeof dialog.showModal !== 'function') return;
-                const query = button.dataset.query;
-                const title = document.getElementById('ra-dialog-title');
-                const body = document.getElementById('ra-dialog-body');
-                if (!title || !body) return;
-                title.textContent = query ? 'Faculty Query (Demo)' : 'Assessment Scores (View Only)';
-                body.textContent = query
-                    ? `Prepare a query for ${query.split('|')[1]} regarding ${query.split('|')[0]}. Sending requires a backend connection.`
-                    : `${button.dataset.view}: detailed student scores will appear here when connected to assessment records.`;
-                dialog.showModal();
-            });
-        });
-    }
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', setup, { once: true });
-    } else {
-        setup();
-    }
-})();
+/* AC faculty tabs and score filters — retained from GitHub version. */
 document.addEventListener('DOMContentLoaded', () => {
     const tabs = document.querySelectorAll('.ac-tab');
     const panels = { scores: document.getElementById('ac-scores'), attainment: document.getElementById('ac-attainment') };
     tabs.forEach(tab => tab.addEventListener('click', () => {
         tabs.forEach(item => { const active = item === tab; item.classList.toggle('is-active', active); item.setAttribute('aria-selected', String(active)); });
-        Object.entries(panels).forEach(([key, panel]) => { panel.hidden = key !== tab.dataset.acTab; });
+        Object.entries(panels).forEach(([key, panel]) => { if (panel) panel.hidden = key !== tab.dataset.acTab; });
     }));
     const search = document.getElementById('ac-score-search');
     const type = document.getElementById('ac-score-type');
     const sort = document.getElementById('ac-score-sort');
     const body = document.getElementById('ac-score-rows');
+    if (!search || !type || !sort || !body) return;
     const rows = [...body.querySelectorAll('tr')];
     const update = () => {
         const term = search.value.trim().toLowerCase();
@@ -5757,5 +6057,198 @@ document.addEventListener('DOMContentLoaded', () => {
     [search, type, sort].forEach(el => el.addEventListener(el === search ? 'input' : 'change', update));
 });
 
+
 // Faculty Courses: page-scoped creation; demo-only until a backend is connected.
-(function () { function init() { const dialog = document.getElementById('fcCreateDialog'), form = document.getElementById('fcCreateForm'), grid = document.getElementById('facultyCourseGrid'); if (!dialog || !form || !grid) return; const open = document.getElementById('fcOpenCreate'); const close = () => dialog.close(); open?.addEventListener('click', () => dialog.showModal()); document.getElementById('fcCloseCreate')?.addEventListener('click', close); document.getElementById('fcCancelCreate')?.addEventListener('click', close); dialog.addEventListener('click', e => { if (e.target === dialog) close() }); form.addEventListener('submit', e => { e.preventDefault(); if (!form.reportValidity()) return; const data = new FormData(form), code = String(data.get('code')).trim(), title = String(data.get('title')).trim(), section = String(data.get('section')).trim(), term = String(data.get('term')); if (!code || !title || !section) return; const article = document.createElement('article'); article.className = 'sc-course-card'; const top = document.createElement('div'); top.className = 'sc-card-top'; const icon = document.createElement('span'); icon.className = 'sc-course-icon'; icon.textContent = code.slice(0, 2).toUpperCase(); const status = document.createElement('span'); status.className = 'sc-enrolled'; status.textContent = 'NEW COURSE'; top.append(icon, status); const body = document.createElement('div'); body.className = 'sc-course-body'; const label = document.createElement('span'); label.className = 'sc-course-code'; label.textContent = code + ' · ' + term; const heading = document.createElement('h2'); heading.textContent = title; const info = document.createElement('p'); info.className = 'sc-faculty'; info.textContent = 'Assigned faculty · You'; const sec = document.createElement('p'); sec.className = 'sc-section'; sec.textContent = 'Section ' + section; body.append(label, heading, info, sec); const bottom = document.createElement('div'); bottom.className = 'sc-card-bottom'; const note = document.createElement('div'); note.className = 'sc-progress-top'; note.textContent = '0 enrolled students · Demo'; bottom.append(note); article.append(top, body, bottom); grid.prepend(article); const count = document.getElementById('facultyCourseCount'); if (count) count.textContent = String(grid.children.length).padStart(2, '0'); form.reset(); close() }) } if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true }); else init() })();
+(function(){function init(){const dialog=document.getElementById('fcCreateDialog'),form=document.getElementById('fcCreateForm'),grid=document.getElementById('facultyCourseGrid');if(!dialog||!form||!grid)return;const open=document.getElementById('fcOpenCreate');const close=()=>dialog.close();open?.addEventListener('click',()=>dialog.showModal());document.getElementById('fcCloseCreate')?.addEventListener('click',close);document.getElementById('fcCancelCreate')?.addEventListener('click',close);dialog.addEventListener('click',e=>{if(e.target===dialog)close()});form.addEventListener('submit',e=>{e.preventDefault();if(!form.reportValidity())return;const data=new FormData(form),code=String(data.get('code')).trim(),title=String(data.get('title')).trim(),section=String(data.get('section')).trim(),term=String(data.get('term'));if(!code||!title||!section)return;const article=document.createElement('article');article.className='sc-course-card';const top=document.createElement('div');top.className='sc-card-top';const icon=document.createElement('span');icon.className='sc-course-icon';icon.textContent=code.slice(0,2).toUpperCase();const status=document.createElement('span');status.className='sc-enrolled';status.textContent='NEW COURSE';top.append(icon,status);const body=document.createElement('div');body.className='sc-course-body';const label=document.createElement('span');label.className='sc-course-code';label.textContent=code+' · '+term;const heading=document.createElement('h2');heading.textContent=title;const info=document.createElement('p');info.className='sc-faculty';info.textContent='Assigned faculty · You';const sec=document.createElement('p');sec.className='sc-section';sec.textContent='Section '+section;body.append(label,heading,info,sec);const bottom=document.createElement('div');bottom.className='sc-card-bottom';const note=document.createElement('div');note.className='sc-progress-top';note.textContent='0 enrolled students · Demo';bottom.append(note);article.append(top,body,bottom);grid.prepend(article);const count=document.getElementById('facultyCourseCount');if(count)count.textContent=String(grid.children.length).padStart(2,'0');form.reset();close()})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init()})();
+
+/* SHARED HEADER CALENDAR — one delegated controller for all EduMetrics pages. */
+(function () {
+  "use strict";
+  let active = null;
+  function closeCalendar() {
+    if (!active) return;
+    active.popup.hidden = true;
+    active.button.setAttribute('aria-expanded', 'false');
+    active = null;
+  }
+  document.addEventListener('click', function (event) {
+    const button = event.target.closest('.edu-header-calendar-btn');
+    if (button) {
+      event.preventDefault();
+      const wrap = button.closest('.edu-header-calendar-wrap');
+      const popup = wrap && wrap.querySelector('.edu-header-calendar-popup');
+      if (!popup) return;
+      const wasOpen = active && active.button === button;
+      closeCalendar();
+      if (wasOpen) return;
+      const date = popup.querySelector('input[type="date"]');
+      if (date && !date.value) {
+        const now = new Date();
+        date.value = [now.getFullYear(), String(now.getMonth()+1).padStart(2,'0'), String(now.getDate()).padStart(2,'0')].join('-');
+      }
+      // Portaling the popup to body prevents fixed headers/scroll containers from clipping it.
+      if (popup.parentElement !== document.body) document.body.appendChild(popup);
+      const rect = button.getBoundingClientRect();
+      const width = Math.min(290, window.innerWidth - 24);
+      popup.style.position = 'fixed';
+      popup.style.width = width + 'px';
+      popup.style.left = Math.max(12, Math.min(rect.right - width, window.innerWidth - width - 12)) + 'px';
+      popup.style.top = Math.min(rect.bottom + 10, window.innerHeight - 180) + 'px';
+      popup.style.right = 'auto';
+      popup.hidden = false;
+      button.setAttribute('aria-expanded', 'true');
+      active = {button, popup};
+      return;
+    }
+    if (active && !active.popup.contains(event.target)) closeCalendar();
+  });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && active) {closeCalendar();}
+  });
+  window.addEventListener('resize', closeCalendar);
+  window.addEventListener('scroll', closeCalendar, true);
+})();;
+
+
+/* Page-specific initialization moved from HTML: no inline JavaScript. */
+
+/* ra-faculty.html.txt */
+document.addEventListener("DOMContentLoaded", function () {
+/* Frontend demonstration only: saved scores are held in this browser session, not a backend. */
+(() => {
+  const students=[['2026-COE-001','Angel S. Villanueva'],['2026-COE-002','Bea M. Santos'],['2026-COE-003','Carl P. Reyes'],['2026-COE-004','Dana L. Cruz'],['2026-COE-005','Ella R. Garcia'],['2026-COE-006','Francis D. Lim'],['2026-COE-007','Gina A. Ramos'],['2026-COE-008','Hannah P. Tan']];
+  const assessments={quiz1:{max:20,co:'CO1',date:'Oct. 3, 2026',scores:[18,17,16,15,19,14,18,17]},quiz2:{max:20,co:'CO2',date:'Oct. 10, 2026',scores:[null,null,null,null,null,null,null,null]},lab1:{max:50,co:'CO1, CO2',date:'Sept. 19, 2026',scores:[42,45,40,38,47,41,44,46]},midterm:{max:100,co:'CO1–CO3',date:'Oct. 20, 2026',scores:[null,null,null,null,null,null,null,null]}};
+  const $=id=>document.getElementById(id), selector=$('rafAssessment'), body=$('rafRows');
+  let saved=false;
+  function render(){
+    const a=assessments[selector.value],q=$('rafSearch').value.trim().toLowerCase(),sort=$('rafSort').value;
+    $('rafMaxLabel').textContent=a.max;$('rafMaximum').textContent=a.max;$('rafCO').textContent=a.co;$('rafDate').textContent=a.date;
+    $('rafEntered').textContent=a.scores.filter(v=>v!==null).length;$('rafStudents').textContent=students.length;
+    let indices=students.map((_,i)=>i).filter(i=>(students[i].join(' ')).toLowerCase().includes(q));
+    indices.sort((i,j)=>sort==='za'?students[j][1].localeCompare(students[i][1]):sort==='high'?(a.scores[j]??-1)-(a.scores[i]??-1):sort==='low'?(a.scores[i]??Infinity)-(a.scores[j]??Infinity):students[i][1].localeCompare(students[j][1]));
+    body.replaceChildren();
+    indices.forEach((i,n)=>{
+      const tr=document.createElement('tr'); const [id,name]=students[i],v=a.scores[i];
+      tr.innerHTML=`<td>${n+1}</td><td><span class="raf-id">${id}</span></td><td class="raf-student-name"></td><td><input class="raf-score-input" type="number" min="0" max="${a.max}" step="0.01" aria-label="Raw points for ${name}" value="${v??''}"></td><td class="raf-percentage">${v===null?'—':(v/a.max*100).toFixed(1)+'%'}</td><td><span class="sodh-status ${v===null?'in-progress':'complete'}">${v===null?'Pending':'Entered'}</span></td>`;
+      tr.querySelector('.raf-student-name').textContent=name;
+      tr.querySelector('input').addEventListener('input',e=>{
+        const value=e.target.value.trim(),num=Number(value);
+        if(value!==''&&(!Number.isFinite(num)||num<0||num>a.max)){e.target.setCustomValidity(`Enter a score from 0 to ${a.max}`);e.target.reportValidity();return;}
+        e.target.setCustomValidity('');a.scores[i]=value===''?null:num;
+        tr.querySelector('.raf-percentage').textContent=value===''?'—':(num/a.max*100).toFixed(1)+'%';
+        const status=tr.querySelector('.sodh-status');status.className='sodh-status '+(value===''?'in-progress':'complete');status.textContent=value===''?'Pending':'Entered';
+        $('rafEntered').textContent=a.scores.filter(v=>v!==null).length;saved=false;$('rafMessage').textContent='Unsaved changes';
+      });body.append(tr);
+    });
+    $('rafEmpty').hidden=indices.length>0;
+  }
+  selector.addEventListener('change',()=>{saved=false;$('rafMessage').textContent='';render();});
+  $('rafSearch').addEventListener('input',render);$('rafSort').addEventListener('change',render);
+  $('rafSave').addEventListener('click',()=>{
+    if(body.querySelector('input:invalid')){body.querySelector('input:invalid').reportValidity();return;}
+    saved=true;$('rafMessage').textContent='Demo scores saved for this session only. Connect a backend to save permanently.';
+  });
+  render();
+})();
+});
+
+/* so-faculty(20261012-150030).html.txt */
+document.addEventListener("DOMContentLoaded", function () {
+  const courseOutcomeBody = document.getElementById("courseOutcomesTableBody");
+  if (!courseOutcomeBody) return;
+  function styleAlignedSOs() {
+    courseOutcomeBody.querySelectorAll("tr:not(.sof-outcome-empty-row)").forEach(function (row) {
+      const cells = row.querySelectorAll("td");
+      if (cells.length < 3) return;
+      const alignedCell = cells[2];
+      if (alignedCell.querySelector(".sof-aligned-so")) return;
+      const values = alignedCell.textContent.split(",").map(value => value.trim()).filter(Boolean);
+      if (!values.length) return;
+      alignedCell.replaceChildren();
+      values.forEach(function (value) {
+        const pill = document.createElement("span");
+        pill.className = "sof-aligned-so";
+        pill.textContent = value;
+        alignedCell.appendChild(pill);
+      });
+    });
+  }
+  styleAlignedSOs();
+  new MutationObserver(styleAlignedSOs).observe(courseOutcomeBody, { childList: true, subtree: true });
+});
+
+/* ra-student(1).html.txt */
+document.addEventListener("DOMContentLoaded", function () {
+/* Demo-only filtering. Backend must provide authenticated student records and release flags. */
+(function () {
+  const tbody = document.getElementById('raRows');
+  const search = document.getElementById('raSearch');
+  const type = document.getElementById('raType');
+  const sort = document.getElementById('raSort');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  function render() {
+    const query = search.value.trim().toLowerCase();
+    const filtered = rows.filter(row => row.textContent.toLowerCase().includes(query) && (type.value === 'all' || row.dataset.type === type.value));
+    filtered.sort((a,b) => sort.value === 'name' ? a.cells[0].textContent.localeCompare(b.cells[0].textContent) : sort.value === 'oldest' ? a.dataset.date.localeCompare(b.dataset.date) : b.dataset.date.localeCompare(a.dataset.date));
+    tbody.replaceChildren(...filtered);
+    document.getElementById('raEmpty').hidden = filtered.length !== 0;
+  }
+  [search,type,sort].forEach(el => el.addEventListener(el === search ? 'input' : 'change',render));
+  render();
+})();
+});
+
+/* so-dept-head(20261012-150030).html.txt */
+document.addEventListener("DOMContentLoaded", function () {
+document.querySelectorAll(".sodh-tab").forEach(function(tab) {
+            tab.addEventListener("click", function() {
+                document.querySelectorAll(".sodh-tab").forEach(function(item) {
+                    item.classList.remove("active");
+                });
+                document.querySelectorAll(".sodh-tab-panel").forEach(function(panel) {
+                    panel.classList.remove("active");
+                });
+                tab.classList.add("active");
+                document.getElementById(tab.dataset.tab).classList.add("active");
+            });
+        });
+});
+
+
+/* AC Student: attainment search, release filter and sort. */
+(function () {
+  function init() {
+    const body = document.getElementById('ac-attainment-rows');
+    const search = document.getElementById('ac-attainment-search');
+    const release = document.getElementById('ac-attainment-release');
+    const sort = document.getElementById('ac-attainment-sort');
+    if (!body || !search || !release || !sort) return;
+    const rows = Array.from(body.querySelectorAll('tr'));
+    function update() {
+      const term = search.value.trim().toLowerCase();
+      const filter = release.value;
+      const ordered = rows.slice().sort((a,b) => {
+        if (sort.value === 'course') return a.cells[0].textContent.localeCompare(b.cells[0].textContent);
+        if (sort.value === 'outcome') return a.cells[1].textContent.localeCompare(b.cells[1].textContent,undefined,{numeric:true});
+        return rows.indexOf(a)-rows.indexOf(b);
+      });
+      let count=0;
+      ordered.forEach(row => {
+        const status = row.cells[4].textContent.trim().toLowerCase();
+        const visible = row.textContent.toLowerCase().includes(term) && (filter === 'all' || status === filter);
+        row.hidden = !visible;
+        if (visible) count++;
+        body.appendChild(row);
+      });
+      const empty = document.getElementById('ac-attainment-empty');
+      if (empty) empty.hidden = count !== 0;
+    }
+    search.addEventListener('input',update);
+    release.addEventListener('change',update);
+    sort.addEventListener('change',update);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',init); else init();
+})();
+
+
+

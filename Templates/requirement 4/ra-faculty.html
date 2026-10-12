@@ -11,6 +11,8 @@
 <header class="so-topbar">
 <div class="so-brand"><div class="so-brand-logo">Edu<span>Metrics</span></div><div class="so-brand-subtitle">Academic Assessment &amp; Grading System</div></div>
 <div class="so-user-area">
+<div class="edu-header-calendar-wrap"><button class="edu-header-calendar-btn" type="button" aria-label="Open calendar" aria-expanded="false" aria-haspopup="dialog"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M7 3v4M17 3v4M3 10h18"></path></svg></button><div class="edu-header-calendar-popup" role="dialog" aria-label="Calendar" hidden><label>Calendar <input type="date" aria-label="Choose calendar date"></label><p>Academic events are not connected yet.</p></div></div>
+
 <button aria-label="Notifications" class="so-notification-btn" type="button"><img alt="Notifications" class="so-notification-image" src="../../Static/images/sidebar/notif.png"/><span class="so-notification-dot"></span></button>
 <div class="so-user-info"><strong id="facultyName"></strong><span>Faculty</span></div>
 <div aria-hidden="true" class="so-avatar"><span class="so-avatar-person">●</span></div><span aria-hidden="true" class="so-online-dot"></span>
@@ -37,7 +39,7 @@
 <section aria-label="Assessment summary" class="so-summary-grid">
 <article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Total Students</span><strong class="so-summary-number" id="rafStudents">8</strong></article>
 <article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Scores Entered</span><strong class="so-summary-number" id="rafEntered">8</strong></article>
-<article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Assessment Maximum</span><strong class="so-summary-number" id="rafMaximum">20</strong></article>
+<article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Average Percentage</span><strong class="so-summary-number" id="rafMaximum">80%</strong></article>
 </section>
 <section aria-labelledby="rafTitle" class="cr-roster-panel crf-roster-panel raf-panel">
 <header class="so-section-header raf-heading"><div><h2 id="rafTitle">Raw Scores by Student</h2><p>Select an assessment, then enter the raw points earned by each student.</p></div><div class="raf-actions"><span class="sodh-status complete" id="rafMode">Open for Editing</span><button class="crf-download-btn" id="rafSave" type="button">Save Scores</button></div></header>
@@ -48,44 +50,5 @@
 </div>
 
 
-<script src="../../Static/script.js"></script>
-
-<script>
-/* Frontend demonstration only: saved scores are held in this browser session, not a backend. */
-(() => {
-  const students=[['2026-COE-001','Angel S. Villanueva'],['2026-COE-002','Bea M. Santos'],['2026-COE-003','Carl P. Reyes'],['2026-COE-004','Dana L. Cruz'],['2026-COE-005','Ella R. Garcia'],['2026-COE-006','Francis D. Lim'],['2026-COE-007','Gina A. Ramos'],['2026-COE-008','Hannah P. Tan']];
-  const assessments={quiz1:{max:20,co:'CO1',date:'Oct. 3, 2026',scores:[18,17,16,15,19,14,18,17]},quiz2:{max:20,co:'CO2',date:'Oct. 10, 2026',scores:[null,null,null,null,null,null,null,null]},lab1:{max:50,co:'CO1, CO2',date:'Sept. 19, 2026',scores:[42,45,40,38,47,41,44,46]},midterm:{max:100,co:'CO1–CO3',date:'Oct. 20, 2026',scores:[null,null,null,null,null,null,null,null]}};
-  const $=id=>document.getElementById(id), selector=$('rafAssessment'), body=$('rafRows');
-  let saved=false;
-  function render(){
-    const a=assessments[selector.value],q=$('rafSearch').value.trim().toLowerCase(),sort=$('rafSort').value;
-    $('rafMaxLabel').textContent=a.max;$('rafMaximum').textContent=a.max;$('rafCO').textContent=a.co;$('rafDate').textContent=a.date;
-    $('rafEntered').textContent=a.scores.filter(v=>v!==null).length;$('rafStudents').textContent=students.length;
-    let indices=students.map((_,i)=>i).filter(i=>(students[i].join(' ')).toLowerCase().includes(q));
-    indices.sort((i,j)=>sort==='za'?students[j][1].localeCompare(students[i][1]):sort==='high'?(a.scores[j]??-1)-(a.scores[i]??-1):sort==='low'?(a.scores[i]??Infinity)-(a.scores[j]??Infinity):students[i][1].localeCompare(students[j][1]));
-    body.replaceChildren();
-    indices.forEach((i,n)=>{
-      const tr=document.createElement('tr'); const [id,name]=students[i],v=a.scores[i];
-      tr.innerHTML=`<td>${n+1}</td><td><span class="raf-id">${id}</span></td><td class="raf-student-name"></td><td><input class="raf-score-input" type="number" min="0" max="${a.max}" step="0.01" aria-label="Raw points for ${name}" value="${v??''}"></td><td class="raf-percentage">${v===null?'—':(v/a.max*100).toFixed(1)+'%'}</td><td><span class="sodh-status ${v===null?'in-progress':'complete'}">${v===null?'Pending':'Entered'}</span></td>`;
-      tr.querySelector('.raf-student-name').textContent=name;
-      tr.querySelector('input').addEventListener('input',e=>{
-        const value=e.target.value.trim(),num=Number(value);
-        if(value!==''&&(!Number.isFinite(num)||num<0||num>a.max)){e.target.setCustomValidity(`Enter a score from 0 to ${a.max}`);e.target.reportValidity();return;}
-        e.target.setCustomValidity('');a.scores[i]=value===''?null:num;
-        tr.querySelector('.raf-percentage').textContent=value===''?'—':(num/a.max*100).toFixed(1)+'%';
-        const status=tr.querySelector('.sodh-status');status.className='sodh-status '+(value===''?'in-progress':'complete');status.textContent=value===''?'Pending':'Entered';
-        $('rafEntered').textContent=a.scores.filter(v=>v!==null).length;saved=false;$('rafMessage').textContent='Unsaved changes';
-      });body.append(tr);
-    });
-    $('rafEmpty').hidden=indices.length>0;
-  }
-  selector.addEventListener('change',()=>{saved=false;$('rafMessage').textContent='';render();});
-  $('rafSearch').addEventListener('input',render);$('rafSort').addEventListener('change',render);
-  $('rafSave').addEventListener('click',()=>{
-    if(body.querySelector('input:invalid')){body.querySelector('input:invalid').reportValidity();return;}
-    saved=true;$('rafMessage').textContent='Demo scores saved for this session only. Connect a backend to save permanently.';
-  });
-  render();
-})();
-</script></body>
+<script src="../../Static/script.js"></script></body>
 </html>

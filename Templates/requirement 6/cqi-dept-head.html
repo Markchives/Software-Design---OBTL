@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1.0" name="viewport"/>
+<title>Department CQI Register | EduMetrics</title>
+<link href="../../Static/style.css" rel="stylesheet"/>
+</head>
+<body class="so-student-page so-dept-head-page cm-dept-head-page cqi-dept-head-page dept-head-unified">
+<header class="so-topbar">
+<div class="so-brand"><div class="so-brand-logo">Edu<span>Metrics</span></div><div class="so-brand-subtitle">Academic Assessment &amp; Grading System</div></div>
+<div class="so-user-area">
+<div class="edu-header-calendar-wrap"><button aria-expanded="false" aria-label="Open calendar" class="edu-header-calendar-btn" type="button"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><rect height="16" rx="2" width="18" x="3" y="5"></rect><path d="M7 3v4M17 3v4M3 10h18"></path></svg></button><div class="edu-header-calendar-popup" hidden=""><label>Calendar <input aria-label="Choose calendar date" type="date"/></label><p>Academic events are not connected yet.</p></div></div><button aria-label="Notifications" class="so-notification-btn" type="button"><img alt="Notifications" class="so-notification-image" src="../../Static/images/sidebar/notif.png"/><span class="so-notification-dot"></span></button>
+<div class="so-user-info"><strong id="facultyName">Department Head</strong><span>Department Head</span></div>
+<div aria-hidden="true" class="so-avatar">DH</div><span aria-hidden="true" class="so-online-dot"></span>
+</div>
+</header>
+<div class="so-header-lines"><div class="so-header-blue"></div><div class="so-header-gold"></div></div>
+<div class="so-shell">
+<aside class="so-sidebar">
+<div class="so-pages-title"><span class="so-grid-icon so-pages-image-wrap"><img alt="" class="so-pages-image" src="../../Static/images/sidebar/pages.png"/></span><span>Pages</span></div>
+<nav aria-label="Department Head navigation" class="so-nav">
+<a class="so-nav-item" href="dashboard-dept-head.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/home-white.png"/></span><span>Home</span></a>
+<a class="so-nav-item" href="dashboard-dept-head.html#my-courses"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/course-white.png"/></span><span>Courses</span></a>
+<a class="so-nav-item" href="../webpage/platform.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/pl-white.png"/></span><span>Platform</span></a>
+<div class="so-nav-group"><details open=""><summary class="so-nav-item so-products active"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/ws-blue.png"/></span><span>Workflow</span></summary><div class="so-subnav"><a class="" href="../requirement 1/so-dept-head.html">Syllabus &amp; Outcomes</a><a class="" href="../requirement 2/cm-dept-head.html">Curriculum Mapping</a><a class="" href="../requirement 3/cr-dept-head.html">Class Roster</a><a class="" href="../requirement 4/ra-dept-head.html">Assessment Entry</a><a class="" href="#">Attainment</a><a class="active" href="../requirement 6/cqi-dept-head.html">CQI Planning</a><a class="" href="#">Gradebook</a><a class="" href="#">Compliance Report</a></div></details></div><a class="so-nav-item" href="../webpage/resources.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/rs-white.png"/></span><span>Resources</span></a>
+<a class="so-nav-item" href="../webpage/about us.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/au-white.png"/></span><span>About Us</span></a>
+</nav>
+<div class="so-sidebar-brand"><div class="so-sidebar-logo">Edu<span>Metrics</span></div><small>Academic Assessment &amp; Grading System</small></div>
+</aside>
+<main class="sodh-main so-main dh-main">
+<section class="so-page-heading dh-heading"><h1>CQI Planning</h1><p>Monitor continuous quality improvement actions across courses, faculty, and departments.</p></section>
+<section aria-label="Department CQI filters" class="sodh-filter-card dh-filters">
+<div class="sodh-filter-group"><label for="cqiDhYear">School Year</label><select id="cqiDhYear"><option value="">All School Years</option><option selected="">2026–2027</option><option>2025–2026</option></select></div>
+<div class="sodh-filter-group"><label for="cqiDhDepartment">Department</label><select id="cqiDhDepartment"><option value="">All Departments</option><option>Engineering</option><option>Computing</option></select></div>
+<div class="sodh-filter-group"><label for="cqiDhProgram">Program</label><select id="cqiDhProgram"><option value="">All Programs</option><option>BS Computer Engineering</option><option>BS Information Technology</option></select></div>
+<div class="sodh-filter-group"><label for="cqiDhCourseTop">Course</label><select id="cqiDhCourseTop"><option value="">All Courses</option><option>Software Design – Lab</option><option>Computer Networks</option><option>Signals and Systems</option></select></div>
+<div class="sodh-filter-group"><label for="cqiDhSection">Section</label><select id="cqiDhSection"><option value="">All Sections</option><option>COE232</option><option>COE233</option><option>ECE234</option></select></div>
+</section>
+<section aria-label="CQI summary" class="dh-summary">
+<article class="dh-stat"><span class="dh-stat-label">Total CQI Records</span><strong class="dh-stat-value" id="cqiDhTotal">4</strong></article>
+<article class="dh-stat"><span class="dh-stat-label">Submitted / For Review</span><strong class="dh-stat-value" id="cqiDhReview">1</strong></article>
+<article class="dh-stat"><span class="dh-stat-label">Approved</span><strong class="dh-stat-value" id="cqiDhApproved">1</strong></article>
+<article class="dh-stat"><span class="dh-stat-label">Ongoing</span><strong class="dh-stat-value" id="cqiDhOngoing">1</strong></article>
+</section>
+<section aria-label="Department CQI Register" class="sodh-content-card dh-panel cqi-dh-panel">
+<div class="cqi-dh-heading"><div><h2>Department CQI Register</h2><p>All CQI records within the Engineering department, including status and faculty ownership.</p></div></div>
+<div class="sodh-toolbar cqi-dh-toolbar"><label class="sodh-search"><input aria-label="Search CQI records" id="cqiDhSearch" placeholder="Search CQI ID, course, CO, or faculty..." type="search"/></label><div class="sodh-filter-group"><select aria-label="Course" id="cqiDhCourse"><option value="">All Courses</option><option>Software Design – Lab</option><option>Computer Networks</option><option>Signals and Systems</option></select></div><div class="sodh-filter-group"><select aria-label="Status" id="cqiDhStatus"><option value="">All Statuses</option><option>Submitted</option><option>Draft</option><option>Approved</option><option>Ongoing</option><option>Reviewed</option><option>For Revision</option></select></div></div>
+<div class="cqi-dh-table-scroll"><table class="sodh-table cqi-dh-table" id="cqiDhTable"><colgroup><col style="width:12%"/><col style="width:14%"/><col style="width:12%"/><col style="width:11%"/><col style="width:19%"/><col style="width:19%"/><col style="width:7%"/><col style="width:6%"/></colgroup><thead><tr><th>CQI ID</th><th>Course / Section</th><th>Faculty</th><th>CO Attainment</th><th>Outcome Concern</th><th>Proposed Action</th><th>Status</th><th>Action</th></tr></thead><tbody>
+<tr data-attainment="67%" data-co="CO3" data-course="Software Design – Lab" data-faculty="Jeffrey T. Leonen" data-goal="Raise CO3 attainment from 67% to at least 75%." data-id="CQI-COE232-003" data-note="Students struggled to apply advanced software design patterns in the project assessment." data-section="COE232" data-status="Submitted" data-target="70%"><td><strong>CQI-COE232-003</strong><small>Oct. 2026</small></td><td><strong>Software Design – Lab</strong><small>COE232</small></td><td>Jeffrey T. Leonen</td><td><strong>CO3 · 67%</strong><small>Target ≥ 70%</small></td><td>Students struggled to apply advanced software design patterns in the project assessment.</td><td>Raise CO3 attainment from 67% to at least 75%.</td><td><span class="cqi-dh-status submitted">Submitted</span></td><td><div class="cqi-dh-actions"><button class="cqi-dh-outline" data-action="evidence" type="button">View Evidence</button></div></td></tr>
+<tr data-attainment="65%" data-co="CO5" data-course="Software Design – Lab" data-faculty="Jeffrey T. Leonen" data-goal="Raise CO5 attainment from 65% to at least 75%." data-id="CQI-COE232-005" data-note="Students need more practice evaluating software quality metrics." data-section="COE232" data-status="Draft" data-target="70%"><td><strong>CQI-COE232-005</strong><small>Oct. 2026</small></td><td><strong>Software Design – Lab</strong><small>COE232</small></td><td>Jeffrey T. Leonen</td><td><strong>CO5 · 65%</strong><small>Target ≥ 70%</small></td><td>Students need more practice evaluating software quality metrics.</td><td>Raise CO5 attainment from 65% to at least 75%.</td><td><span class="cqi-dh-status draft">Draft</span></td><td><div class="cqi-dh-actions"><button class="cqi-dh-outline" data-action="evidence" type="button">View Evidence</button></div></td></tr>
+<tr data-attainment="62%" data-co="CO2" data-course="Computer Networks" data-faculty="Maria L. Santos" data-goal="Raise CO2 attainment from 62% to at least 75%." data-id="CQI-COE233-002" data-note="Students need additional practice applying subnetting and network troubleshooting skills." data-section="COE233" data-status="Approved" data-target="70%"><td><strong>CQI-COE233-002</strong><small>Oct. 2026</small></td><td><strong>Computer Networks</strong><small>COE233</small></td><td>Maria L. Santos</td><td><strong>CO2 · 62%</strong><small>Target ≥ 70%</small></td><td>Students need additional practice applying subnetting and network troubleshooting skills.</td><td>Raise CO2 attainment from 62% to at least 75%.</td><td><span class="cqi-dh-status approved">Approved</span></td><td><div class="cqi-dh-actions"><button class="cqi-dh-outline" data-action="evidence" type="button">View Evidence</button></div></td></tr>
+<tr data-attainment="66%" data-co="CO4" data-course="Signals and Systems" data-faculty="Roxanne D. Cruz" data-goal="Raise CO4 attainment from 66% to at least 75%." data-id="CQI-ECE234-004" data-note="Students need more guided practice interpreting spectrum-analysis results." data-section="ECE234" data-status="Ongoing" data-target="70%"><td><strong>CQI-ECE234-004</strong><small>Oct. 2026</small></td><td><strong>Signals and Systems</strong><small>ECE234</small></td><td>Roxanne D. Cruz</td><td><strong>CO4 · 66%</strong><small>Target ≥ 70%</small></td><td>Students need more guided practice interpreting spectrum-analysis results.</td><td>Raise CO4 attainment from 66% to at least 75%.</td><td><span class="cqi-dh-status ongoing">Ongoing</span></td><td><div class="cqi-dh-actions"><button class="cqi-dh-outline" data-action="evidence" type="button">View Evidence</button></div></td></tr>
+</tbody></table><p class="cqi-dh-empty" hidden="" id="cqiDhEmpty">No CQI records match the selected filters.</p></div>
+</section>
+<dialog aria-labelledby="cqiDhDialogTitle" class="cqi-dh-dialog" id="cqiDhDialog">
+<div class="cqi-dh-dialog-inner">
+<header class="cqi-dh-dialog-head">
+<div><span class="cqi-dh-kicker">CONTINUOUS QUALITY IMPROVEMENT</span><h2 id="cqiDhDialogTitle">CQI Evidence &amp; Review</h2><p>Review the submitted faculty CQI plan and provide your decision.</p></div>
+<button aria-label="Close dialog" class="cqi-dh-close" id="cqiDhX" type="button">×</button>
+</header>
+<div class="cqi-dh-dialog-body">
+<div class="cqi-dh-dialog-details" id="cqiDhDialogDetails"></div>
+<section class="cqi-dh-feedback-panel" hidden="" id="cqiDhFeedbackPanel">
+<label for="cqiDhReviewNotes">Review Feedback <span aria-hidden="true">*</span></label>
+<textarea id="cqiDhReviewNotes" placeholder="Describe what the faculty should revise..." required="" rows="4"></textarea>
+<p class="cqi-dh-validation" hidden="" id="cqiDhValidation" role="alert">Please enter feedback before returning for revision.</p>
+<div class="cqi-dh-dialog-actions">
+<button class="cqi-dh-outline" id="cqiDhBack" type="button">Back</button>
+<button class="cqi-dh-gold" id="cqiDhReturn" type="button">Return for Revision</button>
+</div>
+</section>
+</div>
+<div class="cqi-dh-dialog-actions cqi-dh-dialog-footer" id="cqiDhMainActions">
+<button class="cqi-dh-outline" id="cqiDhClose" type="button">Close</button>
+<button class="cqi-dh-outline" id="cqiDhReviewAction" type="button">Review</button>
+<button class="cqi-dh-gold" id="cqiDhApprove" type="button">Approve</button>
+</div>
+</div>
+</dialog>
+</main>
+</div>
+<script src="../../Static/script.js"></script>
+</body>
+</html>
