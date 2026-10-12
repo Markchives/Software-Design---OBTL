@@ -1,3 +1,88 @@
+/* WORKFLOW 8-STEP EXPLORER */
+(function () {
+    "use strict";
+    const root = document.querySelector("#academic-workflow");
+    if (!root) return;
+    const steps = [
+        [
+            "Syllabus & Outcome Setup",
+            "Define the course syllabus and align Course Outcomes (COs) with Student Outcomes (SOs).",
+            "Create an aligned academic foundation.",
+            "Faculty / Department Head"
+        ],
+        [
+            "Multi-Tier Curriculum Mapping",
+            "Connect activities, rubrics, quizzes, laboratories, and examinations to COs and SOs.",
+            "Documented curriculum and assessment alignment.",
+            "Faculty / Department Head"
+        ],
+        [
+            "Class Roster Enrollment",
+            "Organize student enrollment by course and section with structured roster management.",
+            "An accurate enrolled-student roster.",
+            "Faculty / Department Head"
+        ],
+        [
+            "Raw Assessment Score Entry",
+            "Encode earned points for quizzes, projects, laboratory work, and major examinations.",
+            "Recorded assessment evidence for each student.",
+            "Faculty"
+        ],
+        [
+            "Attainment Calculation",
+            "Review calculated CO and SO attainment against target percentage thresholds.",
+            "Attainment summaries and identified learning gaps.",
+            "Faculty / Department Head"
+        ],
+        [
+            "CQI Action Planning",
+            "Identify unmet outcomes and prepare targeted corrective or improvement actions.",
+            "A documented continuous improvement action plan.",
+            "Faculty / Department Head"
+        ],
+        [
+            "Gradebook Locking",
+            "Review, verify, and lock finalized grade records under authorized oversight.",
+            "Verified and locked academic records.",
+            "Faculty / Department Head"
+        ],
+        [
+            "Compliance Report Printing",
+            "Generate assessment, grading, syllabus, attainment, and CQI reports.",
+            "Printable academic compliance and evidence reports.",
+            "Department Head / Authorized Staff"
+        ]
+    ];
+    const cards = Array.from(root.querySelectorAll("[data-wf8-step]"));
+    let current = 0;
+
+    function show(index) {
+        current = (index + steps.length) % steps.length;
+        const step = steps[current];
+        if (
+            !root.querySelector("#wf8DetailCount") ||
+            !root.querySelector("#wf8DetailTitle") ||
+            !root.querySelector("#wf8DetailDescription") ||
+            !root.querySelector("#wf8DetailOutput") ||
+            !root.querySelector("#wf8DetailRole")
+        ) return;
+        root.querySelector("#wf8DetailCount").textContent = "STEP " + String(current + 1).padStart(2, "0") + " OF 08";
+        root.querySelector("#wf8DetailTitle").textContent = step[0];
+        root.querySelector("#wf8DetailDescription").textContent = step[1];
+        root.querySelector("#wf8DetailOutput").textContent = step[2];
+        root.querySelector("#wf8DetailRole").textContent = step[3];
+        cards.forEach((card, i) => {
+            card.classList.toggle("is-active", i === current);
+            card.setAttribute("aria-pressed", String(i === current))
+        })
+    }
+
+    cards.forEach((card, i) => card.addEventListener("click", () => show(i)));
+    const next = root.querySelector("#wf8Next");
+    if (next) next.addEventListener("click", () => show(current + 1));
+    if (cards.length) show(0)
+})();
+
 /* REQUIREMENT 3 — CLASS ROSTER FACULTY */
 (function () {
     "use strict";
@@ -565,42 +650,41 @@ document.addEventListener("click", function (event) {
 });
 
 /* EduMetrics - Academic Assessment & Grading System */
-/**Get an element safely.*/
+/** Get an element safely. */
 function getElement(id) {
     return document.getElementById(id);
 }
 
-/**Check whether an element exists.*/
+/** Check whether an element exists. */
 function elementExists(id) {
     return getElement(id) !== null;
 }
 
-/**Open a modal.*/
+/** Open a modal. */
+function setModalVisibility(modalId, visible) {
+    const modal = getElement(modalId);
+    if (!modal) return;
+
+    modal.classList.toggle("show", visible);
+    modal.setAttribute("aria-hidden", String(!visible));
+}
+
+/** Open a modal. */
 function openModal(modalId) {
-    const modal = getElement(modalId);
-    if (!modal) {
-        return;
-    }
-    modal.classList.add("show");
-    modal.setAttribute("aria-hidden", "false");
+    setModalVisibility(modalId, true);
 }
 
-/**Close a modal.*/
+/** Close a modal. */
 function closeModal(modalId) {
-    const modal = getElement(modalId);
-    if (!modal) {
-        return;
-    }
-    modal.classList.remove("show");
-    modal.setAttribute("aria-hidden", "true");
+    setModalVisibility(modalId, false);
 }
 
-/* EMAIL VALIDATION*/
+/* EMAIL VALIDATION */
 function isValidEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-/* PASSWORD VALIDATION*/
+/* PASSWORD VALIDATION */
 function validatePassword(password) {
     return {
         length: password.length >= 8,
@@ -611,7 +695,7 @@ function validatePassword(password) {
     };
 }
 
-/**Check if password satisfies all requirements.*/
+/** Check if password satisfies all requirements. */
 function isStrongPassword(password) {
     const result = validatePassword(password);
     return (result.length &&
@@ -621,59 +705,30 @@ function isStrongPassword(password) {
         result.special);
 }
 
-/* PASSWORD SHOW / HIDE*/
+/* PASSWORD SHOW / HIDE */
 function togglePassword(inputId, button) {
     const input = getElement(inputId);
-    if (!input) {
-        return;
-    }
-    if (input.type ===
-        "password") {
-        input.type =
-            "text";
-        if (button) {
-            button.setAttribute("aria-label", "Hide password");
-        }
-    }
-    else {
-        input.type =
-            "password";
-        if (button) {
-            button.setAttribute("aria-label", "Show password");
-        }
+    if (!input) return;
+
+    const showPassword = input.type === "password";
+    input.type = showPassword ? "text" : "password";
+
+    if (button) {
+        button.setAttribute("aria-label", showPassword ? "Hide password" : "Show password");
     }
 }
 
-/* LOGIN PASSWORD*/
+/* LOGIN PASSWORD */
 function toggleLoginPassword() {
-    const password = getElement("loginPassword");
-    const button = document.querySelector(".password-toggle");
-    if (!password) {
-        return;
-    }
-    if (password.type ===
-        "password") {
-        password.type =
-            "text";
-        if (button) {
-            button.setAttribute("aria-label", "Hide password");
-        }
-    }
-    else {
-        password.type =
-            "password";
-        if (button) {
-            button.setAttribute("aria-label", "Show password");
-        }
-    }
+    togglePassword("loginPassword", document.querySelector(".password-toggle"));
 }
 
-/* REGISTRATION PASSWORD*/
+/* REGISTRATION PASSWORD */
 function toggleSignupPassword(inputId, button) {
     togglePassword(inputId, button);
 }
 
-/* PASSWORD REQUIREMENTS*/
+/* PASSWORD REQUIREMENTS */
 function updatePasswordRequirement(elementId, passed, text) {
     const element = getElement(elementId);
     if (!element) {
@@ -687,7 +742,7 @@ function updatePasswordRequirement(elementId, passed, text) {
     element.classList.toggle("requirement-passed", passed);
 }
 
-/**Update all password requirement indicators.*/
+/** Update all password requirement indicators. */
 function updatePasswordRequirements(password) {
     const result = validatePassword(password);
     updatePasswordRequirement("lengthRequirement", result.length, "8 or more characters");
@@ -697,7 +752,7 @@ function updatePasswordRequirements(password) {
     updatePasswordRequirement("specialRequirement", result.special, "At least one special character");
 }
 
-/* EMAIL MASKING*/
+/* EMAIL MASKING */
 function maskEmail(email) {
     if (!email) {
         return ("your email address");
@@ -724,7 +779,7 @@ function maskEmail(email) {
         domain);
 }
 
-/* ROLE FORMATTING*/
+/* ROLE FORMATTING */
 function formatRole(role) {
     const roleNames = {
         "student": "Student",
@@ -737,7 +792,7 @@ function formatRole(role) {
         "User");
 }
 
-/* ROLE VALIDATION*/
+/* ROLE VALIDATION */
 function isValidRole(role) {
     const validRoles = [
         "student",
@@ -748,9 +803,9 @@ function isValidRole(role) {
     return validRoles.includes(role);
 }
 
-/* SOCIAL LOGIN / SIGNUP*/
+/* SOCIAL LOGIN / SIGNUP */
 function socialLogin(provider) {
-    /*SOCIAL LOGIN FLOW*/
+    /* SOCIAL LOGIN FLOW */
     const params = new URLSearchParams(window.location.search);
     let role = params.get("role") ||
         getSelectedRole() ||
@@ -764,7 +819,7 @@ function socialLogin(provider) {
     sessionStorage.setItem("verificationPurpose", "login");
     sessionStorage.setItem("verificationType", "login");
 
-    /* GOOGLE / GMAIL LOGIN*/
+    /* GOOGLE / GMAIL LOGIN */
     if (provider ===
         "Google") {
         sessionStorage.setItem("verificationProvider", "google");
@@ -773,7 +828,7 @@ function socialLogin(provider) {
         return;
     }
 
-    /*MICROSOFT LOGIN*/
+    /* MICROSOFT LOGIN */
     if (provider ===
         "Microsoft") {
         sessionStorage.setItem("verificationProvider", "microsoft");
@@ -782,7 +837,7 @@ function socialLogin(provider) {
         return;
     }
 
-    /*Fallback for an unsupported provider.*/
+    /* Fallback for an unsupported provider. */
     showGenericModal("Sign in unavailable", "Please select Google or Microsoft to continue.", "!");
 }
 
@@ -791,7 +846,7 @@ function socialSignup(provider) {
         " registration will be available once the authentication service is connected.", "!");
 }
 
-/* GENERIC MODAL*/
+/* GENERIC MODAL */
 function showGenericModal(title, message, icon = "!") {
     /* LOGIN MODAL */
     const loginModal = getElement("loginMessageModal");
@@ -882,7 +937,7 @@ function closeLoginModal() {
     closeModal("loginMessageModal");
 }
 
-/* VERIFICATION MODAL*/
+/* VERIFICATION MODAL */
 function showVerificationModal(title, message, icon = "!") {
     const modal = getElement("verificationModal");
     if (!modal) {
@@ -911,13 +966,13 @@ function closeVerificationModal() {
     closeModal("verificationModal");
 }
 
-/* HEADER MESSAGE*/
+/* HEADER MESSAGE */
 function showHeaderMessage(section) {
     showGenericModal(section, section +
         " options will be available once this section is connected.", "!");
 }
 
-/* FORGOT PASSWORD*/
+/* FORGOT PASSWORD */
 function handleForgotPassword(event) {
     if (event) {
         event.preventDefault();
@@ -925,7 +980,7 @@ function handleForgotPassword(event) {
     window.location.href = "/forgot-password.html";
 }
 
-/* TERMS AND CONDITIONS*/
+/* TERMS AND CONDITIONS */
 function showTerms(event) {
     if (event) {
         event.preventDefault();
@@ -960,7 +1015,7 @@ function acceptTerms() {
     closeTerms();
 }
 
-/* OTP HELPERS*/
+/* OTP HELPERS */
 function getOtpInputs() {
     return Array.from(document.querySelectorAll(".otp-input"));
 }
@@ -1053,7 +1108,7 @@ function setupOtpInputs() {
     });
 }
 
-/* VERIFICATION CODE*/
+/* VERIFICATION CODE */
 function generateVerificationCode() {
     return String(Math.floor(100000 +
         Math.random() *
@@ -1075,7 +1130,7 @@ function createVerificationCode() {
     return code;
 }
 
-/* VERIFICATION TIMER*/
+/* VERIFICATION TIMER */
 let verificationTimerInterval = null;
 
 function formatVerificationTime(seconds) {
@@ -1125,19 +1180,18 @@ function resendVerificationCode(event) {
     if (event) {
         event.preventDefault();
     }
-    const newCode = createVerificationCode();
+    createVerificationCode();
     clearOtpInputs();
     startVerificationTimer(60);
-    console.log("New verification code:", newCode);
     showVerificationModal("Code Resent", "A new verification code has been sent.", "✓");
 }
 
-/* OTP / VERIFICATION INITIALIZATION*/
+/* OTP / VERIFICATION INITIALIZATION */
 document.addEventListener("DOMContentLoaded", function () {
     setupOtpInputs();
 });
 
-/* OTP RESEND TIMER*/
+/* OTP RESEND TIMER */
 let eduMetricsCountdownInterval = null;
 
 function startResendCountdown(seconds = 30) {
@@ -1253,7 +1307,7 @@ function saveVerificationData(email, role, purpose) {
     sessionStorage.setItem("verificationPurpose", purpose || "");
 }
 
-/**Clear verification-related session data.*/
+/** Clear verification-related session data. */
 function clearVerificationData() {
     const keys = [
         "verificationEmail",
@@ -1271,7 +1325,7 @@ function clearVerificationData() {
     });
 }
 
-/* ROLE STORAGE*/
+/* ROLE STORAGE */
 function saveSelectedRole(role) {
     if (!role) {
         return;
@@ -1283,7 +1337,7 @@ function getSelectedRole() {
     return sessionStorage.getItem("selectedRole");
 }
 
-/**Restore saved role into a select element.*/
+/** Restore saved role into a select element. */
 function restoreSelectedRole(selectId) {
     const select = getElement(selectId);
     if (!select) {
@@ -1343,7 +1397,7 @@ function showSettings() {
     openInfoModal("Settings", "System settings will be available after you log in.", "⚙");
 }
 
-/*WEBSITE INFORMATION CARDS*/
+/* WEBSITE INFORMATION CARDS */
 function handleInfoClick(event, type) {
     if (event) {
         event.preventDefault();
@@ -1377,7 +1431,7 @@ function handleInfoClick(event, type) {
     openInfoModal(selected.title, selected.text, selected.icon);
 }
 
-/* REGISTRATION BACK BUTTON*/
+/* REGISTRATION BACK BUTTON */
 function initializeRegistrationBackButton() {
     const backButton = document.querySelector(".registration-back");
     if (!backButton) {
@@ -1425,7 +1479,7 @@ function initializeLoginRoleFromURL() {
     }
 }
 
-/* LOGIN VERIFICATION PAGE*/
+/* LOGIN VERIFICATION PAGE */
 function initializeLoginVerificationPage() {
     const roleLabel = getElement("verificationRoleLabel") ||
         getElement("verificationHeaderRole");
@@ -1442,7 +1496,7 @@ function initializeLoginVerificationPage() {
         return;
     }
 
-    /*Verification role has first priority.*/
+    /* Verification role has first priority. */
     let role = sessionStorage.getItem("verificationRole") ||
         getSelectedRole() ||
         "student";
@@ -1451,17 +1505,17 @@ function initializeLoginVerificationPage() {
             "student";
     }
 
-    /*Keep both role values synchronized.*/
+    /* Keep both role values synchronized. */
     sessionStorage.setItem("verificationRole", role);
     saveSelectedRole(role);
 
-    /*HEADER ROLE*/
+    /* HEADER ROLE */
     if (roleLabel) {
         roleLabel.textContent =
             formatRole(role);
     }
 
-    /*VERIFICATION EMAIL */
+    /* VERIFICATION EMAIL */
     const email = sessionStorage.getItem("verificationEmail") || "";
     if (emailLabel) {
         emailLabel.textContent =
@@ -1469,7 +1523,7 @@ function initializeLoginVerificationPage() {
             "your email address";
     }
 
-    /* BACK URL*/
+    /* BACK URL */
     const loginURL = "login page.html?role=" +
         encodeURIComponent(role);
     if (verificationBackButton) {
@@ -1481,19 +1535,19 @@ function initializeLoginVerificationPage() {
             loginURL;
     }
 
-    /* PAGE TITLE*/
+    /* PAGE TITLE */
     document.title =
         "EduMetrics | " +
         formatRole(role) +
         " Verification";
 
-    /*START RESEND TIMER*/
+    /* START RESEND TIMER */
     if (getElement("resendButton")) {
         startResendCountdown(30);
     }
 }
 
-/* LOGIN PAGE ROLE CHANGE*/
+/* LOGIN PAGE ROLE CHANGE */
 function initializeLoginRoleChange() {
     const loginRole = getElement("loginRole");
     if (!loginRole) {
@@ -1515,7 +1569,7 @@ function initializeLoginRoleChange() {
     });
 }
 
-/* SIGNUP ROLE CHANGE*/
+/* SIGNUP ROLE CHANGE */
 function initializeSignupRoleChange() {
     const signupRole = getElement("signupRole");
     if (!signupRole) {
@@ -1532,7 +1586,7 @@ function initializeSignupRoleChange() {
     });
 }
 
-/* REGISTRATION PASSWORD REQUIREMENTS*/
+/* REGISTRATION PASSWORD REQUIREMENTS */
 function initializeSignupPasswordRequirements() {
     const signupPassword = getElement("signupPassword");
     if (!signupPassword) {
@@ -1552,7 +1606,7 @@ function initializeSignupPasswordRequirements() {
 
 /* GENERIC CLOSE MODAL EVENTS */
 document.addEventListener("click", function (event) {
-    /* INFO MODAL*/
+    /* INFO MODAL */
     const infoModal = getElement("infoModal");
     if (infoModal &&
         event.target ===
@@ -1560,7 +1614,7 @@ document.addEventListener("click", function (event) {
         closeInfoModal();
     }
 
-    /* LOGIN MODAL*/
+    /* LOGIN MODAL */
     const loginModal = getElement("loginMessageModal");
     if (loginModal &&
         event.target ===
@@ -1568,7 +1622,7 @@ document.addEventListener("click", function (event) {
         closeLoginModal();
     }
 
-    /* VERIFICATION MODAL*/
+    /* VERIFICATION MODAL */
     const verificationModal = getElement("verificationModal");
     if (verificationModal &&
         event.target ===
@@ -1576,7 +1630,7 @@ document.addEventListener("click", function (event) {
         closeVerificationModal();
     }
 
-    /* TERMS MODAL*/
+    /* TERMS MODAL */
     const termsModal = getElement("termsModal");
     if (termsModal &&
         event.target ===
@@ -1585,7 +1639,7 @@ document.addEventListener("click", function (event) {
     }
 });
 
-/* ESCAPE KEY*/
+/* ESCAPE KEY */
 document.addEventListener("keydown", function (event) {
     if (event.key !==
         "Escape") {
@@ -1597,31 +1651,30 @@ document.addEventListener("keydown", function (event) {
     closeTerms();
 });
 
-/* INITIALIZE COMMON FEATURES*/
+/* INITIALIZE COMMON FEATURES */
 document.addEventListener("DOMContentLoaded", function () {
     /* LOGIN ROLE FROM URL */
     initializeLoginRoleFromURL();
 
-    /* REGISTRATION BACK BUTTON*/
+    /* REGISTRATION BACK BUTTON */
     initializeRegistrationBackButton();
 
     /* RESTORE LOGIN ROLE */
     restoreSelectedRole("loginRole");
-    initializeLoginRoleFromURL();
 
-    /*  RESTORE SIGNUP ROLE */
+    /* RESTORE SIGNUP ROLE */
     restoreSelectedRole("signupRole");
 
-    /* LOGIN ROLE CHANGE*/
+    /* LOGIN ROLE CHANGE */
     initializeLoginRoleChange();
 
-    /* SIGNUP ROLE CHANGE*/
+    /* SIGNUP ROLE CHANGE */
     initializeSignupRoleChange();
 
     /* REGISTRATION PASSWORD REQUIREMENTS */
     initializeSignupPasswordRequirements();
 
-    /* LOGIN VERIFICATION PAGE*/
+    /* LOGIN VERIFICATION PAGE */
     initializeLoginVerificationPage();
 
     /* OTP INITIALIZATION */
@@ -1679,8 +1732,8 @@ function normalizeStoredStudentOutcomeTitles() {
 }
 normalizeStoredStudentOutcomeTitles();
 
-/* SYLLABUS & OUTCOMES -STUDENT + FACULTY SHARED PAGE FUNCTIONS*/
-/* DATE HELPER*/
+/* SYLLABUS & OUTCOMES -STUDENT + FACULTY SHARED PAGE FUNCTIONS */
+/* DATE HELPER */
 function getFormattedDate() {
     return new Date().toLocaleDateString("en-US", {
         month: "long",
@@ -1689,7 +1742,7 @@ function getFormattedDate() {
     });
 }
 
-/* FILE SIZE HELPER*/
+/* FILE SIZE HELPER */
 function formatFileSize(bytes) {
     if (!bytes) {
         return "0 MB";
@@ -1699,7 +1752,7 @@ function formatFileSize(bytes) {
     return mb.toFixed(2) + " MB";
 }
 
-/* SAFE SHOW / HIDE HELPERS*/
+/* SAFE SHOW / HIDE HELPERS */
 function showElement(element) {
     if (!element) {
         return;
@@ -1714,7 +1767,7 @@ function hideElement(element) {
     element.hidden = true;
 }
 
-/* TABS-WORKS FOR STUDENT + FACULTY*/
+/* TABS-WORKS FOR STUDENT + FACULTY */
 function initializeSyllabusOutcomeTabs() {
     const tabs = document.querySelectorAll(".sof-tab");
     if (!tabs.length) {
@@ -1740,6 +1793,9 @@ function initializeSyllabusOutcomeTabs() {
                 panel.classList.remove("active");
             });
             this.classList.add("active");
+            tabs.forEach(function (item) {
+                item.setAttribute("aria-selected", String(item === tab));
+            });
             const targetPanel = document.getElementById(targetId);
             if (targetPanel) {
                 targetPanel.classList.add("active");
@@ -1748,7 +1804,7 @@ function initializeSyllabusOutcomeTabs() {
     });
 }
 
-/* COURSE SYLLABUS-FACULTY ONLY*/
+/* COURSE SYLLABUS-FACULTY ONLY */
 function initializeFacultySyllabus() {
     const syllabusFile = document.getElementById("syllabusFile");
     const syllabusLastUpdated = document.getElementById("syllabusLastUpdated");
@@ -1765,7 +1821,7 @@ function initializeFacultySyllabus() {
         return;
     }
 
-    /*Prevent duplicate initialization.*/
+    /* Prevent duplicate initialization. */
     if (syllabusFile.dataset.initialized ===
         "true") {
         return;
@@ -1786,7 +1842,7 @@ function initializeFacultySyllabus() {
         }
     }
 
-    /* UPLOAD SYLLABUS*/
+    /* UPLOAD SYLLABUS */
     syllabusFile.addEventListener("change", function () {
         if (!this.files ||
             !this.files.length) {
@@ -1826,7 +1882,7 @@ function initializeFacultySyllabus() {
         closeSyllabusMenu();
     });
 
-    /* VIEW SYLLABUS*/
+    /* VIEW SYLLABUS */
     if (viewSyllabusButton) {
         viewSyllabusButton.addEventListener("click", function () {
             if (!currentSyllabusURL) {
@@ -1836,7 +1892,7 @@ function initializeFacultySyllabus() {
         });
     }
 
-    /* DOWNLOAD SYLLABUS*/
+    /* DOWNLOAD SYLLABUS */
     if (downloadSyllabusButton) {
         downloadSyllabusButton.addEventListener("click", function () {
             if (!currentSyllabusURL ||
@@ -1855,7 +1911,7 @@ function initializeFacultySyllabus() {
         });
     }
 
-    /* THREE DOTS*/
+    /* THREE DOTS */
     if (syllabusMoreButton &&
         syllabusFileMenu) {
         syllabusMoreButton.addEventListener("click", function (event) {
@@ -1904,7 +1960,7 @@ function initializeFacultySyllabus() {
         });
     }
 
-    /* CLICK OUTSIDE*/
+    /* CLICK OUTSIDE */
     document.addEventListener("click", function (event) {
         if (syllabusMoreButton &&
             syllabusMoreButton.contains(event.target)) {
@@ -1917,7 +1973,7 @@ function initializeFacultySyllabus() {
         closeSyllabusMenu();
     });
 
-    /* ESC*/
+    /* ESC */
     document.addEventListener("keydown", function (event) {
         if (event.key ===
             "Escape") {
@@ -1926,7 +1982,7 @@ function initializeFacultySyllabus() {
     });
 }
 
-/* FACULTY — SYLLABUS & OUTCOMES*/
+/* FACULTY — SYLLABUS & OUTCOMES */
 document.addEventListener("DOMContentLoaded", function () {
     initFacultySyllabusOutcomes();
 });
@@ -1937,7 +1993,7 @@ function initFacultySyllabusOutcomes() {
         return;
     }
 
-    /* COMMON HELPERS*/
+    /* COMMON HELPERS */
     function escapeHTML(value) {
         return String(value ?? "")
             .replaceAll("&", "&amp;")
@@ -1969,16 +2025,6 @@ function initFacultySyllabusOutcomes() {
         }
     }
 
-    function formatFileSize(bytes) {
-        if (!bytes) {
-            return "0 MB";
-        }
-        const mb = bytes /
-            (1024 * 1024);
-        return (mb.toFixed(2) +
-            " MB");
-    }
-
     function formatDate(value) {
         if (!value) {
             return "—";
@@ -2000,7 +2046,7 @@ function initFacultySyllabusOutcomes() {
             });
     }
 
-    /* TABS*/
+    /* TABS */
     const tabs = document.querySelectorAll(".sof-tab");
     const tabPanels = document.querySelectorAll(".sof-tab-panel");
     tabs.forEach(function (tab) {
@@ -2023,7 +2069,7 @@ function initFacultySyllabusOutcomes() {
         });
     });
 
-    /* COURSE SYLLABUS*/
+    /* COURSE SYLLABUS */
     const syllabusFile = document.getElementById("syllabusFile");
     const syllabusLastUpdated = document.getElementById("syllabusLastUpdated");
     const syllabusEmpty = document.getElementById("facultySyllabusEmpty");
@@ -2043,7 +2089,7 @@ function initFacultySyllabusOutcomes() {
     let currentSyllabusURL = null;
     let currentSyllabusFile = null;
 
-    /* SYLLABUS UPLOAD*/
+    /* SYLLABUS UPLOAD */
     if (syllabusFile) {
         syllabusFile.addEventListener("change", function () {
             if (!this.files ||
@@ -2093,7 +2139,7 @@ function initFacultySyllabusOutcomes() {
         });
     }
 
-    /* VIEW SYLLABUS*/
+    /* VIEW SYLLABUS */
     if (viewSyllabusButton) {
         viewSyllabusButton.addEventListener("click", function () {
             if (!currentSyllabusURL) {
@@ -2123,7 +2169,7 @@ function initFacultySyllabusOutcomes() {
         });
     }
 
-    /* SYLLABUS MORE MENU*/
+    /* SYLLABUS MORE MENU */
     if (syllabusMoreButton &&
         syllabusFileMenu) {
         syllabusMoreButton.addEventListener("click", function (event) {
@@ -2144,7 +2190,7 @@ function initFacultySyllabusOutcomes() {
         });
     }
 
-    /* OPEN DELETE SYLLABUS*/
+    /* OPEN DELETE SYLLABUS */
     if (deleteSyllabusOption) {
         deleteSyllabusOption.addEventListener("click", function () {
             if (syllabusFileMenu) {
@@ -2211,7 +2257,7 @@ function initFacultySyllabusOutcomes() {
         });
     }
 
-    /* COURSE OUTCOME*/
+    /* COURSE OUTCOME */
     const addCourseOutcomeButton = document.getElementById("addCourseOutcomeButton");
     const courseOutcomeModal = document.getElementById("courseOutcomeModal");
     const courseOutcomeBackdrop = document.getElementById("courseOutcomeBackdrop");
@@ -2274,7 +2320,7 @@ function initFacultySyllabusOutcomes() {
             });
     }
 
-    /* SO BUTTON MULTI-SELECT*/
+    /* SO BUTTON MULTI-SELECT */
     getAlignedSOOptions()
         .forEach(function (option) {
             if (option.dataset.soMultiSelectInitialized ===
@@ -2296,7 +2342,7 @@ function initFacultySyllabusOutcomes() {
             });
         });
 
-    /* COURSE OUTCOME SELECT*/
+    /* COURSE OUTCOME SELECT */
     if (courseOutcomeSelect) {
         courseOutcomeSelect.addEventListener("change", function () {
             const option = this.options[this.selectedIndex];
@@ -2332,7 +2378,7 @@ function initFacultySyllabusOutcomes() {
         });
     }
 
-    /* RESET COURSE OUTCOME FORM*/
+    /* RESET COURSE OUTCOME FORM */
     function resetCourseOutcomeForm() {
         editingCourseOutcomeRow =
             null;
@@ -2365,7 +2411,7 @@ function initFacultySyllabusOutcomes() {
         }
     }
 
-    /*OPEN ADD COURSE OUTCOME*/
+    /* OPEN ADD COURSE OUTCOME */
     if (addCourseOutcomeButton) {
         addCourseOutcomeButton.addEventListener("click", function () {
             resetCourseOutcomeForm();
@@ -2381,7 +2427,7 @@ function initFacultySyllabusOutcomes() {
         });
     }
 
-    /* CLOSE COURSE OUTCOME*/
+    /* CLOSE COURSE OUTCOME */
     function closeCourseOutcomeForm() {
         closeModal(courseOutcomeModal);
         resetCourseOutcomeForm();
@@ -2399,7 +2445,7 @@ function initFacultySyllabusOutcomes() {
         });
     }
 
-    /* SAVE COURSE OUTCOME*/
+    /* SAVE COURSE OUTCOME */
     if (saveCourseOutcomeButton) {
         saveCourseOutcomeButton.addEventListener("click", function (event) {
             event.preventDefault();
@@ -2443,7 +2489,7 @@ function initFacultySyllabusOutcomes() {
                 return;
             }
 
-            /*PREVENT DUPLICATE CO*/
+            /* PREVENT DUPLICATE CO */
             const duplicate = Array.from(courseOutcomesTableBody
                 .querySelectorAll("tr"))
                 .some(function (row) {
@@ -2456,7 +2502,7 @@ function initFacultySyllabusOutcomes() {
                 return;
             }
 
-            /* ADD NEW COURSE OUTCOME*/
+            /* ADD NEW COURSE OUTCOME */
             const row = document.createElement("tr");
             row.dataset.coNumber =
                 coNumber;
@@ -2512,7 +2558,7 @@ function initFacultySyllabusOutcomes() {
             const editButton = event.target.closest(".js-edit-course-outcome");
             const deleteButton = event.target.closest(".js-delete-course-outcome");
 
-            /*  EDIT COURSE OUTCOME*/
+            /* EDIT COURSE OUTCOME */
             if (editButton) {
                 const row = editButton.closest("tr");
                 if (!row) {
@@ -2581,7 +2627,7 @@ function initFacultySyllabusOutcomes() {
                 return;
             }
 
-            /*DELETE COURSE OUTCOME*/
+            /* DELETE COURSE OUTCOME */
             if (deleteButton) {
                 const row = deleteButton.closest("tr");
                 if (!row) {
@@ -3111,7 +3157,7 @@ function initFacultySyllabusOutcomes() {
         }
     });
 
-    /* INITIAL PAGE STATE*/
+    /* INITIAL PAGE STATE */
     tabPanels.forEach(function (panel) {
         panel.classList.toggle("active", panel.id ===
             "syllabus");
@@ -4737,12 +4783,33 @@ document.addEventListener("DOMContentLoaded", function () {
     const scoreMappedCos = document.getElementById('scoreMappedCos');
     const scoreMean = document.getElementById('scoreMean');
     const scoreTableBody = document.getElementById('scoreTableBody');
+
+    // This script only applies to the faculty curriculum mapping page.
+    if (!modal || !openBtn || !closeBtn || !cancelBtn || !form) return;
+
     let rowToDelete = null;
     let rowToEdit = null;
 
-    function openModal() { rowToEdit = null; form.reset(); coError.textContent = ''; document.getElementById('assessmentModalTitle').textContent = 'Add Assessment'; document.getElementById('assessmentCoHelper').textContent = 'Select one or more COs.'; form.querySelector('.cm-assessment-save-btn').textContent = 'Add Assessment'; modal.classList.add('show'); modal.setAttribute('aria-hidden', 'false'); document.body.classList.add('cm-modal-open'); document.getElementById('assessmentName').focus(); }
+    function openModal() {
+        rowToEdit = null;
+        form.reset();
+        coError.textContent = '';
+        document.getElementById('assessmentModalTitle').textContent = 'Add Assessment';
+        document.getElementById('assessmentCoHelper').textContent = 'Select one or more COs.';
+        form.querySelector('.cm-assessment-save-btn').textContent = 'Add Assessment';
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('cm-modal-open');
+        document.getElementById('assessmentName').focus();
+    }
 
-    function closeModal() { modal.classList.remove('show'); modal.setAttribute('aria-hidden', 'true'); document.body.classList.remove('cm-modal-open'); form.reset(); coError.textContent = ''; }
+    function closeModal() {
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('cm-modal-open');
+        form.reset();
+        coError.textContent = '';
+    }
     openBtn.addEventListener('click', openModal);
     closeBtn.addEventListener('click', closeModal);
     cancelBtn.addEventListener('click', closeModal);
@@ -4766,9 +4833,19 @@ document.addEventListener("DOMContentLoaded", function () {
         const name = document.getElementById('assessmentName').value.trim();
         const type = document.getElementById('assessmentType').value;
         const dateValue = document.getElementById('assessmentDate').value;
-        const date = dateValue ? new Date(dateValue + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+        const date = dateValue
+            ? new Date(dateValue + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            : '—';
         const coBadges = selected.map(item => '<span class="cm-co-badge">' + item.value + '</span>').join(' ');
-        const rowHtml = '<td>' + name + '</td><td><span class="cm-type-badge">' + type + '</span></td><td>' + date + '</td><td>' + coBadges + '</td><td><button type="button" class="cm-view-score-btn">View Score</button></td><td><div class="cm-row-actions"><button type="button" class="cm-action-btn cm-edit-btn">✎ Edit</button><button type="button" class="cm-action-btn cm-delete-btn">🗑 Delete</button></div></td>';
+        const rowHtml = '<td>' + name + '</td>' +
+            '<td><span class="cm-type-badge">' + type + '</span></td>' +
+            '<td>' + date + '</td>' +
+            '<td>' + coBadges + '</td>' +
+            '<td><button type="button" class="cm-view-score-btn">View Score</button></td>' +
+            '<td><div class="cm-row-actions">' +
+            '<button type="button" class="cm-action-btn cm-edit-btn">✎ Edit</button>' +
+            '<button type="button" class="cm-action-btn cm-delete-btn">🗑 Delete</button>' +
+            '</div></td>';
         if (rowToEdit) {
             rowToEdit.innerHTML = rowHtml;
             rowToEdit = null;
@@ -4840,20 +4917,32 @@ document.addEventListener("DOMContentLoaded", function () {
         const inputs = [...scoreTableBody.querySelectorAll('.cm-raw-score-input')];
         let total = 0;
         inputs.forEach(input => {
-            let value = Number(input.value); if (!Number.isFinite(value))
-                value = 0; value = Math.max(0, Math.min(100, value)); input.value = value; input.closest('tr').querySelector('.cm-score-percent').textContent = Math.round(value) + '%'; total += value;
+            let value = Number(input.value);
+            if (!Number.isFinite(value))
+                value = 0;
+            value = Math.max(0, Math.min(100, value));
+            input.value = value;
+            input.closest('tr').querySelector('.cm-score-percent').textContent = Math.round(value) + '%';
+            total += value;
         });
         scoreMean.textContent = (inputs.length ? Math.round(total / inputs.length) : 0) + '%';
     }
 
-    function closeScoreModal() { scoreModal.classList.remove('show'); scoreModal.setAttribute('aria-hidden', 'true'); document.body.classList.remove('cm-modal-open'); }
+    function closeScoreModal() {
+        scoreModal.classList.remove('show');
+        scoreModal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('cm-modal-open');
+    }
     scoreTableBody.addEventListener('input', function (e) {
         if (e.target.classList.contains('cm-raw-score-input'))
             recalculateScores();
     });
     closeScoreBtn.addEventListener('click', closeScoreModal);
     cancelScoreBtn.addEventListener('click', closeScoreModal);
-    saveScoresBtn.addEventListener('click', function () { recalculateScores(); closeScoreModal(); });
+    saveScoresBtn.addEventListener('click', function () {
+        recalculateScores();
+        closeScoreModal();
+    });
     scoreModal.addEventListener('click', function (e) {
         if (e.target === scoreModal)
             closeScoreModal();
@@ -4864,7 +4953,12 @@ document.addEventListener("DOMContentLoaded", function () {
             closeScoreModal();
     });
 
-    function closeDeleteModal() { deleteModal.classList.remove('show'); deleteModal.setAttribute('aria-hidden', 'true'); document.body.classList.remove('cm-modal-open'); rowToDelete = null; }
+    function closeDeleteModal() {
+        deleteModal.classList.remove('show');
+        deleteModal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('cm-modal-open');
+        rowToDelete = null;
+    }
     cancelDeleteBtn.addEventListener('click', closeDeleteModal);
     deleteModal.addEventListener('click', function (e) {
         if (e.target === deleteModal)
@@ -4872,11 +4966,15 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     confirmDeleteBtn.addEventListener('click', function () {
         if (rowToDelete)
-            rowToDelete.remove(); closeDeleteModal();
+            rowToDelete.remove();
+        closeDeleteModal();
     });
 
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && deleteModal.classList.contains('show'))
+        if (
+            e.key === 'Escape' &&
+            deleteModal.classList.contains('show')
+        )
             closeDeleteModal();
     });
 })();
@@ -4910,7 +5008,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function scoreRows(scores, onlyCqi) {
-        return scores.filter(item => !onlyCqi || item.value <= 59).map(item => '<div class="cm-attainment-detail-row"><strong>' + item.co + '</strong><span>' + item.value + '%</span><em class="' + (item.value <= 59 ? 'needs' : 'met') + '">' + (item.value <= 59 ? 'CQI Basis' : 'Met') + '</em></div>').join('');
+        return scores
+            .filter(item => !onlyCqi || item.value <= 59)
+            .map(item => '<div class="cm-attainment-detail-row">' +
+                '<strong>' + item.co + '</strong>' +
+                '<span>' + item.value + '%</span>' +
+                '<em class="' + (item.value <= 59 ? 'needs' : 'met') + '">' + (item.value <= 59 ? 'CQI Basis' : 'Met') + '</em>' +
+                '</div>')
+            .join('');
     }
     body.addEventListener('click', function (event) {
         const view = event.target.closest('.cm-attainment-view-btn');
@@ -4929,10 +5034,16 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById('cqiStudentId').textContent = data.id;
         document.getElementById('cqiStudentName').textContent = data.name;
         const failed = data.scores.filter(item => item.value <= 59);
-        document.getElementById('cqiBasisDetails').innerHTML = failed.length ? scoreRows(failed, true) : '<div class="cm-cqi-empty">No CO is at 59% or below.</div>';
+        document.getElementById('cqiBasisDetails').innerHTML = failed.length
+            ? scoreRows(failed, true)
+            : '<div class="cm-cqi-empty">No CO is at 59% or below.</div>';
         openAttainmentModal(cqiModal);
     });
-    document.querySelectorAll('[data-close-attainment]').forEach(button => button.addEventListener('click', function () { closeAttainmentModal(document.getElementById(button.dataset.closeAttainment)); }));
+    document.querySelectorAll('[data-close-attainment]').forEach(button =>
+        button.addEventListener('click', function () {
+            closeAttainmentModal(document.getElementById(button.dataset.closeAttainment));
+        })
+    );
     [detailModal, cqiModal].forEach(modal => modal.addEventListener('click', function (event) {
         if (event.target === modal)
             closeAttainmentModal(modal);
@@ -5041,3 +5152,547 @@ document.addEventListener("DOMContentLoaded", function () {
         initializeWebsiteLoginDropdown();
     }
 })();
+
+/* RESOURCES — GUIDES, BLOGS, BROCHURES, FILTERS, AND POPUPS */
+(function () {
+    "use strict";
+
+    const guides = [
+        ["What are COs and SOs?", "Course Outcomes identify what students should demonstrate in a particular course. Student Outcomes represent broader competencies developed across a program.", "How alignment works", "A syllabus defines COs, learning activities help students practice them, and assessments collect evidence of attainment.", "What to check", "Confirm that every assessed outcome has suitable evidence and that activities match the intended level of learning."],
+        ["Build an outcome map", "Begin with a Course Outcome, then identify the related Student Outcome(s) and the activities that measure learning.", "Use varied evidence", "Quizzes can check understanding; laboratory work, projects, and rubrics can demonstrate application and performance.", "Review mapping quality", "Look for unmapped outcomes, activities without clear learning purposes, and outcomes measured by only one weak assessment."],
+        ["Understand grade visibility", "Draft grades are working records. Unpublished grades may be entered but are not yet released to students. Published grades are visible according to system permissions.", "Review before publishing", "Check assessment completeness, grading accuracy, and the applicable approval or verification process.", "Keep outcomes distinct", "A course grade summarizes performance, while outcome attainment focuses on evidence for specific competencies."],
+        ["Turn evidence into CQI", "Continuous Quality Improvement starts by identifying an outcome that needs attention and examining its supporting assessment evidence.", "Plan a targeted response", "Adjust learning activities, assessment instructions, resources, or support based on the actual learning gap.", "Close the loop", "Document the action, assign responsibility, and compare attainment in the next assessment cycle."],
+        ["Eight connected stages", "The workflow begins with syllabus and outcome setup, followed by curriculum mapping, roster enrollment, and raw assessment score entry.", "Measure and respond", "Attainment calculations reveal learning gaps; CQI planning translates those findings into improvement actions.", "Finalize evidence", "Gradebook verification and locking precede compliance reporting and the preparation of supporting records."],
+        ["Choose the right workspace", "Students review their courses, available syllabi, published academic information, and outcome-related learning evidence.", "Faculty responsibilities", "Faculty manage class rosters, assessment activities, mapping, scores, and attainment review.", "Department Head oversight", "Department Heads examine consolidated results, review mapping, monitor attainment, and support CQI and compliance reporting."]
+    ];
+
+    const articles = [
+        ["Why grades need context", "A final grade condenses many assessments into one number, but it cannot fully explain which competencies a student has demonstrated.", "Outcome attainment helps faculty identify strengths and gaps at the CO or SO level.", "Together, grades and outcome evidence support clearer feedback and more meaningful instructional decisions."],
+        ["Mapping with purpose", "Curriculum mapping is more than attaching an outcome label to every activity.", "Useful mapping asks whether an assessment genuinely measures the stated skill and whether students have opportunities to practice it.", "Review gaps and overlaps regularly so alignment remains meaningful across courses and sections."],
+        ["Responding to low attainment", "An outcome below target is a signal to investigate, not an automatic judgment about students or teaching.", "Review assessment design, task difficulty, student work, and instructional support before choosing an intervention.", "Document the planned change and evaluate whether the next cycle shows improvement."],
+        ["From scores to decisions", "Raw scores become more useful when they are connected to assessments, Course Outcomes, and Student Outcomes.", "Patterns across activities can reveal where learning is strong and where evidence is insufficient.", "Faculty and academic leaders can use these patterns to prioritize follow-up and maintain traceable records."]
+    ];
+
+    const brochureTopics = [
+        "Discover EduMetrics", "EduMetrics Assessment Workflow Brochure",
+        "Course Outcomes & Student Outcomes", "Curriculum Mapping & Assessment Evidence",
+        "Attainment & Continuous Quality Improvement", "Grades, Reporting & Academic Records"
+    ];
+
+    function initializeResources() {
+        const page = document.querySelector(".rr-page");
+        if (!page || page.dataset.resourcesInitialized === "true") return;
+        page.dataset.resourcesInitialized = "true";
+
+        const dialog = document.getElementById("rrDialog");
+        if (!dialog) return;
+
+        const panel = dialog.querySelector(".rr-dialog-panel");
+        const title = dialog.querySelector("#rrDialogTitle");
+        const label = dialog.querySelector("#rrDialogLabel");
+        const content = dialog.querySelector("#rrDialogContent");
+        const search = page.querySelector("#rrSearch");
+        const cards = Array.from(page.querySelectorAll("#rrGuides .rr-card"));
+        const filters = Array.from(page.querySelectorAll(".rr-filters [data-role]"));
+        const empty = page.querySelector("#rrEmpty");
+        let selectedRole = "all";
+        let opener = null;
+
+        function filterGuides() {
+            const query = search ? search.value.trim().toLowerCase() : "";
+            let visibleCount = 0;
+
+            cards.forEach(function (card) {
+                const roles = (card.dataset.roles || "all").split(/\s+/);
+                const searchable = (card.dataset.search || card.textContent).toLowerCase();
+                const matchesRole = selectedRole === "all" || roles.includes("all") || roles.includes(selectedRole);
+                const visible = matchesRole && searchable.includes(query);
+                card.hidden = !visible;
+                if (visible) visibleCount++;
+            });
+
+            if (empty) empty.hidden = visibleCount > 0;
+        }
+
+        function closeDialog() {
+            dialog.hidden = true;
+            dialog.style.display = "none";
+            document.body.classList.remove("rr-dialog-open");
+            if (opener && opener.isConnected) opener.focus();
+        }
+
+        function openDialog(button, type, index) {
+            const card = button.closest("article, .resources-brochure-card");
+            const heading = card ? card.querySelector("h3") : null;
+            const paragraphs = type === "guide" ? guides[index] : type === "blog" ? articles[index] : null;
+            const name = heading ? heading.textContent.trim() : (brochureTopics[index] || "EduMetrics Resource");
+
+            title.textContent = name;
+            label.textContent = type === "guide" ? "LEARNING GUIDE" : type === "blog" ? "EDUMETRICS BLOG" : "BROCHURE PREVIEW";
+            content.replaceChildren();
+
+            if (paragraphs) {
+                for (let i = 0; i < paragraphs.length; i += 2) {
+                    const section = document.createElement("section");
+                    const subtitle = document.createElement("h3");
+                    const paragraph = document.createElement("p");
+                    subtitle.textContent = paragraphs[i];
+                    paragraph.textContent = paragraphs[i + 1] || "";
+                    section.append(subtitle, paragraph);
+                    content.appendChild(section);
+                }
+            } else {
+                const description = card ? card.querySelector(".resources-brochure-copy p") : null;
+                const paragraph = document.createElement("p");
+                paragraph.textContent = description ? description.textContent.trim() : "Explore this EduMetrics resource topic.";
+                content.appendChild(paragraph);
+                const notice = document.createElement("p");
+                notice.textContent = "This brochure topic is a preview. A dedicated brochure page has not yet been linked.";
+                content.appendChild(notice);
+            }
+
+            opener = button;
+            dialog.hidden = false;
+            dialog.style.display = "grid";
+            document.body.classList.add("rr-dialog-open");
+            (panel || dialog).focus();
+        }
+
+        if (search) search.addEventListener("input", filterGuides);
+        filters.forEach(function (button) {
+            button.addEventListener("click", function () {
+                selectedRole = button.dataset.role || "all";
+                filters.forEach(function (item) {
+                    const active = item === button;
+                    item.classList.toggle("active", active);
+                    item.setAttribute("aria-pressed", String(active));
+                });
+                filterGuides();
+            });
+        });
+
+        page.addEventListener("click", function (event) {
+            const button = event.target.closest("[data-guide], [data-brochure]");
+            if (button && page.contains(button)) {
+                event.preventDefault();
+                const type = button.hasAttribute("data-guide") ? "guide" : button.hasAttribute("data-blog") ? "blog" : "brochure";
+                const index = Number(button.dataset[type]);
+                openDialog(button, type, index);
+                return;
+            }
+
+            const viewAll = event.target.closest("#rrViewAll");
+            if (viewAll) {
+                const extra = page.querySelector("#rrExtra");
+                if (!extra) return;
+                extra.hidden = !extra.hidden;
+                viewAll.textContent = extra.hidden ? "View 3 more articles ↓" : "Show fewer articles ↑";
+                viewAll.setAttribute("aria-label", extra.hidden ? "Show three more blog articles" : "Hide additional blog articles");
+                viewAll.setAttribute("aria-expanded", String(!extra.hidden));
+            }
+        });
+
+        dialog.addEventListener("click", function (event) {
+            if (event.target.closest("[data-rr-close]")) closeDialog();
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape" && !dialog.hidden) closeDialog();
+        });
+
+        filterGuides();
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initializeResources, { once: true });
+    } else {
+        initializeResources();
+    }
+})();
+
+/* WORKFLOW — CQI STORY MODAL */
+(function () {
+    "use strict";
+
+    const dialog = document.getElementById("wfStoryDialog");
+    const openButton = document.getElementById("wfStoryOpen");
+    if (!dialog || !openButton) return;
+
+    openButton.addEventListener("click", function () {
+        if (typeof dialog.showModal === "function") {
+            dialog.showModal();
+        } else {
+            dialog.setAttribute("open", "");
+        }
+    });
+
+    ["wfStoryClose", "wfStoryDone"].forEach(function (id) {
+        const button = document.getElementById(id);
+        if (button) {
+            button.addEventListener("click", function () {
+                if (dialog.close) dialog.close();
+                else dialog.removeAttribute("open");
+            });
+        }
+    });
+
+    dialog.addEventListener("click", function (event) {
+        if (event.target === dialog) {
+            if (typeof dialog.close === "function") dialog.close();
+            else dialog.removeAttribute("open");
+        }
+    });
+})();
+
+/* RESOURCES: BLOG CAROUSEL */
+(function () {
+    "use strict";
+
+    function initializeBlogCarousel() {
+        const carousel = document.getElementById("rrBlogCarousel");
+        if (!carousel || carousel.dataset.initialized === "true") return;
+
+        const slides = Array.from(carousel.querySelectorAll("[data-blog-slide]"));
+        const previousButton = document.getElementById("rrBlogPrev");
+        const nextButton = document.getElementById("rrBlogNext");
+        const status = document.getElementById("rrCarouselStatus");
+
+        if (!slides.length || !previousButton || !nextButton || !status) return;
+
+        carousel.dataset.initialized = "true";
+        const total = slides.reduce((count, slide) => count + slide.querySelectorAll(".rr-card").length, 0);
+        let currentSlide = 0;
+
+        function showSlide(index) {
+            currentSlide = Math.max(0, Math.min(index, slides.length - 1));
+
+            slides.forEach(function (slide, slideIndex) {
+                slide.hidden = slideIndex !== currentSlide;
+            });
+
+            previousButton.disabled = currentSlide === 0;
+            nextButton.disabled = currentSlide === slides.length - 1;
+
+            const first = slides.slice(0, currentSlide).reduce(function (count, slide) {
+                return count + slide.querySelectorAll(".rr-card").length;
+            }, 0) + 1;
+            const last = first + slides[currentSlide].querySelectorAll(".rr-card").length - 1;
+            status.textContent = first + "–" + last + " of " + total;
+        }
+
+        previousButton.addEventListener("click", function () {
+            showSlide(currentSlide - 1);
+        });
+
+        nextButton.addEventListener("click", function () {
+            showSlide(currentSlide + 1);
+        });
+
+        showSlide(0);
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initializeBlogCarousel);
+    } else {
+        initializeBlogCarousel();
+    }
+})();
+
+
+/* Set the dashboard role only after the existing OTP verification completes.
+   This is UI routing for the local prototype, not server-side authorization. */
+(function () {
+  if (sessionStorage.getItem('verificationCompleted') !== 'true') return;
+  const role = sessionStorage.getItem('verifiedRole') || sessionStorage.getItem('verificationRole');
+  const normalized = role === 'department-head' ? 'dept-head' : role;
+  if (['student', 'faculty', 'dept-head'].includes(normalized)) {
+    sessionStorage.setItem('edumetricsRole', normalized);
+  }
+})();
+
+/* MERGED DASHBOARD: STUDENT / FACULTY / DEPARTMENT HEAD */
+(function(){
+  // Login must set sessionStorage.edumetricsRole before navigating here.
+  // ?role=... is supported for direct preview and development.
+  const allowed=['student','faculty','dept-head'];
+  const query=new URLSearchParams(location.search).get('role');
+  const normalize=v=>({'department-head':'dept-head','department_head':'dept-head','depthead':'dept-head','head':'dept-head'}[v]||v);
+  const role=normalize(sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('verifiedRole') || query || 'student');
+  const selected=allowed.includes(role)?role:'student';
+  if(!sessionStorage.getItem('edumetricsRole') && sessionStorage.getItem('verificationCompleted') === 'true') sessionStorage.setItem('edumetricsRole',selected);
+  const tpl=document.getElementById('dashboard-template-'+selected);
+  document.getElementById('dashboardRoleContent').appendChild(tpl.content.cloneNode(true));
+  if(selected!=='student'){
+    const nav=document.getElementById('nav-template-'+selected);
+    document.querySelector('.so-nav').replaceWith(nav.content.cloneNode(true));
+  }
+  const names={student:['Student','Student'],faculty:['Prof. Maria','Faculty'],'dept-head':['Department Head','Department Head']};
+  const user=document.querySelector('.so-user-info');
+  user.querySelector('strong').textContent=names[selected][0];
+  user.querySelector('span').textContent=names[selected][1];
+  document.title=names[selected][1]+' Dashboard | EduMetrics';
+  document.body.dataset.dashboardRole=selected;
+})();
+
+/* Dashboard interactions: filter, reactions, comments and reader */
+(function () {
+  const filter = document.getElementById('sdCourseFilter');
+  const feed = document.getElementById('sdPosts');
+  if (!feed) return;
+  const posts = Array.from(feed.querySelectorAll('.sd-post'));
+  const empty = document.getElementById('sdEmpty');
+  const reader = document.getElementById('sdReader');
+  const readerContent = document.getElementById('sdReaderContent');
+  const readerMeta = document.getElementById('sdReaderMeta');
+  const closeReaderButton = document.getElementById('sdReaderClose');
+  let readerFontSize = 18;
+  let previousFocus = null;
+  const storageKey = 'edumetrics-dashboard-interactions-v1';
+  let state = {};
+  try { state = JSON.parse(localStorage.getItem(storageKey) || '{}') || {}; } catch (_) { state = {}; }
+  function save() { try { localStorage.setItem(storageKey, JSON.stringify(state)); } catch (_) {} }
+  function dataFor(id) {
+    if (!state[id] || typeof state[id] !== 'object') state[id] = { liked: false, comments: [] };
+    if (!Array.isArray(state[id].comments)) state[id].comments = [];
+    return state[id];
+  }
+  function updateReaction(post) {
+    const data = dataFor(post.dataset.postId);
+    const button = post.querySelector('[data-action="react"]');
+    button.setAttribute('aria-pressed', String(Boolean(data.liked)));
+    button.querySelector('span').textContent = data.liked ? 'Liked' : 'Like';
+  }
+  function renderComments(post) {
+    const list = post.querySelector('.sd-comment-list');
+    list.replaceChildren();
+    const comments = dataFor(post.dataset.postId).comments;
+    if (!comments.length) {
+      const hint = document.createElement('div');
+      hint.className = 'sd-comment';
+      hint.textContent = 'No comments yet. Be the first to comment.';
+      list.append(hint);
+    }
+    comments.forEach(function (entry) {
+      const item = document.createElement('div');
+      item.className = 'sd-comment';
+      const name = document.createElement('strong');
+      name.textContent = 'You';
+      const content = document.createElement('span');
+      content.textContent = entry;
+      item.append(name, content);
+      list.append(item);
+    });
+    const count = post.querySelector('[data-action="comments"]');
+    count.querySelector('span').textContent = 'Comment' + (comments.length ? ' (' + comments.length + ')' : '');
+  }
+  posts.forEach(function (post) { updateReaction(post); renderComments(post); });
+  filter.addEventListener('change', function () {
+    let visible = 0;
+    posts.forEach(function (post) {
+      const show = filter.value === 'all' || post.dataset.course === filter.value;
+      post.hidden = !show;
+      if (show) visible++;
+    });
+    empty.hidden = visible !== 0;
+    feed.scrollTop = 0;
+  });
+  function stopSpeech() {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  }
+  function closeReader() {
+    stopSpeech();
+    reader.hidden = true;
+    document.body.style.overflow = '';
+    if (previousFocus) previousFocus.focus();
+  }
+  function openReader(post) {
+    previousFocus = document.activeElement;
+    const author = post.querySelector('.sd-post-author strong').textContent;
+    const course = post.querySelector('.sd-post-author small').textContent;
+    const title = post.querySelector('.sd-post-body strong').textContent;
+    const message = post.querySelector('.sd-post-body p').textContent;
+    const attachment = post.querySelector('.sd-attachment');
+    readerContent.replaceChildren();
+    const heading = document.createElement('h3');
+    heading.textContent = title;
+    const body = document.createElement('p');
+    body.textContent = message;
+    readerContent.append(heading, body);
+    if (attachment) {
+      const file = document.createElement('p');
+      file.textContent = 'Attachment: ' + attachment.textContent.trim();
+      readerContent.append(file);
+    }
+    readerMeta.textContent = author + ' · ' + course;
+    readerFontSize = 18;
+    readerContent.style.fontSize = readerFontSize + 'px';
+    reader.hidden = false;
+    document.body.style.overflow = 'hidden';
+    closeReaderButton.focus();
+  }
+  feed.addEventListener('click', function (event) {
+    const button = event.target.closest('[data-action]');
+    if (!button) return;
+    const post = button.closest('.sd-post');
+    const action = button.dataset.action;
+    if (action === 'react') {
+      const data = dataFor(post.dataset.postId);
+      data.liked = !data.liked;
+      updateReaction(post);
+      save();
+    } else if (action === 'comments') {
+      const panel = post.querySelector('.sd-comments');
+      panel.hidden = !panel.hidden;
+      if (!panel.hidden) post.querySelector('.sd-comment-input').focus();
+    } else if (action === 'reader') {
+      openReader(post);
+    }
+  });
+  feed.addEventListener('submit', function (event) {
+    const form = event.target.closest('.sd-comment-form');
+    if (!form) return;
+    event.preventDefault();
+    const input = form.querySelector('.sd-comment-input');
+    const value = input.value.trim();
+    if (!value) return;
+    const post = form.closest('.sd-post');
+    dataFor(post.dataset.postId).comments.push(value.slice(0, 500));
+    save();
+    input.value = '';
+    renderComments(post);
+    input.focus();
+  });
+  closeReaderButton.addEventListener('click', closeReader);
+  reader.addEventListener('click', function (event) { if (event.target === reader) closeReader(); });
+  document.addEventListener('keydown', function (event) {
+    if (reader.hidden) return;
+    if (event.key === 'Escape') closeReader();
+    if (event.key === 'Tab') {
+      const controls = Array.from(reader.querySelectorAll('button'));
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    }
+  });
+  document.getElementById('sdReaderLarger').addEventListener('click', function () {
+    readerFontSize = Math.min(30, readerFontSize + 2);
+    readerContent.style.fontSize = readerFontSize + 'px';
+  });
+  document.getElementById('sdReaderSmaller').addEventListener('click', function () {
+    readerFontSize = Math.max(14, readerFontSize - 2);
+    readerContent.style.fontSize = readerFontSize + 'px';
+  });
+  document.getElementById('sdReaderSpeak').addEventListener('click', function () {
+    if (!('speechSynthesis' in window)) { alert('Read aloud is not supported by this browser.'); return; }
+    stopSpeech();
+    const utterance = new SpeechSynthesisUtterance(readerMeta.textContent + '. ' + readerContent.innerText);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.9;
+    window.speechSynthesis.speak(utterance);
+  });
+  document.getElementById('sdReaderStop').addEventListener('click', stopSpeech);
+})();
+
+/* Department Head Class Roster: Add / Update / Import / Export */
+(()=>{const root=document.querySelector('.cr-dept-head-page');if(!root)return;const $=id=>document.getElementById(id);let data=Array.from({length:31},(_,i)=>({id:`2023-${String(11111+i).padStart(5,'0')}`,name:['Angel S. Villanueva','Bea M. Santos','Carl P. Reyes','Dana L. Cruz','Ella P. Ramos','Francis D. Garcia'][i%6],email:`student${i+1}@students.national-u.edu.ph`,section:['COE232','COE231','COE233'][i%3],faculty:i%4===0?'Prof. Maria Santos':'Engr. J. T. Leonen',category:['Registered','Regular','Late Enrollee','Transferee'][i%4],status:i<21?'Enrolled':'Not Enrolled'}));const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const filtered=()=>{let q=$('crdhSearch').value.trim().toLowerCase(),f=$('crdhFaculty').value,c=$('crdhCategory').value,s=$('crdhSection').value;return data.filter(x=>(!q||[x.id,x.name,x.email].some(v=>v.toLowerCase().includes(q)))&&(f==='All Faculty'||x.faculty===f)&&(c==='All Students'||x.category===c)&&(s==='All Sections'||x.section===s)).sort((a,b)=>$('crdhSort').value==='id'?a.id.localeCompare(b.id):$('crdhSort').value==='za'?b.name.localeCompare(a.name):a.name.localeCompare(b.name));};function render(){const rows=filtered();$('crdhRows').innerHTML=rows.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.id)}</td><td>${esc(x.name)}</td><td>${esc(x.email)}</td><td>${esc(x.section)}</td><td>${esc(x.faculty)}</td><td><span class="crf-category">${esc(x.category)}</span></td><td><span class="crf-status ${x.status==='Enrolled'?'enrolled':'pending'}">${esc(x.status)}</span></td><td><div class="crdh-actions"><button class="crdh-update" data-id="${esc(x.id)}">Update</button><button class="crdh-remove" data-id="${esc(x.id)}">Remove</button></div></td></tr>`).join('')||'<tr><td colspan="9">No matching students.</td></tr>';$('crdhCount').textContent=`Showing ${rows.length} of ${data.length} demo records`;$('crdhTotal').textContent=data.length;$('crdhEnrolled').textContent=data.filter(x=>x.status==='Enrolled').length;$('crdhCourseTitle').textContent=$('crdhCourse').value==='All Courses'?'Software Design - Lab':$('crdhCourse').value;}['crdhSearch','crdhFaculty','crdhCategory','crdhSort','crdhSection','crdhCourse','crdhSchoolYear','crdhDepartment','crdhProgram'].forEach(id=>$(id).addEventListener('input',render));$('crdhRows').addEventListener('click',e=>{const b=e.target.closest('button[data-id]');if(!b)return;const i=data.findIndex(x=>x.id===b.dataset.id);if(i<0)return;if(b.classList.contains('crdh-update')){openModal('update',data[i]);return;}else if(confirm('Remove this demo student record?')){data.splice(i,1);$('crdhNote').textContent='Demo record removed.';}render();});const modal=$('crdhModal'),form=$('crdhRecordForm');let editId=null;let previousFocus=null;
+function openModal(mode,record){
+ previousFocus=document.activeElement;editId=mode==='update'?record.id:null;
+ form.reset();$('crdhModalError').hidden=true;
+ $('crdhModalTitle').textContent=editId?'Update Roster Record':'Add Roster Record';
+ $('crdhModalSubmit').textContent=editId?'Save Changes':'Add Record';
+ if(record){for(const key of ['id','name','email','category','course','section','faculty','status'])if(form.elements[key])form.elements[key].value=record[key]|| (key==='course'?'Software Design - Lab':'');}
+ form.elements.id.disabled=!!editId;modal.hidden=false;modal.classList.add('show');document.body.style.overflow='hidden';
+ (editId?form.elements.name:form.elements.id).focus();
+}
+function closeModal(){modal.hidden=true;modal.classList.remove('show');document.body.style.overflow='';editId=null;if(previousFocus&&previousFocus.isConnected)previousFocus.focus();}
+$('crdhAdd').addEventListener('click',()=>openModal('add'));
+$('crdhModalClose').addEventListener('click',closeModal);
+$('crdhModalCancel').addEventListener('click',closeModal);
+modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
+document.addEventListener('keydown',e=>{if(modal.hidden)return;if(e.key==='Escape')closeModal();if(e.key==='Tab'){const nodes=[...modal.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled])')].filter(x=>x.offsetParent!==null);const first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});
+form.addEventListener('submit',e=>{e.preventDefault();if(!form.reportValidity())return;
+ const get=k=>form.elements[k].value.trim();
+ const item={id:editId||get('id'),name:get('name'),email:get('email'),category:get('category'),course:get('course'),section:get('section'),faculty:get('faculty'),status:get('status')};
+ const error=$('crdhModalError');
+ if(!editId&&data.some(x=>x.id===item.id)){error.textContent='Student ID already exists. Please enter a unique ID.';error.hidden=false;return;}
+ if(editId){const index=data.findIndex(x=>x.id===editId);if(index<0)return;data[index]={...data[index],...item};}
+ else data.push(item);
+ $('crdhNote').textContent=editId?'Demo roster record updated.':'Demo roster record added.';
+ closeModal();render();
+});
+$('crdhDownload').addEventListener('click',()=>{const keys=['id','name','email','section','faculty','category','status'];const csv=[keys.join(','),...filtered().map(x=>keys.map(k=>'"'+String(x[k]).replace(/"/g,'""')+'"').join(','))].join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='department-roster.csv';a.click();URL.revokeObjectURL(url);});$('crdhImport').addEventListener('click',()=>$('crdhFile').click());$('crdhFile').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;const text=await file.text();const lines=text.trim().split(/\r?\n/).slice(1);let count=0;for(const line of lines){const cols=line.split(',').map(v=>v.trim().replace(/^"|"$/g,''));if(cols.length<2||!cols[0]||data.some(x=>x.id===cols[0]))continue;data.push({id:cols[0],name:cols[1],email:cols[2]||'',section:cols[3]||'COE232',faculty:cols[4]||'Engr. J. T. Leonen',category:cols[5]||'Registered',status:cols[6]==='Enrolled'?'Enrolled':'Not Enrolled'});count++;}$('crdhNote').textContent=`Imported ${count} demo records. CSV parser supports simple rows (not quoted commas).`;e.target.value='';render();});render();})();
+
+(function initRaDepartmentHeadTabs() {
+  function setup() {
+    // Tabs are handled by the existing shared .sodh-tab / data-tab handler.
+    if (!document.getElementById('ra-review-table')) return;
+
+    const rows = Array.from(document.querySelectorAll('#ra-review-table tbody tr'));
+    const search = document.getElementById('ra-search');
+    const status = document.getElementById('ra-status-filter');
+    const course = document.getElementById('ra-course');
+    const faculty = document.getElementById('ra-faculty');
+    function filter() {
+      const q = (search?.value || '').toLowerCase();
+      const st = status?.value || '';
+      const c = course?.value || '';
+      const f = faculty?.value || '';
+      rows.forEach(row => {
+        row.hidden = !(row.textContent.toLowerCase().includes(q)
+          && (!st || row.dataset.status === st)
+          && (!c || row.dataset.course === c)
+          && (!f || row.dataset.faculty === f));
+      });
+    }
+    [search, status, course, faculty].forEach(el => {
+      if (el) el.addEventListener(el === search ? 'input' : 'change', filter);
+    });
+    const dialog = document.getElementById('ra-dialog');
+    document.querySelectorAll('[data-view],[data-query]').forEach(button => {
+      button.addEventListener('click', () => {
+        if (!dialog || typeof dialog.showModal !== 'function') return;
+        const query = button.dataset.query;
+        const title = document.getElementById('ra-dialog-title');
+        const body = document.getElementById('ra-dialog-body');
+        if (!title || !body) return;
+        title.textContent = query ? 'Faculty Query (Demo)' : 'Assessment Scores (View Only)';
+        body.textContent = query
+          ? `Prepare a query for ${query.split('|')[1]} regarding ${query.split('|')[0]}. Sending requires a backend connection.`
+          : `${button.dataset.view}: detailed student scores will appear here when connected to assessment records.`;
+        dialog.showModal();
+      });
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setup, { once: true });
+  } else {
+    setup();
+  }
+})();
+document.addEventListener('DOMContentLoaded', () => {
+  const tabs = document.querySelectorAll('.ac-tab');
+  const panels = { scores: document.getElementById('ac-scores'), attainment: document.getElementById('ac-attainment') };
+  tabs.forEach(tab => tab.addEventListener('click', () => {
+    tabs.forEach(item => { const active = item === tab; item.classList.toggle('is-active', active); item.setAttribute('aria-selected', String(active)); });
+    Object.entries(panels).forEach(([key, panel]) => { panel.hidden = key !== tab.dataset.acTab; });
+  }));
+  const search = document.getElementById('ac-score-search');
+  const type = document.getElementById('ac-score-type');
+  const sort = document.getElementById('ac-score-sort');
+  const body = document.getElementById('ac-score-rows');
+  const rows = [...body.querySelectorAll('tr')];
+  const update = () => {
+    const term = search.value.trim().toLowerCase();
+    const selectedType = type.value;
+    const order = sort.value;
+    const ordered = [...rows].sort((a, b) => order === 'assessment' ? a.cells[0].textContent.localeCompare(b.cells[0].textContent) : order === 'oldest' ? a.dataset.date.localeCompare(b.dataset.date) : b.dataset.date.localeCompare(a.dataset.date));
+    let visible = 0;
+    ordered.forEach(row => { const show = row.textContent.toLowerCase().includes(term) && (selectedType === 'all' || row.dataset.type === selectedType); row.hidden = !show; if (show) visible++; body.appendChild(row); });
+    document.getElementById('ac-score-empty').hidden = visible !== 0;
+  };
+  [search, type, sort].forEach(el => el.addEventListener(el === search ? 'input' : 'change', update));
+});
+
+// Faculty Courses: page-scoped creation; demo-only until a backend is connected.
+(function(){function init(){const dialog=document.getElementById('fcCreateDialog'),form=document.getElementById('fcCreateForm'),grid=document.getElementById('facultyCourseGrid');if(!dialog||!form||!grid)return;const open=document.getElementById('fcOpenCreate');const close=()=>dialog.close();open?.addEventListener('click',()=>dialog.showModal());document.getElementById('fcCloseCreate')?.addEventListener('click',close);document.getElementById('fcCancelCreate')?.addEventListener('click',close);dialog.addEventListener('click',e=>{if(e.target===dialog)close()});form.addEventListener('submit',e=>{e.preventDefault();if(!form.reportValidity())return;const data=new FormData(form),code=String(data.get('code')).trim(),title=String(data.get('title')).trim(),section=String(data.get('section')).trim(),term=String(data.get('term'));if(!code||!title||!section)return;const article=document.createElement('article');article.className='sc-course-card';const top=document.createElement('div');top.className='sc-card-top';const icon=document.createElement('span');icon.className='sc-course-icon';icon.textContent=code.slice(0,2).toUpperCase();const status=document.createElement('span');status.className='sc-enrolled';status.textContent='NEW COURSE';top.append(icon,status);const body=document.createElement('div');body.className='sc-course-body';const label=document.createElement('span');label.className='sc-course-code';label.textContent=code+' · '+term;const heading=document.createElement('h2');heading.textContent=title;const info=document.createElement('p');info.className='sc-faculty';info.textContent='Assigned faculty · You';const sec=document.createElement('p');sec.className='sc-section';sec.textContent='Section '+section;body.append(label,heading,info,sec);const bottom=document.createElement('div');bottom.className='sc-card-bottom';const note=document.createElement('div');note.className='sc-progress-top';note.textContent='0 enrolled students · Demo';bottom.append(note);article.append(top,body,bottom);grid.prepend(article);const count=document.getElementById('facultyCourseCount');if(count)count.textContent=String(grid.children.length).padStart(2,'0');form.reset();close()})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init()})();

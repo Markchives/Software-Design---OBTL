@@ -1,77 +1,51 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1.0" name="viewport"/>
 <title>Class Roster Enrollment | EduMetrics</title>
-<link rel="stylesheet" href="../../Static/style.css">
+<link href="../../Static/style.css" rel="stylesheet"/>
 </head>
-<body class="so-student-page cr-student-page cr-faculty-page">
+<body class="so-student-page cr-student-page cr-faculty-page course-workspace-page faculty-workspace-aligned">
 <header class="so-topbar">
 <div class="so-brand"><div class="so-brand-logo">Edu<span>Metrics</span></div><div class="so-brand-subtitle">Academic Assessment &amp; Grading System</div></div>
 <div class="so-user-area">
-<button class="so-notification-btn" type="button" aria-label="Notifications"><img src="../../Static/images/sidebar/notif.png" alt="Notifications" class="so-notification-image"><span class="so-notification-dot"></span></button>
+<button aria-label="Notifications" class="so-notification-btn" type="button"><img alt="Notifications" class="so-notification-image" src="../../Static/images/sidebar/notif.png"/><span class="so-notification-dot"></span></button>
 <div class="so-user-info"><strong id="facultyName"></strong><span>Faculty</span></div>
-<div class="so-avatar" aria-hidden="true"><span class="so-avatar-person">●</span></div><span class="so-online-dot" aria-hidden="true"></span>
+<div aria-hidden="true" class="so-avatar"><span class="so-avatar-person">●</span></div><span aria-hidden="true" class="so-online-dot"></span>
 </div>
 </header>
 <div class="so-header-lines"><div class="so-header-blue"></div><div class="so-header-gold"></div></div>
-
 <div class="so-shell">
 <aside class="so-sidebar">
-<div class="so-pages-title"><span class="so-grid-icon so-pages-image-wrap"><img src="../../Static/images/sidebar/pages.png" alt="" class="so-pages-image"></span><span>Pages</span></div>
-<nav class="so-nav" aria-label="Faculty navigation">
-<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/home-white.png" alt="" class="so-nav-image"></span><span>Home</span></a>
-<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/course-white.png" alt="" class="so-nav-image"></span><span>Courses</span></a>
-<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/pl-white.png" alt="" class="so-nav-image"></span><span>Platform</span></a>
-<div class="so-nav-group">
-<button class="so-nav-item so-products active" type="button"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/ws-blue.png" alt="" class="so-nav-image"></span><span>Workflow</span></button>
-<div class="so-subnav">
-<a href="#">Syllabus &amp; Outcomes</a>
-<a href="#">Curriculum Mapping</a>
-<a href="#" class="active">Class Roster</a>
-<a href="#">Assessment Entry</a>
-<a href="#">Attainment</a>
-<a href="#">CQI Planning</a>
-<a href="#">Gradebook</a>
-<a href="#">Compliance Report</a>
-</div>
-</div>
-<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/rs-white.png" alt="" class="so-nav-image"></span><span>Resources</span></a>
-<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/au-white.png" alt="" class="so-nav-image"></span><span>About Us</span></a>
+<div class="so-pages-title"><span class="so-grid-icon so-pages-image-wrap"><img alt="" class="so-pages-image" src="../../Static/images/sidebar/pages.png"/></span><span>Pages</span></div>
+<nav aria-label="Faculty navigation" class="so-nav">
+<a class="so-nav-item" href="dashboard-faculty.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/home-white.png"/></span><span>Home</span></a>
+<a class="so-nav-item active" href="dashboard-faculty.html#my-courses"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/course-white.png"/></span><span>My Courses</span></a>
+<a class="so-nav-item" href="../webpage/platform.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/pl-white.png"/></span><span>Platform</span></a>
+<a class="so-nav-item" href="../webpage/resources.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/rs-white.png"/></span><span>Resources</span></a>
+<a class="so-nav-item" href="../webpage/about us.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/au-white.png"/></span><span>About Us</span></a>
 </nav>
 <div class="so-sidebar-brand"><div class="so-sidebar-logo">Edu<span>Metrics</span></div><small>Academic Assessment &amp; Grading System</small></div>
 </aside>
-
 <main class="so-main cr-student-main">
-<section class="so-page-heading cr-heading">
-<h1>Class Roster Enrollment</h1>
-<p>Manage and enroll students for your assigned sections</p>
-</section>
 
-<section class="cm-student-filters">
-<div class="cm-filter-group"><label for="crSchoolYear">School Year</label><select id="crSchoolYear"><option selected>2026-2027</option><option>2025-2026</option><option>2024-2025</option></select></div>
-<div class="cm-filter-group"><label for="crDepartment">Department</label><input id="crDepartment" type="text" value="Engineering" readonly></div>
-<div class="cm-filter-group"><label for="crProgram">Program</label><input id="crProgram" type="text" value="BS CpE" readonly></div>
-<div class="cm-filter-group"><label for="crCourse">Course</label><select id="crCourse"><option selected>Software Design - Lab</option></select></div>
-<div class="cm-filter-group"><label for="crSection">Section</label><input id="crSection" type="search" list="crSectionList" value="COE232" autocomplete="off"><datalist id="crSectionList"><option value="COE232"></option><option value="COE231"></option><option value="COE233"></option></datalist></div>
+<div class="cw-breadcrumb">My Courses <span class="cw-breadcrumb-separator">/</span> <span class="cw-breadcrumb-current">Software Lab</span></div><div class="cw-workspace"><section aria-label="Selected course" class="cw-hero"><div><div class="cw-eyebrow">COURSE WORKSPACE</div><h2>Software Lab</h2><p>CPE 321 · BSCPE 3A · 1st Semester 2026–2027</p></div><span class="cw-demo-badge">DEMO COURSE</span></section><nav aria-label="Course modules" class="cw-module-nav"><a class="cw-module-tab" href="so-faculty.html"><span class="cw-module-number">01</span> Syllabus &amp; Outcomes</a><a class="cw-module-tab" href="cm-faculty.html"><span class="cw-module-number">02</span> Curriculum Mapping</a><a aria-current="page" class="cw-module-tab active" href="cr-faculty.html"><span class="cw-module-number">03</span> Class Roster</a><a class="cw-module-tab" href="assessment-faculty.html"><span class="cw-module-number">04</span> Assessment Entry</a><a class="cw-module-tab" href="attainment-faculty.html"><span class="cw-module-number">05</span> Attainment</a><a class="cw-module-tab" href="cqi-faculty.html"><span class="cw-module-number">06</span> CQI Planning</a><a class="cw-module-tab" href="gradebook-faculty.html"><span class="cw-module-number">07</span> Gradebook</a><a class="cw-module-tab" href="compliance-faculty.html"><span class="cw-module-number">08</span> Compliance Report</a></nav></div><section aria-hidden="true" class="cm-student-filters cw-legacy-controls" hidden="hidden">
+<div class="cm-filter-group"><label for="crSchoolYear">School Year</label><select id="crSchoolYear"><option selected="">2026-2027</option><option>2025-2026</option><option>2024-2025</option></select></div>
+<div class="cm-filter-group"><label for="crDepartment">Department</label><input id="crDepartment" readonly="" type="text" value="Engineering"/></div>
+<div class="cm-filter-group"><label for="crProgram">Program</label><input id="crProgram" readonly="" type="text" value="BS CpE"/></div>
+<div class="cm-filter-group"><label for="crCourse">Course</label><select id="crCourse"><option selected="">Software Design - Lab</option></select></div>
+<div class="cm-filter-group"><label for="crSection">Section</label><input autocomplete="off" id="crSection" list="crSectionList" type="search" value="COE232"/><datalist id="crSectionList"><option value="COE232"></option><option value="COE231"></option><option value="COE233"></option></datalist></div>
 </section>
-
-<section class="cm-student-summary cr-cm-summary crf-summary">
-<article class="cm-course-card"><div class="cm-card-accent"></div><div><span class="cm-course-label">My Course</span><h2>Software Design - Lab</h2></div></article>
-<article class="cm-stat-card"><div class="cm-card-accent cm-card-accent-soft"></div><div><span>Total Students</span><strong>31</strong></div></article>
-<article class="cm-stat-card"><div class="cm-card-accent cm-card-accent-soft"></div><div><span>Total Enrolled Students</span><strong id="crfEnrolledCount">21</strong></div></article>
-<article class="cm-stat-card"><div class="cm-card-accent cm-card-accent-soft"></div><div><span>Total Registered Students</span><strong id="crfRegisteredCount">10</strong></div></article>
-</section>
-
+<section class="so-summary-grid"><article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Total Students</span><strong class="so-summary-number">31</strong></article><article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Total Enrolled Students</span><strong class="so-summary-number">21</strong></article><article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Total Registered Students</span><strong class="so-summary-number">10</strong></article></section>
 <section class="cr-roster-panel crf-roster-panel">
 <div class="cr-toolbar crf-toolbar">
 <div class="crf-tool-field"><label for="crfCategory">Category</label><select id="crfCategory"><option value="all">All Students</option><option value="Registered">Registered</option><option value="Regular">Regular</option><option value="Late Enrollee">Late Enrollee</option><option value="Transferee">Transferee</option></select></div>
 <div class="cr-sort-wrap"><label for="crfSort">Sort By</label><select id="crfSort"><option value="az">Students Name A-Z</option><option value="za">Students Name Z-A</option><option value="id">Student ID</option></select></div>
-<label class="cr-search crf-search"><span aria-hidden="true">⌕</span><input id="crfSearch" type="search" placeholder="Search student id, name, or email..."></label>
-<div class="crf-toolbar-actions"><button type="button" class="crf-import-btn" id="crfImportOpen">＋ Import Roster</button><button type="button" class="crf-download-btn" id="crfDownload">⇩ Download</button></div>
+<label class="cr-search crf-search"><span aria-hidden="true">⌕</span><input id="crfSearch" placeholder="Search student id, name, or email..." type="search"/></label>
+<div class="crf-toolbar-actions"><button class="crf-import-btn" id="crfImportOpen" type="button">＋ Import Roster</button><button class="crf-download-btn" id="crfDownload" type="button">⇩ Download</button></div>
 </div>
-
 <div class="cr-table-wrap">
 <table class="cr-table crf-table">
 <thead><tr><th>#</th><th>Student ID</th><th>Student Name</th><th>Email</th><th>Category</th><th>Enrollment Status</th><th>Action</th></tr></thead>
@@ -84,81 +58,76 @@
 <tr data-category="Transferee"><td>6</td><td>2023-111116</td><td>Francis D. Lim</td><td>francis.lim@students.national-u.edu.ph</td><td><span class="crf-category">Transferee</span></td><td><span class="crf-status pending">Not Enrolled</span></td><td><button class="crf-remove-btn" type="button">Remove</button></td></tr>
 </tbody>
 </table>
-<div class="cr-empty" id="crfEmpty" hidden>No students found.</div>
+<div class="cr-empty" hidden="" id="crfEmpty">No students found.</div>
 </div>
 </section>
 </main>
 </div>
-<div class="crf-modal" id="crfImportModal" aria-hidden="true">
-    <div class="crf-modal-dialog crf-import-dialog" role="dialog" aria-modal="true" aria-labelledby="crfImportTitle">
-        <div class="crf-modal-header">
-            <div><h2 id="crfImportTitle">Import Class Roster</h2><p>Review the roster before anything is enrolled.</p></div>
-            <button type="button" class="crf-modal-close" data-crf-close="import" aria-label="Close">×</button>
-        </div>
-        <div class="crf-modal-body">
-            <div class="crf-steps">
-                <div class="crf-step active" data-step="1"><b>1</b><span>Upload</span></div>
-                <div class="crf-step" data-step="2"><b>2</b><span>Preview &amp; Validate</span></div>
-                <div class="crf-step" data-step="3"><b>3</b><span>Import</span></div>
-            </div>
-
-            <div class="crf-import-screen active" data-screen="1">
-                <div class="crf-drop-zone">
-                    <div class="crf-upload-icon">⇧</div>
-                    <h3>Import your class roster</h3>
-                    <p>Upload a CSV or Excel roster. The system will preview records before enrollment.</p>
-                    <input id="crfRosterFile" type="file" accept=".csv,.xls,.xlsx">
-                    <small>Supported: CSV, XLS, XLSX</small>
-                    <button type="button" class="crf-outline-btn" id="crfSampleRoster">Use Sample Roster</button>
-                </div>
-            </div>
-
-            <div class="crf-import-screen" data-screen="2">
-                <div class="crf-preview-wrap">
-                    <table class="crf-preview-table">
-                        <thead><tr><th>Row</th><th>Student ID</th><th>Student Name</th><th>Email</th><th>Category</th></tr></thead>
-                        <tbody>
-                            <tr><td>2</td><td>2023-111119</td><td>Ivan M. Torres</td><td>ivan.t@edumetrics.edu</td><td>Regular</td></tr>
-                            <tr><td>3</td><td>2023-111120</td><td>Julia K. Ong</td><td>julia.o@edumetrics.edu</td><td>Regular</td></tr>
-                            <tr><td>4</td><td>2023-111113</td><td>Carl P. Reyes</td><td>carl.r@edumetrics.edu</td><td>Transferee</td></tr>
-                            <tr><td>5</td><td>2023-111121</td><td>Kevin L. Yu</td><td></td><td>Regular</td></tr>
-                            <tr><td>6</td><td>2023-111122</td><td>Lara P. Diaz</td><td>lara.d@edumetrics.edu</td><td>Late Enrollee</td></tr>
-                            <tr><td>7</td><td>2023-111114</td><td>Dana L. Cruz</td><td>dana.c@edumetrics.edu</td><td>Regular</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="crf-preview-actions">
-                    <button type="button" class="crf-outline-btn" id="crfChooseAnother">Choose Another File</button>
-                    <button type="button" class="crf-import-btn" id="crfConfirmImport">Confirm Valid Records (3)</button>
-                </div>
-            </div>
-
-            <div class="crf-import-screen" data-screen="3">
-                <div class="crf-import-complete">
-                    <div class="crf-success-icon">✓</div>
-                    <h3>Roster Import Complete</h3>
-                    <p>3 valid records were enrolled to COE232.</p>
-                    <p>3 records were excluded and remain flagged for review.</p>
-                    <button type="button" class="crf-import-btn" id="crfImportDone">Done</button>
-                </div>
-            </div>
-        </div>
-    </div>
+<div aria-hidden="true" class="crf-modal" id="crfImportModal">
+<div aria-labelledby="crfImportTitle" aria-modal="true" class="crf-modal-dialog crf-import-dialog" role="dialog">
+<div class="crf-modal-header">
+<div><h2 id="crfImportTitle">Import Class Roster</h2><p>Review the roster before anything is enrolled.</p></div>
+<button aria-label="Close" class="crf-modal-close" data-crf-close="import" type="button">×</button>
 </div>
-
-<div class="crf-modal" id="crfRemoveModal" aria-hidden="true">
-    <div class="crf-modal-dialog crf-remove-dialog" role="dialog" aria-modal="true">
-        <button type="button" class="crf-modal-close crf-remove-x" data-crf-close="remove" aria-label="Close">×</button>
-        <div class="crf-remove-icon" aria-hidden="true">−</div>
-        <h2>Remove Student?</h2>
-        <p>Are you sure you want to remove <strong id="crfRemoveName">this student</strong> from the class roster?</p>
-        <div class="crf-remove-actions">
-            <button type="button" class="crf-outline-btn" data-crf-close="remove">Cancel</button>
-            <button type="button" class="crf-remove-confirm" id="crfRemoveConfirm">Remove</button>
-        </div>
-    </div>
+<div class="crf-modal-body">
+<div class="crf-steps">
+<div class="crf-step active" data-step="1"><b>1</b><span>Upload</span></div>
+<div class="crf-step" data-step="2"><b>2</b><span>Preview &amp; Validate</span></div>
+<div class="crf-step" data-step="3"><b>3</b><span>Import</span></div>
 </div>
-
+<div class="crf-import-screen active" data-screen="1">
+<div class="crf-drop-zone">
+<div class="crf-upload-icon">⇧</div>
+<h3>Import your class roster</h3>
+<p>Upload a CSV or Excel roster. The system will preview records before enrollment.</p>
+<input accept=".csv,.xls,.xlsx" id="crfRosterFile" type="file"/>
+<small>Supported: CSV, XLS, XLSX</small>
+<button class="crf-outline-btn" id="crfSampleRoster" type="button">Use Sample Roster</button>
+</div>
+</div>
+<div class="crf-import-screen" data-screen="2">
+<div class="crf-preview-wrap">
+<table class="crf-preview-table">
+<thead><tr><th>Row</th><th>Student ID</th><th>Student Name</th><th>Email</th><th>Category</th></tr></thead>
+<tbody>
+<tr><td>2</td><td>2023-111119</td><td>Ivan M. Torres</td><td>ivan.t@edumetrics.edu</td><td>Regular</td></tr>
+<tr><td>3</td><td>2023-111120</td><td>Julia K. Ong</td><td>julia.o@edumetrics.edu</td><td>Regular</td></tr>
+<tr><td>4</td><td>2023-111113</td><td>Carl P. Reyes</td><td>carl.r@edumetrics.edu</td><td>Transferee</td></tr>
+<tr><td>5</td><td>2023-111121</td><td>Kevin L. Yu</td><td></td><td>Regular</td></tr>
+<tr><td>6</td><td>2023-111122</td><td>Lara P. Diaz</td><td>lara.d@edumetrics.edu</td><td>Late Enrollee</td></tr>
+<tr><td>7</td><td>2023-111114</td><td>Dana L. Cruz</td><td>dana.c@edumetrics.edu</td><td>Regular</td></tr>
+</tbody>
+</table>
+</div>
+<div class="crf-preview-actions">
+<button class="crf-outline-btn" id="crfChooseAnother" type="button">Choose Another File</button>
+<button class="crf-import-btn" id="crfConfirmImport" type="button">Confirm Valid Records (3)</button>
+</div>
+</div>
+<div class="crf-import-screen" data-screen="3">
+<div class="crf-import-complete">
+<div class="crf-success-icon">✓</div>
+<h3>Roster Import Complete</h3>
+<p>3 valid records were enrolled to COE232.</p>
+<p>3 records were excluded and remain flagged for review.</p>
+<button class="crf-import-btn" id="crfImportDone" type="button">Done</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div aria-hidden="true" class="crf-modal" id="crfRemoveModal">
+<div aria-modal="true" class="crf-modal-dialog crf-remove-dialog" role="dialog">
+<button aria-label="Close" class="crf-modal-close crf-remove-x" data-crf-close="remove" type="button">×</button>
+<div aria-hidden="true" class="crf-remove-icon">−</div>
+<h2>Remove Student?</h2>
+<p>Are you sure you want to remove <strong id="crfRemoveName">this student</strong> from the class roster?</p>
+<div class="crf-remove-actions">
+<button class="crf-outline-btn" data-crf-close="remove" type="button">Cancel</button>
+<button class="crf-remove-confirm" id="crfRemoveConfirm" type="button">Remove</button>
+</div>
+</div>
+</div>
 <script src="../../Static/script.js"></script>
 </body>
 </html>

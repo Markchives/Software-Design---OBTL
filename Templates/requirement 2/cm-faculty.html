@@ -1,76 +1,123 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1.0" name="viewport"/>
 <title>Curriculum Mapping | EduMetrics Faculty</title>
-<link rel="stylesheet" href="../../Static/style.css">
+<link href="../../Static/style.css" rel="stylesheet"/>
 </head>
-<body class="so-student-page cm-faculty-page">
+<body class="so-student-page cm-faculty-page course-workspace-page faculty-workspace-aligned">
 <header class="so-topbar">
-<div class="so-brand"><div class="so-brand-logo">Edu<span>Metrics</span></div><div class="so-brand-subtitle">Academic Assessment &amp; Grading System</div></div>
+<div class="so-brand">
+<div class="so-brand-logo">
+                    Edu<span>Metrics</span>
+</div>
+<div class="so-brand-subtitle">
+                    Academic Assessment &amp; Grading System
+                </div>
+</div>
 <div class="so-user-area">
-<button class="so-notification-btn" type="button" aria-label="Notifications"><img src="../../Static/images/sidebar/notif.png" alt="Notifications" class="so-notification-image"><span class="so-notification-dot"></span></button>
-<div class="so-user-info"><strong id="facultyName"></strong><span>Faculty</span></div>
-<div class="so-avatar" aria-hidden="true"><span class="so-avatar-person">●</span></div><span class="so-online-dot" aria-hidden="true"></span>
+<button aria-label="Notifications" class="so-notification-btn" type="button">
+<img alt="Notifications" class="so-notification-image" src="../../Static/images/sidebar/notif.png"/>
+<span class="so-notification-dot"></span>
+</button>
+<div class="so-user-info">
+<strong id="facultyName"></strong>
+<span>Faculty</span>
+</div>
+<div aria-hidden="true" class="so-avatar">
+<span class="so-avatar-person">●</span>
+</div>
+<span aria-hidden="true" class="so-online-dot"></span>
 </div>
 </header>
-<div class="so-header-lines"><div class="so-header-blue"></div><div class="so-header-gold"></div></div>
+<div class="so-header-lines">
+<div class="so-header-blue"></div>
+<div class="so-header-gold"></div>
+</div>
 <div class="so-shell">
 <aside class="so-sidebar">
-<div class="so-pages-title"><span class="so-grid-icon so-pages-image-wrap"><img src="../../Static/images/sidebar/pages.png" alt="" class="so-pages-image"></span><span>Pages</span></div>
-<nav class="so-nav" aria-label="Faculty navigation">
-<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/home-white.png" alt="" class="so-nav-image"></span><span>Home</span></a>
-<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/course-white.png" alt="" class="so-nav-image"></span><span>Courses</span></a>
-<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/pl-white.png" alt="" class="so-nav-image"></span><span>Platform</span></a>
-<div class="so-nav-group">
-<button class="so-nav-item so-products active" type="button"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/ws-blue.png" alt="" class="so-nav-image"></span><span>Workflow</span></button>
-<div class="so-subnav">
-<a href="#">Syllabus &amp; Outcomes</a><a href="#" class="active">Curriculum Mapping</a><a href="#">Class Roster</a><a href="#">Assessment Entry</a><a href="#">Attainment</a><a href="#">CQI Planning</a><a href="#">Gradebook</a><a href="#">Compliance Report</a>
+<div class="so-pages-title">
+<span class="so-grid-icon so-pages-image-wrap">
+<img alt="" class="so-pages-image" src="../../Static/images/sidebar/pages.png"/>
+</span>
+<span>Pages</span>
 </div>
-</div>
-<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/rs-white.png" alt="" class="so-nav-image"></span><span>Resources</span></a>
-<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/au-white.png" alt="" class="so-nav-image"></span><span>About Us</span></a>
+<nav aria-label="Faculty navigation" class="so-nav">
+<a class="so-nav-item" href="dashboard-faculty.html">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/home-white.png"/>
+</span>
+<span>Home</span>
+</a>
+<a class="so-nav-item active" href="dashboard-faculty.html#my-courses">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/course-white.png"/>
+</span>
+<span>My Courses</span>
+</a>
+<a class="so-nav-item" href="../webpage/platform.html">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/pl-white.png"/>
+</span>
+<span>Platform</span>
+</a>
+<a class="so-nav-item" href="../webpage/resources.html">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/rs-white.png"/>
+</span>
+<span>Resources</span>
+</a>
+<a class="so-nav-item" href="../webpage/about us.html">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/au-white.png"/>
+</span>
+<span>About Us</span>
+</a>
 </nav>
-<div class="so-sidebar-brand"><div class="so-sidebar-logo">Edu<span>Metrics</span></div><small>Academic Assessment &amp; Grading System</small></div>
+<div class="so-sidebar-brand">
+<div class="so-sidebar-logo">
+                        Edu<span>Metrics</span>
+</div>
+<small>
+                        Academic Assessment &amp; Grading System
+                    </small>
+</div>
 </aside>
 <main class="so-main cm-student-main">
-<section class="so-page-heading">
-<h1>Curriculum Mapping</h1>
-<p>Manage course outcomes, assessment mappings, and student attainment.</p>
+
+<div class="cw-breadcrumb">My Courses <span class="cw-breadcrumb-separator">/</span> <span class="cw-breadcrumb-current">Software Lab</span></div><div class="cw-workspace"><section aria-label="Selected course" class="cw-hero"><div><div class="cw-eyebrow">COURSE WORKSPACE</div><h2>Software Lab</h2><p>CPE 321 · BSCPE 3A · 1st Semester 2026–2027</p></div><span class="cw-demo-badge">DEMO COURSE</span></section><nav aria-label="Course modules" class="cw-module-nav"><a class="cw-module-tab" href="so-faculty.html"><span class="cw-module-number">01</span> Syllabus &amp; Outcomes</a><a aria-current="page" class="cw-module-tab active" href="cm-faculty.html"><span class="cw-module-number">02</span> Curriculum Mapping</a><a class="cw-module-tab" href="cr-faculty.html"><span class="cw-module-number">03</span> Class Roster</a><a class="cw-module-tab" href="assessment-faculty.html"><span class="cw-module-number">04</span> Assessment Entry</a><a class="cw-module-tab" href="attainment-faculty.html"><span class="cw-module-number">05</span> Attainment</a><a class="cw-module-tab" href="cqi-faculty.html"><span class="cw-module-number">06</span> CQI Planning</a><a class="cw-module-tab" href="gradebook-faculty.html"><span class="cw-module-number">07</span> Gradebook</a><a class="cw-module-tab" href="compliance-faculty.html"><span class="cw-module-number">08</span> Compliance Report</a></nav></div><section aria-hidden="true" class="cm-student-filters cw-legacy-controls" hidden="hidden">
+<div class="cm-filter-group"><label for="cmFacultySchoolYear">School Year</label><select id="cmFacultySchoolYear"><option selected="" value="">Select School Year</option><option value="2026-2027">2026-2027</option><option value="2025-2026">2025-2026</option><option value="2024-2025">2024-2025</option><option value="2023-2024">2023-2024</option></select></div>
+<div class="cm-filter-group"><label for="cmFacultyDepartment">Department</label><select id="cmFacultyDepartment"><option selected="" value="">Select Department</option><option value="College of Computing and Information Technologies">College of Computing and Information Technologies</option><option value="College of Engineering">College of Engineering</option><option value="College of Business and Accountancy">College of Business and Accountancy</option></select></div>
+<div class="cm-filter-group"><label for="cmFacultyProgram">Program</label><select id="cmFacultyProgram"><option selected="" value="">Select Program</option><option value="BS Information Technology">BS Information Technology</option><option value="BS Computer Science">BS Computer Science</option><option value="BS Information Systems">BS Information Systems</option></select></div>
+<div class="cm-filter-group"><label for="cmFacultyCourse">Course</label><select id="cmFacultyCourse"><option selected="" value="">Select Course</option></select></div>
+<div class="cm-filter-group"><label for="cmFacultySection">Section</label><select id="cmFacultySection"><option selected="" value="">Select Section</option></select></div>
 </section>
-<section class="cm-student-filters">
-<div class="cm-filter-group"><label for="cmFacultySchoolYear">School Year</label><select id="cmFacultySchoolYear"><option value="" selected>Select School Year</option><option value="2026-2027">2026-2027</option><option value="2025-2026">2025-2026</option><option value="2024-2025">2024-2025</option><option value="2023-2024">2023-2024</option></select></div>
-<div class="cm-filter-group"><label for="cmFacultyDepartment">Department</label><select id="cmFacultyDepartment"><option value="" selected>Select Department</option><option value="College of Computing and Information Technologies">College of Computing and Information Technologies</option><option value="College of Engineering">College of Engineering</option><option value="College of Business and Accountancy">College of Business and Accountancy</option></select></div>
-<div class="cm-filter-group"><label for="cmFacultyProgram">Program</label><select id="cmFacultyProgram"><option value="" selected>Select Program</option><option value="BS Information Technology">BS Information Technology</option><option value="BS Computer Science">BS Computer Science</option><option value="BS Information Systems">BS Information Systems</option></select></div>
-<div class="cm-filter-group"><label for="cmFacultyCourse">Course</label><select id="cmFacultyCourse"><option value="" selected>Select Course</option></select></div>
-<div class="cm-filter-group"><label for="cmFacultySection">Section</label><select id="cmFacultySection"><option value="" selected>Select Section</option></select></div>
-</section>
-<section class="cm-student-summary cm-faculty-summary">
-<article class="cm-course-card"><div class="cm-card-accent"></div><div><span class="cm-course-label">My Course</span><h2>—</h2></div></article>
-<article class="cm-stat-card"><div class="cm-card-accent cm-card-accent-soft"></div><div><span>Total Course Outcomes</span><strong>0</strong></div></article>
-<article class="cm-stat-card"><div class="cm-card-accent cm-card-accent-soft"></div><div><span>Mapped Assessments</span><strong>0</strong></div></article>
-<article class="cm-stat-card"><div class="cm-card-accent cm-card-accent-soft"></div><div><span>Overall CO Attainment</span><strong>0%</strong></div></article>
+<section class="cm-student-summary so-summary-grid">
+<article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Total Course Outcomes</span><strong class="so-summary-number">0</strong></article>
+<article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Mapped Assessments</span><strong class="so-summary-number">0</strong></article>
+<article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Overall CO Attainment</span><strong class="so-summary-number">0%</strong></article>
 </section>
 <section class="cm-student-content cm-faculty-content">
 <div class="cm-tabs" role="tablist">
-<button class="cm-tab active" type="button" data-cm-tab="assessment-mapping">Assessment Mapping</button>
-<button class="cm-tab" type="button" data-cm-tab="course-outcomes">Course Outcomes</button>
-<button class="cm-tab" type="button" data-cm-tab="students-attainment">Students' Attainment</button>
+<button class="cm-tab active" data-cm-tab="assessment-mapping" type="button">Assessment Mapping</button>
+<button class="cm-tab" data-cm-tab="course-outcomes" type="button">Course Outcomes</button>
+<button class="cm-tab" data-cm-tab="students-attainment" type="button">Students' Attainment</button>
 </div>
 <div class="cm-tab-panel active" id="assessment-mapping">
-<div class="cm-assessment-toolbar"><p>Add, edit, delete assessments</p><button type="button" class="cm-add-assessment-btn" id="openAssessmentModal"><span>+</span> Add Assessment</button></div>
+<div class="cm-assessment-toolbar"><p>Add, edit, delete assessments</p><button class="cm-add-assessment-btn" id="openAssessmentModal" type="button"><span>+</span> Add Assessment</button></div>
 <div class="cm-table-wrap"><table class="cm-table cm-assessment-table"><thead><tr><th>Assessment Title</th><th>Assessment Type</th><th>Date</th><th>Mapped CO(s)</th><th>View Score</th><th>Actions</th></tr></thead><tbody id="facultyAssessmentMappingBody">
 <tr>
 <td>Experiment 1</td>
 <td><span class="cm-type-badge">Laboratory</span></td>
 <td>Oct. 1, 2026</td>
 <td><span class="cm-co-badge">CO1</span> <span class="cm-co-badge">CO4</span></td>
-<td><button type="button" class="cm-view-score-btn">View Score</button></td>
+<td><button class="cm-view-score-btn" type="button">View Score</button></td>
 <td>
 <div class="cm-row-actions">
-<button type="button" class="cm-action-btn cm-edit-btn">✎ Edit</button>
-<button type="button" class="cm-action-btn cm-delete-btn">🗑 Delete</button>
+<button class="cm-action-btn cm-edit-btn" type="button">✎ Edit</button>
+<button class="cm-action-btn cm-delete-btn" type="button">🗑 Delete</button>
 </div>
 </td>
 </tr>
@@ -79,11 +126,11 @@
 <td><span class="cm-type-badge">Quiz</span></td>
 <td>Oct. 8, 2026</td>
 <td><span class="cm-co-badge">CO2</span></td>
-<td><button type="button" class="cm-view-score-btn">View Score</button></td>
+<td><button class="cm-view-score-btn" type="button">View Score</button></td>
 <td>
 <div class="cm-row-actions">
-<button type="button" class="cm-action-btn cm-edit-btn">✎ Edit</button>
-<button type="button" class="cm-action-btn cm-delete-btn">🗑 Delete</button>
+<button class="cm-action-btn cm-edit-btn" type="button">✎ Edit</button>
+<button class="cm-action-btn cm-delete-btn" type="button">🗑 Delete</button>
 </div>
 </td>
 </tr>
@@ -92,48 +139,48 @@
 <td><span class="cm-type-badge">Project</span></td>
 <td>Oct. 20, 2026</td>
 <td><span class="cm-co-badge">CO2</span> <span class="cm-co-badge">CO3</span></td>
-<td><button type="button" class="cm-view-score-btn">View Score</button></td>
+<td><button class="cm-view-score-btn" type="button">View Score</button></td>
 <td>
 <div class="cm-row-actions">
-<button type="button" class="cm-action-btn cm-edit-btn">✎ Edit</button>
-<button type="button" class="cm-action-btn cm-delete-btn">🗑 Delete</button>
+<button class="cm-action-btn cm-edit-btn" type="button">✎ Edit</button>
+<button class="cm-action-btn cm-delete-btn" type="button">🗑 Delete</button>
 </div>
 </td>
 </tr>
 </tbody></table></div></div>
 <div class="cm-tab-panel" id="course-outcomes"><div class="cm-table-wrap"><table class="cm-table cm-course-outcomes-table"><thead><tr><th>CO No.</th><th>Course Outcome</th><th>Mapped Activities</th><th>Class Attainment</th><th>Target</th><th>Status</th><th>Action</th></tr></thead><tbody id="facultyCourseOutcomesBody">
-<tr><td>CO1</td><td>Apply fundamental software engineering principles</td><td><span class="cm-co-badge">Lab 1</span> <span class="cm-co-badge">Lab 2</span> <span class="cm-co-badge">Lab 3</span></td><td><strong>88%</strong></td><td>≥ 70</td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><div class="cm-course-outcome-actions"><button type="button" class="cm-view-score-btn cm-co-view-btn">↗ View</button></div></td></tr>
-<tr><td>CO2</td><td>Evaluate Philippine IT laws, policies, and intellectual property frameworks, and justify their correct application in real-world computing, electronic transactions, and data privacy scenarios.</td><td><span class="cm-co-badge">Quiz 1</span> <span class="cm-co-badge">Midterm Project</span></td><td><strong>78%</strong></td><td>≥ 70</td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><div class="cm-course-outcome-actions"><button type="button" class="cm-view-score-btn cm-co-view-btn">↗ View</button></div></td></tr>
-<tr><td>CO3</td><td>Evaluate contemporary IT issues, lifelong learning strategies, and business or management trade-offs, and justify informed decisions balancing technical, ethical, and societal considerations.</td><td><span class="cm-co-badge">Midterm Project</span></td><td><strong>67%</strong></td><td>≥ 70</td><td><span class="cm-attainment-status cm-status-needs">Needs Improvement</span></td><td><div class="cm-course-outcome-actions"><button type="button" class="cm-view-score-btn cm-co-view-btn">↗ View</button><button type="button" class="cm-cqi-basis-btn cm-co-cqi-btn">CQI Basis</button></div></td></tr>
-<tr><td>CO4</td><td>Execute effective leadership and collaborate seamlessly within multidisciplinary teams using Agile, Scrum, and Kanban frameworks.</td><td><span class="cm-co-badge">Experiment 1</span> <span class="cm-co-badge">Project</span></td><td><strong>88%</strong></td><td>≥ 70</td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><div class="cm-course-outcome-actions"><button type="button" class="cm-view-score-btn cm-co-view-btn">↗ View</button></div></td></tr>
-<tr><td>CO5</td><td>Build and deploy full-stack web and embedded systems by applying professional code versioning (GitHub), modern databases, and CI/CD pipelines, while articulating their technical limitations.</td><td><span class="cm-co-badge">Final Project</span></td><td><strong>88%</strong></td><td>≥ 70</td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><div class="cm-course-outcome-actions"><button type="button" class="cm-view-score-btn cm-co-view-btn">↗ View</button></div></td></tr>
+<tr><td>CO1</td><td>Apply fundamental software engineering principles</td><td><span class="cm-co-badge">Lab 1</span> <span class="cm-co-badge">Lab 2</span> <span class="cm-co-badge">Lab 3</span></td><td><strong>88%</strong></td><td>≥ 70</td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><div class="cm-course-outcome-actions"><button class="cm-view-score-btn cm-co-view-btn" type="button">↗ View</button></div></td></tr>
+<tr><td>CO2</td><td>Evaluate Philippine IT laws, policies, and intellectual property frameworks, and justify their correct application in real-world computing, electronic transactions, and data privacy scenarios.</td><td><span class="cm-co-badge">Quiz 1</span> <span class="cm-co-badge">Midterm Project</span></td><td><strong>78%</strong></td><td>≥ 70</td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><div class="cm-course-outcome-actions"><button class="cm-view-score-btn cm-co-view-btn" type="button">↗ View</button></div></td></tr>
+<tr><td>CO3</td><td>Evaluate contemporary IT issues, lifelong learning strategies, and business or management trade-offs, and justify informed decisions balancing technical, ethical, and societal considerations.</td><td><span class="cm-co-badge">Midterm Project</span></td><td><strong>67%</strong></td><td>≥ 70</td><td><span class="cm-attainment-status cm-status-needs">Needs Improvement</span></td><td><div class="cm-course-outcome-actions"><button class="cm-view-score-btn cm-co-view-btn" type="button">↗ View</button><button class="cm-cqi-basis-btn cm-co-cqi-btn" type="button">CQI Basis</button></div></td></tr>
+<tr><td>CO4</td><td>Execute effective leadership and collaborate seamlessly within multidisciplinary teams using Agile, Scrum, and Kanban frameworks.</td><td><span class="cm-co-badge">Experiment 1</span> <span class="cm-co-badge">Project</span></td><td><strong>88%</strong></td><td>≥ 70</td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><div class="cm-course-outcome-actions"><button class="cm-view-score-btn cm-co-view-btn" type="button">↗ View</button></div></td></tr>
+<tr><td>CO5</td><td>Build and deploy full-stack web and embedded systems by applying professional code versioning (GitHub), modern databases, and CI/CD pipelines, while articulating their technical limitations.</td><td><span class="cm-co-badge">Final Project</span></td><td><strong>88%</strong></td><td>≥ 70</td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><div class="cm-course-outcome-actions"><button class="cm-view-score-btn cm-co-view-btn" type="button">↗ View</button></div></td></tr>
 </tbody></table></div></div>
 <div class="cm-tab-panel" id="students-attainment"><div class="cm-table-wrap"><table class="cm-table cm-students-attainment-table"><thead><tr><th>#</th><th>Student ID</th><th>Student Name</th><th>CO1</th><th>CO2</th><th>CO3</th><th>CO4</th><th>CO5</th><th>Status</th><th>Action</th></tr></thead><tbody id="facultyStudentsAttainmentBody">
-<tr><td>1</td><td>2023-111111</td><td>Angel S. Villanueva</td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">76%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><div class="cm-attainment-actions"><button type="button" class="cm-view-score-btn cm-attainment-view-btn">↗ View</button></div></td></tr>
-<tr><td>2</td><td>2023-111112</td><td>Bea M. Santos</td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">78%</span></td><td><span class="cm-attainment-score cm-score-fail">59%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-status cm-status-needs">Needs Improvement</span></td><td><div class="cm-attainment-actions"><button type="button" class="cm-view-score-btn cm-attainment-view-btn">↗ View</button><button type="button" class="cm-cqi-basis-btn">CQI Basis</button></div></td></tr>
-<tr><td>3</td><td>2023-111113</td><td>Carl P. Reyes</td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">73%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><div class="cm-attainment-actions"><button type="button" class="cm-view-score-btn cm-attainment-view-btn">↗ View</button></div></td></tr>
-<tr><td>4</td><td>2023-111114</td><td>Dana L. Cruz</td><td><span class="cm-attainment-score cm-score-pass">91%</span></td><td><span class="cm-attainment-score cm-score-pass">85%</span></td><td><span class="cm-attainment-score cm-score-pass">82%</span></td><td><span class="cm-attainment-score cm-score-pass">79%</span></td><td><span class="cm-attainment-score cm-score-pass">90%</span></td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><div class="cm-attainment-actions"><button type="button" class="cm-view-score-btn cm-attainment-view-btn">↗ View</button></div></td></tr>
+<tr><td>1</td><td>2023-111111</td><td>Angel S. Villanueva</td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">76%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><div class="cm-attainment-actions"><button class="cm-view-score-btn cm-attainment-view-btn" type="button">↗ View</button></div></td></tr>
+<tr><td>2</td><td>2023-111112</td><td>Bea M. Santos</td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">78%</span></td><td><span class="cm-attainment-score cm-score-fail">59%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-status cm-status-needs">Needs Improvement</span></td><td><div class="cm-attainment-actions"><button class="cm-view-score-btn cm-attainment-view-btn" type="button">↗ View</button><button class="cm-cqi-basis-btn" type="button">CQI Basis</button></div></td></tr>
+<tr><td>3</td><td>2023-111113</td><td>Carl P. Reyes</td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-score cm-score-pass">73%</span></td><td><span class="cm-attainment-score cm-score-pass">88%</span></td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><div class="cm-attainment-actions"><button class="cm-view-score-btn cm-attainment-view-btn" type="button">↗ View</button></div></td></tr>
+<tr><td>4</td><td>2023-111114</td><td>Dana L. Cruz</td><td><span class="cm-attainment-score cm-score-pass">91%</span></td><td><span class="cm-attainment-score cm-score-pass">85%</span></td><td><span class="cm-attainment-score cm-score-pass">82%</span></td><td><span class="cm-attainment-score cm-score-pass">79%</span></td><td><span class="cm-attainment-score cm-score-pass">90%</span></td><td><span class="cm-attainment-status cm-status-met">Met</span></td><td><div class="cm-attainment-actions"><button class="cm-view-score-btn cm-attainment-view-btn" type="button">↗ View</button></div></td></tr>
 </tbody></table></div></div>
 </section>
 </main>
 </div>
-<div class="cm-assessment-modal" id="assessmentModal" aria-hidden="true">
-<div class="cm-assessment-modal-card" role="dialog" aria-modal="true" aria-labelledby="assessmentModalTitle">
-<div class="cm-assessment-modal-header"><div><h2 id="assessmentModalTitle">Add Assessment</h2><p>Enter the assessment details and select the course outcome(s) it measures.</p></div><button type="button" class="cm-assessment-modal-close" id="closeAssessmentModal" aria-label="Close">&times;</button></div>
+<div aria-hidden="true" class="cm-assessment-modal" id="assessmentModal">
+<div aria-labelledby="assessmentModalTitle" aria-modal="true" class="cm-assessment-modal-card" role="dialog">
+<div class="cm-assessment-modal-header"><div><h2 id="assessmentModalTitle">Add Assessment</h2><p>Enter the assessment details and select the course outcome(s) it measures.</p></div><button aria-label="Close" class="cm-assessment-modal-close" id="closeAssessmentModal" type="button">×</button></div>
 <form id="assessmentForm">
 <div class="cm-assessment-form-grid">
-<div class="cm-assessment-field cm-assessment-field-full"><label for="assessmentName">Assessment Name</label><input id="assessmentName" type="text" placeholder="Enter assessment name" required></div>
-<div class="cm-assessment-field"><label for="assessmentType">Assessment Type</label><select id="assessmentType" required><option value="" selected disabled>Select Assessment Type</option><option>Quiz</option><option>Exam</option><option>Assignment</option><option>Assessment</option><option>Laboratory Experiment</option><option>Project</option></select></div>
-<div class="cm-assessment-field"><label for="assessmentDate">Date</label><input id="assessmentDate" type="date" required></div>
-<div class="cm-assessment-field cm-assessment-field-full"><label>Course Outcome(s)</label><p class="cm-assessment-helper" id="assessmentCoHelper">Select one or more COs.</p><div class="cm-co-options"><label><input type="checkbox" name="assessmentCO" value="CO1"><span>CO1</span></label><label><input type="checkbox" name="assessmentCO" value="CO2"><span>CO2</span></label><label><input type="checkbox" name="assessmentCO" value="CO3"><span>CO3</span></label><label><input type="checkbox" name="assessmentCO" value="CO4"><span>CO4</span></label><label><input type="checkbox" name="assessmentCO" value="CO5"><span>CO5</span></label><label><input type="checkbox" name="assessmentCO" value="CO6"><span>CO6</span></label><label><input type="checkbox" name="assessmentCO" value="CO7"><span>CO7</span></label><label><input type="checkbox" name="assessmentCO" value="CO8"><span>CO8</span></label><label><input type="checkbox" name="assessmentCO" value="CO9"><span>CO9</span></label><label><input type="checkbox" name="assessmentCO" value="CO10"><span>CO10</span></label></div><span class="cm-assessment-error" id="assessmentCoError"></span></div>
+<div class="cm-assessment-field cm-assessment-field-full"><label for="assessmentName">Assessment Name</label><input id="assessmentName" placeholder="Enter assessment name" required="" type="text"/></div>
+<div class="cm-assessment-field"><label for="assessmentType">Assessment Type</label><select id="assessmentType" required=""><option disabled="" selected="" value="">Select Assessment Type</option><option>Quiz</option><option>Exam</option><option>Assignment</option><option>Assessment</option><option>Laboratory Experiment</option><option>Project</option></select></div>
+<div class="cm-assessment-field"><label for="assessmentDate">Date</label><input id="assessmentDate" required="" type="date"/></div>
+<div class="cm-assessment-field cm-assessment-field-full"><label>Course Outcome(s)</label><p class="cm-assessment-helper" id="assessmentCoHelper">Select one or more COs.</p><div class="cm-co-options"><label><input name="assessmentCO" type="checkbox" value="CO1"/><span>CO1</span></label><label><input name="assessmentCO" type="checkbox" value="CO2"/><span>CO2</span></label><label><input name="assessmentCO" type="checkbox" value="CO3"/><span>CO3</span></label><label><input name="assessmentCO" type="checkbox" value="CO4"/><span>CO4</span></label><label><input name="assessmentCO" type="checkbox" value="CO5"/><span>CO5</span></label><label><input name="assessmentCO" type="checkbox" value="CO6"/><span>CO6</span></label><label><input name="assessmentCO" type="checkbox" value="CO7"/><span>CO7</span></label><label><input name="assessmentCO" type="checkbox" value="CO8"/><span>CO8</span></label><label><input name="assessmentCO" type="checkbox" value="CO9"/><span>CO9</span></label><label><input name="assessmentCO" type="checkbox" value="CO10"/><span>CO10</span></label></div><span class="cm-assessment-error" id="assessmentCoError"></span></div>
 </div>
-<div class="cm-assessment-modal-actions"><button type="button" class="cm-assessment-cancel-btn" id="cancelAssessmentModal">Cancel</button><button type="submit" class="cm-assessment-save-btn">Add Assessment</button></div>
+<div class="cm-assessment-modal-actions"><button class="cm-assessment-cancel-btn" id="cancelAssessmentModal" type="button">Cancel</button><button class="cm-assessment-save-btn" type="submit">Add Assessment</button></div>
 </form>
 </div>
 </div>
-<div class="cm-score-modal" id="scoreModal" aria-hidden="true">
-<div class="cm-score-modal-card" role="dialog" aria-modal="true" aria-labelledby="scoreModalTitle">
-<div class="cm-score-modal-header"><h2 id="scoreModalTitle">Raw Assessment Scores</h2><button type="button" class="cm-score-modal-close" id="closeScoreModal" aria-label="Close">&times;</button></div>
+<div aria-hidden="true" class="cm-score-modal" id="scoreModal">
+<div aria-labelledby="scoreModalTitle" aria-modal="true" class="cm-score-modal-card" role="dialog">
+<div class="cm-score-modal-header"><h2 id="scoreModalTitle">Raw Assessment Scores</h2><button aria-label="Close" class="cm-score-modal-close" id="closeScoreModal" type="button">×</button></div>
 <div class="cm-score-modal-body">
 <div class="cm-score-summary">
 <div class="cm-score-summary-card"><span>ASSESSMENT</span><strong id="scoreAssessmentName">Experiment 1</strong></div>
@@ -141,30 +188,30 @@
 <div class="cm-score-summary-card"><span>STUDENTS</span><strong id="scoreStudentCount">4</strong></div>
 <div class="cm-score-summary-card"><span>MEAN</span><strong id="scoreMean">88%</strong></div>
 </div>
-<div class="cm-score-table-wrap"><table class="cm-score-table"><thead><tr><th>Student</th><th>Raw Score</th><th>Percentage</th></tr></thead><tbody id="scoreTableBody"><tr><td>Angel S. Villanueva</td><td><input type="number" min="0" max="100" value="88" class="cm-raw-score-input"></td><td class="cm-score-percent">88%</td></tr><tr><td>Bea M. Santos</td><td><input type="number" min="0" max="100" value="88" class="cm-raw-score-input"></td><td class="cm-score-percent">88%</td></tr><tr><td>Carl P. Reyes</td><td><input type="number" min="0" max="100" value="88" class="cm-raw-score-input"></td><td class="cm-score-percent">88%</td></tr><tr><td>Dana L. Cruz</td><td><input type="number" min="0" max="100" value="88" class="cm-raw-score-input"></td><td class="cm-score-percent">88%</td></tr></tbody></table></div>
+<div class="cm-score-table-wrap"><table class="cm-score-table"><thead><tr><th>Student</th><th>Raw Score</th><th>Percentage</th></tr></thead><tbody id="scoreTableBody"><tr><td>Angel S. Villanueva</td><td><input class="cm-raw-score-input" max="100" min="0" type="number" value="88"/></td><td class="cm-score-percent">88%</td></tr><tr><td>Bea M. Santos</td><td><input class="cm-raw-score-input" max="100" min="0" type="number" value="88"/></td><td class="cm-score-percent">88%</td></tr><tr><td>Carl P. Reyes</td><td><input class="cm-raw-score-input" max="100" min="0" type="number" value="88"/></td><td class="cm-score-percent">88%</td></tr><tr><td>Dana L. Cruz</td><td><input class="cm-raw-score-input" max="100" min="0" type="number" value="88"/></td><td class="cm-score-percent">88%</td></tr></tbody></table></div>
 <div class="cm-score-note"><strong>Raw Score Entry:</strong> scores entered here are connected to this assessment. Saving recalculates the assessment mean and automatically updates the attainment of every mapped CO.</div>
-<div class="cm-score-modal-actions"><button type="button" class="cm-score-cancel-btn" id="cancelScoreModal">Cancel</button><button type="button" class="cm-score-save-btn" id="saveScoresBtn">Save Scores &amp; Recalculate</button></div>
+<div class="cm-score-modal-actions"><button class="cm-score-cancel-btn" id="cancelScoreModal" type="button">Cancel</button><button class="cm-score-save-btn" id="saveScoresBtn" type="button">Save Scores &amp; Recalculate</button></div>
 </div>
 </div>
 </div>
-<div class="cm-attainment-modal" id="courseOutcomeViewModal" aria-hidden="true"><div class="cm-attainment-modal-card" role="dialog" aria-modal="true"><div class="cm-attainment-modal-header"><div><h2>Course Outcome Details</h2><p>Class attainment details for the selected course outcome.</p></div><button type="button" class="cm-attainment-modal-close" data-close-co-modal="courseOutcomeViewModal">&times;</button></div><div class="cm-attainment-modal-body"><div class="cm-attainment-modal-summary"><div><span>COURSE OUTCOME</span><strong id="coViewNumber">—</strong></div><div><span>CLASS ATTAINMENT</span><strong id="coViewAttainment">—</strong></div><div><span>TARGET</span><strong id="coViewTarget">—</strong></div><div><span>STATUS</span><strong id="coViewStatus">—</strong></div></div><div class="cm-co-description-box"><span>COURSE OUTCOME DESCRIPTION</span><strong id="coViewDescription">—</strong></div><div class="cm-co-description-box"><span>MAPPED ACTIVITIES</span><strong id="coViewActivities">—</strong></div><div class="cm-attainment-modal-actions"><button type="button" class="cm-score-cancel-btn" data-close-co-modal="courseOutcomeViewModal">Close</button></div></div></div></div>
-<div class="cm-attainment-modal" id="courseOutcomeCqiModal" aria-hidden="true"><div class="cm-attainment-modal-card" role="dialog" aria-modal="true"><div class="cm-attainment-modal-header"><div><h2>CQI Basis</h2><p>Basis for continuous quality improvement.</p></div><button type="button" class="cm-attainment-modal-close" data-close-co-modal="courseOutcomeCqiModal">&times;</button></div><div class="cm-attainment-modal-body"><div class="cm-cqi-rule"><strong>CQI Basis:</strong> A course outcome with class attainment of <strong>below 70%</strong> is marked for CQI.</div><div class="cm-attainment-modal-summary"><div><span>COURSE OUTCOME</span><strong id="coCqiNumber">—</strong></div><div><span>CLASS ATTAINMENT</span><strong id="coCqiAttainment">—</strong></div><div><span>REQUIRED LEVEL</span><strong>70% or above</strong></div><div><span>STATUS</span><strong>Needs Improvement</strong></div></div><div class="cm-co-description-box"><span>WHY THIS IS A CQI BASIS</span><strong id="coCqiReason">—</strong></div><div class="cm-attainment-modal-actions"><button type="button" class="cm-score-cancel-btn" data-close-co-modal="courseOutcomeCqiModal">Close</button></div></div></div></div>
-<div class="cm-attainment-modal" id="attainmentDetailModal" aria-hidden="true">
-<div class="cm-attainment-modal-card" role="dialog" aria-modal="true" aria-labelledby="attainmentDetailTitle">
-<div class="cm-attainment-modal-header"><div><h2 id="attainmentDetailTitle">Student Attainment Details</h2><p>Course outcome attainment for the selected student.</p></div><button type="button" class="cm-attainment-modal-close" data-close-attainment="attainmentDetailModal" aria-label="Close">&times;</button></div>
-<div class="cm-attainment-modal-body"><div class="cm-attainment-modal-summary"><div><span>STUDENT ID</span><strong id="attainmentStudentId">—</strong></div><div><span>STUDENT NAME</span><strong id="attainmentStudentName">—</strong></div><div><span>STATUS</span><strong id="attainmentStudentStatus">—</strong></div><div><span>CQI THRESHOLD</span><strong>59% and below</strong></div></div><div id="attainmentCoDetails" class="cm-attainment-detail-list"></div><div class="cm-attainment-modal-actions"><button type="button" class="cm-score-cancel-btn" data-close-attainment="attainmentDetailModal">Close</button></div></div>
+<div aria-hidden="true" class="cm-attainment-modal" id="courseOutcomeViewModal"><div aria-modal="true" class="cm-attainment-modal-card" role="dialog"><div class="cm-attainment-modal-header"><div><h2>Course Outcome Details</h2><p>Class attainment details for the selected course outcome.</p></div><button class="cm-attainment-modal-close" data-close-co-modal="courseOutcomeViewModal" type="button">×</button></div><div class="cm-attainment-modal-body"><div class="cm-attainment-modal-summary"><div><span>COURSE OUTCOME</span><strong id="coViewNumber">—</strong></div><div><span>CLASS ATTAINMENT</span><strong id="coViewAttainment">—</strong></div><div><span>TARGET</span><strong id="coViewTarget">—</strong></div><div><span>STATUS</span><strong id="coViewStatus">—</strong></div></div><div class="cm-co-description-box"><span>COURSE OUTCOME DESCRIPTION</span><strong id="coViewDescription">—</strong></div><div class="cm-co-description-box"><span>MAPPED ACTIVITIES</span><strong id="coViewActivities">—</strong></div><div class="cm-attainment-modal-actions"><button class="cm-score-cancel-btn" data-close-co-modal="courseOutcomeViewModal" type="button">Close</button></div></div></div></div>
+<div aria-hidden="true" class="cm-attainment-modal" id="courseOutcomeCqiModal"><div aria-modal="true" class="cm-attainment-modal-card" role="dialog"><div class="cm-attainment-modal-header"><div><h2>CQI Basis</h2><p>Basis for continuous quality improvement.</p></div><button class="cm-attainment-modal-close" data-close-co-modal="courseOutcomeCqiModal" type="button">×</button></div><div class="cm-attainment-modal-body"><div class="cm-cqi-rule"><strong>CQI Basis:</strong> A course outcome with class attainment of <strong>below 70%</strong> is marked for CQI.</div><div class="cm-attainment-modal-summary"><div><span>COURSE OUTCOME</span><strong id="coCqiNumber">—</strong></div><div><span>CLASS ATTAINMENT</span><strong id="coCqiAttainment">—</strong></div><div><span>REQUIRED LEVEL</span><strong>70% or above</strong></div><div><span>STATUS</span><strong>Needs Improvement</strong></div></div><div class="cm-co-description-box"><span>WHY THIS IS A CQI BASIS</span><strong id="coCqiReason">—</strong></div><div class="cm-attainment-modal-actions"><button class="cm-score-cancel-btn" data-close-co-modal="courseOutcomeCqiModal" type="button">Close</button></div></div></div></div>
+<div aria-hidden="true" class="cm-attainment-modal" id="attainmentDetailModal">
+<div aria-labelledby="attainmentDetailTitle" aria-modal="true" class="cm-attainment-modal-card" role="dialog">
+<div class="cm-attainment-modal-header"><div><h2 id="attainmentDetailTitle">Student Attainment Details</h2><p>Course outcome attainment for the selected student.</p></div><button aria-label="Close" class="cm-attainment-modal-close" data-close-attainment="attainmentDetailModal" type="button">×</button></div>
+<div class="cm-attainment-modal-body"><div class="cm-attainment-modal-summary"><div><span>STUDENT ID</span><strong id="attainmentStudentId">—</strong></div><div><span>STUDENT NAME</span><strong id="attainmentStudentName">—</strong></div><div><span>STATUS</span><strong id="attainmentStudentStatus">—</strong></div><div><span>CQI THRESHOLD</span><strong>59% and below</strong></div></div><div class="cm-attainment-detail-list" id="attainmentCoDetails"></div><div class="cm-attainment-modal-actions"><button class="cm-score-cancel-btn" data-close-attainment="attainmentDetailModal" type="button">Close</button></div></div>
 </div></div>
-<div class="cm-attainment-modal" id="cqiBasisModal" aria-hidden="true">
-<div class="cm-attainment-modal-card cm-cqi-modal-card" role="dialog" aria-modal="true" aria-labelledby="cqiBasisTitle">
-<div class="cm-attainment-modal-header"><div><h2 id="cqiBasisTitle">CQI Basis</h2><p>Shows the course outcome(s) that require continuous quality improvement.</p></div><button type="button" class="cm-attainment-modal-close" data-close-attainment="cqiBasisModal" aria-label="Close">&times;</button></div>
-<div class="cm-attainment-modal-body"><div class="cm-cqi-rule"><strong>CQI Basis:</strong> Any course outcome attainment of <strong>below 70%</strong> is marked for CQI.</div><div class="cm-attainment-modal-summary"><div><span>STUDENT ID</span><strong id="cqiStudentId">—</strong></div><div><span>STUDENT NAME</span><strong id="cqiStudentName">—</strong></div></div><div id="cqiBasisDetails" class="cm-attainment-detail-list"></div><div class="cm-attainment-modal-actions"><button type="button" class="cm-score-cancel-btn" data-close-attainment="cqiBasisModal">Close</button></div></div>
+<div aria-hidden="true" class="cm-attainment-modal" id="cqiBasisModal">
+<div aria-labelledby="cqiBasisTitle" aria-modal="true" class="cm-attainment-modal-card cm-cqi-modal-card" role="dialog">
+<div class="cm-attainment-modal-header"><div><h2 id="cqiBasisTitle">CQI Basis</h2><p>Shows the course outcome(s) that require continuous quality improvement.</p></div><button aria-label="Close" class="cm-attainment-modal-close" data-close-attainment="cqiBasisModal" type="button">×</button></div>
+<div class="cm-attainment-modal-body"><div class="cm-cqi-rule"><strong>CQI Basis:</strong> Any course outcome attainment of <strong>below 70%</strong> is marked for CQI.</div><div class="cm-attainment-modal-summary"><div><span>STUDENT ID</span><strong id="cqiStudentId">—</strong></div><div><span>STUDENT NAME</span><strong id="cqiStudentName">—</strong></div></div><div class="cm-attainment-detail-list" id="cqiBasisDetails"></div><div class="cm-attainment-modal-actions"><button class="cm-score-cancel-btn" data-close-attainment="cqiBasisModal" type="button">Close</button></div></div>
 </div></div>
-<div class="cm-delete-modal" id="deleteConfirmModal" aria-hidden="true">
-<div class="cm-delete-modal-card" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitle">
+<div aria-hidden="true" class="cm-delete-modal" id="deleteConfirmModal">
+<div aria-labelledby="deleteConfirmTitle" aria-modal="true" class="cm-delete-modal-card" role="dialog">
 <h2 id="deleteConfirmTitle">Delete assessment?</h2>
 <p id="deleteConfirmMessage">Are you sure you want to delete this assessment?</p>
 <span>This assessment will be removed from the selected course.</span>
-<div class="cm-delete-modal-actions"><button type="button" class="cm-delete-cancel-btn" id="cancelDeleteAssessment">Cancel</button><button type="button" class="cm-delete-confirm-btn" id="confirmDeleteAssessment">Delete</button></div>
+<div class="cm-delete-modal-actions"><button class="cm-delete-cancel-btn" id="cancelDeleteAssessment" type="button">Cancel</button><button class="cm-delete-confirm-btn" id="confirmDeleteAssessment" type="button">Delete</button></div>
 </div>
 </div>
 <script src="../../Static/script.js"></script>

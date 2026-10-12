@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Assessment Records | EduMetrics Student</title>
+<link href="../../Static/style.css" rel="stylesheet"/>
+</head>
+<body class="so-student-page cr-student-page course-workspace-page ra-student-page">
+<header class="so-topbar">
+<div class="so-brand">
+<div class="so-brand-logo">
+                Edu<span>Metrics</span>
+</div>
+<div class="so-brand-subtitle">
+                Academic Assessment &amp; Grading System
+            </div>
+</div>
+<div class="so-user-area">
+<button aria-label="Notifications" class="so-notification-btn" type="button">
+<img alt="Notifications" class="so-notification-image" src="../../Static/images/sidebar/notif.png"/>
+<span class="so-notification-dot"></span>
+</button>
+<div class="so-user-info">
+<strong id="studentName"></strong>
+<span>Student</span>
+</div>
+<div aria-hidden="true" class="so-avatar">
+<span class="so-avatar-person">●</span>
+</div>
+<span aria-hidden="true" class="so-online-dot"></span>
+</div>
+</header>
+<div class="so-header-lines">
+<div class="so-header-blue"></div>
+<div class="so-header-gold"></div>
+</div>
+<div class="so-shell">
+<aside class="so-sidebar">
+<div class="so-pages-title">
+<span class="so-grid-icon so-pages-image-wrap">
+<img alt="" class="so-pages-image" src="../../Static/images/sidebar/pages.png"/>
+</span>
+<span>Pages</span>
+</div>
+<nav aria-label="Student navigation" class="so-nav">
+<a class="so-nav-item" href="dashboard-student.html">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/home-white.png"/>
+</span>
+<span>Dashboard</span>
+</a>
+<a class="so-nav-item active" href="dashboard-student.html#my-courses">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/course-white.png"/>
+</span>
+<span>My Courses</span>
+</a>
+<a class="so-nav-item" href="../webpage/platform.html">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/pl-white.png"/>
+</span>
+<span>Platform</span>
+</a>
+<a class="so-nav-item" href="../webpage/resources.html">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/rs-white.png"/>
+</span>
+<span>Resources</span>
+</a>
+<a class="so-nav-item" href="../webpage/about us.html">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/au-white.png"/>
+</span>
+<span>About Us</span>
+</a>
+</nav>
+<div class="so-sidebar-brand">
+<div class="so-sidebar-logo">
+                    Edu<span>Metrics</span>
+</div>
+<small>
+                    Academic Assessment &amp; Grading System
+                </small>
+</div>
+</aside>
+<main class="so-main">
+<div class="cw-breadcrumb">My Courses <span class="cw-breadcrumb-separator">/</span> <span class="cw-breadcrumb-current">Software Lab</span></div><div class="cw-workspace"><section aria-label="Selected course" class="cw-hero"><div><div class="cw-eyebrow">COURSE WORKSPACE</div><h2>Software Lab</h2><p>CPE 321 · BSCPE 3A · 1st Semester 2026–2027</p></div><span class="cw-demo-badge">DEMO COURSE</span></section><nav aria-label="Course modules" class="cw-module-nav"><a class="cw-module-tab" href="so-student.html"><span class="cw-module-number">01</span> Syllabus &amp; Outcomes</a><a class="cw-module-tab" href="cm-student.html"><span class="cw-module-number">02</span> Curriculum Mapping</a><a class="cw-module-tab" href="cr-student.html"><span class="cw-module-number">03</span> Class Roster</a><a class="cw-module-tab active" href="ra-student.html" aria-current="page"><span class="cw-module-number">04</span> Assessment Entry</a><a class="cw-module-tab" href="attainment-student.html"><span class="cw-module-number">05</span> Attainment</a><a class="cw-module-tab" href="cqi-student.html"><span class="cw-module-number">06</span> CQI Planning</a><a class="cw-module-tab" href="gradebook-student.html"><span class="cw-module-number">07</span> Gradebook</a><a class="cw-module-tab" href="compliance-student.html"><span class="cw-module-number">08</span> Compliance Report</a></nav></div>
+<section class="so-summary-grid" aria-label="Assessment record summary">
+<article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Released Scores</span><strong class="so-summary-number" id="raReleasedCount">4</strong></article>
+<article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Courses</span><strong class="so-summary-number" id="raCourseCount">2</strong></article>
+<article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Awaiting Release</span><strong class="so-summary-number" id="raPendingCount">2</strong></article>
+</section>
+<section class="so-content-card cr-roster-panel" aria-labelledby="raTitle">
+<header class="so-section-header"><div><h2 id="raTitle">Assessment Score Details</h2><p>Only scores belonging to your student record are displayed.</p></div></header>
+<div class="cr-toolbar"><div class="cr-search"><input id="raSearch" type="search" aria-label="Search assessment" placeholder="Search assessment..." autocomplete="off"></div><div class="cr-sort-wrap"><label for="raType">Assessment Type</label><select id="raType"><option value="all">All types</option><option>Major Exam</option><option>Quiz</option><option>Laboratory</option></select><label for="raSort">Sort By</label><select id="raSort"><option value="recent">Most recent</option><option value="oldest">Oldest first</option><option value="name">Assessment name A–Z</option></select></div></div>
+<div class="ra-table-frame"><div class="cr-table-header"><table class="cr-table ra-assessment-table"><colgroup><col><col><col><col><col><col><col><col></colgroup><thead><tr><th>Assessment</th><th>Course</th><th>Type</th><th>Date</th><th>Score</th><th>Maximum</th><th>Result</th><th>Release</th></tr></thead></table></div><div class="cr-table-wrap"><table class="cr-table ra-assessment-table"><colgroup><col><col><col><col><col><col><col><col></colgroup><tbody id="raRows"><tr data-released="false" data-date="2026-10-02" data-type="Major Exam"><td>Midterm Examination</td><td >Software Design – Lab<small>COE232</small></td><td><span class="sodh-status ra-type-badge">Major Exam</span></td><td>2026-10-02</td><td><span >Not available</span></td><td>—</td><td><span >Pending</span></td><td><span class="sodh-status incomplete">Not released</span></td></tr>
+<tr data-released="false" data-date="2026-09-22" data-type="Quiz"><td>Quiz 2</td><td >Software Design – Lab<small>COE232</small></td><td><span class="sodh-status ra-type-badge">Quiz</span></td><td>2026-09-22</td><td><span >Not available</span></td><td>—</td><td><span >Pending</span></td><td><span class="sodh-status incomplete">Not released</span></td></tr>
+<tr data-released="true" data-date="2026-09-19" data-type="Laboratory"><td>Laboratory Activity 1</td><td >Computer Networks<small>COE233</small></td><td><span class="sodh-status ra-type-badge">Laboratory</span></td><td>2026-09-19</td><td>38</td><td>50</td><td><span class="sodh-status complete">76%</span></td><td><span class="sodh-status complete">Released</span></td></tr>
+<tr data-released="true" data-date="2026-09-15" data-type="Laboratory"><td>Laboratory Activity 1</td><td >Software Design – Lab<small>COE232</small></td><td><span class="sodh-status ra-type-badge">Laboratory</span></td><td>2026-09-15</td><td>42</td><td>50</td><td><span class="sodh-status complete">84%</span></td><td><span class="sodh-status complete">Released</span></td></tr>
+<tr data-released="true" data-date="2026-09-10" data-type="Quiz"><td>Quiz 1</td><td >Computer Networks<small>COE233</small></td><td><span class="sodh-status ra-type-badge">Quiz</span></td><td>2026-09-10</td><td>16</td><td>20</td><td><span class="sodh-status complete">80%</span></td><td><span class="sodh-status complete">Released</span></td></tr>
+<tr data-released="true" data-date="2026-09-08" data-type="Quiz"><td>Quiz 1</td><td >Software Design – Lab<small>COE232</small></td><td><span class="sodh-status ra-type-badge">Quiz</span></td><td>2026-09-08</td><td>18</td><td>20</td><td><span class="sodh-status complete">90%</span></td><td><span class="sodh-status complete">Released</span></td></tr></tbody></table></div></div><div class="so-empty-state" id="raEmpty" hidden>No matching assessment records found.</div>
+</section>
+</main></div>
+<script src="../../Static/script.js"></script>
+<script>
+/* Demo-only filtering. Backend must provide authenticated student records and release flags. */
+(function () {
+  const tbody = document.getElementById('raRows');
+  const search = document.getElementById('raSearch');
+  const type = document.getElementById('raType');
+  const sort = document.getElementById('raSort');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  function render() {
+    const query = search.value.trim().toLowerCase();
+    const filtered = rows.filter(row => row.textContent.toLowerCase().includes(query) && (type.value === 'all' || row.dataset.type === type.value));
+    filtered.sort((a,b) => sort.value === 'name' ? a.cells[0].textContent.localeCompare(b.cells[0].textContent) : sort.value === 'oldest' ? a.dataset.date.localeCompare(b.dataset.date) : b.dataset.date.localeCompare(a.dataset.date));
+    tbody.replaceChildren(...filtered);
+    document.getElementById('raEmpty').hidden = filtered.length !== 0;
+  }
+  [search,type,sort].forEach(el => el.addEventListener(el === search ? 'input' : 'change',render));
+  render();
+})();
+</script>
+</body></html>

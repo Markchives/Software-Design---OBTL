@@ -1,298 +1,118 @@
 <!DOCTYPE html>
+
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>Syllabus &amp; Outcomes | EduMetrics</title>
-
-    <link
-        rel="stylesheet"
-        href="../../Static/style.css"
-    >
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Syllabus &amp; Outcomes | EduMetrics</title>
+<link href="../../Static/style.css" rel="stylesheet"/>
 </head>
-
-<body class="so-student-page">
-
-    <header class="so-topbar">
-        <div class="so-brand">
-            <div class="so-brand-logo">
+<body class="so-student-page course-workspace-page">
+<header class="so-topbar">
+<div class="so-brand">
+<div class="so-brand-logo">
                 Edu<span>Metrics</span>
-            </div>
-
-            <div class="so-brand-subtitle">
+</div>
+<div class="so-brand-subtitle">
                 Academic Assessment &amp; Grading System
             </div>
-        </div>
-
-        <div class="so-user-area">
-            <button
-                class="so-notification-btn"
-                type="button"
-                aria-label="Notifications"
-            >
-                <img
-                    src="../../Static/images/sidebar/notif.png"
-                    alt="Notifications"
-                    class="so-notification-image"
-                >
-
-                <span class="so-notification-dot"></span>
-            </button>
-
-            <div class="so-user-info">
-                <strong id="studentName"></strong>
-                <span>Student</span>
-            </div>
-
-            <div
-                class="so-avatar"
-                aria-hidden="true"
-            >
-                <span class="so-avatar-person">●</span>
-            </div>
-
-            <span
-                class="so-online-dot"
-                aria-hidden="true"
-            ></span>
-        </div>
-    </header>
-
-    <div class="so-header-lines">
-        <div class="so-header-blue"></div>
-        <div class="so-header-gold"></div>
-    </div>
-
-    <div class="so-shell">
-
-        <aside class="so-sidebar">
-
-            <div class="so-pages-title">
-                <span class="so-grid-icon so-pages-image-wrap">
-                    <img
-                        src="../../Static/images/sidebar/pages.png"
-                        alt=""
-                        class="so-pages-image"
-                    >
-                </span>
-
-                <span>Pages</span>
-            </div>
-
-            <nav
-                class="so-nav"
-                aria-label="Student navigation"
-            >
-
-                <a
-                    href="#"
-                    class="so-nav-item"
-                >
-                    <span class="so-nav-icon so-nav-image-wrap">
-                        <img
-                            src="../../Static/images/sidebar/home-white.png"
-                            alt=""
-                            class="so-nav-image"
-                        >
-                    </span>
-
-                    <span>Home</span>
-                </a>
-
-                <a
-                    href="#"
-                    class="so-nav-item"
-                >
-                    <span class="so-nav-icon so-nav-image-wrap">
-                        <img
-                            src="../../Static/images/sidebar/course-white.png"
-                            alt=""
-                            class="so-nav-image"
-                        >
-                    </span>
-
-                    <span>Courses</span>
-                </a>
-
-                <a
-                    href="#"
-                    class="so-nav-item"
-                >
-                    <span class="so-nav-icon so-nav-image-wrap">
-                        <img
-                            src="../../Static/images/sidebar/pl-white.png"
-                            alt=""
-                            class="so-nav-image"
-                        >
-                    </span>
-
-                    <span>Platform</span>
-                </a>
-
-                <div class="so-nav-group">
-
-                    <button
-                        class="so-nav-item so-products active"
-                        type="button"
-                    >
-                        <span class="so-nav-icon so-nav-image-wrap">
-                            <img
-                                src="../../Static/images/sidebar/ws-blue.png"
-                                alt=""
-                                class="so-nav-image"
-                            >
-                        </span>
-
-                        <span>Workflow</span>
-                    </button>
-
-                    <div class="so-subnav">
-
-                        <a
-                            href="#"
-                            class="active"
-                        >
-                            Syllabus &amp; Outcomes
-                        </a>
-
-                        <a href="#">
-                            Curriculum Mapping
-                        </a>
-
-                        <a href="#">
-                            Class Roster
-                        </a>
-
-                        <a href="#">
-                            Assessment Entry
-                        </a>
-
-                        <a href="#">
-                            Attainment
-                        </a>
-
-                        <a href="#">
-                            CQI Planning
-                        </a>
-
-                        <a href="#">
-                            Gradebook
-                        </a>
-
-                        <a href="#">
-                            Compliance Report
-                        </a>
-
-                    </div>
-                </div>
-
-                <a
-                    href="#"
-                    class="so-nav-item"
-                >
-                    <span class="so-nav-icon so-nav-image-wrap">
-                        <img
-                            src="../../Static/images/sidebar/rs-white.png"
-                            alt=""
-                            class="so-nav-image"
-                        >
-                    </span>
-
-                    <span>Resources</span>
-                </a>
-
-                <a
-                    href="#"
-                    class="so-nav-item"
-                >
-                    <span class="so-nav-icon so-nav-image-wrap">
-                        <img
-                            src="../../Static/images/sidebar/au-white.png"
-                            alt=""
-                            class="so-nav-image"
-                        >
-                    </span>
-
-                    <span>About Us</span>
-                </a>
-
-            </nav>
-
-            <div class="so-sidebar-brand">
-
-                <div class="so-sidebar-logo">
+</div>
+<div class="so-user-area">
+<button aria-label="Notifications" class="so-notification-btn" type="button">
+<img alt="Notifications" class="so-notification-image" src="../../Static/images/sidebar/notif.png"/>
+<span class="so-notification-dot"></span>
+</button>
+<div class="so-user-info">
+<strong id="studentName"></strong>
+<span>Student</span>
+</div>
+<div aria-hidden="true" class="so-avatar">
+<span class="so-avatar-person">●</span>
+</div>
+<span aria-hidden="true" class="so-online-dot"></span>
+</div>
+</header>
+<div class="so-header-lines">
+<div class="so-header-blue"></div>
+<div class="so-header-gold"></div>
+</div>
+<div class="so-shell">
+<aside class="so-sidebar">
+<div class="so-pages-title">
+<span class="so-grid-icon so-pages-image-wrap">
+<img alt="" class="so-pages-image" src="../../Static/images/sidebar/pages.png"/>
+</span>
+<span>Pages</span>
+</div>
+<nav aria-label="Student navigation" class="so-nav">
+<a class="so-nav-item" href="dashboard-student.html">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/home-white.png"/>
+</span>
+<span>Dashboard</span>
+</a>
+<a class="so-nav-item active" href="dashboard-student.html#my-courses">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/course-white.png"/>
+</span>
+<span>My Courses</span>
+</a>
+<a class="so-nav-item" href="../webpage/platform.html">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/pl-white.png"/>
+</span>
+<span>Platform</span>
+</a>
+<a class="so-nav-item" href="../webpage/resources.html">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/rs-white.png"/>
+</span>
+<span>Resources</span>
+</a>
+<a class="so-nav-item" href="../webpage/about us.html">
+<span class="so-nav-icon so-nav-image-wrap">
+<img alt="" class="so-nav-image" src="../../Static/images/sidebar/au-white.png"/>
+</span>
+<span>About Us</span>
+</a>
+</nav>
+<div class="so-sidebar-brand">
+<div class="so-sidebar-logo">
                     Edu<span>Metrics</span>
-                </div>
-
-                <small>
+</div>
+<small>
                     Academic Assessment &amp; Grading System
                 </small>
-            </div>
-        </aside>
-
-        <main class="so-main">
-
-            <section class="so-page-heading">
-                <h1>Syllabus &amp; Outcomes</h1>
-                <p>
-                    View and download your course syllabus and
-                    SO/CO assessments
-                </p>
-            </section>
-
-            <section class="so-summary-grid">
-                <article class="so-summary-card">
-                    <div class="so-summary-accent"></div>
-
-                    <strong
-                        class="so-summary-number"
-                        id="pendingSOCount"
-                    >
+</div>
+</aside>
+<main class="so-main">
+<div class="cw-breadcrumb">My Courses <span class="cw-breadcrumb-separator">/</span> <span class="cw-breadcrumb-current">Software Lab</span></div><div class="cw-workspace"><section aria-label="Selected course" class="cw-hero"><div><div class="cw-eyebrow">COURSE WORKSPACE</div><h2>Software Lab</h2><p>CPE 321 · BSCPE 3A · 1st Semester 2026–2027</p></div><span class="cw-demo-badge">DEMO COURSE</span></section><nav aria-label="Course modules" class="cw-module-nav"><a aria-current="page" class="cw-module-tab active" href="so-student.html"><span class="cw-module-number">01</span> Syllabus &amp; Outcomes</a><a class="cw-module-tab" href="cm-student.html"><span class="cw-module-number">02</span> Curriculum Mapping</a><a class="cw-module-tab" href="cr-student.html"><span class="cw-module-number">03</span> Class Roster</a><a class="cw-module-tab" href="assessment-student.html"><span class="cw-module-number">04</span> Assessment Entry</a><a class="cw-module-tab" href="attainment-student.html"><span class="cw-module-number">05</span> Attainment</a><a class="cw-module-tab" href="cqi-student.html"><span class="cw-module-number">06</span> CQI Planning</a><a class="cw-module-tab" href="gradebook-student.html"><span class="cw-module-number">07</span> Gradebook</a><a class="cw-module-tab" href="compliance-student.html"><span class="cw-module-number">08</span> Compliance Report</a></nav></div>
+<section class="so-summary-grid">
+<article class="so-summary-card">
+<div class="so-summary-accent"></div>
+<span class="so-summary-label">
+                        Pending SO Self-Assessments
+                    </span><strong class="so-summary-number" id="pendingSOCount">
                         0
                     </strong>
 
-                    <span class="so-summary-label">
-                        Pending SO<br>
-                        self-assessments
-                    </span>
-
-                </article>
-
-                <article class="so-summary-card">
-
-                    <div class="so-summary-accent"></div>
-
-                    <strong
-                        class="so-summary-number"
-                        id="dueThisWeekCount"
-                    >
-                        0
-                    </strong>
-
-                    <span class="so-summary-label">
+</article>
+<article class="so-summary-card">
+<div class="so-summary-accent"></div>
+<span class="so-summary-label">
                         Due this week
-                    </span>
-                </article>
-
-                <article class="so-summary-card">
-                    <div class="so-summary-accent"></div>
-
-                    <strong
-                        class="so-summary-number"
-                        id="availableSyllabusCount"
-                    >
+                    </span><strong class="so-summary-number" id="dueThisWeekCount">
                         0
                     </strong>
 
-                    <span class="so-summary-label">
+</article>
+<article class="so-summary-card">
+<div class="so-summary-accent"></div>
+<span class="so-summary-label">
                         Available Syllabus
-                    </span>
+                    </span><strong class="so-summary-number" id="availableSyllabusCount">
+                        0
+                    </strong>
 
                 </article>
 
@@ -339,107 +159,63 @@
                     <p>
                         Course syllabus files appear here after your faculty uploads them.
                     </p>
-                </div>
-
-                <div
-                    class="so-student-syllabus-list"
-                    id="studentSyllabusList"
-                    hidden
-                >
-                    <div class="so-student-file-row">
-                        <div class="so-student-file-info">
-                            <div class="so-student-file-copy">
-                                <strong id="studentSyllabusFileName">
+</div>
+<div class="so-student-syllabus-list" hidden="" id="studentSyllabusList">
+<div class="so-student-file-row">
+<div class="so-student-file-info">
+<div class="so-student-file-copy">
+<strong id="studentSyllabusFileName">
                                     Course_Syllabus.pdf
                                 </strong>
-
-                                <div class="so-student-file-meta">
-                                    <span>PDF</span>
-                                    <span>•</span>
-                                    <span>2.4 MB</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="so-student-file-actions">
-
-                            <button
-                                class="so-student-view-btn"
-                                type="button"
-                            >
-                                <img
-                                    src="../../Static/images/content/view-blue.png"
-                                    alt=""
-                                    class="so-action-icon"
-                                >
-
-                                <span>
+<div class="so-student-file-meta">
+<span>PDF</span>
+<span>•</span>
+<span>2.4 MB</span>
+</div>
+</div>
+</div>
+<div class="so-student-file-actions">
+<button class="so-student-view-btn" type="button">
+<img alt="" class="so-action-icon" src="../../Static/images/content/view-blue.png"/>
+<span>
                                     View Syllabus
                                 </span>
-                            </button>
-
-                            <button
-                                class="so-student-download-btn"
-                                type="button"
-                            >
-                                <img
-                                    src="../../Static/images/content/download.png"
-                                    alt=""
-                                    class="so-action-icon"
-                                >
-
-                                <span>
+</button>
+<button class="so-student-download-btn" type="button">
+<img alt="" class="so-action-icon" src="../../Static/images/content/download.png"/>
+<span>
                                     Download PDF
                                 </span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="so-content-card">
-                <div class="so-section-header">
-                    <h2>Pending SO Self-Assessments</h2>
-                    <div class="so-course-sort">
-
-                        <!-- CHANGE THIS LATER: Course options will come from the student's enrolled courses/backend data. -->
-                        <select
-                            id="pendingSOCourseFilter"
-                            aria-label="Filter pending self-assessments by course"
-                        >
-                            <option value="" selected>All Courses</option>
-                            <!-- CHANGE THIS LATER: Add enrolled courses from backend. -->
-                        </select>
-                    </div>
-                </div>
-
-                <div class="so-section-rule"></div>
-                <!-- CHANGE THIS LATER:
+</button>
+</div>
+</div>
+</div>
+</section>
+<section class="so-content-card">
+<div class="so-section-header">
+<h2>Pending SO Self-Assessments</h2>
+<select aria-label="Filter pending self-assessments by course" hidden="" id="pendingSOCourseFilter" style="display:none!important">
+<option selected="" value="">All Courses</option>
+<!-- CHANGE THIS LATER: Add enrolled courses from backend. -->
+</select>
+</div>
+<div class="so-section-rule"></div>
+<!-- CHANGE THIS LATER:
                      Sample frontend data only.
                      Backend should generate one row for every SO uploaded/assigned by the faculty,
                      including the course name, due date, and correct SO assessment link.
                      Course names remain empty until backend course data is connected. -->
-                <div
-                    class="so-pending-list"
-                    id="pendingSOList"
-                    hidden
-                ></div>
-
-                <div
-                    class="so-empty-state"
-                    id="pendingSOEmpty"
-                    hidden
-                >
-                    <h3>No pending self-assessments</h3>
-                    <p>
+<div class="so-pending-list" hidden="" id="pendingSOList"></div>
+<div class="so-empty-state" hidden="" id="pendingSOEmpty">
+<h3>No pending self-assessments</h3>
+<p>
                         Your assigned SO self-assessments
                         will appear here once they become available.
                     </p>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <script src="../../Static/script.js"></script>
+</div>
+</section>
+</main>
+</div>
+<script src="../../Static/script.js"></script>
 </body>
 </html>
