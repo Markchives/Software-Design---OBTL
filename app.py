@@ -2,7 +2,7 @@ from functools import wraps
 import os
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request, render_template, session, redirect
+from flask import Flask, jsonify, request, render_template, session, redirect, g
 from supabase import create_client, Client
 from datetime import timedelta
 
@@ -64,11 +64,194 @@ def require_role(required_role):
             if get_user_role(user) != required_role:
                 return "You are not authorized to view this page.", 403
 
+            g.authenticated_user = user
             return view_function(*args, **kwargs)
 
         return wrapped
 
     return decorator
+
+
+@app.get("/api/faculty/sections")
+@require_role("faculty")
+def faculty_sections():
+    if not admin_supabase:
+        return jsonify({"error": "Course assignments are unavailable."}), 503
+
+    try:
+        user_id = g.authenticated_user.id
+        profile_result = (
+            admin_supabase.table("faculty_profiles")
+            .select("id")
+            .eq("user_id", user_id)
+            .limit(1)
+            .execute()
+        )
+        profiles = profile_result.data or []
+
+        if not profiles:
+            return jsonify({"sections": []}), 200
+
+        section_result = (
+            admin_supabase.table("course_sections")
+            .select("id, course_id, academic_year_id, section_name")
+            .eq("faculty_id", profiles[0]["id"])
+            .execute()
+        )
+        sections = section_result.data or []
+
+        if not sections:
+            return jsonify({"sections": []}), 200
+
+        course_ids = list({item["course_id"] for item in sections})
+        year_ids = list({
+            item["academic_year_id"]
+            for item in sections
+            if item.get("academic_year_id")
+        })
+
+        course_result = (
+            admin_supabase.table("courses")
+            .select("id, code, title")
+            .in_("id", course_ids)
+            .execute()
+        )
+        courses_by_id = {
+            item["id"]: item for item in (course_result.data or [])
+        }
+
+        years_by_id = {}
+        if year_ids:
+            year_result = (
+                admin_supabase.table("academic_years")
+                .select("id, name")
+                .in_("id", year_ids)
+                .execute()
+            )
+            years_by_id = {
+                item["id"]: item for item in (year_result.data or [])
+            }
+
+        assignments = []
+        for section in sections:
+            course = courses_by_id.get(section["course_id"])
+            if not course:
+                continue
+
+            year = years_by_id.get(section.get("academic_year_id"), {})
+            assignments.append({
+                "section_id": section["id"],
+                "section_name": section["section_name"],
+                "course_id": course["id"],
+                "course_code": course["code"],
+                "course_title": course["title"],
+                "academic_year_id": section.get("academic_year_id"),
+                "academic_year_name": year.get("name", ""),
+            })
+
+        return jsonify({"sections": assignments}), 200
+    except Exception:
+        app.logger.exception("Unable to load faculty course assignments")
+        return jsonify({"error": "Course assignments could not be loaded."}), 500
+
+
+@app.get("/api/student/courses")
+@require_role("student")
+def student_courses():
+    if not admin_supabase:
+        return jsonify({"error": "Student courses are unavailable."}), 503
+
+    try:
+        profile_result = (
+            admin_supabase.table("student_profiles")
+            .select("id")
+            .eq("user_id", g.authenticated_user.id)
+            .limit(1)
+            .execute()
+        )
+        profiles = profile_result.data or []
+        if not profiles:
+            return jsonify({"profile_complete": False, "courses": []}), 200
+
+        enrollment_result = (
+            admin_supabase.table("enrollments")
+            .select("id, section_id, enrollment_status")
+            .eq("student_profile_id", profiles[0]["id"])
+            .eq("enrollment_status", "active")
+            .execute()
+        )
+        enrollments = enrollment_result.data or []
+        if not enrollments:
+            return jsonify({"profile_complete": True, "courses": []}), 200
+
+        section_ids = list({item["section_id"] for item in enrollments})
+        section_result = (
+            admin_supabase.table("course_sections")
+            .select("id, course_id, academic_year_id, section_name")
+            .in_("id", section_ids)
+            .execute()
+        )
+        sections_by_id = {
+            item["id"]: item for item in (section_result.data or [])
+        }
+        course_ids = list({
+            item["course_id"]
+            for item in sections_by_id.values()
+        })
+        year_ids = list({
+            item["academic_year_id"]
+            for item in sections_by_id.values()
+            if item.get("academic_year_id")
+        })
+
+        courses_by_id = {}
+        if course_ids:
+            course_result = (
+                admin_supabase.table("courses")
+                .select("id, code, title")
+                .in_("id", course_ids)
+                .execute()
+            )
+            courses_by_id = {
+                item["id"]: item for item in (course_result.data or [])
+            }
+
+        years_by_id = {}
+        if year_ids:
+            year_result = (
+                admin_supabase.table("academic_years")
+                .select("id, name")
+                .in_("id", year_ids)
+                .execute()
+            )
+            years_by_id = {
+                item["id"]: item for item in (year_result.data or [])
+            }
+
+        courses = []
+        for enrollment in enrollments:
+            section = sections_by_id.get(enrollment["section_id"])
+            if not section:
+                continue
+
+            course = courses_by_id.get(section["course_id"])
+            if not course:
+                continue
+
+            year = years_by_id.get(section.get("academic_year_id"), {})
+            courses.append({
+                "enrollment_id": enrollment["id"],
+                "enrollment_status": enrollment["enrollment_status"],
+                "section_name": section["section_name"],
+                "course_code": course["code"],
+                "course_title": course["title"],
+                "academic_year_name": year.get("name", ""),
+            })
+
+        return jsonify({"profile_complete": True, "courses": courses}), 200
+    except Exception:
+        app.logger.exception("Unable to load student course enrollments")
+        return jsonify({"error": "Student courses could not be loaded."}), 500
 
 
 @app.get("/")

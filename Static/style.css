@@ -8471,6 +8471,57 @@ body.so-reflection-page {
     min-height: 0;
 }
 
+.so-student-page .so-student-courses {
+    margin-top: 22px;
+}
+
+.so-student-page .so-student-courses .so-section-header {
+    min-height: 34px;
+    display: flex;
+    align-items: center;
+}
+
+.so-student-page .so-student-courses .so-section-header h2 {
+    margin: 0;
+    color: #004179;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.so-student-page .so-course-enrollment-list {
+    width: 100%;
+}
+
+.so-student-page .so-course-enrollment-row {
+    min-height: 68px;
+    padding: 13px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: 1px solid #D7E3EC;
+}
+
+.so-student-page .so-course-enrollment-info strong {
+    display: block;
+    color: #004179;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.so-student-page .so-course-enrollment-info span {
+    display: block;
+    margin-top: 4px;
+    color: #476174;
+    font-size: 13px;
+}
+
+.so-student-page .so-course-enrollment-status {
+    color: #28653A;
+    font-size: 13px;
+    font-weight: 700;
+}
+
 .so-student-page .so-main > .so-content-card {
     display: flex;
     flex-direction: column;
@@ -9032,6 +9083,13 @@ body.so-reflection-page {
 .so-student-page .so-logout-btn:disabled {
     cursor: wait;
     opacity: 0.65;
+}
+
+.so-faculty-page .sof-assignment-status {
+    min-height: 1.25em;
+    margin: 10px 16px 0;
+    color: #476174;
+    font-size: 13px;
 }
 
 .so-student-page .so-notification-btn {

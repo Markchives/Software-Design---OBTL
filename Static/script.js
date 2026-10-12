@@ -4512,6 +4512,209 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 
 (function () {
+    const empty = document.getElementById("studentCoursesEmpty");
+    const list = document.getElementById("studentCoursesList");
+    if (!empty || !list) {
+        return;
+    }
+
+    function showEmptyState(title, message) {
+        empty.querySelector("h3").textContent = title;
+        empty.querySelector("p").textContent = message;
+        empty.hidden = false;
+        list.hidden = true;
+    }
+
+    fetch("/api/student/courses", {
+        headers: { Accept: "application/json" },
+        credentials: "same-origin"
+    })
+        .then(async function (response) {
+            const contentType = response.headers.get("content-type") || "";
+            if (!response.ok || !contentType.includes("application/json")) {
+                throw new Error("Student courses could not be loaded.");
+            }
+            return response.json();
+        })
+        .then(function (data) {
+            if (!data.profile_complete) {
+                showEmptyState(
+                    "Student profile not set up",
+                    "A student profile is required before courses can be assigned."
+                );
+                return;
+            }
+
+            const courses = Array.isArray(data.courses) ? data.courses : [];
+            if (!courses.length) {
+                showEmptyState(
+                    "No active enrollments",
+                    "Your courses will appear here after you are enrolled in a section."
+                );
+                return;
+            }
+
+            list.replaceChildren();
+            courses.forEach(function (course) {
+                const row = document.createElement("div");
+                row.className = "so-course-enrollment-row";
+
+                const info = document.createElement("div");
+                info.className = "so-course-enrollment-info";
+
+                const title = document.createElement("strong");
+                title.textContent = course.course_code + " - " + course.course_title;
+
+                const details = document.createElement("span");
+                details.textContent = [course.section_name, course.academic_year_name]
+                    .filter(Boolean)
+                    .join(" - ");
+
+                const status = document.createElement("span");
+                status.className = "so-course-enrollment-status";
+                status.textContent = "Active";
+
+                info.append(title, details);
+                row.append(info, status);
+                list.appendChild(row);
+            });
+
+            empty.hidden = true;
+            list.hidden = false;
+        })
+        .catch(function (error) {
+            console.error("Unable to load student courses:", error);
+            showEmptyState(
+                "Courses could not be loaded",
+                "Refresh the page or sign in again to retry."
+            );
+        });
+})();
+
+(function () {
+    const courseSelect = document.getElementById("facultyCourse");
+    const sectionSelect = document.getElementById("facultySection");
+    const yearSelect = document.getElementById("facultyYear");
+    const termSelect = document.getElementById("facultyTerm");
+    const status = document.getElementById("facultyAssignmentStatus");
+
+    if (!courseSelect || !sectionSelect || !yearSelect) {
+        return;
+    }
+
+    sectionSelect.disabled = true;
+    yearSelect.disabled = true;
+
+    let assignments = [];
+
+    function setOptions(select, placeholder, options) {
+        select.replaceChildren(new Option(placeholder, ""));
+        options.forEach(function (item) {
+            select.add(new Option(item.label, item.value));
+        });
+    }
+
+    function selectedCourseAssignments() {
+        return assignments.filter(function (item) {
+            return item.course_id === courseSelect.value;
+        });
+    }
+
+    function refreshSections() {
+        const selectedYear = yearSelect.value;
+        const matchingSections = selectedCourseAssignments().filter(function (item) {
+            return !selectedYear || item.academic_year_id === selectedYear;
+        });
+
+        setOptions(
+            sectionSelect,
+            matchingSections.length ? "Select Section" : "No sections available",
+            matchingSections.map(function (item) {
+                const yearLabel = item.academic_year_name
+                    ? " - " + item.academic_year_name
+                    : "";
+                return {
+                    value: item.section_id,
+                    label: item.section_name + yearLabel
+                };
+            })
+        );
+        sectionSelect.disabled = matchingSections.length === 0;
+    }
+
+    courseSelect.addEventListener("change", function () {
+        const years = new Map();
+        selectedCourseAssignments().forEach(function (item) {
+            if (item.academic_year_id && item.academic_year_name) {
+                years.set(item.academic_year_id, item.academic_year_name);
+            }
+        });
+
+        setOptions(yearSelect, "Select School Year", Array.from(years, function (entry) {
+            return { value: entry[0], label: entry[1] };
+        }));
+        yearSelect.disabled = years.size === 0;
+        refreshSections();
+    });
+
+    yearSelect.addEventListener("change", refreshSections);
+
+    sectionSelect.addEventListener("change", function () {
+        const selected = assignments.find(function (item) {
+            return item.section_id === sectionSelect.value;
+        });
+        if (selected && selected.academic_year_id) {
+            yearSelect.value = selected.academic_year_id;
+        }
+    });
+
+    if (termSelect) {
+        setOptions(termSelect, "Academic terms not configured", []);
+        termSelect.disabled = true;
+    }
+
+    fetch("/api/faculty/sections", {
+        headers: { Accept: "application/json" },
+        credentials: "same-origin"
+    })
+        .then(async function (response) {
+            const contentType = response.headers.get("content-type") || "";
+            if (!response.ok || !contentType.includes("application/json")) {
+                throw new Error("Course assignments could not be loaded.");
+            }
+            return response.json();
+        })
+        .then(function (data) {
+            assignments = Array.isArray(data.sections) ? data.sections : [];
+            const courses = new Map();
+            assignments.forEach(function (item) {
+                courses.set(item.course_id, item.course_code + " - " + item.course_title);
+            });
+
+            setOptions(courseSelect, courses.size ? "Select Course" : "No assigned courses", Array.from(courses, function (entry) {
+                return { value: entry[0], label: entry[1] };
+            }));
+            courseSelect.disabled = courses.size === 0;
+
+            if (status) {
+                status.textContent = courses.size
+                    ? ""
+                    : "No course sections are assigned to your faculty account yet.";
+            }
+        })
+        .catch(function (error) {
+            console.error(error);
+            courseSelect.disabled = true;
+            sectionSelect.disabled = true;
+            yearSelect.disabled = true;
+            setOptions(courseSelect, "Unable to load courses", []);
+            if (status) {
+                status.textContent = "Could not load course assignments. Refresh the page or sign in again.";
+            }
+        });
+})();
+
+(function () {
     const modal = document.getElementById('assessmentModal');
     const openBtn = document.getElementById('openAssessmentModal');
 
