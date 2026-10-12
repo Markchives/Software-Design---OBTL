@@ -105,6 +105,14 @@ CREATE TABLE IF NOT EXISTS course_sections (
     UNIQUE (course_id, academic_year_id, section_name)
 );
 
+CREATE TABLE IF NOT EXISTS course_syllabi (
+    section_id UUID PRIMARY KEY REFERENCES course_sections(id) ON DELETE CASCADE,
+    storage_path TEXT NOT NULL UNIQUE,
+    file_name TEXT NOT NULL,
+    uploaded_by UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+    uploaded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS enrollments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     section_id UUID NOT NULL REFERENCES course_sections(id) ON DELETE CASCADE,

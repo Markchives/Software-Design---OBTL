@@ -1,10 +1,12 @@
 from functools import wraps
 import os
+from uuid import uuid4
 
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, render_template, session, redirect, g
 from supabase import create_client, Client
 from datetime import timedelta
+from werkzeug.utils import secure_filename
 
 load_dotenv()
 
@@ -26,6 +28,7 @@ app = Flask(
 
 
 app.permanent_session_lifetime = timedelta(days=30)
+app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 1024
 
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
@@ -47,6 +50,8 @@ if not SUPABASE_URL or not SUPABASE_KEY:
     raise RuntimeError("Supabase configuration is missing from .env")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+SYLLABI_BUCKET = "course-syllabi"
 
 
 def require_role(required_role):
@@ -252,6 +257,282 @@ def student_courses():
     except Exception:
         app.logger.exception("Unable to load student course enrollments")
         return jsonify({"error": "Student courses could not be loaded."}), 500
+
+
+def get_faculty_section(section_id):
+    profile_result = (
+        admin_supabase.table("faculty_profiles")
+        .select("id")
+        .eq("user_id", g.authenticated_user.id)
+        .limit(1)
+        .execute()
+    )
+    profiles = profile_result.data or []
+    if not profiles:
+        return None
+
+    section_result = (
+        admin_supabase.table("course_sections")
+        .select("id")
+        .eq("id", section_id)
+        .eq("faculty_id", profiles[0]["id"])
+        .limit(1)
+        .execute()
+    )
+    sections = section_result.data or []
+    return sections[0] if sections else None
+
+
+def signed_syllabus_url(record):
+    response = admin_supabase.storage.from_(SYLLABI_BUCKET).create_signed_url(
+        record["storage_path"],
+        900,
+        options={"download": record["file_name"]},
+    )
+    return response.get("signedURL") or response.get("signedUrl")
+
+
+@app.get("/api/faculty/syllabi/<section_id>")
+@require_role("faculty")
+def get_faculty_syllabus(section_id):
+    if not admin_supabase:
+        return jsonify({"error": "Syllabus storage is unavailable."}), 503
+
+    try:
+        if not get_faculty_section(section_id):
+            return jsonify({"error": "Section not found or not assigned to you."}), 404
+
+        result = (
+            admin_supabase.table("course_syllabi")
+            .select("section_id, storage_path, file_name, uploaded_at")
+            .eq("section_id", section_id)
+            .limit(1)
+            .execute()
+        )
+        records = result.data or []
+        if not records:
+            return jsonify({"syllabus": None}), 200
+
+        record = records[0]
+        return jsonify({
+            "syllabus": {
+                "file_name": record["file_name"],
+                "uploaded_at": record["uploaded_at"],
+                "signed_url": signed_syllabus_url(record),
+            }
+        }), 200
+    except Exception:
+        app.logger.exception("Unable to load faculty syllabus")
+        return jsonify({"error": "Syllabus could not be loaded."}), 500
+
+
+@app.post("/api/faculty/syllabi/<section_id>")
+@require_role("faculty")
+def upload_faculty_syllabus(section_id):
+    if not admin_supabase:
+        return jsonify({"error": "Syllabus storage is unavailable."}), 503
+
+    try:
+        section = get_faculty_section(section_id)
+        if not section:
+            return jsonify({"error": "Section not found or not assigned to you."}), 404
+
+        upload = request.files.get("syllabus")
+        if not upload or not upload.filename:
+            return jsonify({"error": "Choose a PDF syllabus to upload."}), 400
+
+        file_name = secure_filename(upload.filename)
+        if not file_name.lower().endswith(".pdf"):
+            return jsonify({"error": "Only PDF syllabi are allowed."}), 400
+
+        file_bytes = upload.read((20 * 1024 * 1024) + 1)
+        if len(file_bytes) > 20 * 1024 * 1024:
+            return jsonify({"error": "The PDF must be 20 MB or smaller."}), 413
+        if not file_bytes.startswith(b"%PDF-"):
+            return jsonify({"error": "The selected file is not a valid PDF."}), 400
+
+        old_result = (
+            admin_supabase.table("course_syllabi")
+            .select("storage_path")
+            .eq("section_id", section_id)
+            .limit(1)
+            .execute()
+        )
+        old_records = old_result.data or []
+        storage_path = f"{section_id}/{uuid4().hex}/{file_name}"
+        storage = admin_supabase.storage.from_(SYLLABI_BUCKET)
+
+        storage.upload(
+            storage_path,
+            file_bytes,
+            file_options={
+                "content-type": "application/pdf",
+                "upsert": "false",
+            },
+        )
+
+        try:
+            admin_supabase.table("course_syllabi").upsert({
+                "section_id": section_id,
+                "storage_path": storage_path,
+                "file_name": file_name,
+                "uploaded_by": g.authenticated_user.id,
+            }, on_conflict="section_id").execute()
+        except Exception:
+            storage.remove([storage_path])
+            raise
+
+        if old_records and old_records[0]["storage_path"] != storage_path:
+            storage.remove([old_records[0]["storage_path"]])
+
+        record = {
+            "section_id": section_id,
+            "storage_path": storage_path,
+            "file_name": file_name,
+        }
+        return jsonify({
+            "syllabus": {
+                "file_name": file_name,
+                "signed_url": signed_syllabus_url(record),
+            }
+        }), 201
+    except Exception:
+        app.logger.exception("Unable to upload faculty syllabus")
+        return jsonify({"error": "Syllabus upload failed. Please try again."}), 500
+
+
+@app.delete("/api/faculty/syllabi/<section_id>")
+@require_role("faculty")
+def delete_faculty_syllabus(section_id):
+    if not admin_supabase:
+        return jsonify({"error": "Syllabus storage is unavailable."}), 503
+
+    try:
+        if not get_faculty_section(section_id):
+            return jsonify({"error": "Section not found or not assigned to you."}), 404
+
+        result = (
+            admin_supabase.table("course_syllabi")
+            .select("storage_path")
+            .eq("section_id", section_id)
+            .limit(1)
+            .execute()
+        )
+        records = result.data or []
+        if records:
+            admin_supabase.storage.from_(SYLLABI_BUCKET).remove(
+                [records[0]["storage_path"]]
+            )
+            (
+                admin_supabase.table("course_syllabi")
+                .delete()
+                .eq("section_id", section_id)
+                .execute()
+            )
+
+        return jsonify({"status": "deleted"}), 200
+    except Exception:
+        app.logger.exception("Unable to delete faculty syllabus")
+        return jsonify({"error": "Syllabus could not be deleted."}), 500
+
+
+@app.get("/api/student/syllabi")
+@require_role("student")
+def student_syllabi():
+    if not admin_supabase:
+        return jsonify({"error": "Syllabus storage is unavailable."}), 503
+
+    try:
+        profile_result = (
+            admin_supabase.table("student_profiles")
+            .select("id")
+            .eq("user_id", g.authenticated_user.id)
+            .limit(1)
+            .execute()
+        )
+        profiles = profile_result.data or []
+        if not profiles:
+            return jsonify({"profile_complete": False, "syllabi": []}), 200
+
+        enrollments_result = (
+            admin_supabase.table("enrollments")
+            .select("section_id")
+            .eq("student_profile_id", profiles[0]["id"])
+            .eq("enrollment_status", "active")
+            .execute()
+        )
+        section_ids = list({
+            item["section_id"] for item in (enrollments_result.data or [])
+        })
+        if not section_ids:
+            return jsonify({"profile_complete": True, "syllabi": []}), 200
+
+        sections_result = (
+            admin_supabase.table("course_sections")
+            .select("id, course_id, academic_year_id, section_name")
+            .in_("id", section_ids)
+            .execute()
+        )
+        sections = sections_result.data or []
+        sections_by_id = {item["id"]: item for item in sections}
+        course_ids = list({item["course_id"] for item in sections})
+        year_ids = list({
+            item["academic_year_id"]
+            for item in sections
+            if item.get("academic_year_id")
+        })
+
+        course_result = (
+            admin_supabase.table("courses")
+            .select("id, code, title")
+            .in_("id", course_ids)
+            .execute()
+        )
+        courses_by_id = {
+            item["id"]: item for item in (course_result.data or [])
+        }
+        years_by_id = {}
+        if year_ids:
+            year_result = (
+                admin_supabase.table("academic_years")
+                .select("id, name")
+                .in_("id", year_ids)
+                .execute()
+            )
+            years_by_id = {
+                item["id"]: item for item in (year_result.data or [])
+            }
+
+        syllabus_result = (
+            admin_supabase.table("course_syllabi")
+            .select("section_id, storage_path, file_name, uploaded_at")
+            .in_("section_id", section_ids)
+            .execute()
+        )
+
+        syllabi = []
+        for record in syllabus_result.data or []:
+            section = sections_by_id.get(record["section_id"])
+            course = courses_by_id.get(section["course_id"]) if section else None
+            if not section or not course:
+                continue
+
+            year = years_by_id.get(section.get("academic_year_id"), {})
+            syllabi.append({
+                "course_id": course["id"],
+                "course_code": course["code"],
+                "course_title": course["title"],
+                "section_name": section["section_name"],
+                "academic_year_name": year.get("name", ""),
+                "file_name": record["file_name"],
+                "uploaded_at": record["uploaded_at"],
+                "signed_url": signed_syllabus_url(record),
+            })
+
+        return jsonify({"profile_complete": True, "syllabi": syllabi}), 200
+    except Exception:
+        app.logger.exception("Unable to load student syllabi")
+        return jsonify({"error": "Syllabi could not be loaded."}), 500
 
 
 @app.get("/")

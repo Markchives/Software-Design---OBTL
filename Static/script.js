@@ -77,6 +77,17 @@
         })
     }
 
+            if (assignments.length === 1 && !courseSelect.value) {
+                const assignment = assignments[0];
+                courseSelect.value = assignment.course_id;
+                courseSelect.dispatchEvent(new Event("change", { bubbles: true }));
+                if (assignment.academic_year_id) {
+                    yearSelect.value = assignment.academic_year_id;
+                }
+                sectionSelect.value = assignment.section_id;
+                sectionSelect.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+
     cards.forEach((card, i) => card.addEventListener("click", () => show(i)));
     const next = root.querySelector("#wf8Next");
     if (next) next.addEventListener("click", () => show(current + 1));
@@ -4310,108 +4321,106 @@ document.addEventListener("DOMContentLoaded", function () {
 
 /* FACULTY -> STUDENT COURSE SYLLABUS SHARED FRONTEND STORAGE */
 (function () {
-    const DB_NAME = "EduMetricsSharedFiles";
-    const DB_VERSION = 1;
-    const STORE_NAME = "courseSyllabi";
+    const facultyPage = document.querySelector(".so-faculty-page");
+    const facultySection = document.getElementById("facultySection");
 
-    function openSyllabusDB() {
-        return new Promise(function (resolve, reject) {
-            const request = indexedDB.open(DB_NAME, DB_VERSION);
-            request.onupgradeneeded = function () {
-                const db = request.result;
-                if (!db.objectStoreNames.contains(STORE_NAME)) {
-                    db.createObjectStore(STORE_NAME, { keyPath: "courseKey" });
-                }
-            };
-            request.onsuccess = function () {
-                resolve(request.result);
-            };
-            request.onerror = function () {
-                reject(request.error);
-            };
-        });
+    async function requestJson(url, options) {
+        const response = await fetch(url, Object.assign({
+            credentials: "same-origin",
+            headers: { Accept: "application/json" }
+        }, options || {}));
+        const data = await response.json().catch(function () { return {}; });
+        if (!response.ok) {
+            throw new Error(data.error || "Syllabus request failed.");
+        }
+        return data;
     }
 
-    function getSelectedFacultyCourse() {
-        const select = document.getElementById("facultyCourse");
-        if (!select) {
-            return { key: "general-course", name: "Course Syllabus" };
-        }
-        const option = select.options[select.selectedIndex];
-        const value = String(select.value || "").trim();
-        const text = option ? String(option.textContent || "").trim() : "";
-        return {
-            key: value || text || "general-course",
-            name: text && text !== "Select Course" ? text : (value || "Course Syllabus")
-        };
+    function getSelectedSectionId() {
+        return facultySection ? facultySection.value.trim() : "";
     }
 
     async function saveSharedSyllabus(file) {
-        const db = await openSyllabusDB();
-        const course = getSelectedFacultyCourse();
-        const record = {
-            courseKey: course.key,
-            courseName: course.name,
-            fileName: file.name,
-            fileSize: file.size,
-            fileType: file.type || "application/pdf",
-            uploadedAt: new Date().toISOString(),
-            file: file
-        };
-        return new Promise(function (resolve, reject) {
-            const transaction = db.transaction(STORE_NAME, "readwrite");
-            transaction.objectStore(STORE_NAME).put(record);
-            transaction.oncomplete = function () {
-                db.close();
-                resolve(record);
-            };
-            transaction.onerror = function () {
-                db.close();
-                reject(transaction.error);
-            };
-        });
+        const sectionId = getSelectedSectionId();
+        if (!sectionId) {
+            throw new Error("Select an assigned course section first.");
+        }
+        const formData = new FormData();
+        formData.append("syllabus", file);
+        const data = await requestJson(
+            "/api/faculty/syllabi/" + encodeURIComponent(sectionId),
+            { method: "POST", body: formData }
+        );
+        return data.syllabus;
     }
 
     async function deleteSharedSyllabus() {
-        const db = await openSyllabusDB();
-        const course = getSelectedFacultyCourse();
-        return new Promise(function (resolve, reject) {
-            const transaction = db.transaction(STORE_NAME, "readwrite");
-            transaction.objectStore(STORE_NAME).delete(course.key);
-            transaction.oncomplete = function () {
-                db.close();
-                resolve();
-            };
-            transaction.onerror = function () {
-                db.close();
-                reject(transaction.error);
-            };
-        });
+        const sectionId = getSelectedSectionId();
+        if (!sectionId) {
+            throw new Error("Select an assigned course section first.");
+        }
+        return requestJson(
+            "/api/faculty/syllabi/" + encodeURIComponent(sectionId),
+            { method: "DELETE" }
+        );
     }
 
     async function getSharedSyllabi() {
-        const db = await openSyllabusDB();
-        return new Promise(function (resolve, reject) {
-            const transaction = db.transaction(STORE_NAME, "readonly");
-            const request = transaction.objectStore(STORE_NAME).getAll();
-            request.onsuccess = function () {
-                resolve(Array.isArray(request.result) ? request.result : []);
-            };
-            request.onerror = function () {
-                reject(request.error);
-            };
-            transaction.oncomplete = function () {
-                db.close();
+        const data = await requestJson("/api/student/syllabi");
+        return (Array.isArray(data.syllabi) ? data.syllabi : []).map(function (item) {
+            return {
+                courseKey: item.course_id,
+                courseName: item.course_code + " - " + item.course_title,
+                sectionName: item.section_name,
+                academicYearName: item.academic_year_name,
+                fileName: item.file_name,
+                uploadedAt: item.uploaded_at,
+                signedUrl: item.signed_url
             };
         });
     }
 
-    function formatSharedFileSize(bytes) {
-        if (!Number.isFinite(bytes) || bytes <= 0) {
-            return "0 MB";
+    function showFacultySyllabus(syllabus) {
+        const empty = document.getElementById("facultySyllabusEmpty");
+        const row = document.getElementById("facultySyllabusFileRow");
+        const name = document.getElementById("syllabusFileName");
+        const size = document.getElementById("syllabusFileSize");
+        const updated = document.getElementById("syllabusLastUpdated");
+        const view = document.getElementById("viewSyllabusButton");
+        const download = document.getElementById("downloadSyllabusButton");
+
+        if (!syllabus) {
+            if (empty) empty.hidden = false;
+            if (row) row.hidden = true;
+            if (view) delete view.dataset.signedUrl;
+            if (download) delete download.dataset.signedUrl;
+            return;
         }
-        const mb = bytes / (1024 * 1024);
-        return (mb >= 0.1 ? mb.toFixed(1) : mb.toFixed(2)) + " MB";
+
+        if (empty) empty.hidden = true;
+        if (row) row.hidden = false;
+        if (name) name.textContent = syllabus.file_name;
+        if (size) size.textContent = "Stored in Supabase";
+        if (updated && syllabus.uploaded_at) {
+            updated.textContent = "Last Updated: " + new Date(syllabus.uploaded_at).toLocaleString();
+        }
+        if (view) view.dataset.signedUrl = syllabus.signed_url;
+        if (download) download.dataset.signedUrl = syllabus.signed_url;
+    }
+
+    async function loadFacultySyllabus() {
+        const sectionId = getSelectedSectionId();
+        if (!facultyPage || !sectionId) {
+            return;
+        }
+        try {
+            const data = await requestJson(
+                "/api/faculty/syllabi/" + encodeURIComponent(sectionId)
+            );
+            showFacultySyllabus(data.syllabus);
+        } catch (error) {
+            console.error("Unable to load faculty syllabus:", error);
+        }
     }
 
     function renderStudentSyllabusRow(record) {
@@ -4430,7 +4439,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const meta = document.createElement("div");
         meta.className = "so-student-file-meta";
         meta.innerHTML = "<span>PDF</span><span>•</span><span></span>";
-        meta.lastElementChild.textContent = formatSharedFileSize(record.fileSize);
+        meta.lastElementChild.textContent = record.sectionName +
+            (record.academicYearName ? " - " + record.academicYearName : "");
         copy.appendChild(course);
         copy.appendChild(name);
         copy.appendChild(meta);
@@ -4446,23 +4456,19 @@ document.addEventListener("DOMContentLoaded", function () {
         downloadButton.type = "button";
         downloadButton.innerHTML = '<img src="../../Static/images/content/download.png" alt="" class="so-action-icon"><span>Download PDF</span>';
         viewButton.addEventListener("click", function () {
-            if (!record.file)
+            if (!record.signedUrl)
                 return;
-            const url = URL.createObjectURL(record.file);
-            window.open(url, "_blank");
-            setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+            window.open(record.signedUrl, "_blank", "noopener");
         });
         downloadButton.addEventListener("click", function () {
-            if (!record.file)
+            if (!record.signedUrl)
                 return;
-            const url = URL.createObjectURL(record.file);
             const link = document.createElement("a");
-            link.href = url;
+            link.href = record.signedUrl;
             link.download = record.fileName || "Course_Syllabus.pdf";
             document.body.appendChild(link);
             link.click();
             link.remove();
-            setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
         });
         actions.appendChild(viewButton);
         actions.appendChild(downloadButton);
@@ -4482,10 +4488,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         try {
             const records = await getSharedSyllabi();
-            const selectedCourse = filter ? filter.value : "";
-            const visibleRecords = records.filter(function (record) {
-                return !selectedCourse || record.courseKey === selectedCourse;
-            });
             if (filter) {
                 const previous = filter.value;
                 filter.innerHTML = '<option value="">All Courses</option>';
@@ -4515,32 +4517,76 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         catch (error) {
             console.error("Unable to load shared course syllabi:", error);
+            const heading = empty.querySelector("h3");
+            const message = empty.querySelector("p");
+            if (heading) heading.textContent = "Syllabi could not be loaded";
+            if (message) message.textContent = "Refresh the page or sign in again to retry.";
         }
     }
 
-    document.addEventListener("change", function (event) {
+    document.addEventListener("change", async function (event) {
         if (event.target && event.target.id === "syllabusFile") {
             const file = event.target.files && event.target.files[0];
             if (!file)
                 return;
             const isPDF = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
-            if (!isPDF)
+            if (!isPDF) {
+                window.alert("Please choose a PDF syllabus.");
                 return;
-            saveSharedSyllabus(file).catch(function (error) {
+            }
+            try {
+                const syllabus = await saveSharedSyllabus(file);
+                showFacultySyllabus(syllabus);
+            } catch (error) {
                 console.error("Unable to share syllabus with students:", error);
-            });
+                window.alert(error.message || "Syllabus upload failed.");
+            }
         }
     }, true);
 
-    document.addEventListener("click", function (event) {
+    document.addEventListener("click", async function (event) {
+        const viewButton = event.target.closest("#viewSyllabusButton");
+        const downloadButton = event.target.closest("#downloadSyllabusButton");
+        const targetButton = viewButton || downloadButton;
+        if (targetButton && targetButton.dataset.signedUrl) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            if (viewButton) {
+                window.open(targetButton.dataset.signedUrl, "_blank", "noopener");
+            } else {
+                const link = document.createElement("a");
+                link.href = targetButton.dataset.signedUrl;
+                link.download = document.getElementById("syllabusFileName")?.textContent || "Course_Syllabus.pdf";
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+            }
+            return;
+        }
+
         const button = event.target && event.target.closest
             ? event.target.closest("#confirmDeleteSyllabus")
             : null;
-        if (!button)
+        const deleteOption = event.target.closest("#deleteSyllabusOption");
+        if (!button && !deleteOption)
             return;
-        deleteSharedSyllabus().catch(function (error) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (deleteOption && !window.confirm("Are you sure you want to delete this syllabus?")) {
+            return;
+        }
+        try {
+            await deleteSharedSyllabus();
+            showFacultySyllabus(null);
+            const modal = document.getElementById("deleteSyllabusModal");
+            if (modal) {
+                modal.classList.remove("show");
+                modal.setAttribute("aria-hidden", "true");
+            }
+        } catch (error) {
             console.error("Unable to remove shared syllabus:", error);
-        });
+            window.alert(error.message || "Syllabus could not be deleted.");
+        }
     }, true);
 
     document.addEventListener("DOMContentLoaded", function () {
@@ -4550,11 +4596,9 @@ document.addEventListener("DOMContentLoaded", function () {
             filter.addEventListener("change", renderStudentSharedSyllabi);
         }
         renderStudentSharedSyllabi();
+        loadFacultySyllabus();
     });
-
-    window.addEventListener("storage", function () {
-        renderStudentSharedSyllabi();
-    });
+    if (facultySection) facultySection.addEventListener("change", loadFacultySyllabus);
 })();
 
 (function () {
@@ -4741,6 +4785,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 return { value: entry[0], label: entry[1] };
             }));
             courseSelect.disabled = courses.size === 0;
+
+            if (assignments.length === 1 && !courseSelect.value) {
+                const assignment = assignments[0];
+                courseSelect.value = assignment.course_id;
+                courseSelect.dispatchEvent(new Event("change", { bubbles: true }));
+                if (assignment.academic_year_id) {
+                    yearSelect.value = assignment.academic_year_id;
+                }
+                sectionSelect.value = assignment.section_id;
+                sectionSelect.dispatchEvent(new Event("change", { bubbles: true }));
+            }
 
             if (status) {
                 status.textContent = courses.size
