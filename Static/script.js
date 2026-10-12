@@ -814,6 +814,7 @@ function isValidRole(role) {
     return validRoles.includes(role);
 }
 
+
 /* SOCIAL LOGIN / SIGNUP */
 function socialLogin(provider) {
     /* SOCIAL LOGIN FLOW */
@@ -821,27 +822,26 @@ function socialLogin(provider) {
     let role = params.get("role") ||
         getSelectedRole() ||
         "student";
+
     if (!isValidRole(role)) {
-        role =
-            "student";
+        role = "student";
     }
+
     sessionStorage.setItem("verificationRole", role);
     saveSelectedRole(role);
     sessionStorage.setItem("verificationPurpose", "login");
     sessionStorage.setItem("verificationType", "login");
 
     /* GOOGLE / GMAIL LOGIN */
-    if (provider ===
-        "Google") {
+    if (provider === "Google") {
         sessionStorage.setItem("verificationProvider", "google");
         window.location.href =
-            "verification-gmail-login.html";
+            "/auth/google?role=" + encodeURIComponent(role);
         return;
     }
 
     /* MICROSOFT LOGIN */
-    if (provider ===
-        "Microsoft") {
+    if (provider === "Microsoft") {
         sessionStorage.setItem("verificationProvider", "microsoft");
         window.location.href =
             "verification-ms-login.html";
@@ -849,8 +849,13 @@ function socialLogin(provider) {
     }
 
     /* Fallback for an unsupported provider. */
-    showGenericModal("Sign in unavailable", "Please select Google or Microsoft to continue.", "!");
+    showGenericModal(
+        "Sign in unavailable",
+        "Please select Google or Microsoft to continue.",
+        "!"
+    );
 }
+
 
 function socialSignup(provider) {
     showGenericModal("Coming soon", provider +
@@ -5457,297 +5462,300 @@ document.addEventListener("DOMContentLoaded", function () {
 /* Set the dashboard role only after the existing OTP verification completes.
    This is UI routing for the local prototype, not server-side authorization. */
 (function () {
-  if (sessionStorage.getItem('verificationCompleted') !== 'true') return;
-  const role = sessionStorage.getItem('verifiedRole') || sessionStorage.getItem('verificationRole');
-  const normalized = role === 'department-head' ? 'dept-head' : role;
-  if (['student', 'faculty', 'dept-head'].includes(normalized)) {
-    sessionStorage.setItem('edumetricsRole', normalized);
-  }
+    if (sessionStorage.getItem('verificationCompleted') !== 'true') return;
+    const role = sessionStorage.getItem('verifiedRole') || sessionStorage.getItem('verificationRole');
+    const normalized = role === 'department-head' ? 'dept-head' : role;
+    if (['student', 'faculty', 'dept-head'].includes(normalized)) {
+        sessionStorage.setItem('edumetricsRole', normalized);
+    }
 })();
 
 /* MERGED DASHBOARD: STUDENT / FACULTY / DEPARTMENT HEAD */
-(function(){
-  // Login must set sessionStorage.edumetricsRole before navigating here.
-  // ?role=... is supported for direct preview and development.
-  const allowed=['student','faculty','dept-head'];
-  const query=new URLSearchParams(location.search).get('role');
-  const normalize=v=>({'department-head':'dept-head','department_head':'dept-head','depthead':'dept-head','head':'dept-head'}[v]||v);
-  const role=normalize(sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('verifiedRole') || query || 'student');
-  const selected=allowed.includes(role)?role:'student';
-  if(!sessionStorage.getItem('edumetricsRole') && sessionStorage.getItem('verificationCompleted') === 'true') sessionStorage.setItem('edumetricsRole',selected);
-  const tpl=document.getElementById('dashboard-template-'+selected);
-  document.getElementById('dashboardRoleContent').appendChild(tpl.content.cloneNode(true));
-  if(selected!=='student'){
-    const nav=document.getElementById('nav-template-'+selected);
-    document.querySelector('.so-nav').replaceWith(nav.content.cloneNode(true));
-  }
-  const names={student:['Student','Student'],faculty:['Prof. Maria','Faculty'],'dept-head':['Department Head','Department Head']};
-  const user=document.querySelector('.so-user-info');
-  user.querySelector('strong').textContent=names[selected][0];
-  user.querySelector('span').textContent=names[selected][1];
-  document.title=names[selected][1]+' Dashboard | EduMetrics';
-  document.body.dataset.dashboardRole=selected;
+(function () {
+    // Login must set sessionStorage.edumetricsRole before navigating here.
+    // ?role=... is supported for direct preview and development.
+    const allowed = ['student', 'faculty', 'dept-head'];
+    const query = new URLSearchParams(location.search).get('role');
+    const normalize = v => ({ 'department-head': 'dept-head', 'department_head': 'dept-head', 'depthead': 'dept-head', 'head': 'dept-head' }[v] || v);
+    const role = normalize(sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('verifiedRole') || query || 'student');
+    const selected = allowed.includes(role) ? role : 'student';
+    if (!sessionStorage.getItem('edumetricsRole') && sessionStorage.getItem('verificationCompleted') === 'true') sessionStorage.setItem('edumetricsRole', selected);
+    const tpl = document.getElementById('dashboard-template-' + selected);
+    document.getElementById('dashboardRoleContent').appendChild(tpl.content.cloneNode(true));
+    if (selected !== 'student') {
+        const nav = document.getElementById('nav-template-' + selected);
+        document.querySelector('.so-nav').replaceWith(nav.content.cloneNode(true));
+    }
+    const names = { student: ['Student', 'Student'], faculty: ['Prof. Maria', 'Faculty'], 'dept-head': ['Department Head', 'Department Head'] };
+    const user = document.querySelector('.so-user-info');
+    user.querySelector('strong').textContent = names[selected][0];
+    user.querySelector('span').textContent = names[selected][1];
+    document.title = names[selected][1] + ' Dashboard | EduMetrics';
+    document.body.dataset.dashboardRole = selected;
 })();
 
 /* Dashboard interactions: filter, reactions, comments and reader */
 (function () {
-  const filter = document.getElementById('sdCourseFilter');
-  const feed = document.getElementById('sdPosts');
-  if (!feed) return;
-  const posts = Array.from(feed.querySelectorAll('.sd-post'));
-  const empty = document.getElementById('sdEmpty');
-  const reader = document.getElementById('sdReader');
-  const readerContent = document.getElementById('sdReaderContent');
-  const readerMeta = document.getElementById('sdReaderMeta');
-  const closeReaderButton = document.getElementById('sdReaderClose');
-  let readerFontSize = 18;
-  let previousFocus = null;
-  const storageKey = 'edumetrics-dashboard-interactions-v1';
-  let state = {};
-  try { state = JSON.parse(localStorage.getItem(storageKey) || '{}') || {}; } catch (_) { state = {}; }
-  function save() { try { localStorage.setItem(storageKey, JSON.stringify(state)); } catch (_) {} }
-  function dataFor(id) {
-    if (!state[id] || typeof state[id] !== 'object') state[id] = { liked: false, comments: [] };
-    if (!Array.isArray(state[id].comments)) state[id].comments = [];
-    return state[id];
-  }
-  function updateReaction(post) {
-    const data = dataFor(post.dataset.postId);
-    const button = post.querySelector('[data-action="react"]');
-    button.setAttribute('aria-pressed', String(Boolean(data.liked)));
-    button.querySelector('span').textContent = data.liked ? 'Liked' : 'Like';
-  }
-  function renderComments(post) {
-    const list = post.querySelector('.sd-comment-list');
-    list.replaceChildren();
-    const comments = dataFor(post.dataset.postId).comments;
-    if (!comments.length) {
-      const hint = document.createElement('div');
-      hint.className = 'sd-comment';
-      hint.textContent = 'No comments yet. Be the first to comment.';
-      list.append(hint);
+    const filter = document.getElementById('sdCourseFilter');
+    const feed = document.getElementById('sdPosts');
+    if (!feed) return;
+    const posts = Array.from(feed.querySelectorAll('.sd-post'));
+    const empty = document.getElementById('sdEmpty');
+    const reader = document.getElementById('sdReader');
+    const readerContent = document.getElementById('sdReaderContent');
+    const readerMeta = document.getElementById('sdReaderMeta');
+    const closeReaderButton = document.getElementById('sdReaderClose');
+    let readerFontSize = 18;
+    let previousFocus = null;
+    const storageKey = 'edumetrics-dashboard-interactions-v1';
+    let state = {};
+    try { state = JSON.parse(localStorage.getItem(storageKey) || '{}') || {}; } catch (_) { state = {}; }
+    function save() { try { localStorage.setItem(storageKey, JSON.stringify(state)); } catch (_) { } }
+    function dataFor(id) {
+        if (!state[id] || typeof state[id] !== 'object') state[id] = { liked: false, comments: [] };
+        if (!Array.isArray(state[id].comments)) state[id].comments = [];
+        return state[id];
     }
-    comments.forEach(function (entry) {
-      const item = document.createElement('div');
-      item.className = 'sd-comment';
-      const name = document.createElement('strong');
-      name.textContent = 'You';
-      const content = document.createElement('span');
-      content.textContent = entry;
-      item.append(name, content);
-      list.append(item);
+    function updateReaction(post) {
+        const data = dataFor(post.dataset.postId);
+        const button = post.querySelector('[data-action="react"]');
+        button.setAttribute('aria-pressed', String(Boolean(data.liked)));
+        button.querySelector('span').textContent = data.liked ? 'Liked' : 'Like';
+    }
+    function renderComments(post) {
+        const list = post.querySelector('.sd-comment-list');
+        list.replaceChildren();
+        const comments = dataFor(post.dataset.postId).comments;
+        if (!comments.length) {
+            const hint = document.createElement('div');
+            hint.className = 'sd-comment';
+            hint.textContent = 'No comments yet. Be the first to comment.';
+            list.append(hint);
+        }
+        comments.forEach(function (entry) {
+            const item = document.createElement('div');
+            item.className = 'sd-comment';
+            const name = document.createElement('strong');
+            name.textContent = 'You';
+            const content = document.createElement('span');
+            content.textContent = entry;
+            item.append(name, content);
+            list.append(item);
+        });
+        const count = post.querySelector('[data-action="comments"]');
+        count.querySelector('span').textContent = 'Comment' + (comments.length ? ' (' + comments.length + ')' : '');
+    }
+    posts.forEach(function (post) { updateReaction(post); renderComments(post); });
+    filter.addEventListener('change', function () {
+        let visible = 0;
+        posts.forEach(function (post) {
+            const show = filter.value === 'all' || post.dataset.course === filter.value;
+            post.hidden = !show;
+            if (show) visible++;
+        });
+        empty.hidden = visible !== 0;
+        feed.scrollTop = 0;
     });
-    const count = post.querySelector('[data-action="comments"]');
-    count.querySelector('span').textContent = 'Comment' + (comments.length ? ' (' + comments.length + ')' : '');
-  }
-  posts.forEach(function (post) { updateReaction(post); renderComments(post); });
-  filter.addEventListener('change', function () {
-    let visible = 0;
-    posts.forEach(function (post) {
-      const show = filter.value === 'all' || post.dataset.course === filter.value;
-      post.hidden = !show;
-      if (show) visible++;
+    function stopSpeech() {
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    }
+    function closeReader() {
+        stopSpeech();
+        reader.hidden = true;
+        document.body.style.overflow = '';
+        if (previousFocus) previousFocus.focus();
+    }
+    function openReader(post) {
+        previousFocus = document.activeElement;
+        const author = post.querySelector('.sd-post-author strong').textContent;
+        const course = post.querySelector('.sd-post-author small').textContent;
+        const title = post.querySelector('.sd-post-body strong').textContent;
+        const message = post.querySelector('.sd-post-body p').textContent;
+        const attachment = post.querySelector('.sd-attachment');
+        readerContent.replaceChildren();
+        const heading = document.createElement('h3');
+        heading.textContent = title;
+        const body = document.createElement('p');
+        body.textContent = message;
+        readerContent.append(heading, body);
+        if (attachment) {
+            const file = document.createElement('p');
+            file.textContent = 'Attachment: ' + attachment.textContent.trim();
+            readerContent.append(file);
+        }
+        readerMeta.textContent = author + ' · ' + course;
+        readerFontSize = 18;
+        readerContent.style.fontSize = readerFontSize + 'px';
+        reader.hidden = false;
+        document.body.style.overflow = 'hidden';
+        closeReaderButton.focus();
+    }
+    feed.addEventListener('click', function (event) {
+        const button = event.target.closest('[data-action]');
+        if (!button) return;
+        const post = button.closest('.sd-post');
+        const action = button.dataset.action;
+        if (action === 'react') {
+            const data = dataFor(post.dataset.postId);
+            data.liked = !data.liked;
+            updateReaction(post);
+            save();
+        } else if (action === 'comments') {
+            const panel = post.querySelector('.sd-comments');
+            panel.hidden = !panel.hidden;
+            if (!panel.hidden) post.querySelector('.sd-comment-input').focus();
+        } else if (action === 'reader') {
+            openReader(post);
+        }
     });
-    empty.hidden = visible !== 0;
-    feed.scrollTop = 0;
-  });
-  function stopSpeech() {
-    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-  }
-  function closeReader() {
-    stopSpeech();
-    reader.hidden = true;
-    document.body.style.overflow = '';
-    if (previousFocus) previousFocus.focus();
-  }
-  function openReader(post) {
-    previousFocus = document.activeElement;
-    const author = post.querySelector('.sd-post-author strong').textContent;
-    const course = post.querySelector('.sd-post-author small').textContent;
-    const title = post.querySelector('.sd-post-body strong').textContent;
-    const message = post.querySelector('.sd-post-body p').textContent;
-    const attachment = post.querySelector('.sd-attachment');
-    readerContent.replaceChildren();
-    const heading = document.createElement('h3');
-    heading.textContent = title;
-    const body = document.createElement('p');
-    body.textContent = message;
-    readerContent.append(heading, body);
-    if (attachment) {
-      const file = document.createElement('p');
-      file.textContent = 'Attachment: ' + attachment.textContent.trim();
-      readerContent.append(file);
-    }
-    readerMeta.textContent = author + ' · ' + course;
-    readerFontSize = 18;
-    readerContent.style.fontSize = readerFontSize + 'px';
-    reader.hidden = false;
-    document.body.style.overflow = 'hidden';
-    closeReaderButton.focus();
-  }
-  feed.addEventListener('click', function (event) {
-    const button = event.target.closest('[data-action]');
-    if (!button) return;
-    const post = button.closest('.sd-post');
-    const action = button.dataset.action;
-    if (action === 'react') {
-      const data = dataFor(post.dataset.postId);
-      data.liked = !data.liked;
-      updateReaction(post);
-      save();
-    } else if (action === 'comments') {
-      const panel = post.querySelector('.sd-comments');
-      panel.hidden = !panel.hidden;
-      if (!panel.hidden) post.querySelector('.sd-comment-input').focus();
-    } else if (action === 'reader') {
-      openReader(post);
-    }
-  });
-  feed.addEventListener('submit', function (event) {
-    const form = event.target.closest('.sd-comment-form');
-    if (!form) return;
-    event.preventDefault();
-    const input = form.querySelector('.sd-comment-input');
-    const value = input.value.trim();
-    if (!value) return;
-    const post = form.closest('.sd-post');
-    dataFor(post.dataset.postId).comments.push(value.slice(0, 500));
-    save();
-    input.value = '';
-    renderComments(post);
-    input.focus();
-  });
-  closeReaderButton.addEventListener('click', closeReader);
-  reader.addEventListener('click', function (event) { if (event.target === reader) closeReader(); });
-  document.addEventListener('keydown', function (event) {
-    if (reader.hidden) return;
-    if (event.key === 'Escape') closeReader();
-    if (event.key === 'Tab') {
-      const controls = Array.from(reader.querySelectorAll('button'));
-      const first = controls[0];
-      const last = controls[controls.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-    }
-  });
-  document.getElementById('sdReaderLarger').addEventListener('click', function () {
-    readerFontSize = Math.min(30, readerFontSize + 2);
-    readerContent.style.fontSize = readerFontSize + 'px';
-  });
-  document.getElementById('sdReaderSmaller').addEventListener('click', function () {
-    readerFontSize = Math.max(14, readerFontSize - 2);
-    readerContent.style.fontSize = readerFontSize + 'px';
-  });
-  document.getElementById('sdReaderSpeak').addEventListener('click', function () {
-    if (!('speechSynthesis' in window)) { alert('Read aloud is not supported by this browser.'); return; }
-    stopSpeech();
-    const utterance = new SpeechSynthesisUtterance(readerMeta.textContent + '. ' + readerContent.innerText);
-    utterance.lang = 'en-US';
-    utterance.rate = 0.9;
-    window.speechSynthesis.speak(utterance);
-  });
-  document.getElementById('sdReaderStop').addEventListener('click', stopSpeech);
+    feed.addEventListener('submit', function (event) {
+        const form = event.target.closest('.sd-comment-form');
+        if (!form) return;
+        event.preventDefault();
+        const input = form.querySelector('.sd-comment-input');
+        const value = input.value.trim();
+        if (!value) return;
+        const post = form.closest('.sd-post');
+        dataFor(post.dataset.postId).comments.push(value.slice(0, 500));
+        save();
+        input.value = '';
+        renderComments(post);
+        input.focus();
+    });
+    closeReaderButton.addEventListener('click', closeReader);
+    reader.addEventListener('click', function (event) { if (event.target === reader) closeReader(); });
+    document.addEventListener('keydown', function (event) {
+        if (reader.hidden) return;
+        if (event.key === 'Escape') closeReader();
+        if (event.key === 'Tab') {
+            const controls = Array.from(reader.querySelectorAll('button'));
+            const first = controls[0];
+            const last = controls[controls.length - 1];
+            if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+            else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+        }
+    });
+    document.getElementById('sdReaderLarger').addEventListener('click', function () {
+        readerFontSize = Math.min(30, readerFontSize + 2);
+        readerContent.style.fontSize = readerFontSize + 'px';
+    });
+    document.getElementById('sdReaderSmaller').addEventListener('click', function () {
+        readerFontSize = Math.max(14, readerFontSize - 2);
+        readerContent.style.fontSize = readerFontSize + 'px';
+    });
+    document.getElementById('sdReaderSpeak').addEventListener('click', function () {
+        if (!('speechSynthesis' in window)) { alert('Read aloud is not supported by this browser.'); return; }
+        stopSpeech();
+        const utterance = new SpeechSynthesisUtterance(readerMeta.textContent + '. ' + readerContent.innerText);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+    });
+    document.getElementById('sdReaderStop').addEventListener('click', stopSpeech);
 })();
 
 /* Department Head Class Roster: Add / Update / Import / Export */
-(()=>{const root=document.querySelector('.cr-dept-head-page');if(!root)return;const $=id=>document.getElementById(id);let data=Array.from({length:31},(_,i)=>({id:`2023-${String(11111+i).padStart(5,'0')}`,name:['Angel S. Villanueva','Bea M. Santos','Carl P. Reyes','Dana L. Cruz','Ella P. Ramos','Francis D. Garcia'][i%6],email:`student${i+1}@students.national-u.edu.ph`,section:['COE232','COE231','COE233'][i%3],faculty:i%4===0?'Prof. Maria Santos':'Engr. J. T. Leonen',category:['Registered','Regular','Late Enrollee','Transferee'][i%4],status:i<21?'Enrolled':'Not Enrolled'}));const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const filtered=()=>{let q=$('crdhSearch').value.trim().toLowerCase(),f=$('crdhFaculty').value,c=$('crdhCategory').value,s=$('crdhSection').value;return data.filter(x=>(!q||[x.id,x.name,x.email].some(v=>v.toLowerCase().includes(q)))&&(f==='All Faculty'||x.faculty===f)&&(c==='All Students'||x.category===c)&&(s==='All Sections'||x.section===s)).sort((a,b)=>$('crdhSort').value==='id'?a.id.localeCompare(b.id):$('crdhSort').value==='za'?b.name.localeCompare(a.name):a.name.localeCompare(b.name));};function render(){const rows=filtered();$('crdhRows').innerHTML=rows.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.id)}</td><td>${esc(x.name)}</td><td>${esc(x.email)}</td><td>${esc(x.section)}</td><td>${esc(x.faculty)}</td><td><span class="crf-category">${esc(x.category)}</span></td><td><span class="crf-status ${x.status==='Enrolled'?'enrolled':'pending'}">${esc(x.status)}</span></td><td><div class="crdh-actions"><button class="crdh-update" data-id="${esc(x.id)}">Update</button><button class="crdh-remove" data-id="${esc(x.id)}">Remove</button></div></td></tr>`).join('')||'<tr><td colspan="9">No matching students.</td></tr>';$('crdhCount').textContent=`Showing ${rows.length} of ${data.length} demo records`;$('crdhTotal').textContent=data.length;$('crdhEnrolled').textContent=data.filter(x=>x.status==='Enrolled').length;$('crdhCourseTitle').textContent=$('crdhCourse').value==='All Courses'?'Software Design - Lab':$('crdhCourse').value;}['crdhSearch','crdhFaculty','crdhCategory','crdhSort','crdhSection','crdhCourse','crdhSchoolYear','crdhDepartment','crdhProgram'].forEach(id=>$(id).addEventListener('input',render));$('crdhRows').addEventListener('click',e=>{const b=e.target.closest('button[data-id]');if(!b)return;const i=data.findIndex(x=>x.id===b.dataset.id);if(i<0)return;if(b.classList.contains('crdh-update')){openModal('update',data[i]);return;}else if(confirm('Remove this demo student record?')){data.splice(i,1);$('crdhNote').textContent='Demo record removed.';}render();});const modal=$('crdhModal'),form=$('crdhRecordForm');let editId=null;let previousFocus=null;
-function openModal(mode,record){
- previousFocus=document.activeElement;editId=mode==='update'?record.id:null;
- form.reset();$('crdhModalError').hidden=true;
- $('crdhModalTitle').textContent=editId?'Update Roster Record':'Add Roster Record';
- $('crdhModalSubmit').textContent=editId?'Save Changes':'Add Record';
- if(record){for(const key of ['id','name','email','category','course','section','faculty','status'])if(form.elements[key])form.elements[key].value=record[key]|| (key==='course'?'Software Design - Lab':'');}
- form.elements.id.disabled=!!editId;modal.hidden=false;modal.classList.add('show');document.body.style.overflow='hidden';
- (editId?form.elements.name:form.elements.id).focus();
-}
-function closeModal(){modal.hidden=true;modal.classList.remove('show');document.body.style.overflow='';editId=null;if(previousFocus&&previousFocus.isConnected)previousFocus.focus();}
-$('crdhAdd').addEventListener('click',()=>openModal('add'));
-$('crdhModalClose').addEventListener('click',closeModal);
-$('crdhModalCancel').addEventListener('click',closeModal);
-modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
-document.addEventListener('keydown',e=>{if(modal.hidden)return;if(e.key==='Escape')closeModal();if(e.key==='Tab'){const nodes=[...modal.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled])')].filter(x=>x.offsetParent!==null);const first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});
-form.addEventListener('submit',e=>{e.preventDefault();if(!form.reportValidity())return;
- const get=k=>form.elements[k].value.trim();
- const item={id:editId||get('id'),name:get('name'),email:get('email'),category:get('category'),course:get('course'),section:get('section'),faculty:get('faculty'),status:get('status')};
- const error=$('crdhModalError');
- if(!editId&&data.some(x=>x.id===item.id)){error.textContent='Student ID already exists. Please enter a unique ID.';error.hidden=false;return;}
- if(editId){const index=data.findIndex(x=>x.id===editId);if(index<0)return;data[index]={...data[index],...item};}
- else data.push(item);
- $('crdhNote').textContent=editId?'Demo roster record updated.':'Demo roster record added.';
- closeModal();render();
-});
-$('crdhDownload').addEventListener('click',()=>{const keys=['id','name','email','section','faculty','category','status'];const csv=[keys.join(','),...filtered().map(x=>keys.map(k=>'"'+String(x[k]).replace(/"/g,'""')+'"').join(','))].join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='department-roster.csv';a.click();URL.revokeObjectURL(url);});$('crdhImport').addEventListener('click',()=>$('crdhFile').click());$('crdhFile').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;const text=await file.text();const lines=text.trim().split(/\r?\n/).slice(1);let count=0;for(const line of lines){const cols=line.split(',').map(v=>v.trim().replace(/^"|"$/g,''));if(cols.length<2||!cols[0]||data.some(x=>x.id===cols[0]))continue;data.push({id:cols[0],name:cols[1],email:cols[2]||'',section:cols[3]||'COE232',faculty:cols[4]||'Engr. J. T. Leonen',category:cols[5]||'Registered',status:cols[6]==='Enrolled'?'Enrolled':'Not Enrolled'});count++;}$('crdhNote').textContent=`Imported ${count} demo records. CSV parser supports simple rows (not quoted commas).`;e.target.value='';render();});render();})();
+(() => {
+    const root = document.querySelector('.cr-dept-head-page'); if (!root) return; const $ = id => document.getElementById(id); let data = Array.from({ length: 31 }, (_, i) => ({ id: `2023-${String(11111 + i).padStart(5, '0')}`, name: ['Angel S. Villanueva', 'Bea M. Santos', 'Carl P. Reyes', 'Dana L. Cruz', 'Ella P. Ramos', 'Francis D. Garcia'][i % 6], email: `student${i + 1}@students.national-u.edu.ph`, section: ['COE232', 'COE231', 'COE233'][i % 3], faculty: i % 4 === 0 ? 'Prof. Maria Santos' : 'Engr. J. T. Leonen', category: ['Registered', 'Regular', 'Late Enrollee', 'Transferee'][i % 4], status: i < 21 ? 'Enrolled' : 'Not Enrolled' })); const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); const filtered = () => { let q = $('crdhSearch').value.trim().toLowerCase(), f = $('crdhFaculty').value, c = $('crdhCategory').value, s = $('crdhSection').value; return data.filter(x => (!q || [x.id, x.name, x.email].some(v => v.toLowerCase().includes(q))) && (f === 'All Faculty' || x.faculty === f) && (c === 'All Students' || x.category === c) && (s === 'All Sections' || x.section === s)).sort((a, b) => $('crdhSort').value === 'id' ? a.id.localeCompare(b.id) : $('crdhSort').value === 'za' ? b.name.localeCompare(a.name) : a.name.localeCompare(b.name)); }; function render() { const rows = filtered(); $('crdhRows').innerHTML = rows.map((x, i) => `<tr><td>${i + 1}</td><td>${esc(x.id)}</td><td>${esc(x.name)}</td><td>${esc(x.email)}</td><td>${esc(x.section)}</td><td>${esc(x.faculty)}</td><td><span class="crf-category">${esc(x.category)}</span></td><td><span class="crf-status ${x.status === 'Enrolled' ? 'enrolled' : 'pending'}">${esc(x.status)}</span></td><td><div class="crdh-actions"><button class="crdh-update" data-id="${esc(x.id)}">Update</button><button class="crdh-remove" data-id="${esc(x.id)}">Remove</button></div></td></tr>`).join('') || '<tr><td colspan="9">No matching students.</td></tr>'; $('crdhCount').textContent = `Showing ${rows.length} of ${data.length} demo records`; $('crdhTotal').textContent = data.length; $('crdhEnrolled').textContent = data.filter(x => x.status === 'Enrolled').length; $('crdhCourseTitle').textContent = $('crdhCourse').value === 'All Courses' ? 'Software Design - Lab' : $('crdhCourse').value; } ['crdhSearch', 'crdhFaculty', 'crdhCategory', 'crdhSort', 'crdhSection', 'crdhCourse', 'crdhSchoolYear', 'crdhDepartment', 'crdhProgram'].forEach(id => $(id).addEventListener('input', render)); $('crdhRows').addEventListener('click', e => { const b = e.target.closest('button[data-id]'); if (!b) return; const i = data.findIndex(x => x.id === b.dataset.id); if (i < 0) return; if (b.classList.contains('crdh-update')) { openModal('update', data[i]); return; } else if (confirm('Remove this demo student record?')) { data.splice(i, 1); $('crdhNote').textContent = 'Demo record removed.'; } render(); }); const modal = $('crdhModal'), form = $('crdhRecordForm'); let editId = null; let previousFocus = null;
+    function openModal(mode, record) {
+        previousFocus = document.activeElement; editId = mode === 'update' ? record.id : null;
+        form.reset(); $('crdhModalError').hidden = true;
+        $('crdhModalTitle').textContent = editId ? 'Update Roster Record' : 'Add Roster Record';
+        $('crdhModalSubmit').textContent = editId ? 'Save Changes' : 'Add Record';
+        if (record) { for (const key of ['id', 'name', 'email', 'category', 'course', 'section', 'faculty', 'status']) if (form.elements[key]) form.elements[key].value = record[key] || (key === 'course' ? 'Software Design - Lab' : ''); }
+        form.elements.id.disabled = !!editId; modal.hidden = false; modal.classList.add('show'); document.body.style.overflow = 'hidden';
+        (editId ? form.elements.name : form.elements.id).focus();
+    }
+    function closeModal() { modal.hidden = true; modal.classList.remove('show'); document.body.style.overflow = ''; editId = null; if (previousFocus && previousFocus.isConnected) previousFocus.focus(); }
+    $('crdhAdd').addEventListener('click', () => openModal('add'));
+    $('crdhModalClose').addEventListener('click', closeModal);
+    $('crdhModalCancel').addEventListener('click', closeModal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', e => { if (modal.hidden) return; if (e.key === 'Escape') closeModal(); if (e.key === 'Tab') { const nodes = [...modal.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled])')].filter(x => x.offsetParent !== null); const first = nodes[0], last = nodes[nodes.length - 1]; if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); } else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); } } });
+    form.addEventListener('submit', e => {
+        e.preventDefault(); if (!form.reportValidity()) return;
+        const get = k => form.elements[k].value.trim();
+        const item = { id: editId || get('id'), name: get('name'), email: get('email'), category: get('category'), course: get('course'), section: get('section'), faculty: get('faculty'), status: get('status') };
+        const error = $('crdhModalError');
+        if (!editId && data.some(x => x.id === item.id)) { error.textContent = 'Student ID already exists. Please enter a unique ID.'; error.hidden = false; return; }
+        if (editId) { const index = data.findIndex(x => x.id === editId); if (index < 0) return; data[index] = { ...data[index], ...item }; }
+        else data.push(item);
+        $('crdhNote').textContent = editId ? 'Demo roster record updated.' : 'Demo roster record added.';
+        closeModal(); render();
+    });
+    $('crdhDownload').addEventListener('click', () => { const keys = ['id', 'name', 'email', 'section', 'faculty', 'category', 'status']; const csv = [keys.join(','), ...filtered().map(x => keys.map(k => '"' + String(x[k]).replace(/"/g, '""') + '"').join(','))].join('\r\n'); const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = 'department-roster.csv'; a.click(); URL.revokeObjectURL(url); }); $('crdhImport').addEventListener('click', () => $('crdhFile').click()); $('crdhFile').addEventListener('change', async e => { const file = e.target.files[0]; if (!file) return; const text = await file.text(); const lines = text.trim().split(/\r?\n/).slice(1); let count = 0; for (const line of lines) { const cols = line.split(',').map(v => v.trim().replace(/^"|"$/g, '')); if (cols.length < 2 || !cols[0] || data.some(x => x.id === cols[0])) continue; data.push({ id: cols[0], name: cols[1], email: cols[2] || '', section: cols[3] || 'COE232', faculty: cols[4] || 'Engr. J. T. Leonen', category: cols[5] || 'Registered', status: cols[6] === 'Enrolled' ? 'Enrolled' : 'Not Enrolled' }); count++; } $('crdhNote').textContent = `Imported ${count} demo records. CSV parser supports simple rows (not quoted commas).`; e.target.value = ''; render(); }); render();
+})();
 
 (function initRaDepartmentHeadTabs() {
-  function setup() {
-    // Tabs are handled by the existing shared .sodh-tab / data-tab handler.
-    if (!document.getElementById('ra-review-table')) return;
+    function setup() {
+        // Tabs are handled by the existing shared .sodh-tab / data-tab handler.
+        if (!document.getElementById('ra-review-table')) return;
 
-    const rows = Array.from(document.querySelectorAll('#ra-review-table tbody tr'));
-    const search = document.getElementById('ra-search');
-    const status = document.getElementById('ra-status-filter');
-    const course = document.getElementById('ra-course');
-    const faculty = document.getElementById('ra-faculty');
-    function filter() {
-      const q = (search?.value || '').toLowerCase();
-      const st = status?.value || '';
-      const c = course?.value || '';
-      const f = faculty?.value || '';
-      rows.forEach(row => {
-        row.hidden = !(row.textContent.toLowerCase().includes(q)
-          && (!st || row.dataset.status === st)
-          && (!c || row.dataset.course === c)
-          && (!f || row.dataset.faculty === f));
-      });
+        const rows = Array.from(document.querySelectorAll('#ra-review-table tbody tr'));
+        const search = document.getElementById('ra-search');
+        const status = document.getElementById('ra-status-filter');
+        const course = document.getElementById('ra-course');
+        const faculty = document.getElementById('ra-faculty');
+        function filter() {
+            const q = (search?.value || '').toLowerCase();
+            const st = status?.value || '';
+            const c = course?.value || '';
+            const f = faculty?.value || '';
+            rows.forEach(row => {
+                row.hidden = !(row.textContent.toLowerCase().includes(q)
+                    && (!st || row.dataset.status === st)
+                    && (!c || row.dataset.course === c)
+                    && (!f || row.dataset.faculty === f));
+            });
+        }
+        [search, status, course, faculty].forEach(el => {
+            if (el) el.addEventListener(el === search ? 'input' : 'change', filter);
+        });
+        const dialog = document.getElementById('ra-dialog');
+        document.querySelectorAll('[data-view],[data-query]').forEach(button => {
+            button.addEventListener('click', () => {
+                if (!dialog || typeof dialog.showModal !== 'function') return;
+                const query = button.dataset.query;
+                const title = document.getElementById('ra-dialog-title');
+                const body = document.getElementById('ra-dialog-body');
+                if (!title || !body) return;
+                title.textContent = query ? 'Faculty Query (Demo)' : 'Assessment Scores (View Only)';
+                body.textContent = query
+                    ? `Prepare a query for ${query.split('|')[1]} regarding ${query.split('|')[0]}. Sending requires a backend connection.`
+                    : `${button.dataset.view}: detailed student scores will appear here when connected to assessment records.`;
+                dialog.showModal();
+            });
+        });
     }
-    [search, status, course, faculty].forEach(el => {
-      if (el) el.addEventListener(el === search ? 'input' : 'change', filter);
-    });
-    const dialog = document.getElementById('ra-dialog');
-    document.querySelectorAll('[data-view],[data-query]').forEach(button => {
-      button.addEventListener('click', () => {
-        if (!dialog || typeof dialog.showModal !== 'function') return;
-        const query = button.dataset.query;
-        const title = document.getElementById('ra-dialog-title');
-        const body = document.getElementById('ra-dialog-body');
-        if (!title || !body) return;
-        title.textContent = query ? 'Faculty Query (Demo)' : 'Assessment Scores (View Only)';
-        body.textContent = query
-          ? `Prepare a query for ${query.split('|')[1]} regarding ${query.split('|')[0]}. Sending requires a backend connection.`
-          : `${button.dataset.view}: detailed student scores will appear here when connected to assessment records.`;
-        dialog.showModal();
-      });
-    });
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setup, { once: true });
-  } else {
-    setup();
-  }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setup, { once: true });
+    } else {
+        setup();
+    }
 })();
 document.addEventListener('DOMContentLoaded', () => {
-  const tabs = document.querySelectorAll('.ac-tab');
-  const panels = { scores: document.getElementById('ac-scores'), attainment: document.getElementById('ac-attainment') };
-  tabs.forEach(tab => tab.addEventListener('click', () => {
-    tabs.forEach(item => { const active = item === tab; item.classList.toggle('is-active', active); item.setAttribute('aria-selected', String(active)); });
-    Object.entries(panels).forEach(([key, panel]) => { panel.hidden = key !== tab.dataset.acTab; });
-  }));
-  const search = document.getElementById('ac-score-search');
-  const type = document.getElementById('ac-score-type');
-  const sort = document.getElementById('ac-score-sort');
-  const body = document.getElementById('ac-score-rows');
-  const rows = [...body.querySelectorAll('tr')];
-  const update = () => {
-    const term = search.value.trim().toLowerCase();
-    const selectedType = type.value;
-    const order = sort.value;
-    const ordered = [...rows].sort((a, b) => order === 'assessment' ? a.cells[0].textContent.localeCompare(b.cells[0].textContent) : order === 'oldest' ? a.dataset.date.localeCompare(b.dataset.date) : b.dataset.date.localeCompare(a.dataset.date));
-    let visible = 0;
-    ordered.forEach(row => { const show = row.textContent.toLowerCase().includes(term) && (selectedType === 'all' || row.dataset.type === selectedType); row.hidden = !show; if (show) visible++; body.appendChild(row); });
-    document.getElementById('ac-score-empty').hidden = visible !== 0;
-  };
-  [search, type, sort].forEach(el => el.addEventListener(el === search ? 'input' : 'change', update));
+    const tabs = document.querySelectorAll('.ac-tab');
+    const panels = { scores: document.getElementById('ac-scores'), attainment: document.getElementById('ac-attainment') };
+    tabs.forEach(tab => tab.addEventListener('click', () => {
+        tabs.forEach(item => { const active = item === tab; item.classList.toggle('is-active', active); item.setAttribute('aria-selected', String(active)); });
+        Object.entries(panels).forEach(([key, panel]) => { panel.hidden = key !== tab.dataset.acTab; });
+    }));
+    const search = document.getElementById('ac-score-search');
+    const type = document.getElementById('ac-score-type');
+    const sort = document.getElementById('ac-score-sort');
+    const body = document.getElementById('ac-score-rows');
+    const rows = [...body.querySelectorAll('tr')];
+    const update = () => {
+        const term = search.value.trim().toLowerCase();
+        const selectedType = type.value;
+        const order = sort.value;
+        const ordered = [...rows].sort((a, b) => order === 'assessment' ? a.cells[0].textContent.localeCompare(b.cells[0].textContent) : order === 'oldest' ? a.dataset.date.localeCompare(b.dataset.date) : b.dataset.date.localeCompare(a.dataset.date));
+        let visible = 0;
+        ordered.forEach(row => { const show = row.textContent.toLowerCase().includes(term) && (selectedType === 'all' || row.dataset.type === selectedType); row.hidden = !show; if (show) visible++; body.appendChild(row); });
+        document.getElementById('ac-score-empty').hidden = visible !== 0;
+    };
+    [search, type, sort].forEach(el => el.addEventListener(el === search ? 'input' : 'change', update));
 });
 
 // Faculty Courses: page-scoped creation; demo-only until a backend is connected.
-(function(){function init(){const dialog=document.getElementById('fcCreateDialog'),form=document.getElementById('fcCreateForm'),grid=document.getElementById('facultyCourseGrid');if(!dialog||!form||!grid)return;const open=document.getElementById('fcOpenCreate');const close=()=>dialog.close();open?.addEventListener('click',()=>dialog.showModal());document.getElementById('fcCloseCreate')?.addEventListener('click',close);document.getElementById('fcCancelCreate')?.addEventListener('click',close);dialog.addEventListener('click',e=>{if(e.target===dialog)close()});form.addEventListener('submit',e=>{e.preventDefault();if(!form.reportValidity())return;const data=new FormData(form),code=String(data.get('code')).trim(),title=String(data.get('title')).trim(),section=String(data.get('section')).trim(),term=String(data.get('term'));if(!code||!title||!section)return;const article=document.createElement('article');article.className='sc-course-card';const top=document.createElement('div');top.className='sc-card-top';const icon=document.createElement('span');icon.className='sc-course-icon';icon.textContent=code.slice(0,2).toUpperCase();const status=document.createElement('span');status.className='sc-enrolled';status.textContent='NEW COURSE';top.append(icon,status);const body=document.createElement('div');body.className='sc-course-body';const label=document.createElement('span');label.className='sc-course-code';label.textContent=code+' · '+term;const heading=document.createElement('h2');heading.textContent=title;const info=document.createElement('p');info.className='sc-faculty';info.textContent='Assigned faculty · You';const sec=document.createElement('p');sec.className='sc-section';sec.textContent='Section '+section;body.append(label,heading,info,sec);const bottom=document.createElement('div');bottom.className='sc-card-bottom';const note=document.createElement('div');note.className='sc-progress-top';note.textContent='0 enrolled students · Demo';bottom.append(note);article.append(top,body,bottom);grid.prepend(article);const count=document.getElementById('facultyCourseCount');if(count)count.textContent=String(grid.children.length).padStart(2,'0');form.reset();close()})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init()})();
+(function () { function init() { const dialog = document.getElementById('fcCreateDialog'), form = document.getElementById('fcCreateForm'), grid = document.getElementById('facultyCourseGrid'); if (!dialog || !form || !grid) return; const open = document.getElementById('fcOpenCreate'); const close = () => dialog.close(); open?.addEventListener('click', () => dialog.showModal()); document.getElementById('fcCloseCreate')?.addEventListener('click', close); document.getElementById('fcCancelCreate')?.addEventListener('click', close); dialog.addEventListener('click', e => { if (e.target === dialog) close() }); form.addEventListener('submit', e => { e.preventDefault(); if (!form.reportValidity()) return; const data = new FormData(form), code = String(data.get('code')).trim(), title = String(data.get('title')).trim(), section = String(data.get('section')).trim(), term = String(data.get('term')); if (!code || !title || !section) return; const article = document.createElement('article'); article.className = 'sc-course-card'; const top = document.createElement('div'); top.className = 'sc-card-top'; const icon = document.createElement('span'); icon.className = 'sc-course-icon'; icon.textContent = code.slice(0, 2).toUpperCase(); const status = document.createElement('span'); status.className = 'sc-enrolled'; status.textContent = 'NEW COURSE'; top.append(icon, status); const body = document.createElement('div'); body.className = 'sc-course-body'; const label = document.createElement('span'); label.className = 'sc-course-code'; label.textContent = code + ' · ' + term; const heading = document.createElement('h2'); heading.textContent = title; const info = document.createElement('p'); info.className = 'sc-faculty'; info.textContent = 'Assigned faculty · You'; const sec = document.createElement('p'); sec.className = 'sc-section'; sec.textContent = 'Section ' + section; body.append(label, heading, info, sec); const bottom = document.createElement('div'); bottom.className = 'sc-card-bottom'; const note = document.createElement('div'); note.className = 'sc-progress-top'; note.textContent = '0 enrolled students · Demo'; bottom.append(note); article.append(top, body, bottom); grid.prepend(article); const count = document.getElementById('facultyCourseCount'); if (count) count.textContent = String(grid.children.length).padStart(2, '0'); form.reset(); close() }) } if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true }); else init() })();
