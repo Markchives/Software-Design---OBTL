@@ -3,10 +3,21 @@ import os
 from uuid import uuid4
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request, render_template, session, redirect, g
+
+from flask import (
+    Flask,
+    jsonify,
+    request,
+    render_template,
+    session,
+    redirect,
+    url_for,
+    g,
+)
 from supabase import create_client, Client
 from datetime import timedelta
 from werkzeug.utils import secure_filename
+
 
 load_dotenv()
 
@@ -513,7 +524,8 @@ def student_syllabi():
         syllabi = []
         for record in syllabus_result.data or []:
             section = sections_by_id.get(record["section_id"])
-            course = courses_by_id.get(section["course_id"]) if section else None
+            course = courses_by_id.get(
+                section["course_id"]) if section else None
             if not section or not course:
                 continue
 
@@ -548,6 +560,53 @@ def health():
     })
 
 
+@app.get("/auth/google")
+def google_login():
+    role = request.args.get("role", "student").strip().lower()
+
+    allowed_roles = {
+        "student",
+        "faculty",
+        "department-head",
+        "admin-security",
+    }
+
+    if role not in allowed_roles:
+        return jsonify({"error": "Invalid account role."}), 400
+
+    try:
+        auth_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+        response = auth_client.auth.sign_in_with_oauth({
+            "provider": "google",
+            "options": {
+                "redirect_to": request.host_url.rstrip("/") + "/auth/callback",
+                "query_params": {
+                    "prompt": "select_account",
+                },
+            },
+        })
+
+        storage = auth_client.auth._storage
+        verifier = storage.get_item(
+            f"{auth_client.auth._storage_key}-code-verifier"
+        )
+
+        if not verifier:
+            app.logger.error("Google OAuth PKCE verifier was not created.")
+            return "Unable to initialize Google sign-in. Please try again.", 500
+
+        session["oauth_code_verifier"] = verifier
+        session["oauth_requested_role"] = role
+        session["oauth_provider"] = "google"
+
+        return redirect(response.url)
+
+    except Exception:
+        app.logger.exception("Google OAuth initiation failed")
+        return "Unable to start Google sign-in. Please try again.", 500
+
+
 @app.get("/requirement 1/so-student.html")
 @require_role("student")
 def student_dashboard():
@@ -573,7 +632,12 @@ def register_page():
 
 @app.get("/login page.html")
 def login_page():
-    return render_template("login page.html")
+    oauth_error = request.args.get("oauth_error")
+
+    return render_template(
+        "login page.html",
+        oauth_error=oauth_error
+    )
 
 
 @app.route("/verification-login.html")
@@ -599,7 +663,6 @@ def register():
     password = data.get("password", "")
     first_name = str(data.get("firstName", "")).strip()
     last_name = str(data.get("lastName", "")).strip()
-
     role = str(data.get("role", "student")).strip().lower()
 
     allowed_roles = {
@@ -619,7 +682,10 @@ def register():
 
     if not email or not password or not first_name or not last_name:
         return jsonify({
-            "error": "First name, last name, email, and password are required."
+            "error": (
+                "First name, last name, email, and password "
+                "are required."
+            )
         }), 400
 
     if not isinstance(password, str) or len(password) < 8:
@@ -628,6 +694,18 @@ def register():
         }), 400
 
     try:
+        # Check existing accounts before attempting registration.
+        existing_user = find_auth_user_by_email(email)
+
+        if existing_user:
+            return jsonify({
+                "error": "Account Already Exists",
+                "message": (
+                    "An account with this email already exists. "
+                    "Please sign in using your existing account."
+                )
+            }), 409
+
         result = supabase.auth.sign_up({
             "email": email,
             "password": password,
@@ -635,7 +713,7 @@ def register():
                 "data": {
                     "first_name": first_name,
                     "last_name": last_name,
-                    "role": role
+                    "role": role,
                 }
             }
         })
@@ -643,18 +721,17 @@ def register():
         if result.user:
             assign_trusted_role(result.user.id, role)
 
-        # Do not expose tokens or passwords to the browser.
+        # Preserve the existing email-verification workflow.
         return jsonify({
             "status": "request_processed",
             "message": (
                 "If registration is accepted, check your email "
                 "for the verification instructions."
             ),
-            "user_created": result.user is not None
+            "user_created": result.user is not None,
         }), 200
 
     except Exception:
-        # Avoid exposing internal errors or secrets.
         app.logger.exception("Supabase registration request failed")
         return jsonify({
             "error": (
@@ -685,6 +762,102 @@ def get_user_role(user):
 
     app_metadata = getattr(user, "app_metadata", None) or {}
     return app_metadata.get("role")
+
+
+@app.get("/auth/callback")
+def auth_callback():
+    error = request.args.get("error")
+    if error:
+        app.logger.warning(
+            "OAuth provider returned an error: %s", error
+        )
+        session.clear()
+        return "Google sign-in was cancelled or failed. Please try again.", 400
+
+    code = request.args.get("code")
+    if not code:
+        return "Missing OAuth authorization code.", 400
+
+    requested_role = session.get("oauth_requested_role")
+    allowed_roles = {
+        "student",
+        "faculty",
+        "department-head",
+        "admin-security",
+    }
+
+    if requested_role not in allowed_roles:
+        return "Your sign-in request expired. Please start again.", 400
+
+    try:
+        auth_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+        code_verifier = session.get("oauth_code_verifier")
+        if not code_verifier:
+            app.logger.error(
+                "OAuth PKCE verifier is missing from Flask session."
+            )
+            session.clear()
+            return (
+                "Your sign-in session expired. Please start Google sign-in again.",
+                400,
+            )
+
+        result = auth_client.auth.exchange_code_for_session({
+            "auth_code": code,
+            "code_verifier": code_verifier,
+        })
+
+        if not result.user or not result.session:
+            session.clear()
+            return "Google sign-in could not be completed.", 401
+
+        actual_role = get_user_role(result.user)
+
+        # Assign the selected role to a new Google account.
+        if actual_role is None:
+            if requested_role == "admin-security":
+                auth_client.auth.sign_out()
+                session.clear()
+                return (
+                    "Admin-Security access must be assigned by an administrator.",
+                    403,
+                )
+
+            # Use the Supabase Admin client to assign trusted role metadata.
+            assign_trusted_role(result.user.id, requested_role)
+            actual_role = requested_role
+
+        # Existing accounts must match their trusted assigned role.
+        if actual_role not in allowed_roles or actual_role != requested_role:
+            auth_client.auth.sign_out()
+            session.clear()
+            return redirect(
+                url_for(
+                    "login_page",
+                    oauth_error="account_exists"
+                )
+            )
+
+        session.clear()
+        session.permanent = True
+        session["access_token"] = result.session.access_token
+        session["refresh_token"] = result.session.refresh_token
+        session["user_id"] = result.user.id
+
+        if actual_role == "student":
+            return redirect("/requirement%201/so-student.html")
+        elif actual_role == "faculty":
+            return redirect("/requirement%201/so-faculty.html")
+        elif actual_role == "department-head":
+            return redirect("/requirement%201/so-dept-head.html")
+        else:
+            return redirect("/")
+
+    except Exception:
+        app.logger.exception("Google OAuth callback failed")
+        session.clear()
+        return "Google sign-in failed. Please try again.", 400
 
 
 def require_admin_security(view_function):
@@ -729,6 +902,51 @@ def assign_trusted_role(user_id, role):
             }
         }
     )
+
+
+def find_auth_user_by_email(email):
+    if not admin_supabase:
+        raise RuntimeError(
+            "Supabase Admin client is not configured."
+        )
+
+    target_email = email.strip().lower()
+    page = 1
+    per_page = 1000
+
+    while True:
+        response = admin_supabase.auth.admin.list_users(
+            page=page,
+            per_page=per_page
+        )
+
+        # Support different Supabase SDK response formats.
+        if isinstance(response, list):
+            users = response
+        else:
+            users = getattr(response, "users", None)
+
+        if users is None:
+            app.logger.error(
+                "Unexpected Supabase list_users response type: %s",
+                type(response).__name__
+            )
+            raise RuntimeError(
+                "Could not retrieve users from Supabase Auth."
+            )
+
+        for user in users:
+            user_email = (
+                getattr(user, "email", None) or ""
+            ).strip().lower()
+
+            if user_email == target_email:
+                return user
+
+        if len(users) < per_page:
+            return None
+
+        page += 1
 
 
 def get_json_data():

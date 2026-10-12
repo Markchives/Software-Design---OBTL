@@ -1102,9 +1102,13 @@
                     const result = await response.json();
 
                     if (!response.ok) {
-                        throw new Error(
+                        const error = new Error(
                             result.error || "Registration could not be completed."
                         );
+                        error.isExistingAccount =
+                            response.status === 409 &&
+                            result.error === "Account Already Exists";
+                        throw error;
                     }
 
                     sessionStorage.setItem("verificationEmail", email);
@@ -1115,9 +1119,14 @@
 
                 } catch (error) {
                     openRegistrationModal();
+
                     if (registrationModalTitle) {
-                        registrationModalTitle.textContent = "Registration Error";
+                        registrationModalTitle.textContent =
+                            error.isExistingAccount
+                                ? "Account Already Exists"
+                                : "Registration Error";
                     }
+
                     if (registrationModalMessage) {
                         registrationModalMessage.textContent =
                             error.message ||
@@ -1131,9 +1140,6 @@
                 /*PASSWORD IS NOT SAVED IN
                     sessionStorage.*/
 
-                /* GO TO SIGNUP VERIFICATION */
-                window.location.href =
-                    "verification-signup.html";
             }
         );
 

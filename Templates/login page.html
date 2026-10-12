@@ -146,8 +146,14 @@
 
                     </div>
 
+                    <!-- OAUTH ERROR MESSAGE -->
+                    <div id="oauthErrorMessage" role="alert"
+                        style="display: none; color: #b42318; text-align: center; margin: 12px auto; font-size: 14px; font-weight: 600;">
+                    </div>
+
                     <!-- DIVIDER -->
                     <div class="divider">
+
                         <span></span>
                         <p>or use your account</p>
                         <span></span>
@@ -495,7 +501,7 @@
                             email: email,
                             password: password,
                             role: role,
-                            rememberMe: rememberMe
+                            rememberMe: sessionStorage.getItem("rememberMe") === "true"
                         })
                     });
 
@@ -718,6 +724,21 @@
                 "/forgot-password.html?role=" +
                 encodeURIComponent(selectedRole);
         });
+
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const params = new URLSearchParams(window.location.search);
+            const errorType = params.get("oauth_error");
+            const errorMessage = document.getElementById("oauthErrorMessage");
+
+            if (errorType === "account_exists" && errorMessage) {
+                errorMessage.textContent =
+                    "Account Already Exists. Please use your account.";
+
+                errorMessage.style.display = "block";
+            }
+        });
+
 
     </script>
 
