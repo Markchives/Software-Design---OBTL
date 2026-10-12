@@ -1,2 +1,6 @@
 NEW UPDATE! OKAY NA STUDENT OUTCOME FOR BOTH FACULTY AND STUDENT, PERO SA SIZING/HEADER NG SO IS NOT FINAL PA
+<<<<<<< HEAD
 Integrated the Database, nag create ng new using lance's structure and created several SQL Files
+=======
+NEW UPDATE! OKAY NA STUDENT OUTCOME FOR BOTH FACULTY AND STUDENT, PERO SA SIZING/HEADER NG SO IS NOT FINAL PA
+>>>>>>> e78d34a (Update folder file)

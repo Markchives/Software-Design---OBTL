@@ -1,78 +1,52 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1.0" name="viewport"/>
 <title>Class Roster Enrollment | EduMetrics</title>
-<link rel="stylesheet" href="../../Static/style.css">
+<link href="../../Static/style.css" rel="stylesheet"/>
 </head>
-<body class="so-student-page cr-student-page">
+<body class="so-student-page cr-student-page course-workspace-page">
 <header class="so-topbar">
 <div class="so-brand"><div class="so-brand-logo">Edu<span>Metrics</span></div><div class="so-brand-subtitle">Academic Assessment &amp; Grading System</div></div>
 <div class="so-user-area">
-<button class="so-notification-btn" type="button" aria-label="Notifications"><img src="../../Static/images/sidebar/notif.png" alt="Notifications" class="so-notification-image"><span class="so-notification-dot"></span></button>
-<div class="so-user-info"><strong id="facultyName"></strong><span>Student</span></div>
-<div class="so-avatar" aria-hidden="true"><span class="so-avatar-person">●</span></div><span class="so-online-dot" aria-hidden="true"></span>
+<button aria-label="Notifications" class="so-notification-btn" type="button"><img alt="Notifications" class="so-notification-image" src="../../Static/images/sidebar/notif.png"/><span class="so-notification-dot"></span></button>
+<div class="so-user-info"><strong id="studentName"></strong><span>Student</span></div>
+<div aria-hidden="true" class="so-avatar"><span class="so-avatar-person">●</span></div><span aria-hidden="true" class="so-online-dot"></span>
 </div>
 </header>
 <div class="so-header-lines"><div class="so-header-blue"></div><div class="so-header-gold"></div></div>
-
 <div class="so-shell">
 <aside class="so-sidebar">
-<div class="so-pages-title"><span class="so-grid-icon so-pages-image-wrap"><img src="../../Static/images/sidebar/pages.png" alt="" class="so-pages-image"></span><span>Pages</span></div>
-<nav class="so-nav" aria-label="Student navigation">
-<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/home-white.png" alt="" class="so-nav-image"></span><span>Home</span></a>
-<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/course-white.png" alt="" class="so-nav-image"></span><span>Courses</span></a>
-<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/pl-white.png" alt="" class="so-nav-image"></span><span>Platform</span></a>
-<div class="so-nav-group">
-<button class="so-nav-item so-products active" type="button"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/ws-blue.png" alt="" class="so-nav-image"></span><span>Workflow</span></button>
-<div class="so-subnav">
-<a href="#">Syllabus &amp; Outcomes</a>
-<a href="#">Curriculum Mapping</a>
-<a href="#" class="active">Class Roster</a>
-<a href="#">Assessment Entry</a>
-<a href="#">Attainment</a>
-<a href="#">CQI Planning</a>
-<a href="#">Gradebook</a>
-<a href="#">Compliance Report</a>
-</div>
-</div>
-<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/rs-white.png" alt="" class="so-nav-image"></span><span>Resources</span></a>
-<a href="#" class="so-nav-item"><span class="so-nav-icon so-nav-image-wrap"><img src="../../Static/images/sidebar/au-white.png" alt="" class="so-nav-image"></span><span>About Us</span></a>
+<div class="so-pages-title"><span class="so-grid-icon so-pages-image-wrap"><img alt="" class="so-pages-image" src="../../Static/images/sidebar/pages.png"/></span><span>Pages</span></div>
+<nav aria-label="Student navigation" class="so-nav">
+<a class="so-nav-item" href="dashboard-student.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/home-white.png"/></span><span>Home</span></a>
+<a class="so-nav-item active" href="dashboard-student.html#my-courses"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/course-white.png"/></span><span>My Courses</span></a>
+<a class="so-nav-item" href="../webpage/platform.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/pl-white.png"/></span><span>Platform</span></a>
+<a class="so-nav-item" href="../webpage/resources.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/rs-white.png"/></span><span>Resources</span></a>
+<a class="so-nav-item" href="../webpage/about us.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/au-white.png"/></span><span>About Us</span></a>
 </nav>
 <div class="so-sidebar-brand"><div class="so-sidebar-logo">Edu<span>Metrics</span></div><small>Academic Assessment &amp; Grading System</small></div>
 </aside>
-
 <main class="so-main cr-student-main">
-<section class="so-page-heading cr-heading">
-<h1>Class Roster Enrollment</h1>
-<p>Manage and enroll students for your assigned sections</p>
+<div class="cw-breadcrumb">My Courses <span class="cw-breadcrumb-separator">/</span> <span class="cw-breadcrumb-current">Software Lab</span></div><div class="cw-workspace"><section aria-label="Selected course" class="cw-hero"><div><div class="cw-eyebrow">COURSE WORKSPACE</div><h2>Software Lab</h2><p>CPE 321 · BSCPE 3A · 1st Semester 2026–2027</p></div><span class="cw-demo-badge">DEMO COURSE</span></section><nav aria-label="Course modules" class="cw-module-nav"><a class="cw-module-tab" href="so-student.html"><span class="cw-module-number">01</span> Syllabus &amp; Outcomes</a><a class="cw-module-tab" href="cm-student.html"><span class="cw-module-number">02</span> Curriculum Mapping</a><a aria-current="page" class="cw-module-tab active" href="cr-student.html"><span class="cw-module-number">03</span> Class Roster</a><a class="cw-module-tab" href="assessment-student.html"><span class="cw-module-number">04</span> Assessment Entry</a><a class="cw-module-tab" href="attainment-student.html"><span class="cw-module-number">05</span> Attainment</a><a class="cw-module-tab" href="cqi-student.html"><span class="cw-module-number">06</span> CQI Planning</a><a class="cw-module-tab" href="gradebook-student.html"><span class="cw-module-number">07</span> Gradebook</a><a class="cw-module-tab" href="compliance-student.html"><span class="cw-module-number">08</span> Compliance Report</a></nav></div>
+<section aria-hidden="true" class="cm-student-filters cw-legacy-controls" hidden="hidden">
+<div class="cm-filter-group"><label for="crSchoolYear">School Year</label><select id="crSchoolYear"><option selected="">2026-2027</option><option>2025-2026</option><option>2024-2025</option></select></div>
+<div class="cm-filter-group"><label for="crDepartment">Department</label><input id="crDepartment" readonly="" type="text" value="Engineering"/></div>
+<div class="cm-filter-group"><label for="crProgram">Program</label><input id="crProgram" readonly="" type="text" value="BS CpE"/></div>
+<div class="cm-filter-group"><label for="crCourse">Course</label><select id="crCourse"><option selected="">Software Design - Lab</option></select></div>
+<div class="cm-filter-group"><label for="crSection">Section</label><input autocomplete="off" id="crSection" list="crSectionList" type="search" value="COE232"/><datalist id="crSectionList"><option value="COE232"></option><option value="COE231"></option><option value="COE233"></option></datalist></div>
 </section>
-
-<section class="cm-student-filters">
-<div class="cm-filter-group"><label for="crSchoolYear">School Year</label><select id="crSchoolYear"><option selected>2026-2027</option><option>2025-2026</option><option>2024-2025</option></select></div>
-<div class="cm-filter-group"><label for="crDepartment">Department</label><input id="crDepartment" type="text" value="Engineering" readonly></div>
-<div class="cm-filter-group"><label for="crProgram">Program</label><input id="crProgram" type="text" value="BS CpE" readonly></div>
-<div class="cm-filter-group"><label for="crCourse">Course</label><select id="crCourse"><option selected>Software Design - Lab</option></select></div>
-<div class="cm-filter-group"><label for="crSection">Section</label><input id="crSection" type="search" list="crSectionList" value="COE232" autocomplete="off"><datalist id="crSectionList"><option value="COE232"></option><option value="COE231"></option><option value="COE233"></option></datalist></div>
-</section>
-
-<section class="cm-student-summary cr-cm-summary">
-<article class="cm-course-card"><div class="cm-card-accent"></div><div><span class="cm-course-label">My Course</span><h2>Software Design - Lab</h2></div></article>
-<article class="cm-stat-card"><div class="cm-card-accent cm-card-accent-soft"></div><div><span>Section</span><strong>COE 232</strong></div></article>
-<article class="cm-stat-card"><div class="cm-card-accent cm-card-accent-soft"></div><div><span>Total Students</span><strong>31</strong></div></article>
-</section>
-
-<section class="cr-roster-panel">
+<section class="so-summary-grid"><article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Total Students</span><strong class="so-summary-number">31</strong></article><article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Students Listed</span><strong class="so-summary-number">8</strong></article><article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Section</span><strong class="so-summary-number">COE232</strong></article></section>
+<section aria-label="Class roster enrollment records" class="cr-roster-panel">
 <div class="cr-toolbar">
 <div class="cr-sort-wrap"><label for="crSort">Sort By</label><select id="crSort"><option value="az">Students Name A-Z</option><option value="za">Students Name Z-A</option><option value="id">Student ID</option></select></div>
-<label class="cr-search"><span aria-hidden="true">⌕</span><input id="crSearch" type="search" placeholder="Search student name"></label>
+<label class="cr-search"><span aria-hidden="true">⌕</span><input id="crSearch" placeholder="Search student name" type="search"/></label>
 </div>
-
+<div aria-hidden="true" class="cr-table-header"><table class="cr-table"><thead><tr><th>#</th><th>Student Name</th><th>Email</th><th>Job Title</th><th>Department</th></tr></thead></table></div>
 <div class="cr-table-wrap">
-<table class="cr-table">
-<thead><tr><th>#</th><th>Student Name</th><th>Email</th><th>Job Title</th><th>Department</th></tr></thead>
-<tbody id="crRosterBody">
+<table aria-label="Student roster" class="cr-table"><tbody id="crRosterBody">
 <tr><td>1</td><td>Angel S. Villanueva</td><td>angel.villanueva@students.national-u.edu.ph</td><td>Student</td><td>Engineering</td></tr>
 <tr><td>2</td><td>Bea M. Santos</td><td>bea.santos@students.national-u.edu.ph</td><td>Student</td><td>Engineering</td></tr>
 <tr><td>3</td><td>Carl P. Reyes</td><td>carl.reyes@students.national-u.edu.ph</td><td>Student</td><td>Engineering</td></tr>
@@ -83,7 +57,7 @@
 <tr><td>8</td><td>Hannah C. Ramos</td><td>hannah.ramos@students.national-u.edu.ph</td><td>Student</td><td>Engineering</td></tr>
 </tbody>
 </table>
-<div class="cr-empty" id="crEmpty" hidden>No students found.</div>
+<div class="cr-empty" hidden="" id="crEmpty">No students found.</div>
 </div>
 </section>
 </main>

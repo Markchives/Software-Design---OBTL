@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1.0" name="viewport"/>
+<title>Raw Assessment Score Review | EduMetrics</title>
+<link href="../../Static/style.css" rel="stylesheet"/>
+</head>
+<body class="so-student-page so-dept-head-page cm-dept-head-page ra-dept-head-page">
+<header class="so-topbar">
+<div class="so-brand"><div class="so-brand-logo">Edu<span>Metrics</span></div><div class="so-brand-subtitle">Academic Assessment &amp; Grading System</div></div>
+<div class="so-user-area">
+<button aria-label="Notifications" class="so-notification-btn" type="button"><img alt="Notifications" class="so-notification-image" src="../../Static/images/sidebar/notif.png"/><span class="so-notification-dot"></span></button>
+<div class="so-user-info"><strong id="facultyName"></strong><span>Department Head</span></div>
+<div aria-hidden="true" class="so-avatar"><span class="so-avatar-person">●</span></div><span aria-hidden="true" class="so-online-dot"></span>
+</div>
+</header>
+<div class="so-header-lines"><div class="so-header-blue"></div><div class="so-header-gold"></div></div>
+<div class="so-shell">
+<aside class="so-sidebar">
+<div class="so-pages-title"><span class="so-grid-icon so-pages-image-wrap"><img alt="" class="so-pages-image" src="../../Static/images/sidebar/pages.png"/></span><span>Pages</span></div>
+<nav aria-label="Department Head navigation" class="so-nav">
+<a class="so-nav-item" href="dashboard-dept-head.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/home-white.png"/></span><span>Home</span></a>
+<a class="so-nav-item" href="dashboard-dept-head.html#my-courses"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/course-white.png"/></span><span>My Courses</span></a>
+<a class="so-nav-item" href="../webpage/platform.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/pl-white.png"/></span><span>Platform</span></a>
+<div class="so-nav-group"><details open=""><summary class="so-nav-item so-products active"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/ws-blue.png"/></span><span>Workflow</span></summary><div class="so-subnav"><a href="so-dept-head.html">Syllabus &amp; Outcomes</a><a href="cm-dept-head.html">Curriculum Mapping</a><a href="cr-dept-head.html">Class Roster</a><a class="active" href="ra-dept-head.html">Assessment Entry</a><a href="#">Attainment</a><a href="#">CQI Planning</a><a href="#">Gradebook</a><a href="#">Compliance Report</a></div></details></div><a class="so-nav-item" href="../webpage/resources.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/rs-white.png"/></span><span>Resources</span></a>
+<a class="so-nav-item" href="../webpage/about us.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/au-white.png"/></span><span>About Us</span></a>
+</nav>
+<div class="so-sidebar-brand"><div class="so-sidebar-logo">Edu<span>Metrics</span></div><small>Academic Assessment &amp; Grading System</small></div>
+</aside>
+<main class="sodh-main so-main">
+<section class="so-page-heading"><h1>Raw Assessment Score Review</h1><p>Review raw scores across all faculty in your department, identify unusual or incomplete entries, and verify readiness before gradebook lock.</p></section>
+<section aria-label="Assessment filters" class="sodh-filter-card">
+<div class="sodh-filter-group"><label for="ra-year">School Year</label><select id="ra-year"><option>2026–2027</option><option>2025–2026</option></select></div>
+<div class="sodh-filter-group"><label for="ra-department">Department</label><select id="ra-department"><option>Engineering</option></select></div>
+<div class="sodh-filter-group"><label for="ra-program">Program</label><select id="ra-program"><option>BS CpE</option><option>All Programs</option></select></div>
+<div class="sodh-filter-group"><label for="ra-course">Course</label><select id="ra-course"><option value="">All Courses</option><option>Software Design – Lab</option><option>Computer Networks</option></select></div>
+<div class="sodh-filter-group"><label for="ra-section">Section</label><select id="ra-section"><option value="">All Sections</option><option>COE232</option><option>COE233</option></select></div>
+
+</section>
+<section aria-label="Department assessment summary" class="sodh-summary-grid">
+<div class="sodh-summary-card"><span class="sodh-summary-accent"></span><strong class="sodh-summary-label">Department Raw Score Review</strong><p>Engineering · All faculty · View-only access</p></div>
+<div class="sodh-summary-card"><span class="sodh-summary-accent"></span><span class="sodh-summary-label">Faculty</span><strong class="sodh-summary-number">2</strong></div>
+<div class="sodh-summary-card"><span class="sodh-summary-accent"></span><span class="sodh-summary-label">Assessments</span><strong class="sodh-summary-number">5</strong></div>
+<div class="sodh-summary-card"><span class="sodh-summary-accent"></span><span class="sodh-summary-label">Needs Review</span><strong class="sodh-summary-number">3</strong></div>
+</section>
+<section aria-label="Raw score review workspace" class="sodh-content-card">
+<div aria-label="Review views" class="sodh-tabs" role="tablist"><button aria-controls="ra-review-panel" aria-selected="true" class="sodh-tab active" data-tab="ra-review-panel" id="ra-review-tab" role="tab" type="button">Raw Score Review</button><button aria-controls="ra-flags-panel" aria-selected="false" class="sodh-tab" data-tab="ra-flags-panel" id="ra-flags-tab" role="tab" type="button">Flags &amp; Queries (3)</button></div>
+<div aria-labelledby="ra-review-tab" class="sodh-tab-panel active" id="ra-review-panel" role="tabpanel">
+
+<div class="sodh-toolbar"><div class="sodh-filter-group"><label for="ra-faculty">Faculty</label><select id="ra-faculty"><option value="">All Faculty</option><option>Jeffrey T. Leonen</option><option>Maria L. Santos</option></select></div><label class="sodh-search"><input aria-label="Search assessments" id="ra-search" placeholder="Search assessment, faculty, course, or section..." type="search"/></label><select aria-label="Filter review status" id="ra-status-filter"><option value="">All Statuses</option><option>No Issues</option><option>Missing Scores</option><option>Unusual Entry</option></select></div>
+<div class="ra-fixed-table-head"><table aria-hidden="true" class="sodh-table ra-header-table"><colgroup><col style="width:17%"/><col style="width:11%"/><col style="width:15%"/><col style="width:18%"/><col style="width:9%"/><col style="width:11%"/><col style="width:12%"/><col style="width:7%"/></colgroup><thead><tr><th>Assessment</th><th>Type</th><th>Faculty</th><th>Course / Section</th><th>Students</th><th>Completion</th><th>Review Status</th><th>Action</th></tr></thead></table></div><div class="sodh-table-wrap"><table class="sodh-table" id="ra-review-table"><colgroup><col style="width:17%"/><col style="width:11%"/><col style="width:15%"/><col style="width:18%"/><col style="width:9%"/><col style="width:11%"/><col style="width:12%"/><col style="width:7%"/></colgroup><tbody>
+<tr data-course="Software Design – Lab" data-faculty="Jeffrey T. Leonen" data-status="No Issues"><td><strong>Quiz 1</strong><small>Oct. 3, 2026</small></td><td>Quiz</td><td>Jeffrey T. Leonen</td><td>Software Design – Lab · COE232</td><td>8</td><td>100%</td><td>No Issues</td><td><button class="sodh-export-btn" data-view="Quiz 1" type="button">View Scores</button></td></tr>
+<tr data-course="Software Design – Lab" data-faculty="Jeffrey T. Leonen" data-status="No Issues"><td><strong>Laboratory Activity 1</strong><small>Oct. 2, 2026</small></td><td>Laboratory</td><td>Jeffrey T. Leonen</td><td>Software Design – Lab · COE232</td><td>8</td><td>100%</td><td>No Issues</td><td><button class="sodh-export-btn" data-view="Laboratory Activity 1" type="button">View Scores</button></td></tr>
+<tr data-course="Software Design – Lab" data-faculty="Jeffrey T. Leonen" data-status="Missing Scores"><td><strong>Midterm Examination</strong><small>Oct. 17, 2026</small></td><td>Major Exam</td><td>Jeffrey T. Leonen</td><td>Software Design – Lab · COE232</td><td>8</td><td>87%</td><td>Missing Scores</td><td><button class="sodh-export-btn" data-view="Midterm Examination" type="button">View Scores</button></td></tr>
+<tr data-course="Computer Networks" data-faculty="Maria L. Santos" data-status="Missing Scores"><td><strong>Quiz 2</strong><small>Oct. 10, 2026</small></td><td>Quiz</td><td>Maria L. Santos</td><td>Computer Networks · COE233</td><td>8</td><td>75%</td><td>Missing Scores</td><td><button class="sodh-export-btn" data-view="Quiz 2" type="button">View Scores</button></td></tr>
+<tr data-course="Computer Networks" data-faculty="Maria L. Santos" data-status="Unusual Entry"><td><strong>Major Examination</strong><small>Oct. 9, 2026</small></td><td>Major Exam</td><td>Maria L. Santos</td><td>Computer Networks · COE233</td><td>8</td><td>100%</td><td>Unusual Entry</td><td><button class="sodh-export-btn" data-view="Major Examination" type="button">View Scores</button></td></tr>
+</tbody></table></div></div>
+<div aria-labelledby="ra-flags-tab" class="sodh-tab-panel" id="ra-flags-panel" role="tabpanel">
+
+<div class="ra-fixed-table-head"><table aria-hidden="true" class="sodh-table ra-header-table"><colgroup><col style="width:12%"/><col style="width:15%"/><col style="width:13%"/><col style="width:17%"/><col style="width:17%"/><col style="width:9%"/><col style="width:17%"/></colgroup><thead><tr><th>Flag</th><th>Assessment</th><th>Faculty</th><th>Issue</th><th>Details</th><th>Status</th><th>Action</th></tr></thead></table></div><div class="sodh-table-wrap"><table class="sodh-table"><colgroup><col style="width:12%"/><col style="width:15%"/><col style="width:13%"/><col style="width:17%"/><col style="width:17%"/><col style="width:9%"/><col style="width:17%"/></colgroup><tbody>
+<tr><td>Missing Scores</td><td>Midterm Examination</td><td>Jeffrey T. Leonen</td><td>1 student has no score</td><td>Dana L. Cruz — score is blank.</td><td>Open</td><td><button class="sodh-export-btn" data-query="Midterm Examination|Jeffrey T. Leonen" type="button">Query Faculty</button></td></tr>
+<tr><td>Missing Scores</td><td>Quiz 2</td><td>Maria L. Santos</td><td>2 students have no score</td><td>Kyle A. Santos and Nina G. Garcia.</td><td>Open</td><td><button class="sodh-export-btn" data-query="Quiz 2|Maria L. Santos" type="button">Query Faculty</button></td></tr>
+<tr><td>Unusual Entry</td><td>Major Examination</td><td>Maria L. Santos</td><td>Unusually low score detected</td><td>Nina G. Garcia — 5/100. Verify the entry.</td><td>Open</td><td><button class="sodh-export-btn" data-query="Major Examination|Maria L. Santos" type="button">Query Faculty</button></td></tr>
+</tbody></table></div></div></section>
+<dialog id="ra-dialog"><form method="dialog"><h2 id="ra-dialog-title">Assessment Review</h2><p id="ra-dialog-body"></p><button class="sodh-export-btn" type="submit">Close</button></form></dialog>
+</main>
+</div>
+<script src="../../Static/script.js"></script>
+</body>
+</html>
