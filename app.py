@@ -607,6 +607,54 @@ def google_login():
         return "Unable to start Google sign-in. Please try again.", 500
 
 
+@app.get("/auth/microsoft")
+def microsoft_login():
+    role = request.args.get("role", "student").strip().lower()
+
+    allowed_roles = {
+        "student", "faculty", "department-head", "admin-security",
+    }
+
+    if role not in allowed_roles:
+        return jsonify({"error": "Invalid account role."}), 400
+
+    try:
+        auth_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+        response = auth_client.auth.sign_in_with_oauth({
+            "provider": "azure",
+            "options": {
+                "redirect_to": request.host_url.rstrip("/") + "/auth/callback",
+                "scopes": "email",
+                "query_params": {"prompt": "select_account"},
+            },
+        })
+
+        storage = auth_client.auth._storage
+        verifier = storage.get_item(
+            f"{auth_client.auth._storage_key}-code-verifier"
+        )
+
+        if not verifier:
+            app.logger.error(
+                "Microsoft OAuth PKCE verifier was not created."
+            )
+            return (
+                "Unable to initialize Microsoft sign-in. Please try again.",
+                500,
+            )
+
+        session["oauth_code_verifier"] = verifier
+        session["oauth_requested_role"] = role
+        session["oauth_provider"] = "microsoft"
+
+        return redirect(response.url)
+
+    except Exception:
+        app.logger.exception("Microsoft OAuth initiation failed")
+        return "Unable to start Microsoft sign-in. Please try again.", 500
+
+
 @app.get("/requirement 1/so-student.html")
 @require_role("student")
 def student_dashboard():
@@ -766,13 +814,18 @@ def get_user_role(user):
 
 @app.get("/auth/callback")
 def auth_callback():
+
+    provider = session.get("oauth_provider", "google")
+    provider_name = "Microsoft" if provider == "microsoft" else "Google"
+
     error = request.args.get("error")
+
     if error:
         app.logger.warning(
             "OAuth provider returned an error: %s", error
         )
         session.clear()
-        return "Google sign-in was cancelled or failed. Please try again.", 400
+        return f"{provider_name} sign-in was cancelled or failed. Please try again.", 400
 
     code = request.args.get("code")
     if not code:
@@ -799,7 +852,7 @@ def auth_callback():
             )
             session.clear()
             return (
-                "Your sign-in session expired. Please start Google sign-in again.",
+                f"Your sign-in session expired. Please start {provider_name} sign-in again.",
                 400,
             )
 
@@ -810,7 +863,7 @@ def auth_callback():
 
         if not result.user or not result.session:
             session.clear()
-            return "Google sign-in could not be completed.", 401
+            return f"{provider_name} sign-in could not be completed.", 401
 
         actual_role = get_user_role(result.user)
 
@@ -855,9 +908,9 @@ def auth_callback():
             return redirect("/")
 
     except Exception:
-        app.logger.exception("Google OAuth callback failed")
+        app.logger.exception("%s OAuth callback failed", provider_name)
         session.clear()
-        return "Google sign-in failed. Please try again.", 400
+        return f"{provider_name} sign-in failed. Please try again.", 400
 
 
 def require_admin_security(view_function):

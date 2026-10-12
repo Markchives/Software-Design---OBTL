@@ -77,16 +77,16 @@
         })
     }
 
-            if (assignments.length === 1 && !courseSelect.value) {
-                const assignment = assignments[0];
-                courseSelect.value = assignment.course_id;
-                courseSelect.dispatchEvent(new Event("change", { bubbles: true }));
-                if (assignment.academic_year_id) {
-                    yearSelect.value = assignment.academic_year_id;
-                }
-                sectionSelect.value = assignment.section_id;
-                sectionSelect.dispatchEvent(new Event("change", { bubbles: true }));
-            }
+    if (assignments.length === 1 && !courseSelect.value) {
+        const assignment = assignments[0];
+        courseSelect.value = assignment.course_id;
+        courseSelect.dispatchEvent(new Event("change", { bubbles: true }));
+        if (assignment.academic_year_id) {
+            yearSelect.value = assignment.academic_year_id;
+        }
+        sectionSelect.value = assignment.section_id;
+        sectionSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    }
 
     cards.forEach((card, i) => card.addEventListener("click", () => show(i)));
     const next = root.querySelector("#wf8Next");
@@ -844,7 +844,7 @@ function socialLogin(provider) {
     if (provider === "Microsoft") {
         sessionStorage.setItem("verificationProvider", "microsoft");
         window.location.href =
-            "verification-ms-login.html";
+            "/auth/microsoft?role=" + encodeURIComponent(role);
         return;
     }
 
