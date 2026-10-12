@@ -9012,6 +9012,28 @@ body.so-reflection-page {
     position: relative;
 }
 
+.so-student-page .so-logout-btn {
+    min-height: 36px;
+    padding: 0 12px;
+    border: 1px solid #004179;
+    border-radius: 4px;
+    background: transparent;
+    color: #004179;
+    font: inherit;
+    cursor: pointer;
+}
+
+.so-student-page .so-logout-btn:hover,
+.so-student-page .so-logout-btn:focus-visible {
+    background: #004179;
+    color: #fff;
+}
+
+.so-student-page .so-logout-btn:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
 .so-student-page .so-notification-btn {
     width: 38px !important;
     height: 38px !important;

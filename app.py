@@ -2,7 +2,7 @@ from functools import wraps
 import os
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request, render_template, session
+from flask import Flask, jsonify, request, render_template, session, redirect
 from supabase import create_client, Client
 from datetime import timedelta
 
@@ -49,6 +49,28 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
+def require_role(required_role):
+    def decorator(view_function):
+        @wraps(view_function)
+        def wrapped(*args, **kwargs):
+            user = get_authenticated_user()
+
+            if not user:
+                session.pop("access_token", None)
+                session.pop("refresh_token", None)
+                session.pop("user_id", None)
+                return redirect("/login page.html")
+
+            if get_user_role(user) != required_role:
+                return "You are not authorized to view this page.", 403
+
+            return view_function(*args, **kwargs)
+
+        return wrapped
+
+    return decorator
+
+
 @app.get("/")
 def home():
     return render_template("website.html")
@@ -63,16 +85,19 @@ def health():
 
 
 @app.get("/requirement 1/so-student.html")
+@require_role("student")
 def student_dashboard():
     return render_template("requirement 1/so-student.html")
 
 
 @app.get("/requirement 1/so-faculty.html")
+@require_role("faculty")
 def faculty_dashboard():
     return render_template("requirement 1/so-faculty.html")
 
 
 @app.get("/requirement 1/so-dept-head.html")
+@require_role("department-head")
 def department_head_dashboard():
     return render_template("requirement 1/so-dept-head.html")
 
