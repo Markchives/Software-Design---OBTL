@@ -9,6 +9,3 @@ Final UI design review and css adjustments
 consistency checks for fonts, colors, sizes, spcaing, cards, and layouts for deptartment head and Courses
 css cleanup and removal of dupli
 cleanup of demo data
-NEW UPDATE! OKAY NA STUDENT OUTCOME FOR BOTH FACULTY AND STUDENT, PERO SA SIZING/HEADER NG SO IS NOT FINAL PA
-NEW UPDATE! OKAY NA STUDENT OUTCOME FOR BOTH FACULTY AND STUDENT, PERO SA SIZING/HEADER NG SO IS NOT FINAL PA
-NEW UPDATE! OKAY NA STUDENT OUTCOME FOR BOTH FACULTY AND STUDENT, PERO SA SIZING/HEADER NG SO IS NOT FINAL PA
