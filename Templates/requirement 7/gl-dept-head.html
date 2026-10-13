@@ -7,7 +7,7 @@
 <title>
    Gradebook Locking &amp; Verification | EduMetrics
   </title>
-<link href="../../Static/style.css?v=gl-cqi-logo-spacing-2" rel="stylesheet"/>
+<link href="../../Static/style.css" rel="stylesheet"/>
 </head>
 <body class="so-student-page so-dept-head-page dept-head-unified gl-dept-head-page">
 <header class="so-topbar">
@@ -78,7 +78,7 @@
 <img alt="" class="so-nav-image" src="../../Static/images/sidebar/home-white.png"/>
 </span>
 <span>
-       Home
+       Dashboard
       </span>
 </a>
 <a class="so-nav-item" href="dashboard-dept-head.html#my-courses">
@@ -153,11 +153,7 @@
 </a>
 </nav>
 <div class="so-sidebar-brand">
-<div class="so-sidebar-logo">
-      Edu
-      <span>
-       Metrics
-      </span>
+<div class="so-sidebar-logo">Edu<span>Metrics</span>
 </div>
 <small>
       Academic Assessment &amp; Grading System
@@ -257,8 +253,8 @@
       </strong>
 </article>
 </section>
-<section class="gl-panel" data-gl-panel="verification">
-<div class="gl-panel-head">
+<section class="gl-panel cqi-dh-panel" data-gl-panel="verification">
+<div class="gl-panel-head cqi-dh-heading">
 <div>
 <h2>
         Gradebooks for Review
@@ -271,14 +267,14 @@
        4 gradebook(s)
       </span>
 </div>
-<div class="gl-toolbar">
-<input aria-label="Search gradebooks" id="glSearch" placeholder="Search gradebook, course, section, or faculty…" type="search"/>
+<div class="gl-toolbar cqi-dh-toolbar">
+<label class="sodh-search"><input aria-label="Search gradebooks" id="glSearch" placeholder="Search gradebook, course, section, or faculty…" type="search"/></label>
 <button class="gl-btn gl-outline" id="glReset" type="button">
        Reset Filters
       </button>
 </div>
-<div class="gl-table-scroll">
-<table class="gl-table">
+<div class="gl-table-scroll cqi-dh-table-scroll">
+<table class="gl-table cqi-dh-table">
 <thead>
 <tr>
 <th>
@@ -587,7 +583,7 @@
 </div>
 </section>
 <section class="gl-panel" data-gl-panel="history" hidden="">
-<div class="gl-panel-head">
+<div class="gl-panel-head cqi-dh-heading">
 <div>
 <h2>
         Locking History &amp; Audit Trail
@@ -597,8 +593,8 @@
        </p>
 </div>
 </div>
-<div class="gl-table-scroll">
-<table class="gl-table gl-history">
+<div class="gl-table-scroll cqi-dh-table-scroll">
+<table class="gl-table gl-history cqi-dh-table">
 <thead>
 <tr>
 <th>
@@ -641,7 +637,7 @@
 </div>
 </section>
 <section class="gl-panel" data-gl-panel="exports" hidden="">
-<div class="gl-panel-head">
+<div class="gl-panel-head cqi-dh-heading">
 <div>
 <h2>
         Approved Reports &amp; Exports

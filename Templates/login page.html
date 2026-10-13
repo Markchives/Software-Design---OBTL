@@ -246,7 +246,7 @@
                             Don't have an account?
                         </span>
 
-                        <a href="register" id="createAccountLink">
+                        <a href="registration.html" id="createAccountLink">
                             Create one
                         </a>
                     </div>
@@ -301,16 +301,6 @@
             );
         }
 
-        /* HEADER */
-        function showHeaderMessage(section) {
-            showLoginModal(
-                section,
-                section +
-                " options will be available once this section is connected.",
-                "!"
-            );
-        }
-
         /* ACCOUNT ROLE */
         const params = new URLSearchParams(window.location.search);
         const role = params.get("role") || "student";
@@ -334,7 +324,7 @@
 
         if (createAccountLink) {
             createAccountLink.href =
-                "/register?role=" +
+                "registration.html?role=" +
                 encodeURIComponent(role);
         }
 
@@ -484,8 +474,12 @@
                     "login"
                 );
 
-                /* VERIFICATION PAGE*/
-
+                /* Live Server preview only; does not authenticate or send an OTP. */
+                if (["5500", "5501"].includes(window.location.port)) {
+                    sessionStorage.setItem("rememberMe", String(document.getElementById("rememberMe").checked));
+                    window.location.href = "verification-login.html?role=" + encodeURIComponent(role);
+                    return;
+                }
 
                 try {
                     const rememberMe = document.getElementById("rememberMe").checked;
@@ -519,37 +513,25 @@
                     if (result.status === "verification_required") {
                         sessionStorage.setItem("verificationEmail", email);
                         sessionStorage.setItem("verificationPurpose", "signup");
-                        window.location.href = "/verification-signup.html";
+                        window.location.href = "verification-signup.html?role=" + encodeURIComponent(role);
                         return;
                     }
 
                     if (result.status === "login_otp_required") {
                         sessionStorage.setItem("verificationEmail", email);
                         sessionStorage.setItem("verificationPurpose", "login");
-                        window.location.href = "/verification-login.html";
+                        window.location.href = "verification-login.html?role=" + encodeURIComponent(role);
                         return;
                     }
 
 
                     if (result.status === "authenticated") {
-                        const rolePages = {
-                            "student": "/requirement%201/so-student.html",
-                            "faculty": "/requirement%201/so-faculty.html",
-                            "department-head": "/requirement%201/so-dept-head.html"
-                        };
-
-                        const destination = rolePages[role];
-
-                        if (!destination) {
-                            showLoginModal(
-                                "Dashboard unavailable",
-                                "No dashboard is configured for this role yet. Please contact the administrator.",
-                                "!"
-                            );
-                            return;
-                        }
-
-                        window.location.href = destination;
+                        // The backend must issue a login OTP before this page can verify it.
+                        // Do not treat a successful password check as completed OTP verification.
+                        sessionStorage.setItem("verificationEmail", email);
+                        sessionStorage.setItem("verificationRole", role);
+                        sessionStorage.setItem("verificationPurpose", "login");
+                        window.location.href = "verification-login.html?role=" + encodeURIComponent(role);
                         return;
                     }
 
@@ -621,7 +603,7 @@
             alert("Selected role: " + selectedRole);
 
             window.location.href =
-                "/forgot-password.html?role=" +
+                "forgot-password.html?role=" +
                 encodeURIComponent(selectedRole);
         }
 
@@ -721,7 +703,7 @@
             const selectedRole = currentParams.get("role") || "student";
 
             window.location.href =
-                "/forgot-password.html?role=" +
+                "forgot-password.html?role=" +
                 encodeURIComponent(selectedRole);
         });
 

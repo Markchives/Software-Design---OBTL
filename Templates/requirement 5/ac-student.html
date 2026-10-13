@@ -7,7 +7,7 @@
 <title>My Assessment Scores &amp; Attainment | EduMetrics Student</title>
 <link href="../../Static/style.css" rel="stylesheet"/>
 </head>
-<body class="so-student-page course-workspace-page ac-student-page">
+<body class="so-student-page course-workspace-page ac-student-page cr-student-page">
 <header class="so-topbar">
 <div class="so-brand">
 <div class="so-brand-logo">
@@ -88,23 +88,21 @@
 <main class="so-main">
 <div class="cw-breadcrumb">My Courses <span class="cw-breadcrumb-separator">/</span> <span class="cw-breadcrumb-current">Software Lab</span></div>
 <div class="cw-workspace"><section aria-label="Selected course" class="cw-hero"><div><div class="cw-eyebrow">COURSE WORKSPACE</div><h2>Software Lab</h2><p>CPE 321 · BSCPE 3A · 1st Semester 2026–2027</p></div><span class="cw-demo-badge">DEMO COURSE</span></section>
-<nav aria-label="Course modules" class="cw-module-nav"><a class="cw-module-tab" href="so-student.html"><span class="cw-module-number">01</span> Syllabus &amp; Outcomes</a><a class="cw-module-tab" href="cm-student.html"><span class="cw-module-number">02</span> Curriculum Mapping</a><a class="cw-module-tab" href="cr-student.html"><span class="cw-module-number">03</span> Class Roster</a><a class="cw-module-tab" href="ra-student.html"><span class="cw-module-number">04</span> Assessment Entry</a><a aria-current="page" class="cw-module-tab active" href="ac-student.html"><span class="cw-module-number">05</span> Attainment</a><a class="cw-module-tab" href="cqi-student.html"><span class="cw-module-number">06</span> CQI Planning</a><a class="cw-module-tab" href="gradebook-student.html"><span class="cw-module-number">07</span> Gradebook</a><a class="cw-module-tab" href="compliance-student.html"><span class="cw-module-number">08</span> Compliance Report</a></nav></div>
+<nav aria-label="Course modules" class="cw-module-nav"><a class="cw-module-tab" href="../requirement 1/so-student.html"><span class="cw-module-number">01</span> Syllabus &amp; Outcomes</a><a class="cw-module-tab" href="../requirement 2/cm-student.html"><span class="cw-module-number">02</span> Curriculum Mapping</a><a class="cw-module-tab" href="../requirement 3/cr-student.html"><span class="cw-module-number">03</span> Class Roster</a><a class="cw-module-tab" href="../requirement 4/ra-student.html"><span class="cw-module-number">04</span> Assessment Entry</a><a aria-current="page" class="cw-module-tab active" href="ac-student.html"><span class="cw-module-number">05</span> Attainment</a><a class="cw-module-tab" href="../requirement 6/cqi-student.html"><span class="cw-module-number">06</span> CQI Planning</a><a class="cw-module-tab" href="../requirement 8/rp-student.html"><span class="cw-module-number">07</span> Compliance Report</a></nav></div>
 <section aria-label="Assessment summary" class="so-summary-grid"><article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Outcomes Met</span><strong class="so-summary-number">1</strong></article><article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Outcomes Not Met</span><strong class="so-summary-number">1</strong></article><article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Awaiting Results</span><strong class="so-summary-number">2</strong></article></section>
-<section class="so-content-card cqi-student-card ac-attainment-section" aria-labelledby="acAttainmentHeading">
-<header class="cqi-student-heading"><div><h2 id="acAttainmentHeading">My Course Outcome Attainment</h2><p>Only your personal status is shown when faculty releases it.</p></div></header>
-<div class="cqi-student-toolbar ac-attainment-toolbar">
-<label class="cqi-student-search ac-attainment-search"><span aria-hidden="true">⌕</span><input id="ac-attainment-search" aria-label="Search course or outcome" placeholder="Search course or outcome..." type="search"/></label>
-<div class="cqi-student-filter"><label for="ac-attainment-release">Status</label><select id="ac-attainment-release"><option value="all">All statuses</option><option value="released">Released</option><option value="not released">Not released</option></select></div>
-<div class="cqi-student-filter"><label for="ac-attainment-sort">Sort by</label><select id="ac-attainment-sort"><option value="default">Default order</option><option value="course">Course A–Z</option><option value="outcome">Outcome A–Z</option></select></div>
-</div>
+<section aria-labelledby="acAttainmentHeading" class="so-content-card cr-roster-panel ac-attainment-section">
+<header class="so-section-header"><div><h2 id="acAttainmentHeading">My Course Outcome Attainment</h2><p>Only your personal status is shown when faculty releases it.</p></div></header>
+<div class="cr-toolbar ac-attainment-toolbar">
+<label class="cr-search cqi-student-search edu-shared-search ac-attainment-search"><span aria-hidden="true" class="edu-search-icon">⌕</span><input aria-label="Search course or outcome" id="ac-attainment-search" placeholder="Search course or outcome..." type="search"/></label>
+<div class="cr-sort-wrap ac-filter-group"><label for="ac-attainment-release">Status</label><select id="ac-attainment-release"><option value="all">All statuses</option><option value="released">Released</option><option value="not released">Not released</option></select><label for="ac-attainment-sort">Sort by</label><select id="ac-attainment-sort"><option value="default">Default order</option><option value="course">Course A–Z</option><option value="outcome">Outcome A–Z</option></select></div></div>
 <section aria-label="My Course Outcome Attainment" class="ac-panel" id="ac-attainment">
-<div class="ac-table-card">
-<div class="ac-table-scroll"><table class="ac-table ac-attainment-table"><thead><tr><th>Course</th><th>CO</th><th>Outcome</th><th>Personal Status</th><th>Release Status</th></tr></thead><tbody id="ac-attainment-rows">
-<tr><td>Software Design – Lab <small>COE232</small></td><td>CO1</td><td>Apply fundamental software engineering principles.</td><td><span class="ac-pill ac-pill-green">Met</span></td><td><span class="ac-pill ac-pill-green">Released</span></td></tr>
-<tr><td>Software Design – Lab <small>COE232</small></td><td>CO2</td><td>Design and analyze software requirements.</td><td><span class="ac-pill ac-pill-yellow">Not Met</span></td><td><span class="ac-pill ac-pill-green">Released</span></td></tr>
-<tr><td>Software Design – Lab <small>COE232</small></td><td>CO3</td><td>Apply advanced software design patterns.</td><td><span class="ac-pill ac-pill-red">Not available</span></td><td><span class="ac-pill ac-pill-yellow">Not released</span></td></tr>
-<tr><td>Computer Networks <small>COE233</small></td><td>CO1</td><td>Configure and troubleshoot network infrastructure.</td><td><span class="ac-pill ac-pill-red">Not available</span></td><td><span class="ac-pill ac-pill-yellow">Not released</span></td></tr>
-</tbody></table></div><p class="ac-empty" hidden="" id="ac-attainment-empty">No matching outcomes found.</p></div>
+<div class="ac-table-card ra-table-frame"><div class="cr-table-header"><table class="cr-table ac-table ac-attainment-table"><colgroup><col style="width:22%"/><col style="width:8%"/><col style="width:38%"/><col style="width:16%"/><col style="width:16%"/></colgroup><thead><tr><th>Course</th><th>CO</th><th>Outcome</th><th>Personal Status</th><th>Release Status</th></tr></thead></table></div>
+<div class="cr-table-wrap ac-table-scroll"><table class="cr-table ac-table ac-attainment-table"><colgroup><col style="width:22%"/><col style="width:8%"/><col style="width:38%"/><col style="width:16%"/><col style="width:16%"/></colgroup><tbody id="ac-attainment-rows">
+<tr><td>Software Design – Lab <small>COE232</small></td><td>CO1</td><td>Apply fundamental software engineering principles.</td><td><span class="sodh-status complete">Met</span></td><td><span class="sodh-status complete">Released</span></td></tr>
+<tr><td>Software Design – Lab <small>COE232</small></td><td>CO2</td><td>Design and analyze software requirements.</td><td><span class="sodh-status incomplete">Not Met</span></td><td><span class="sodh-status complete">Released</span></td></tr>
+<tr><td>Software Design – Lab <small>COE232</small></td><td>CO3</td><td>Apply advanced software design patterns.</td><td><span class="sodh-status ac-unavailable">Not available</span></td><td><span class="sodh-status incomplete">Not released</span></td></tr>
+<tr><td>Computer Networks <small>COE233</small></td><td>CO1</td><td>Configure and troubleshoot network infrastructure.</td><td><span class="sodh-status ac-unavailable">Not available</span></td><td><span class="sodh-status incomplete">Not released</span></td></tr>
+</tbody></table></div><p class="so-empty-state ac-empty" hidden="" id="ac-attainment-empty">No matching outcomes found.</p></div>
 </section>
 </section>
 </main></div>

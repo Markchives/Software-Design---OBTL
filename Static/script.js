@@ -1,3 +1,119 @@
+/* AC Faculty: accessible attainment / assessment input tabs and breakdown */
+(function () {
+  function initAcFaculty() {
+    const root = document.querySelector('.ac-faculty-page');
+    if (!root || root.dataset.acFacultyInitialized === 'true') return;
+    root.dataset.acFacultyInitialized = 'true';
+    const tabs = Array.from(root.querySelectorAll('.ac-co-tabs [role="tab"]'));
+    function activateTab(tab) {
+      if (!tab) return;
+      tabs.forEach(function (item) {
+        const selected = item === tab;
+        item.classList.toggle('active', selected);
+        item.classList.toggle('is-active', selected);
+        item.setAttribute('aria-selected', String(selected));
+        item.tabIndex = selected ? 0 : -1;
+        const panel = root.querySelector('#' + item.getAttribute('aria-controls'));
+        if (panel) {
+          panel.hidden = !selected;
+          // Some shared faculty CSS overrides [hidden] with display rules.
+          panel.style.setProperty('display', selected ? 'block' : 'none', 'important');
+          panel.setAttribute('aria-hidden', String(!selected));
+        }
+      });
+    }
+    tabs.forEach(function (tab, index) {
+      tab.setAttribute('type', 'button');
+      tab.addEventListener('click', function () { activateTab(tab); });
+      tab.addEventListener('keydown', function (event) {
+        if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+        activateTab(tabs[next]); tabs[next].focus();
+      });
+    });
+    activateTab(tabs.find(function (tab) { return tab.getAttribute('aria-selected') === 'true'; }) || tabs[0]);
+
+    const modal = root.querySelector('#ac-co-breakdown');
+    const content = root.querySelector('#ac-co-breakdown-content');
+    const closeButton = root.querySelector('.ac-co-dialog-close');
+    const heading = root.querySelector('#ac-dialog-title');
+    if (!modal || !content) return;
+    // Keep the overlay outside the workspace scroll/stacking context.
+    if (modal.parentElement !== document.body) document.body.appendChild(modal);
+    let previousFocus = null;
+    function closeModal() {
+      if (modal.hidden) return;
+      modal.hidden = true;
+      document.body.classList.remove('ac-breakdown-open');
+      if (previousFocus && previousFocus.isConnected) previousFocus.focus();
+    }
+    document.addEventListener('click', function (event) {
+        const button = event.target.closest('.ac-faculty-page .ac-co-action[data-co]');
+        if (!button) return;
+        event.stopImmediatePropagation();
+        event.preventDefault();
+        const row = button.closest('tr');
+        if (!row) return;
+        const cells = row.cells;
+        const co = button.dataset.co;
+        const description = cells[1]?.textContent.trim() || '';
+        const attainment = cells[3]?.textContent.trim() || '';
+        const target = cells[4]?.textContent.trim() || '';
+        const status = cells[5]?.textContent.trim() || '';
+        const assessments = [...cells[2].querySelectorAll('.ac-co-chip')].map(chip => chip.textContent.trim());
+        heading.textContent = co + ' — Attainment Breakdown';
+        content.replaceChildren();
+        const intro = document.createElement('p');
+        intro.className = 'ac-breakdown-description';
+        intro.textContent = description;
+        content.appendChild(intro);
+        const grid = document.createElement('div');
+        grid.className = 'ac-breakdown-grid';
+        [['Calculated Attainment', attainment], ['Target', target], ['Status', status]].forEach(([label, value]) => {
+          const item = document.createElement('div');
+          item.className = 'ac-breakdown-stat';
+          const small = document.createElement('span'); small.textContent = label;
+          const strong = document.createElement('strong'); strong.textContent = value;
+          item.append(small, strong); grid.appendChild(item);
+        });
+        content.appendChild(grid);
+        const title = document.createElement('h3'); title.textContent = 'Assessments Contributing';
+        content.appendChild(title);
+        const list = document.createElement('ul'); list.className = 'ac-breakdown-assessments';
+        assessments.forEach(name => {
+          const item = document.createElement('li'); item.textContent = name;
+          list.appendChild(item);
+        });
+        content.appendChild(list);
+        const note = document.createElement('p'); note.className = 'ac-breakdown-note';
+        note.textContent = 'Assessment weights and individual contribution calculations are not available in this demo.';
+        content.appendChild(note);
+        previousFocus = button;
+        modal.hidden = false;
+        document.body.classList.add('ac-breakdown-open');
+        closeButton?.focus();
+    }, true);
+    closeButton?.addEventListener('click', closeModal);
+    modal.addEventListener('click', function (event) { if (event.target === modal) closeModal(); });
+    document.addEventListener('keydown', function (event) {
+      if (modal.hidden) return;
+      if (event.key === 'Escape') { event.preventDefault(); closeModal(); }
+      if (event.key === 'Tab') {
+        const focusable = [...modal.querySelectorAll('button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')];
+        if (!focusable.length) return;
+        const first = focusable[0], last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initAcFaculty);
+  else initAcFaculty();
+})();
+
+
+
 /* RP FACULTY — report index, previews, downloads and filters. */
 (function () {
   'use strict';
@@ -68,21 +184,14 @@
       [['Report ID',r.d.id],['Course / Program',r.d.course],['Section',r.d.section],['Owner / Scope',r.d.owner],['Updated',r.d.updated],['Status',r.d.status]].map(([label,value])=>'<div class="rp-preview-field"><span>'+safe(label)+'</span><strong>'+safe(value)+'</strong></div>').join('')+
       '</div><section class="rp-preview-section"><h3>Report Contents</h3><div class="rp-preview-section-content"><ul class="rp-preview-bullet">'+r.items.map(item=>'<li>'+safe(item)+'</li>').join('')+'</ul></div></section><p class="rp-preview-note">Demo preview only — not an official academic record.</p>';
     dialog.removeAttribute('hidden');
-    dialog.style.setProperty('display','block','important');
-    dialog.style.setProperty('position','fixed','important');
-    dialog.style.setProperty('inset','0','important');
-    dialog.style.setProperty('margin','auto','important');
-    dialog.style.setProperty('z-index','2147483647','important');
     if (!dialog.open) {
       try { dialog.showModal(); } catch (_) { dialog.setAttribute('open',''); }
     }
-    dialog.style.setProperty('display','block','important');
   }
   function closePreview() {
     const dialog = byId('rpDialog'); if (!dialog) return;
     if (dialog.open && typeof dialog.close === 'function') dialog.close();
     else dialog.removeAttribute('open');
-    dialog.style.removeProperty('display');
   }
   function save(name,contents,type) {
     const url = URL.createObjectURL(new Blob([contents],{type}));
@@ -124,7 +233,14 @@
   document.addEventListener('input',event=>{if(event.target.id==='rpSearch')filter();},true);
   document.addEventListener('change',event=>{if(['rpType','rpStatus'].includes(event.target.id))filter();},true);
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&byId('rpDialog')?.open)closePreview();});
-  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',filter,{once:true}); else filter();
+  function initialize() {
+    document.querySelectorAll('.rp-student-page #rpRows .rp-actions button.rp-view, .rp-student-page #rpRows .rp-actions button.rp-download').forEach(button => {
+      button.disabled = false;
+      button.removeAttribute('aria-disabled');
+    });
+    filter();
+  }
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',initialize,{once:true}); else initialize();
 })();
 
 /* AC Department Head: Gradebook navigation and tab controller (early, independent). */
@@ -151,17 +267,13 @@
   document.addEventListener("click", function (event) {
     var target = event.target.closest("#acDhTabApproval, #acDhTabAttainment, [data-ac-gradebook-link]");
     if (!target || !document.querySelector(".ac-dept-head-page")) return;
+    // Sidebar Gradebook is a real page link; do not intercept navigation.
+    if (target.hasAttribute("data-ac-gradebook-link")) return;
     event.preventDefault();
     event.stopImmediatePropagation();
-    var gradebook = target.id === "acDhTabApproval" || target.hasAttribute("data-ac-gradebook-link");
-    if (target.hasAttribute("data-ac-gradebook-link")) {
-      history.replaceState(null, "", "#gradebook-approval");
-    }
+    var gradebook = target.id === "acDhTabApproval";
     activateGradebook(gradebook);
-    if (target.hasAttribute("data-ac-gradebook-link")) {
-      var panel = document.getElementById("acDhPanelApproval");
-      if (panel) panel.scrollIntoView({behavior:"smooth", block:"nearest"});
-    }
+
   }, true);
   function initial() {
     if (location.hash === "#gradebook-approval") activateGradebook(true);
@@ -169,47 +281,6 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initial);
   else initial();
   window.addEventListener("hashchange", initial);
-})();
-
-/* AC Faculty: early delegated tab switching, isolated from shared page handlers. */
-(function () {
-  'use strict';
-  function switchAcPanel(tab) {
-    var root = document.querySelector('.ac-faculty-page');
-    if (!root || !tab || !root.contains(tab)) return;
-    var buttons = root.querySelectorAll('.ac-co-tabs .ac-co-tab');
-    buttons.forEach(function (button) {
-      var active = button === tab;
-      button.classList.toggle('active', active);
-      button.classList.toggle('is-active', active);
-      button.setAttribute('aria-selected', String(active));
-      button.tabIndex = active ? 0 : -1;
-      var id = button.getAttribute('aria-controls');
-      var panel = id && document.getElementById(id);
-      if (panel) {
-        panel.hidden = !active;
-        panel.style.setProperty('display', active ? 'block' : 'none', 'important');
-        panel.setAttribute('aria-hidden', String(!active));
-      }
-    });
-  }
-  document.addEventListener('click', function (event) {
-    var tab = event.target.closest('.ac-faculty-page .ac-co-tabs .ac-co-tab');
-    if (!tab) return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    switchAcPanel(tab);
-  }, true);
-  document.addEventListener('keydown', function (event) {
-    var tab = event.target.closest('.ac-faculty-page .ac-co-tabs .ac-co-tab');
-    if (!tab || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-    var tabs = Array.from(document.querySelectorAll('.ac-faculty-page .ac-co-tabs .ac-co-tab'));
-    var index = tabs.indexOf(tab);
-    var next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
-    event.preventDefault();
-    switchAcPanel(tabs[next]);
-    tabs[next].focus();
-  }, true);
 })();
 
 (function initRaDepartmentHeadTabs() {
@@ -3954,25 +4025,44 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!tabs.length || !panels.length) {
         return;
     }
+    // One accessible controller for Course List, SO Summary and Student Responses.
+    // Keep existing data-tab IDs and panels intact.
+    function activateSoTab(tab) {
+        const targetId = tab.dataset.tab || tab.getAttribute('aria-controls');
+        const targetPanel = targetId && document.getElementById(targetId);
+        if (!targetPanel || !Array.from(panels).includes(targetPanel)) return;
+        tabs.forEach(function (item) {
+            const active = item === tab;
+            item.classList.toggle('active', active);
+            item.setAttribute('aria-selected', String(active));
+            item.tabIndex = active ? 0 : -1;
+        });
+        panels.forEach(function (panel) {
+            const active = panel === targetPanel;
+            panel.classList.toggle('active', active);
+            panel.hidden = !active;
+            panel.setAttribute('aria-hidden', String(!active));
+        });
+    }
     tabs.forEach(function (tab) {
-        tab.addEventListener("click", function () {
-            const targetId = this.dataset.tab;
-            if (!targetId) {
-                return;
-            }
-            tabs.forEach(function (item) {
-                item.classList.remove("active");
-            });
-            panels.forEach(function (panel) {
-                panel.classList.remove("active");
-            });
-            this.classList.add("active");
-            const targetPanel = document.getElementById(targetId);
-            if (targetPanel) {
-                targetPanel.classList.add("active");
-            }
+        if (!tab.hasAttribute('role')) tab.setAttribute('role', 'tab');
+        if (tab.tagName !== 'BUTTON' && tab.tagName !== 'A') tab.tabIndex = 0;
+        tab.addEventListener('click', function (event) {
+            event.preventDefault();
+            activateSoTab(tab);
+        });
+        tab.addEventListener('keydown', function (event) {
+            if (!['ArrowLeft', 'ArrowRight', 'Home', 'End', 'Enter', ' '].includes(event.key)) return;
+            event.preventDefault();
+            if (event.key === 'Enter' || event.key === ' ') { activateSoTab(tab); return; }
+            const index = Array.from(tabs).indexOf(tab);
+            const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 :
+                (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+            activateSoTab(tabs[next]);
+            tabs[next].focus();
         });
     });
+    activateSoTab(Array.from(tabs).find(tab => tab.classList.contains('active')) || tabs[0]);
     const responseStorageKey = "eduMetricsSOResponses";
     const outcomeStorageKey = "eduMetricsStudentOutcomes";
     const soSummaryTableBody = document.getElementById("soSummaryTableBody");
@@ -6310,16 +6400,19 @@ document.addEventListener('DOMContentLoaded', () => {
 /* Page-specific initialization moved from HTML: no inline JavaScript. */
 
 /* ra-faculty.html.txt */
-document.addEventListener("DOMContentLoaded", function () {
+function initRawAssessmentFaculty() {
 /* Frontend demonstration only: saved scores are held in this browser session, not a backend. */
 (() => {
   const students=[['2026-COE-001','Angel S. Villanueva'],['2026-COE-002','Bea M. Santos'],['2026-COE-003','Carl P. Reyes'],['2026-COE-004','Dana L. Cruz'],['2026-COE-005','Ella R. Garcia'],['2026-COE-006','Francis D. Lim'],['2026-COE-007','Gina A. Ramos'],['2026-COE-008','Hannah P. Tan']];
   const assessments={quiz1:{max:20,co:'CO1',date:'Oct. 3, 2026',scores:[18,17,16,15,19,14,18,17]},quiz2:{max:20,co:'CO2',date:'Oct. 10, 2026',scores:[null,null,null,null,null,null,null,null]},lab1:{max:50,co:'CO1, CO2',date:'Sept. 19, 2026',scores:[42,45,40,38,47,41,44,46]},midterm:{max:100,co:'CO1–CO3',date:'Oct. 20, 2026',scores:[null,null,null,null,null,null,null,null]}};
   const $=id=>document.getElementById(id), selector=$('rafAssessment'), body=$('rafRows');
+  if (!selector || !body) return;
   let saved=false;
   function render(){
     const a=assessments[selector.value],q=$('rafSearch').value.trim().toLowerCase(),sort=$('rafSort').value;
-    $('rafMaxLabel').textContent=a.max;$('rafMaximum').textContent=a.max;$('rafCO').textContent=a.co;$('rafDate').textContent=a.date;
+    $('rafMaxLabel').textContent=a.max;$('rafMaxInput').value=a.max;$('rafCO').textContent=a.co;$('rafDate').textContent=a.date;
+    const entered=a.scores.filter(v=>v!==null);
+    $('rafMaximum').textContent=entered.length?(entered.reduce((sum,v)=>sum+v,0)/entered.length/a.max*100).toFixed(1)+'%':'—';
     $('rafEntered').textContent=a.scores.filter(v=>v!==null).length;$('rafStudents').textContent=students.length;
     let indices=students.map((_,i)=>i).filter(i=>(students[i].join(' ')).toLowerCase().includes(q));
     indices.sort((i,j)=>sort==='za'?students[j][1].localeCompare(students[i][1]):sort==='high'?(a.scores[j]??-1)-(a.scores[i]??-1):sort==='low'?(a.scores[i]??Infinity)-(a.scores[j]??Infinity):students[i][1].localeCompare(students[j][1]));
@@ -6334,11 +6427,33 @@ document.addEventListener("DOMContentLoaded", function () {
         e.target.setCustomValidity('');a.scores[i]=value===''?null:num;
         tr.querySelector('.raf-percentage').textContent=value===''?'—':(num/a.max*100).toFixed(1)+'%';
         const status=tr.querySelector('.sodh-status');status.className='sodh-status '+(value===''?'in-progress':'complete');status.textContent=value===''?'Pending':'Entered';
-        $('rafEntered').textContent=a.scores.filter(v=>v!==null).length;saved=false;$('rafMessage').textContent='Unsaved changes';
+        $('rafEntered').textContent=a.scores.filter(v=>v!==null).length;
+        const entered=a.scores.filter(v=>v!==null);
+        $('rafMaximum').textContent=entered.length?(entered.reduce((sum,v)=>sum+v,0)/entered.length/a.max*100).toFixed(1)+'%':'—';
+        saved=false;$('rafMessage').textContent='Unsaved changes';
       });body.append(tr);
     });
     $('rafEmpty').hidden=indices.length>0;
   }
+  $('rafMaxInput').addEventListener('change', event => {
+    const assessment=assessments[selector.value];
+    const next=Number(event.target.value);
+    if (!Number.isFinite(next) || next <= 0 || next > 10000) {
+      event.target.setCustomValidity('Enter a total score greater than 0 and at most 10,000.');
+      event.target.reportValidity();
+      return;
+    }
+    if (assessment.scores.some(score => score !== null && score > next)) {
+      event.target.setCustomValidity('Total score cannot be less than an existing student score.');
+      event.target.reportValidity();
+      return;
+    }
+    event.target.setCustomValidity('');
+    assessment.max=next;
+    saved=false;
+    $('rafMessage').textContent='Total score updated for this assessment. Unsaved changes.';
+    render();
+  });
   selector.addEventListener('change',()=>{saved=false;$('rafMessage').textContent='';render();});
   $('rafSearch').addEventListener('input',render);$('rafSort').addEventListener('change',render);
   $('rafSave').addEventListener('click',()=>{
@@ -6347,7 +6462,9 @@ document.addEventListener("DOMContentLoaded", function () {
   });
   render();
 })();
-});
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initRawAssessmentFaculty, {once:true});
+else initRawAssessmentFaculty();
 
 /* so-faculty(20261012-150030).html.txt */
 document.addEventListener("DOMContentLoaded", function () {
@@ -6395,23 +6512,6 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 });
 
-/* so-dept-head(20261012-150030).html.txt */
-document.addEventListener("DOMContentLoaded", function () {
-document.querySelectorAll(".sodh-tab").forEach(function(tab) {
-            tab.addEventListener("click", function() {
-                document.querySelectorAll(".sodh-tab").forEach(function(item) {
-                    item.classList.remove("active");
-                });
-                document.querySelectorAll(".sodh-tab-panel").forEach(function(panel) {
-                    panel.classList.remove("active");
-                });
-                tab.classList.add("active");
-                document.getElementById(tab.dataset.tab).classList.add("active");
-            });
-        });
-});
-
-
 /* AC Student: attainment search, release filter and sort. */
 (function () {
   function init() {
@@ -6446,79 +6546,6 @@ document.querySelectorAll(".sodh-tab").forEach(function(tab) {
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
-
-/* AC Faculty: accessible attainment / assessment input tabs and breakdown */
-(function () {
-  function initAcFaculty() {
-    const root = document.querySelector('.ac-faculty-page');
-    if (!root || root.dataset.acFacultyInitialized === 'true') return;
-    root.dataset.acFacultyInitialized = 'true';
-    const tabs = Array.from(root.querySelectorAll('.ac-co-tabs [role="tab"]'));
-    function activateTab(tab) {
-      if (!tab) return;
-      tabs.forEach(function (item) {
-        const selected = item === tab;
-        item.classList.toggle('active', selected);
-        item.classList.toggle('is-active', selected);
-        item.setAttribute('aria-selected', String(selected));
-        item.tabIndex = selected ? 0 : -1;
-        const panel = root.querySelector('#' + item.getAttribute('aria-controls'));
-        if (panel) {
-          panel.hidden = !selected;
-          // Some shared faculty CSS overrides [hidden] with display rules.
-          panel.style.setProperty('display', selected ? 'block' : 'none', 'important');
-          panel.setAttribute('aria-hidden', String(!selected));
-        }
-      });
-    }
-    tabs.forEach(function (tab, index) {
-      tab.setAttribute('type', 'button');
-      tab.addEventListener('click', function () { activateTab(tab); });
-      tab.addEventListener('keydown', function (event) {
-        if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
-        event.preventDefault();
-        const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
-        activateTab(tabs[next]); tabs[next].focus();
-      });
-    });
-    activateTab(tabs.find(function (tab) { return tab.getAttribute('aria-selected') === 'true'; }) || tabs[0]);
-
-    const modal = root.querySelector('#ac-co-breakdown');
-    const content = root.querySelector('#ac-co-breakdown-content');
-    const closeButton = root.querySelector('.ac-co-dialog-close');
-    const data = {
-      CO1: ['Apply fundamental software engineering principles.', '84%', 'Quiz 1, Laboratory Activity 1, Midterm Examination'],
-      CO2: ['Design and analyze software requirements.', '78%', 'Quiz 2, Midterm Examination'],
-      CO3: ['Apply advanced software design patterns.', '66%', 'Midterm Examination'],
-      CO4: ['Implement and test software solutions in a laboratory environment.', '82%', 'Laboratory Activity 1']
-    };
-    if (!modal || !content) return;
-    root.querySelectorAll('[data-co]').forEach(function (button) {
-      button.addEventListener('click', function () {
-        const co = button.dataset.co;
-        if (!data[co]) return;
-        const [description, attainment, assessments] = data[co];
-        content.replaceChildren();
-        [['Course Outcome', co + ' — ' + description], ['Calculated Attainment', attainment], ['Target', '70%'], ['Assessments Contributing', assessments]].forEach(function (entry) {
-          const p = document.createElement('p');
-          const strong = document.createElement('strong');
-          strong.textContent = entry[0] + ': ';
-          p.append(strong, document.createTextNode(entry[1]));
-          content.append(p);
-        });
-        modal.hidden = false;
-        if (closeButton) closeButton.focus();
-      });
-    });
-    function closeModal() { modal.hidden = true; }
-    if (closeButton) closeButton.addEventListener('click', closeModal);
-    modal.addEventListener('click', function (event) { if (event.target === modal) closeModal(); });
-    document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && !modal.hidden) closeModal(); });
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initAcFaculty);
-  else initAcFaculty();
-})();
-
 
 /* AC DEPARTMENT HEAD — independent tab, filter and assessment controller */
 (function () {
@@ -6683,4 +6710,93 @@ $('glSearch').addEventListener('input',filter);['glCourse','glSection','glDepart
 $('glExport')?.addEventListener('click',()=>{const data=[['Gradebook','Course','Faculty','Students','Assessments','Status'],...rows.map(r=>{const d=state(r);return[d.id,d.section,d.faculty,d.students,d.assessments,d.status]})];const csv=data.map(a=>a.map(s=>'"'+String(s).replace(/"/g,'""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='gradebook-locking-index.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 counts();filter();approved();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+
+
+/* Shared Department Head navigation and calendar. */
+(function(){'use strict';function init(){if(!document.body.classList.contains('dept-head-unified'))return;
+const page=decodeURIComponent(location.pathname).split('/').pop().toLowerCase();
+document.querySelectorAll('.so-subnav a[href]').forEach(a=>{let u;try{u=new URL(a.getAttribute('href'),location.href)}catch{return}const yes=decodeURIComponent(u.pathname).split('/').pop().toLowerCase()===page;a.classList.toggle('active',yes);if(yes)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+document.querySelectorAll('.so-nav-group details').forEach(d=>{const s=d.querySelector('summary');if(!s)return;const sync=()=>s.setAttribute('aria-expanded',String(d.open));sync();d.addEventListener('toggle',sync)});
+const calendars=[...document.querySelectorAll('.edu-header-calendar-wrap')].map(w=>({w,b:w.querySelector('.edu-header-calendar-btn'),p:w.querySelector('.edu-header-calendar-popup')})).filter(x=>x.b&&x.p);
+function close(){calendars.forEach(x=>{x.p.hidden=true;x.b.setAttribute('aria-expanded','false')})}
+calendars.forEach(x=>x.b.addEventListener('click',e=>{e.stopPropagation();const show=x.p.hidden;close();x.p.hidden=!show;x.b.setAttribute('aria-expanded',String(show))}));document.addEventListener('click',e=>{if(!calendars.some(x=>x.w.contains(e.target)))close()});document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();})();
+
+/* Student My Courses: hide, restore, join (frontend demo; localStorage only). */
+(function () {
+  'use strict';
+  function init() {
+    if (!document.body.classList.contains('student-courses-page') || document.body.dataset.scControllerReady==='true') return;
+    document.body.dataset.scControllerReady='true';
+    const key='edumetrics-student-courses-v1';
+    const original=[...document.querySelectorAll('.sc-course-card'),...(document.getElementById('scCourseTemplates')?.content.querySelectorAll('.sc-course-card')||[])].map(c=>c.outerHTML);
+    const defaults=original.map(h=>{const t=document.createElement('template');t.innerHTML=h;return {id:t.content.firstElementChild.dataset.courseId,html:h};});
+    let state;
+    try {state=JSON.parse(localStorage.getItem(key)||'null');} catch (_) {}
+    if(!state||!Array.isArray(state.hidden)||!Array.isArray(state.joined))state={hidden:[],joined:[]};
+    const save=()=>{try{localStorage.setItem(key,JSON.stringify(state));}catch(_){}};
+    const cards=()=>[...defaults,...state.joined];
+    function render(){
+      const hiddenPage=document.body.classList.contains('student-hidden-courses-page');
+      const grid=document.getElementById(hiddenPage?'studentHiddenCourseGrid':'studentCourseGrid');if(!grid)return;
+      grid.innerHTML='';
+      cards().filter(c=>state.hidden.includes(c.id)===hiddenPage).forEach(c=>{
+        const template=document.createElement('template');template.innerHTML=c.html.trim();const card=template.content.firstElementChild;
+        if(hiddenPage){const btn=card.querySelector('.sc-hide-course');if(btn){btn.textContent='Restore';btn.dataset.action='restore';btn.setAttribute('aria-label','Restore '+card.querySelector('.sc-course-body h2')?.textContent);}}
+        grid.appendChild(card);
+      });
+      const visible=cards().filter(c=>!state.hidden.includes(c.id)).length;
+      const count=document.querySelector('.sc-hero-count strong');if(count)count.textContent=String(hiddenPage?cards().length-visible:visible).padStart(2,'0');
+      const empty=document.getElementById('scHiddenEmpty');if(empty)empty.hidden=grid.children.length>0;
+    }
+    gridListener();
+    function gridListener(){
+      const grid=document.getElementById(document.body.classList.contains('student-hidden-courses-page')?'studentHiddenCourseGrid':'studentCourseGrid');
+      if(!grid)return;
+      grid.addEventListener('click',e=>{
+      const button=e.target.closest('.sc-hide-course');if(!button)return;
+      e.preventDefault();
+      const card=button.closest('.sc-course-card');if(!card)return;
+      const id=card.dataset.courseId;
+      if(button.dataset.action==='restore')state.hidden=state.hidden.filter(x=>x!==id);
+      else if(!state.hidden.includes(id))state.hidden.push(id);
+      save();render();
+      });
+    }
+    const dialog=document.getElementById('scJoinDialog');
+    document.getElementById('scJoinCourse')?.addEventListener('click',event=>{
+      event.preventDefault();
+      if(!dialog)return;
+      try { if(!dialog.open)dialog.showModal(); }
+      catch (_) {dialog.setAttribute('open','');}
+      document.getElementById('scJoinCode')?.focus();
+    });
+    ['scJoinClose','scJoinCancel'].forEach(id=>document.getElementById(id)?.addEventListener('click',()=>{
+      if(dialog?.open && typeof dialog.close==='function')dialog.close();
+      else dialog?.removeAttribute('open');
+    }));
+    document.getElementById('scJoinForm')?.addEventListener('submit',e=>{
+      e.preventDefault();
+      const code=document.getElementById('scJoinCode').value.trim().toUpperCase();
+      const title=document.getElementById('scJoinTitle').value.trim();
+      if(!code||!title)return;
+      const id='joined-'+code.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+      if(cards().some(c=>c.id===id)){alert('This course is already in your list.');return;}
+      const card=document.createElement('article');card.className='sc-course-card';card.dataset.courseId=id;
+      const top=document.createElement('div');top.className='sc-card-top';
+      const icon=document.createElement('span');icon.className='sc-course-icon';icon.textContent=code.slice(0,2);
+      const status=document.createElement('span');status.className='sc-enrolled';status.textContent='DEMO JOINED';
+      const hide=document.createElement('button');hide.className='sc-hide-course';hide.type='button';hide.dataset.action='hide';hide.textContent='Hide';hide.setAttribute('aria-label','Hide '+title);top.append(icon,status,hide);
+      const body=document.createElement('div');body.className='sc-course-body';
+      const label=document.createElement('span');label.className='sc-course-code';label.textContent=code+' · DEMO COURSE';
+      const h=document.createElement('h2');h.textContent=title;
+      const prof=document.createElement('p');prof.className='sc-faculty';prof.textContent='Faculty assignment pending';
+      const sec=document.createElement('p');sec.className='sc-section';sec.textContent='Joined locally · Demo';body.append(label,h,prof,sec);
+      const bottom=document.createElement('div');bottom.className='sc-card-bottom';bottom.textContent='Course workspace will be available after backend integration.';
+      card.append(top,body,bottom);state.joined.push({id,html:card.outerHTML});save();render();e.target.reset();if(dialog.open && typeof dialog.close==='function')dialog.close();else dialog.removeAttribute('open');
+    });
+    render();
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
