@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   Attainment Calculation | EduMetrics Faculty
+  </title>
+  <link href="../../Static/style.css" rel="stylesheet"/>
+ </head>
+ <body class="so-student-page course-workspace-page cr-student-page ra-student-page ac-faculty-page faculty-workspace-aligned">
+  <header class="so-topbar">
+   <div class="so-brand">
+    <div class="so-brand-logo">
+     Edu
+     <span>
+      Metrics
+     </span>
+    </div>
+    <div class="so-brand-subtitle">
+     Academic Assessment &amp; Grading System
+    </div>
+   </div>
+   <div class="so-user-area">
+    <div class="edu-header-calendar-wrap">
+     <button aria-expanded="false" aria-haspopup="dialog" aria-label="Open calendar" class="edu-header-calendar-btn" type="button">
+      <svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24">
+       <rect height="16" rx="2" width="18" x="3" y="5">
+       </rect>
+       <path d="M7 3v4M17 3v4M3 10h18">
+       </path>
+      </svg>
+     </button>
+     <div aria-label="Calendar" class="edu-header-calendar-popup" hidden="" role="dialog">
+      <label>
+       Calendar
+       <input aria-label="Choose calendar date" type="date"/>
+      </label>
+      <p>
+       Academic events are not connected yet.
+      </p>
+     </div>
+    </div>
+    <button aria-label="Notifications" class="so-notification-btn" type="button">
+     <img alt="Notifications" class="so-notification-image" src="../../Static/images/sidebar/notif.png"/>
+     <span class="so-notification-dot">
+     </span>
+    </button>
+    <div class="so-user-info">
+     <strong id="facultyName">
+     </strong>
+     <span>
+      Faculty
+     </span>
+    </div>
+    <div aria-hidden="true" class="so-avatar">
+     <span class="so-avatar-person">
+      ●
+     </span>
+    </div>
+    <span aria-hidden="true" class="so-online-dot">
+    </span>
+   </div>
+  </header>
+  <div class="so-header-lines">
+   <div class="so-header-blue">
+   </div>
+   <div class="so-header-gold">
+   </div>
+  </div>
+  <div class="so-shell">
+   <aside class="so-sidebar">
+    <div class="so-pages-title">
+     <span class="so-grid-icon so-pages-image-wrap">
+      <img alt="" class="so-pages-image" src="../../Static/images/sidebar/pages.png"/>
+     </span>
+     <span>
+      Pages
+     </span>
+    </div>
+    <nav aria-label="Faculty navigation" class="so-nav">
+     <a class="so-nav-item" href="dashboard-faculty.html">
+      <span class="so-nav-icon so-nav-image-wrap">
+       <img alt="" class="so-nav-image" src="../../Static/images/sidebar/home-white.png"/>
+      </span>
+      <span>
+       Dashboard
+      </span>
+     </a>
+     <a class="so-nav-item active" href="dashboard-faculty.html#my-courses">
+      <span class="so-nav-icon so-nav-image-wrap">
+       <img alt="" class="so-nav-image" src="../../Static/images/sidebar/course-white.png"/>
+      </span>
+      <span>
+       My Courses
+      </span>
+     </a>
+     <a class="so-nav-item" href="../webpage/platform.html">
+      <span class="so-nav-icon so-nav-image-wrap">
+       <img alt="" class="so-nav-image" src="../../Static/images/sidebar/pl-white.png"/>
+      </span>
+      <span>
+       Platform
+      </span>
+     </a>
+     <a class="so-nav-item" href="../webpage/resources.html">
+      <span class="so-nav-icon so-nav-image-wrap">
+       <img alt="" class="so-nav-image" src="../../Static/images/sidebar/rs-white.png"/>
+      </span>
+      <span>
+       Resources
+      </span>
+     </a>
+     <a class="so-nav-item" href="../webpage/about us.html">
+      <span class="so-nav-icon so-nav-image-wrap">
+       <img alt="" class="so-nav-image" src="../../Static/images/sidebar/au-white.png"/>
+      </span>
+      <span>
+       About Us
+      </span>
+     </a>
+    </nav>
+    <div class="so-sidebar-brand">
+     <div class="so-sidebar-logo">
+      Edu
+      <span>
+       Metrics
+      </span>
+     </div>
+     <small>
+      Academic Assessment &amp; Grading System
+     </small>
+    </div>
+   </aside>
+   <main class="so-main">
+    <div class="cw-breadcrumb">
+     My Courses
+     <span class="cw-breadcrumb-separator">
+      /
+     </span>
+     <span class="cw-breadcrumb-current">
+      Software Lab
+     </span>
+    </div>
+    <div class="cw-workspace">
+     <section aria-label="Selected course" class="cw-hero">
+      <div>
+       <div class="cw-eyebrow">
+        COURSE WORKSPACE
+       </div>
+       <h2>
+        Software Lab
+       </h2>
+       <p>
+        CPE 321 · BSCPE 3A · 1st Semester 2026–2027
+       </p>
+      </div>
+      <span class="cw-demo-badge">
+       DEMO COURSE
+      </span>
+     </section>
+     <nav aria-label="Course modules" class="cw-module-nav">
+      <a class="cw-module-tab" href="../requirement 1/so-faculty.html">
+       <span class="cw-module-number">
+        01
+       </span>
+       Syllabus &amp; Outcomes
+      </a>
+      <a class="cw-module-tab" href="../requirement 2/cm-faculty.html">
+       <span class="cw-module-number">
+        02
+       </span>
+       Curriculum Mapping
+      </a>
+      <a class="cw-module-tab" href="../requirement 3/cr-faculty.html">
+       <span class="cw-module-number">
+        03
+       </span>
+       Class Roster
+      </a>
+      <a class="cw-module-tab" href="../requirement 4/ae-faculty.html">
+       <span class="cw-module-number">
+        04
+       </span>
+       Assessment Entry
+      </a>
+      <a aria-current="page" class="cw-module-tab active" href="ac-faculty.html">
+       <span class="cw-module-number">
+        05
+       </span>
+       Attainment
+      </a>
+      <a class="cw-module-tab" href="../requirement 6/cqi-faculty.html">
+       <span class="cw-module-number">
+        06
+       </span>
+       CQI Planning
+      </a>
+      <a class="cw-module-tab" href="gradebook-faculty.html">
+       <span class="cw-module-number">
+        07
+       </span>
+       Gradebook
+      </a>
+      <a class="cw-module-tab" href="compliance-faculty.html">
+       <span class="cw-module-number">
+        08
+       </span>
+       Compliance Report
+      </a>
+     </nav>
+    </div>
+    <section aria-label="Attainment calculation" class="ac-attainment-content">
+     <div class="so-summary-grid">
+      <article class="so-summary-card">
+       <div class="so-summary-accent">
+       </div>
+       <span class="so-summary-label">
+        Course Outcomes
+       </span>
+       <strong class="so-summary-number">
+        4
+       </strong>
+      </article>
+      <article class="so-summary-card">
+       <div class="so-summary-accent">
+       </div>
+       <span class="so-summary-label">
+        On Target
+       </span>
+       <strong class="so-summary-number">
+        3
+       </strong>
+      </article>
+      <article class="so-summary-card">
+       <div class="so-summary-accent">
+       </div>
+       <span class="so-summary-label">
+        Below Target
+       </span>
+       <strong class="so-summary-number">
+        1
+       </strong>
+      </article>
+     </div>
+     <div class="ac-co-content-heading">
+      <h1>
+       Calculated Course Outcome Attainment
+      </h1>
+      <p>
+       Track course outcome performance against the 70% attainment target.
+      </p>
+     </div>
+     <div aria-label="Course outcome tables" class="ac-co-tabs" role="tablist">
+      <button aria-controls="panel-calculated" aria-selected="true" class="ac-co-tab active" data-panel="calculated" id="tab-calculated" role="tab" type="button">
+       Calculated CO Attainment
+      </button>
+      <button aria-controls="panel-inputs" aria-selected="false" class="ac-co-tab" data-panel="inputs" id="tab-inputs" role="tab" type="button">
+       Assessment Inputs
+      </button>
+     </div>
+     <div aria-labelledby="tab-calculated" class="ac-co-tabpanel" id="panel-calculated" role="tabpanel">
+      <div class="ac-co-table-scroll">
+       <table class="ac-co-table">
+        <thead>
+         <tr>
+          <th>
+           CO
+          </th>
+          <th>
+           Course Outcome
+          </th>
+          <th>
+           Assessments Contributing
+          </th>
+          <th>
+           Calculated Attainment
+          </th>
+          <th>
+           Target
+          </th>
+          <th>
+           Status
+          </th>
+          <th>
+           Breakdown
+          </th>
+         </tr>
+        </thead>
+        <tbody>
+         <tr>
+          <td>
+           CO1
+          </td>
+          <td>
+           Apply fundamental software engineering principles.
+          </td>
+          <td>
+           <span class="ac-co-chip">
+            Quiz 1
+           </span>
+           <span class="ac-co-chip">
+            Laboratory Activity 1
+           </span>
+           <span class="ac-co-chip">
+            Midterm Examination
+           </span>
+          </td>
+          <td>
+           <strong>
+            84%
+           </strong>
+          </td>
+          <td>
+           70%
+          </td>
+          <td>
+           <span class="ac-co-status">
+            On Target
+           </span>
+          </td>
+          <td>
+           <button class="ac-co-action" data-co="CO1" type="button">
+            View Breakdown
+           </button>
+          </td>
+         </tr>
+         <tr>
+          <td>
+           CO2
+          </td>
+          <td>
+           Design and analyze software requirements.
+          </td>
+          <td>
+           <span class="ac-co-chip">
+            Quiz 2
+           </span>
+           <span class="ac-co-chip">
+            Midterm Examination
+           </span>
+          </td>
+          <td>
+           <strong>
+            78%
+           </strong>
+          </td>
+          <td>
+           70%
+          </td>
+          <td>
+           <span class="ac-co-status">
+            On Target
+           </span>
+          </td>
+          <td>
+           <button class="ac-co-action" data-co="CO2" type="button">
+            View Breakdown
+           </button>
+          </td>
+         </tr>
+         <tr>
+          <td>
+           CO3
+          </td>
+          <td>
+           Apply advanced software design patterns.
+          </td>
+          <td>
+           <span class="ac-co-chip">
+            Midterm Examination
+           </span>
+          </td>
+          <td>
+           <strong>
+            66%
+           </strong>
+          </td>
+          <td>
+           70%
+          </td>
+          <td>
+           <span class="ac-co-status is-below">
+            Below Target
+           </span>
+          </td>
+          <td>
+           <button class="ac-co-action" data-co="CO3" type="button">
+            View Breakdown
+           </button>
+          </td>
+         </tr>
+         <tr>
+          <td>
+           CO4
+          </td>
+          <td>
+           Implement and test software solutions in a laboratory environment.
+          </td>
+          <td>
+           <span class="ac-co-chip">
+            Laboratory Activity 1
+           </span>
+          </td>
+          <td>
+           <strong>
+            82%
+           </strong>
+          </td>
+          <td>
+           70%
+          </td>
+          <td>
+           <span class="ac-co-status">
+            On Target
+           </span>
+          </td>
+          <td>
+           <button class="ac-co-action" data-co="CO4" type="button">
+            View Breakdown
+           </button>
+          </td>
+         </tr>
+        </tbody>
+       </table>
+      </div>
+     </div>
+     <div aria-labelledby="tab-inputs" class="ac-co-tabpanel" hidden="" id="panel-inputs" role="tabpanel">
+      <div class="ac-co-table-scroll">
+       <table class="ac-co-table">
+        <thead>
+         <tr>
+          <th>
+           Assessment
+          </th>
+          <th>
+           Type
+          </th>
+          <th>
+           Raw Score Summary
+          </th>
+          <th>
+           Mapped CO(s)
+          </th>
+          <th>
+           Contribution Status
+          </th>
+         </tr>
+        </thead>
+        <tbody>
+         <tr>
+          <td>
+           Quiz 1
+          </td>
+          <td>
+           Quiz
+          </td>
+          <td>
+           86% average
+          </td>
+          <td>
+           <span class="ac-co-chip">
+            CO1
+           </span>
+          </td>
+          <td>
+           <span class="ac-co-status">
+            Included
+           </span>
+          </td>
+         </tr>
+         <tr>
+          <td>
+           Laboratory Activity 1
+          </td>
+          <td>
+           Laboratory
+          </td>
+          <td>
+           82% average
+          </td>
+          <td>
+           <span class="ac-co-chip">
+            CO1
+           </span>
+           <span class="ac-co-chip">
+            CO4
+           </span>
+          </td>
+          <td>
+           <span class="ac-co-status">
+            Included
+           </span>
+          </td>
+         </tr>
+         <tr>
+          <td>
+           Quiz 2
+          </td>
+          <td>
+           Quiz
+          </td>
+          <td>
+           78% average
+          </td>
+          <td>
+           <span class="ac-co-chip">
+            CO2
+           </span>
+          </td>
+          <td>
+           <span class="ac-co-status">
+            Included
+           </span>
+          </td>
+         </tr>
+         <tr>
+          <td>
+           Midterm Examination
+          </td>
+          <td>
+           Major Exam
+          </td>
+          <td>
+           80% average
+          </td>
+          <td>
+           <span class="ac-co-chip">
+            CO1
+           </span>
+           <span class="ac-co-chip">
+            CO2
+           </span>
+           <span class="ac-co-chip">
+            CO3
+           </span>
+          </td>
+          <td>
+           <span class="ac-co-status">
+            Included
+           </span>
+          </td>
+         </tr>
+        </tbody>
+       </table>
+      </div>
+     </div>
+    </section>
+   </main>
+   <div aria-labelledby="ac-dialog-title" aria-modal="true" class="ac-co-dialog" hidden="" id="ac-co-breakdown" role="dialog">
+    <div class="ac-co-dialog-content">
+     <div class="ac-co-dialog-head">
+      <h2 id="ac-dialog-title">
+       CO Breakdown
+      </h2>
+      <button aria-label="Close breakdown" class="ac-co-dialog-close" type="button">
+       ×
+      </button>
+     </div>
+     <div class="ac-co-dialog-body" id="ac-co-breakdown-content">
+     </div>
+    </div>
+   </div>
+  </div>
+  <script src="../../Static/script.js"></script>
+ </body>
+</html>

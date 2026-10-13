@@ -1,3 +1,217 @@
+/* RP FACULTY — report index, previews, downloads and filters. */
+(function () {
+  'use strict';
+  if (!document.querySelector('.rp-faculty-page')) return;
+  const $ = id => document.getElementById(id);
+  const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const reports = {
+    'SYL-COE232-2026': ['Course Syllabus Matrix', 'Approved syllabus and course outcome alignment.', ['Course: Software Design – Lab (COE232)', 'CO/SO alignment and assessment mapping', 'Syllabus status: Verified']],
+    'GM-COE232-2026': ['Class Master Grading Sheet', 'Master grading sheet from the approved locked gradebook.', ['Course: Software Design – Lab (COE232)', 'Gradebook status: Locked', 'Detailed student grade records require authorized backend access.']],
+    'CQI-COE232-2026': ['Automated CQI Action Report', 'Approved continuous quality improvement actions.', ['Unmet Course Outcome evidence', 'Interventions and action plans', 'Expected improvements and follow-up measures']]
+  };
+  const rows = () => Array.from(document.querySelectorAll('#rpRows tr'));
+  const info = row => ({id:row.dataset.id,type:row.dataset.type,status:row.dataset.status,course:row.cells[1]?.innerText.trim()||'',owner:row.cells[2]?.innerText.trim()||'',updated:row.cells[3]?.innerText.trim()||'',description:row.cells[5]?.innerText.trim()||''});
+  let selected=null;
+  function preview(row){
+    selected=row;
+    const d=info(row), r=reports[d.id]||[d.type,d.description,[]];
+    $('rpDialogTitle').textContent=r[0];
+    $('rpDialogBody').innerHTML='<p class="rp-preview-intro">'+esc(r[1])+'</p><div class="rp-preview-meta">'+[['Report ID',d.id],['Course / Section',d.course],['Owner',d.owner],['Updated',d.updated],['Status',d.status]].map(([a,b])=>'<div class="rp-preview-field"><span>'+esc(a)+'</span><strong>'+esc(b)+'</strong></div>').join('')+'</div><section class="rp-preview-section"><h3>Report Contents</h3><ul class="rp-preview-bullet">'+r[2].map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></section><p class="rp-preview-note">Demo preview only. Not an official academic document.</p>';
+    const dialog=$('rpDialog');if(dialog.parentElement!==document.body)document.body.appendChild(dialog);
+    if(!dialog.open)dialog.showModal();
+  }
+  function downloadFile(filename,content,type){const url=URL.createObjectURL(new Blob([content],{type}));const a=document.createElement('a');a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);}
+  function download(row){const d=info(row),r=reports[d.id]||[d.type,d.description,[]];const html='<!doctype html><html><head><meta charset="utf-8"><title>'+esc(r[0])+'</title><style>body{font:16px Arial;max-width:820px;margin:40px auto;color:#004179;line-height:1.6;padding:24px}header{border-bottom:5px solid #f4c300}h2{background:#ffedb3;padding:10px}</style></head><body><header><h1>EduMetrics — '+esc(r[0])+'</h1></header><p>'+esc(r[1])+'</p><p><b>Report ID:</b> '+esc(d.id)+'</p><p><b>Course:</b> '+esc(d.course)+'</p><p><b>Owner:</b> '+esc(d.owner)+'</p><p><b>Status:</b> '+esc(d.status)+'</p><h2>Report Contents</h2><ul>'+r[2].map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul><p>Demo only — not an official academic record.</p></body></html>';downloadFile(d.id+'-demo-report.html',html,'text/html;charset=utf-8');}
+  function filter(){const q=($('rpSearch')?.value||'').toLowerCase().trim(),type=$('rpType')?.value||'all',status=$('rpStatus')?.value||'all';let visible=0;rows().forEach(row=>{const ok=row.textContent.toLowerCase().includes(q)&&(type==='all'||row.dataset.type===type)&&(status==='all'||row.dataset.status===status);row.hidden=!ok;if(ok)visible++;});if($('rpEmpty'))$('rpEmpty').hidden=visible>0;}
+  document.addEventListener('click',e=>{const button=e.target.closest('button');if(!button)return;const row=button.closest('#rpRows tr');if(row&&(button.matches('.rp-view,.rp-download'))){e.preventDefault();if(button.matches('.rp-view'))preview(row);else download(row);return;}if(button.id==='rpClose'||button.id==='rpDone'){$('rpDialog').close();return;}if(button.id==='rpDialogDownload'&&selected){download(selected);return;}if(button.id==='rpExport'){const head=['Report ID','Report Type','Course / Section','Owner','Updated','Status','Description'];const data=[head,...rows().filter(r=>!r.hidden).map(r=>{const d=info(r);return [d.id,d.type,d.course,d.owner,d.updated,d.status,d.description]})];downloadFile('faculty-compliance-report-index.csv',data.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n'),'text/csv;charset=utf-8');}},true);
+  document.addEventListener('input',e=>{if(e.target.id==='rpSearch')filter()},true);
+  document.addEventListener('change',e=>{if(e.target.id==='rpType'||e.target.id==='rpStatus')filter()},true);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',filter,{once:true});else filter();
+})();
+
+/* RP STUDENT — reliable, standalone delegated report actions (shared script.js) */
+(function () {
+  'use strict';
+  const content = {
+    'STU-SO-014': ['Student Outcome Statement Summary', 'Student Outcomes describe the competencies expected from the BS Computer Engineering program.', ['Program: BS Computer Engineering', 'Section reference: COE232', 'Published Student Outcome statements and individual attainment records will appear when connected to the institution.']],
+    'STU-SYL-014': ['Course Syllabus Matrix', 'A course-level overview of syllabus topics and Course Outcome alignment.', ['CO1 — Apply fundamental software engineering principles.', 'CO2 — Design and analyze software requirements.', 'CO3 — Apply advanced software design patterns.', 'CO4 — Implement and test software solutions in a laboratory environment.']],
+    'STU-CQI-014': ['CQI Action Report', 'Student-visible Continuous Quality Improvement actions for the selected course.', ['Review the latest course announcements and improvement activities.', 'Use assigned resources to improve below-target outcomes.', 'Approved institutional CQI action details require backend integration.']]
+  };
+  const byId = id => document.getElementById(id);
+  const safe = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function record(row) {
+    const c = row.cells;
+    return {id:row.dataset.id || '',type:row.dataset.type || '',course:c[1]?.querySelector('strong')?.textContent.trim() || '',section:c[1]?.querySelector('small')?.textContent.trim() || '',owner:c[2]?.textContent.trim() || '',updated:c[3]?.textContent.trim() || '',status:row.dataset.status || '',description:c[5]?.textContent.trim() || ''};
+  }
+  function report(row) {
+    const d = record(row), details = content[d.id] || [d.type,d.description,[]];
+    return {d, title:details[0],intro:details[1],items:details[2]};
+  }
+  let activeRow = null;
+  function getDialog() {
+    let dialog = byId('rpDialog');
+    if (!dialog) {
+      dialog = document.createElement('dialog');
+      dialog.id = 'rpDialog'; dialog.className = 'rp-dialog';
+      dialog.innerHTML = '<div class="rp-dialog-top"><h2 id="rpDialogTitle">Report Preview</h2><button type="button" id="rpClose" aria-label="Close preview">×</button></div><div id="rpDialogBody"></div><div class="rp-dialog-actions"><button type="button" class="rp-outline-btn" id="rpDialogDownload">Download Report</button><button type="button" class="rp-primary-btn" id="rpDone">Close</button></div>';
+    }
+    if (dialog.parentNode !== document.body) document.body.appendChild(dialog);
+    return dialog;
+  }
+  function openPreview(row) {
+    const dialog = getDialog(), r = report(row);
+    activeRow = row;
+    const title = byId('rpDialogTitle'), body = byId('rpDialogBody');
+    if (!title || !body) return;
+    title.textContent = r.title;
+    body.innerHTML = '<p class="rp-preview-intro">'+safe(r.intro)+'</p><div class="rp-preview-meta">'+
+      [['Report ID',r.d.id],['Course / Program',r.d.course],['Section',r.d.section],['Owner / Scope',r.d.owner],['Updated',r.d.updated],['Status',r.d.status]].map(([label,value])=>'<div class="rp-preview-field"><span>'+safe(label)+'</span><strong>'+safe(value)+'</strong></div>').join('')+
+      '</div><section class="rp-preview-section"><h3>Report Contents</h3><div class="rp-preview-section-content"><ul class="rp-preview-bullet">'+r.items.map(item=>'<li>'+safe(item)+'</li>').join('')+'</ul></div></section><p class="rp-preview-note">Demo preview only — not an official academic record.</p>';
+    dialog.removeAttribute('hidden');
+    dialog.style.setProperty('display','block','important');
+    dialog.style.setProperty('position','fixed','important');
+    dialog.style.setProperty('inset','0','important');
+    dialog.style.setProperty('margin','auto','important');
+    dialog.style.setProperty('z-index','2147483647','important');
+    if (!dialog.open) {
+      try { dialog.showModal(); } catch (_) { dialog.setAttribute('open',''); }
+    }
+    dialog.style.setProperty('display','block','important');
+  }
+  function closePreview() {
+    const dialog = byId('rpDialog'); if (!dialog) return;
+    if (dialog.open && typeof dialog.close === 'function') dialog.close();
+    else dialog.removeAttribute('open');
+    dialog.style.removeProperty('display');
+  }
+  function save(name,contents,type) {
+    const url = URL.createObjectURL(new Blob([contents],{type}));
+    const link = document.createElement('a'); link.href=url;link.download=name;
+    document.body.appendChild(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1500);
+  }
+  function download(row) {
+    const r = report(row);
+    const html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>'+safe(r.title)+'</title><style>body{font-family:Arial,sans-serif;max-width:820px;margin:36px auto;padding:24px;color:#063e73;line-height:1.6}header{border-bottom:5px solid #f4c300;padding-bottom:14px}h1{font-size:27px}h2{background:#fff0b7;padding:12px}li{margin:10px 0}.note{background:#eff6ff;padding:14px;border-left:4px solid #00477f}</style></head><body><header><strong>EduMetrics · Compliance Reports</strong><h1>'+safe(r.title)+'</h1><p>'+safe(r.intro)+'</p></header><p><strong>Report ID:</strong> '+safe(r.d.id)+'</p><p><strong>Course:</strong> '+safe(r.d.course)+' · '+safe(r.d.section)+'</p><p><strong>Owner / Scope:</strong> '+safe(r.d.owner)+'</p><p><strong>Updated:</strong> '+safe(r.d.updated)+'</p><h2>Report Contents</h2><ul>'+r.items.map(item=>'<li>'+safe(item)+'</li>').join('')+'</ul><p class="note">Illustrative demo report only. Not an official certified academic record.</p></body></html>';
+    save(r.d.id+'-demo-report.html',html,'text/html;charset=utf-8');
+  }
+  function filter() {
+    const body = byId('rpRows'); if (!body) return;
+    const query=(byId('rpSearch')?.value||'').toLowerCase().trim();
+    const type=byId('rpType')?.value||'all', status=byId('rpStatus')?.value||'all';
+    let shown=0;
+    [...body.rows].forEach(row=>{const d=record(row);const match=(row.textContent+' '+d.id).toLowerCase().includes(query)&&(type==='all'||type===d.type)&&(status==='all'||status===d.status);row.hidden=!match;if(match)shown++;});
+    if (byId('rpEmpty')) byId('rpEmpty').hidden=shown>0;
+  }
+  // Attach at document level: works regardless of when the page loads or where the buttons sit.
+  document.addEventListener('click',event=>{
+    if (!document.body.classList.contains('rp-student-page')) return;
+    const button=event.target.closest('button'); if (!button) return;
+    const row=button.closest('#rpRows tr');
+    if (row && (button.classList.contains('rp-view') || button.classList.contains('rp-download'))) {
+      event.preventDefault(); event.stopImmediatePropagation();
+      if (button.classList.contains('rp-view')) openPreview(row); else download(row);
+      return;
+    }
+    if (button.id==='rpClose'||button.id==='rpDone') {event.preventDefault();closePreview();}
+    if (button.id==='rpDialogDownload'&&activeRow) {event.preventDefault();download(activeRow);}
+    if (button.id==='rpExport') {
+      event.preventDefault();const rows=[...document.querySelectorAll('#rpRows tr')].filter(row=>!row.hidden);
+      const columns=[['Report ID','Type','Course','Section','Owner','Updated','Status','Description'],...rows.map(row=>{const d=record(row);return [d.id,d.type,d.course,d.section,d.owner,d.updated,d.status,d.description];})];
+      save('student-compliance-report-index.csv',columns.map(c=>c.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n'),'text/csv;charset=utf-8');
+    }
+  },true);
+  document.addEventListener('input',event=>{if(event.target.id==='rpSearch')filter();},true);
+  document.addEventListener('change',event=>{if(['rpType','rpStatus'].includes(event.target.id))filter();},true);
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&byId('rpDialog')?.open)closePreview();});
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',filter,{once:true}); else filter();
+})();
+
+/* AC Department Head: Gradebook navigation and tab controller (early, independent). */
+(function () {
+  "use strict";
+  function activateGradebook(showGradebook) {
+    var root = document.querySelector(".ac-dept-head-page");
+    if (!root) return;
+    var tabs = [document.getElementById("acDhTabAttainment"), document.getElementById("acDhTabApproval")];
+    var panels = [document.getElementById("acDhPanelAttainment"), document.getElementById("acDhPanelApproval")];
+    if (tabs.some(function (x) { return !x; }) || panels.some(function (x) { return !x; })) return;
+    var selected = showGradebook ? 1 : 0;
+    tabs.forEach(function (tab, i) {
+      var active = i === selected;
+      tab.classList.toggle("active", active);
+      tab.classList.toggle("is-active", active);
+      tab.setAttribute("aria-selected", String(active));
+      tab.tabIndex = active ? 0 : -1;
+      panels[i].hidden = !active;
+      panels[i].setAttribute("aria-hidden", String(!active));
+      panels[i].style.setProperty("display", active ? "block" : "none", "important");
+    });
+  }
+  document.addEventListener("click", function (event) {
+    var target = event.target.closest("#acDhTabApproval, #acDhTabAttainment, [data-ac-gradebook-link]");
+    if (!target || !document.querySelector(".ac-dept-head-page")) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    var gradebook = target.id === "acDhTabApproval" || target.hasAttribute("data-ac-gradebook-link");
+    if (target.hasAttribute("data-ac-gradebook-link")) {
+      history.replaceState(null, "", "#gradebook-approval");
+    }
+    activateGradebook(gradebook);
+    if (target.hasAttribute("data-ac-gradebook-link")) {
+      var panel = document.getElementById("acDhPanelApproval");
+      if (panel) panel.scrollIntoView({behavior:"smooth", block:"nearest"});
+    }
+  }, true);
+  function initial() {
+    if (location.hash === "#gradebook-approval") activateGradebook(true);
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initial);
+  else initial();
+  window.addEventListener("hashchange", initial);
+})();
+
+/* AC Faculty: early delegated tab switching, isolated from shared page handlers. */
+(function () {
+  'use strict';
+  function switchAcPanel(tab) {
+    var root = document.querySelector('.ac-faculty-page');
+    if (!root || !tab || !root.contains(tab)) return;
+    var buttons = root.querySelectorAll('.ac-co-tabs .ac-co-tab');
+    buttons.forEach(function (button) {
+      var active = button === tab;
+      button.classList.toggle('active', active);
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-selected', String(active));
+      button.tabIndex = active ? 0 : -1;
+      var id = button.getAttribute('aria-controls');
+      var panel = id && document.getElementById(id);
+      if (panel) {
+        panel.hidden = !active;
+        panel.style.setProperty('display', active ? 'block' : 'none', 'important');
+        panel.setAttribute('aria-hidden', String(!active));
+      }
+    });
+  }
+  document.addEventListener('click', function (event) {
+    var tab = event.target.closest('.ac-faculty-page .ac-co-tabs .ac-co-tab');
+    if (!tab) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    switchAcPanel(tab);
+  }, true);
+  document.addEventListener('keydown', function (event) {
+    var tab = event.target.closest('.ac-faculty-page .ac-co-tabs .ac-co-tab');
+    if (!tab || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    var tabs = Array.from(document.querySelectorAll('.ac-faculty-page .ac-co-tabs .ac-co-tab'));
+    var index = tabs.indexOf(tab);
+    var next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+    event.preventDefault();
+    switchAcPanel(tabs[next]);
+    tabs[next].focus();
+  }, true);
+})();
+
 (function initRaDepartmentHeadTabs() {
   function setup() {
     // Tabs are handled by the existing shared .sodh-tab / data-tab handler.
@@ -435,17 +649,6 @@
             card.classList.toggle("is-active", i === current);
             card.setAttribute("aria-pressed", String(i === current))
         })
-    }
-
-    if (assignments.length === 1 && !courseSelect.value) {
-        const assignment = assignments[0];
-        courseSelect.value = assignment.course_id;
-        courseSelect.dispatchEvent(new Event("change", { bubbles: true }));
-        if (assignment.academic_year_id) {
-            yearSelect.value = assignment.academic_year_id;
-        }
-        sectionSelect.value = assignment.section_id;
-        sectionSelect.dispatchEvent(new Event("change", { bubbles: true }));
     }
 
     cards.forEach((card, i) => card.addEventListener("click", () => show(i)));
@@ -6033,12 +6236,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 /* AC faculty tabs and score filters — retained from GitHub version. */
 document.addEventListener('DOMContentLoaded', () => {
-    const tabs = document.querySelectorAll('.ac-tab');
-    const panels = { scores: document.getElementById('ac-scores'), attainment: document.getElementById('ac-attainment') };
-    tabs.forEach(tab => tab.addEventListener('click', () => {
-        tabs.forEach(item => { const active = item === tab; item.classList.toggle('is-active', active); item.setAttribute('aria-selected', String(active)); });
-        Object.entries(panels).forEach(([key, panel]) => { if (panel) panel.hidden = key !== tab.dataset.acTab; });
-    }));
     const search = document.getElementById('ac-score-search');
     const type = document.getElementById('ac-score-type');
     const sort = document.getElementById('ac-score-sort');
@@ -6250,5 +6447,240 @@ document.querySelectorAll(".sodh-tab").forEach(function(tab) {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
 
+/* AC Faculty: accessible attainment / assessment input tabs and breakdown */
+(function () {
+  function initAcFaculty() {
+    const root = document.querySelector('.ac-faculty-page');
+    if (!root || root.dataset.acFacultyInitialized === 'true') return;
+    root.dataset.acFacultyInitialized = 'true';
+    const tabs = Array.from(root.querySelectorAll('.ac-co-tabs [role="tab"]'));
+    function activateTab(tab) {
+      if (!tab) return;
+      tabs.forEach(function (item) {
+        const selected = item === tab;
+        item.classList.toggle('active', selected);
+        item.classList.toggle('is-active', selected);
+        item.setAttribute('aria-selected', String(selected));
+        item.tabIndex = selected ? 0 : -1;
+        const panel = root.querySelector('#' + item.getAttribute('aria-controls'));
+        if (panel) {
+          panel.hidden = !selected;
+          // Some shared faculty CSS overrides [hidden] with display rules.
+          panel.style.setProperty('display', selected ? 'block' : 'none', 'important');
+          panel.setAttribute('aria-hidden', String(!selected));
+        }
+      });
+    }
+    tabs.forEach(function (tab, index) {
+      tab.setAttribute('type', 'button');
+      tab.addEventListener('click', function () { activateTab(tab); });
+      tab.addEventListener('keydown', function (event) {
+        if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+        activateTab(tabs[next]); tabs[next].focus();
+      });
+    });
+    activateTab(tabs.find(function (tab) { return tab.getAttribute('aria-selected') === 'true'; }) || tabs[0]);
+
+    const modal = root.querySelector('#ac-co-breakdown');
+    const content = root.querySelector('#ac-co-breakdown-content');
+    const closeButton = root.querySelector('.ac-co-dialog-close');
+    const data = {
+      CO1: ['Apply fundamental software engineering principles.', '84%', 'Quiz 1, Laboratory Activity 1, Midterm Examination'],
+      CO2: ['Design and analyze software requirements.', '78%', 'Quiz 2, Midterm Examination'],
+      CO3: ['Apply advanced software design patterns.', '66%', 'Midterm Examination'],
+      CO4: ['Implement and test software solutions in a laboratory environment.', '82%', 'Laboratory Activity 1']
+    };
+    if (!modal || !content) return;
+    root.querySelectorAll('[data-co]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        const co = button.dataset.co;
+        if (!data[co]) return;
+        const [description, attainment, assessments] = data[co];
+        content.replaceChildren();
+        [['Course Outcome', co + ' — ' + description], ['Calculated Attainment', attainment], ['Target', '70%'], ['Assessments Contributing', assessments]].forEach(function (entry) {
+          const p = document.createElement('p');
+          const strong = document.createElement('strong');
+          strong.textContent = entry[0] + ': ';
+          p.append(strong, document.createTextNode(entry[1]));
+          content.append(p);
+        });
+        modal.hidden = false;
+        if (closeButton) closeButton.focus();
+      });
+    });
+    function closeModal() { modal.hidden = true; }
+    if (closeButton) closeButton.addEventListener('click', closeModal);
+    modal.addEventListener('click', function (event) { if (event.target === modal) closeModal(); });
+    document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && !modal.hidden) closeModal(); });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initAcFaculty);
+  else initAcFaculty();
+})();
 
 
+/* AC DEPARTMENT HEAD — independent tab, filter and assessment controller */
+(function () {
+  "use strict";
+  function initAcDepartmentHead() {
+    const page = document.querySelector(".ac-dept-head-page");
+    if (!page || page.dataset.acDhInitialized === "true") return;
+    const byId = id => page.querySelector("#" + id);
+    const tabs = [byId("acDhTabAttainment"), byId("acDhTabApproval")];
+    const panels = [byId("acDhPanelAttainment"), byId("acDhPanelApproval")];
+    if (tabs.some(tab => !tab) || panels.some(panel => !panel)) return;
+    page.dataset.acDhInitialized = "true";
+    function activate(index) {
+      tabs.forEach((tab, i) => {
+        const selected = i === index;
+        tab.classList.toggle("active", selected);
+        tab.setAttribute("aria-selected", String(selected));
+        tab.tabIndex = selected ? 0 : -1;
+        panels[i].hidden = !selected;
+        panels[i].setAttribute("aria-hidden", String(!selected));
+        panels[i].style.setProperty("display", selected ? "block" : "none", "important");
+      });
+    }
+    tabs.forEach((tab, index) => {
+      tab.addEventListener("click", event => { event.preventDefault(); activate(index); });
+      tab.addEventListener("keydown", event => {
+        if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+        event.preventDefault();
+        const next = (index + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+        activate(next);
+        tabs[next].focus();
+      });
+    });
+    const search = byId("acDhSearch");
+    const course = byId("acDhCourse");
+    const section = byId("acDhSection");
+    const department = byId("acDhDepartment");
+    const program = byId("acDhProgram");
+    const year = byId("acDhYear");
+    const attainmentRows = [...byId("acDhAttainmentRows").rows];
+    const approvalRows = [...byId("acDhApprovalRows").rows];
+    function filterRows() {
+      const term = search.value.trim().toLowerCase();
+      const courseValue = course.value;
+      const sectionValue = section.value;
+      function apply(rows) {
+        let visible = 0;
+        rows.forEach(row => {
+          const matches = (!term || row.textContent.toLowerCase().includes(term)) &&
+            (!courseValue || row.dataset.course === courseValue) &&
+            (!sectionValue || row.dataset.section === sectionValue);
+          row.hidden = !matches;
+          if (matches) visible++;
+        });
+        return visible;
+      }
+      const visibleAttainment = apply(attainmentRows);
+      const visibleApproval = apply(approvalRows);
+      byId("acDhEmptyAttainment").hidden = visibleAttainment !== 0;
+      byId("acDhEmptyApproval").hidden = visibleApproval !== 0;
+      const filtered = attainmentRows.filter(row => !row.hidden);
+      byId("acDhTotal").textContent = String(filtered.length);
+      byId("acDhMet").textContent = String(filtered.filter(row => row.dataset.status === "met").length);
+      byId("acDhBelow").textContent = String(filtered.filter(row => row.dataset.status === "below").length);
+    }
+    [search, course, section].forEach(input => input.addEventListener(input === search ? "input" : "change", filterRows));
+    byId("acDhReset").addEventListener("click", () => {
+      search.value = "";
+      course.value = "";
+      section.value = "";
+      department.value = "";
+      program.value = "";
+      year.selectedIndex = 0;
+      filterRows();
+    });
+    const dialog = byId("acDhDialog");
+    page.addEventListener("click", event => {
+      const button = event.target.closest(".ac-dh-view");
+      if (!button || !button.closest("#acDhAttainmentRows")) return;
+      const row = button.closest("tr");
+      byId("acDhDialogTitle").textContent = row.dataset.co + " — Assessment Breakdown";
+      byId("acDhDialogDetails").textContent =
+        row.dataset.course + " · " + row.dataset.section + "\n" +
+        "Faculty: " + row.dataset.faculty + "\n\n" +
+        row.dataset.assessments + "\n\n" +
+        "These are illustrative assessment inputs, not verified gradebook records.";
+      if (typeof dialog.showModal === "function") dialog.showModal();
+    });
+    [byId("acDhDialogClose"), byId("acDhDialogDone")].forEach(button => button.addEventListener("click", () => dialog.close()));
+    dialog.addEventListener("click", event => { if (event.target === dialog) dialog.close(); });
+    activate(window.location.hash === "#gradebook-approval" ? 1 : 0);
+    filterRows();
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initAcDepartmentHead);
+  else initAcDepartmentHead();
+})();
+
+
+
+/* Requirement 08 — Department Head Compliance Reports (scoped; shared script.js) */
+(function () {
+  'use strict';
+  function init() {
+    const page=document.querySelector('.rp-dept-head-page');
+    if(!page)return;
+    const $=id=>document.getElementById(id);
+    const rows=Array.from(page.querySelectorAll('#rpDhRows tr'));
+    const dialog=$('rpDhDialog');
+    let selected=null;
+    const details={
+      'SYL-COE232-2026':['Approved syllabus and course-outcome / student-outcome mapping.','Includes approved syllabus structure, CO/SO alignment, and assessment mapping.'],
+      'GM-COE232-2026':['Approved and locked gradebook summary.','Includes authorized class master grading records; individual student grades are not exposed in this demo.'],
+      'CQI-COE232-2026':['Approved Continuous Quality Improvement action summary.','Includes unmet Course Outcome evidence, interventions, and expected improvements.']
+    };
+    const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    function get(row){const c=row.cells;return {id:row.dataset.id,type:row.dataset.type,course:c[1].querySelector('strong').textContent.trim(),section:c[1].querySelector('small').textContent.trim(),owner:c[2].textContent.trim(),updated:c[3].textContent.trim(),status:row.dataset.status,description:c[5].textContent.trim()};}
+    function apply(){const q=$('rpDhSearch').value.trim().toLowerCase(),type=$('rpDhType').value,status=$('rpDhStatus').value,year=$('rpDhYear').value,department=$('rpDhDepartment').value,program=$('rpDhProgram').value,course=$('rpDhCourse').value,section=$('rpDhSection').value;let count=0;rows.forEach(r=>{const ok=(!q||r.textContent.toLowerCase().includes(q))&&(type==='all'||r.dataset.type===type)&&(status==='all'||r.dataset.status===status)&&(year===r.dataset.year)&&(department==='all'||r.dataset.department===department)&&(program==='all'||r.dataset.program===program)&&(course==='all'||r.dataset.course===course)&&(section==='all'||r.dataset.section===section);r.hidden=!ok;if(ok)count++;});$('rpDhEmpty').hidden=count!==0;}
+    ['rpDhSearch','rpDhType','rpDhStatus','rpDhYear','rpDhDepartment','rpDhProgram','rpDhCourse','rpDhSection'].forEach(id=>$(id).addEventListener(id==='rpDhSearch'?'input':'change',apply));
+    function previewMarkup(row){const d=get(row),extra=details[d.id]||[d.description,''];return '<p>'+esc(extra[0])+'</p><dl>'+[['Report ID',d.id],['Report Type',d.type],['Course',d.course],['Section',d.section],['Faculty / Owner',d.owner],['Updated',d.updated],['Status',d.status],['Scope','Department Head · authorized records']].map(([k,v])=>'<div><dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd></div>').join('')+'</dl><h3>Report Details</h3><p>'+esc(extra[1])+'</p><p><em>Demonstration report only. Official records require backend authorization.</em></p>';}
+    function open(row){selected=row;$('rpDhDialogTitle').textContent=get(row).type;$('rpDhDialogBody').innerHTML=previewMarkup(row);dialog.showModal();}
+    function close(){if(dialog.open)dialog.close();}
+    function htmlReport(row){const d=get(row),extra=details[d.id]||[d.description,''];return '<!doctype html><html><head><meta charset="utf-8"><title>'+esc(d.type)+'</title><style>body{font-family:Arial,sans-serif;max-width:850px;margin:30px auto;padding:20px;color:#004179}h1{border-bottom:5px solid #f4c300;padding-bottom:14px}dt{font-weight:bold;margin-top:12px}dd{margin:3px 0 10px}</style></head><body><h1>EduMetrics · '+esc(d.type)+'</h1><p>'+esc(extra[0])+'</p><dl>'+[['Report ID',d.id],['Course',d.course],['Section',d.section],['Owner',d.owner],['Updated',d.updated],['Status',d.status]].map(([k,v])=>'<dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd>').join('')+'</dl><h2>Report Details</h2><p>'+esc(extra[1])+'</p><p>Demo only — not an official academic record.</p></body></html>';}
+    function downloadBlob(name,data,type){const url=URL.createObjectURL(new Blob([data],{type}));const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);}
+    function download(row){downloadBlob(get(row).id+'-demo-report.html',htmlReport(row),'text/html;charset=utf-8');}
+    function print(row){const w=window.open('','_blank');if(!w){alert('Please allow pop-ups to print the report.');return;}w.document.open();w.document.write(htmlReport(row));w.document.close();w.focus();w.print();}
+    page.addEventListener('click',e=>{const b=e.target.closest('[data-rpdh-action]');if(!b)return;const row=b.closest('tr');if(!row)return;e.preventDefault();if(b.dataset.rpdhAction==='view')open(row);if(b.dataset.rpdhAction==='download')download(row);if(b.dataset.rpdhAction==='print')print(row);});
+    $('rpDhClose').addEventListener('click',close);$('rpDhDone').addEventListener('click',close);
+    $('rpDhDialogDownload').addEventListener('click',()=>{if(selected)download(selected);});
+    $('rpDhDialogPrint').addEventListener('click',()=>{if(selected)print(selected);});
+    dialog.addEventListener('click',e=>{if(e.target===dialog)close();});
+    $('rpDhExport').addEventListener('click',()=>{const columns=[['Report ID','Report Type','Course','Section','Owner','Updated','Status','Description'],...rows.filter(r=>!r.hidden).map(r=>{const d=get(r);return [d.id,d.type,d.course,d.section,d.owner,d.updated,d.status,d.description];})];downloadBlob('department-head-compliance-index.csv',columns.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n'),'text/csv;charset=utf-8');});
+    apply();
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+
+
+/* Requirement 7 — GL Department Head: scoped interactive prototype. */
+(function(){'use strict';
+function init(){const page=document.querySelector('.gl-dept-head-page');if(!page)return;
+const $=id=>document.getElementById(id),rows=[...$('glRows').rows],dialog=$('glDialog');let active=null,mode='review';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function state(row){return {id:row.dataset.id,course:row.cells[0].querySelector('small').textContent.split('2026')[0].trim(),section:row.dataset.course,faculty:row.dataset.faculty,students:row.dataset.students,assessments:row.dataset.assessments,check:row.dataset.check,grades:row.dataset.grades,mapping:row.dataset.mapping,attainment:row.dataset.attainment,status:row.dataset.status};}
+function counts(){$('glPending').textContent=rows.filter(r=>['For Verification','Draft'].includes(r.dataset.status)).length;$('glLocked').textContent=rows.filter(r=>r.dataset.status==='Locked').length;$('glIssues').textContent=rows.filter(r=>r.dataset.check!=='clean').length;}
+function filter(){const q=$('glSearch').value.toLowerCase().trim(),course=$('glCourse').value,section=$('glSection').value,department=$('glDepartment').value,program=$('glProgram').value;let n=0;rows.forEach(r=>{const ok=(!q||r.textContent.toLowerCase().includes(q))&&(!course||r.dataset.course===course)&&(!section||r.dataset.course===section)&&(!department||department==='Engineering')&&(!program||program==='BS CpE');r.hidden=!ok;if(ok)n++;});$('glCount').textContent=n+' gradebook(s)';$('glEmpty').hidden=n>0;}
+function details(items){return '<div class="gl-detail-grid">'+items.map(([k,v])=>'<div class="gl-detail"><span>'+esc(k)+'</span><strong>'+esc(v)+'</strong></div>').join('')+'</div>';}
+function btn(text,kind,action){return '<button type="button" class="gl-btn '+kind+'" data-gl-dialog="'+action+'">'+text+'</button>';}
+function show(row,action){active=row;mode=action;const d=state(row);let title='',content='',actions=btn('Close','gl-outline','close');if(action==='review'){title='Gradebook Review Details';content=details([['Gradebook / Course',d.id+' · '+d.course],['Section / Faculty',d.section+' · '+d.faculty],['Academic Year / Students','2026–2027 · '+d.students+' students'],['Assessments',d.assessments+' assessments'],['Raw Scores',d.grades],['Calculated Grades',d.grades==='Complete'?'Verified':'Pending'],['CO/SO Mappings',d.mapping],['Attainment',d.attainment]])+'<div class="gl-notice">Data validation: '+(d.check==='clean'?'0 missing scores, 0 incomplete assessments, 0 invalid entries, 0 unmapped CO/SO records.':'2 missing scores, 1 incomplete assessment, 0 invalid entries, 1 unmapped CO/SO record.')+'</div><h3>Audit history</h3><div class="gl-notice">Submitted for verification · '+esc(d.faculty)+' · Oct 12, 2026</div>';}
+if(action==='verify'){title='Verify Gradebook';content=details([['Gradebook',d.id+' · '+d.course],['Section / Faculty',d.section+' · '+d.faculty],['Raw Scores / Grades',d.grades],['CO/SO / Attainment',d.mapping+' / '+d.attainment]])+'<div class="gl-notice">Confirm student records, raw scores, grade calculations, assessment weights, CO/SO mappings and attainment. Any unresolved issues block verification.</div><label for="glReason">Verification remarks</label><textarea id="glReason" placeholder="Record checks performed and verification notes…"></textarea><p id="glDialogError" class="gl-error" hidden></p>';actions=btn('Cancel','gl-outline','close')+btn('Mark Verified','gl-gold','confirm');}
+if(action==='reopen'){title='Reopen Locked Gradebook';content=details([['Locked Gradebook',d.id+' · '+d.course]])+'<div class="gl-notice">Reopening allows corrections and changes the status to Reopened. The gradebook must be re-verified before it can be locked again.</div><label for="glReason">Required reason for reopening</label><textarea id="glReason" placeholder="Explain why reopening is necessary…"></textarea><p id="glDialogError" class="gl-error" hidden></p>';actions=btn('Cancel','gl-outline','close')+btn('Reopen Gradebook','gl-red-outline','confirm');}
+if(action==='lock'){title='Confirm Gradebook Lock';content='<p>Lock <strong>'+esc(d.id)+'</strong>? The gradebook will be marked read-only in this prototype. Only a verified record without unresolved issues can be locked.</p><div class="gl-notice">This action will be recorded in the locking history. Corrections require an authorized reopening reason.</div>';actions=btn('Cancel','gl-outline','close')+btn('Confirm Lock','gl-gold','confirm');}
+$('glDialogTitle').textContent=title;$('glDialogContent').innerHTML=content;$('glDialogActions').innerHTML=actions;if(!dialog.open)dialog.showModal();}
+function close(){if(dialog.open)dialog.close();}
+function updateRow(row,status){row.dataset.status=status;const badge=row.querySelector('.gl-row-status');badge.textContent=status;badge.className='gl-pill gl-row-status '+(['Verified','Locked'].includes(status)?'gl-green':status==='For Verification'?'gl-yellow':'gl-muted');const action=row.querySelector('.gl-actions');const type=status==='Locked'?'reopen':status==='Verified'?'lock':'verify';action.querySelector('[data-gl-action]:last-child').outerHTML=btn(status==='Locked'?'Reopen':status==='Verified'?'Lock':'Verify',type==='reopen'?'gl-red-outline':type==='lock'?'gl-outline':'gl-gold',type).replace('data-gl-dialog','data-gl-action');}
+function history(row,action,remark){const d=state(row),tr=document.createElement('tr');[d.id,action,'Department Head',new Date().toLocaleString(),remark||'—'].forEach(value=>{const td=document.createElement('td');td.textContent=value;tr.append(td)});$('glHistory').prepend(tr);}
+function approved(){const list=rows.filter(r=>['Locked','Verified'].includes(r.dataset.status));$('glApprovedList').innerHTML=list.length?list.map(r=>'<p><strong>'+esc(r.dataset.id)+'</strong> — '+esc(r.dataset.status)+'</p>').join(''):'<p>No approved gradebooks yet.</p>';}
+$('glRows').addEventListener('click',e=>{const button=e.target.closest('button[data-gl-action]');if(button)show(button.closest('tr'),button.dataset.glAction);});
+dialog.addEventListener('click',e=>{const button=e.target.closest('button[data-gl-dialog]');if(!button)return;if(button.dataset.glDialog==='close'){close();return;}if(!active)return;const d=state(active),remark=$('glReason')?.value.trim()||'';let next='';if(mode==='verify'){if(d.check!=='clean'||d.grades!=='Complete'||d.mapping!=='Verified'||d.attainment!=='Verified'){const el=$('glDialogError');el.hidden=false;el.textContent='Verification blocked: resolve missing or incomplete data, grades, mappings and attainment first.';return;}next='Verified';}else if(mode==='lock'){if(d.status!=='Verified'||d.check!=='clean')return;next='Locked';}else if(mode==='reopen'){if(!remark){const el=$('glDialogError');el.hidden=false;el.textContent='Please provide a reason for reopening.';return;}next='Reopened';}if(next){updateRow(active,next);history(active,next,remark);counts();filter();approved();close();}});
+$('glDialogX').addEventListener('click',close);dialog.addEventListener('click',e=>{if(e.target===dialog)close();});
+page.querySelectorAll('[data-gl-tab]').forEach(tab=>tab.addEventListener('click',()=>{page.querySelectorAll('[data-gl-tab]').forEach(t=>{const yes=t===tab;t.classList.toggle('active',yes);t.setAttribute('aria-selected',String(yes));});page.querySelectorAll('[data-gl-panel]').forEach(p=>p.hidden=p.dataset.glPanel!==tab.dataset.glTab);approved();}));
+$('glSearch').addEventListener('input',filter);['glCourse','glSection','glDepartment','glProgram','glYear'].forEach(id=>$(id).addEventListener('change',filter));$('glReset').addEventListener('click',()=>{$('glSearch').value='';['glCourse','glSection','glDepartment','glProgram'].forEach(id=>$(id).value='');filter();});
+$('glExport')?.addEventListener('click',()=>{const data=[['Gradebook','Course','Faculty','Students','Assessments','Status'],...rows.map(r=>{const d=state(r);return[d.id,d.section,d.faculty,d.students,d.assessments,d.status]})];const csv=data.map(a=>a.map(s=>'"'+String(s).replace(/"/g,'""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='gradebook-locking-index.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+counts();filter();approved();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();

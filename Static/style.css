@@ -12340,10 +12340,10 @@ body > #rrDialog[hidden] {
 
 /* AC Student uses the same CQI Student panel and toolbar layout. */
 .ac-student-page .ac-attainment-section{margin-top:0;padding:0 8px 24px;box-shadow:none;border:0;background:#fff}
-.ac-student-page .ac-attainment-section .cqi-student-heading{padding:0;margin:0}
+.ac-student-page .ac-attainment-section .cqi-student-heading{padding:0 15px;margin:0}
 .ac-student-page .ac-attainment-section .cqi-student-heading h2{margin:0;font-size:16px;font-weight:800;color:#004179}
 .ac-student-page .ac-attainment-section .cqi-student-heading p{margin:2px 0 0;font-size:12px;color:#41658b}
-.ac-student-page .ac-attainment-section .cqi-student-toolbar{display:flex;align-items:flex-end;gap:14px;min-height:74px;padding:0 10px 15px}
+.ac-student-page .ac-attainment-section .cqi-student-toolbar{display:flex;align-items:flex-end;gap:14px;min-height:74px;padding:0 25px 15px}
 .ac-student-page .ac-attainment-section .cqi-student-search{display:flex;align-items:center;gap:8px;flex:0 0 245px;width:245px;height:34px;box-sizing:border-box;margin-right:auto;padding:0 12px;border:1px solid #2d71a9;border-radius:18px;background:#fff}
 .ac-student-page .ac-attainment-section .cqi-student-search input{flex:1;min-width:0;width:100%;height:30px;padding:0;border:0;outline:0;background:transparent;font-size:13px;color:#004179}
 .ac-student-page .ac-attainment-section .cqi-student-filter{display:flex;align-items:center;gap:14px;font-size:13px;white-space:nowrap}
@@ -12363,3 +12363,325 @@ body > #rrDialog[hidden] {
 .ac-student-page .ac-attainment-section .ac-pill-green{background:#d6f3a2;color:#527900}.ac-student-page .ac-attainment-section .ac-pill-yellow{background:#ffe9a7;color:#9a7100}.ac-student-page .ac-attainment-section .ac-pill-red{background:#f8c4c4;color:#ae3d3d}
 .ac-student-page .ac-attainment-section .ac-table tr[hidden]{display:none}
 @media(max-width:850px){.ac-student-page .ac-attainment-section .cqi-student-toolbar{flex-wrap:wrap}.ac-student-page .ac-attainment-section .cqi-student-search{flex:1 0 100%;width:100%}}
+
+
+.ac-faculty-page .ac-attainment-content{margin-top:20px;color:#004179}
+.ac-faculty-page .ac-co-content-heading{margin:14px 7px 10px}
+.ac-faculty-page .ac-co-content-heading h1{margin:0;font-size:16px;font-weight:800;line-height:1.3;color:#004179}
+.ac-faculty-page .ac-co-content-heading p{margin:0;color:#004179;font-size:12px;font-weight:400}
+.ac-faculty-page .ac-co-tabs{margin:0 7px;display:flex;align-items:flex-end;gap:0;padding:0}
+.ac-faculty-page .ac-co-table-scroll{margin:0 7px}
+.ac-faculty-page .ac-co-dialog{font-size:13px}
+.ac-faculty-page .ac-co-tabpanel[hidden]{display:none!important}
+.ac-faculty-page .ac-co-table-scroll{overflow-x:auto}
+.ac-faculty-page .ac-co-chip{display:inline-block;border:1px solid #b5d7ef;border-radius:16px;padding:3px 8px;font-size:11px;color:#437da8;background:#fff;margin:2px 3px 2px 0;white-space:nowrap}
+.ac-faculty-page .ac-co-status{display:inline-block;border-radius:20px;padding:6px 12px;font-size:11px;font-weight:800;background:#d7f4a9;color:#477900;white-space:nowrap}
+.ac-faculty-page .ac-co-status.is-below{background:#ffe7a2;color:#9c6a00}
+.ac-faculty-page .ac-co-action{background:#004179;border:0;border-radius:20px;color:#fff;font-size:11px;font-weight:800;padding:9px 13px;cursor:pointer}
+.ac-faculty-page .ac-co-action:hover{background:#0d5792}
+.ac-faculty-page .ac-co-dialog[hidden]{display:none!important}
+.ac-faculty-page .ac-co-dialog{position:fixed;inset:0;z-index:50000;background:rgba(0,28,58,.55);display:flex;align-items:center;justify-content:center;padding:18px}
+.ac-faculty-page .ac-co-dialog-content{width:min(540px,100%);background:#fff;border-top:5px solid #f4c300;border-radius:12px;padding:22px;box-shadow:0 20px 60px rgba(0,25,50,.25)}
+.ac-faculty-page .ac-co-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.ac-faculty-page .ac-co-dialog-head h2{font-size:19px;color:#004179}
+.ac-faculty-page .ac-co-dialog-close{border:0;background:#edf5fc;color:#004179;border-radius:6px;font-size:24px;width:32px;height:32px;cursor:pointer}
+.ac-faculty-page .ac-co-dialog-body{font-size:13px;color:#315b80;line-height:1.7}
+.ac-faculty-page .ac-co-dialog-body strong{color:#004179}
+
+/* AC Faculty: reuse faculty workspace; only attainment-specific table/tab adjustments. */
+.ac-faculty-page .ac-attainment-content{margin-top:0;color:#004179}
+.ac-faculty-page .ac-co-content-heading{margin:20px 7px 12px}
+.ac-faculty-page .ac-co-content-heading h1{font-size:16px;font-weight:800}
+.ac-faculty-page .ac-co-tabs{display:flex;align-items:stretch;gap:0;margin:0 7px;background:#f3f6fa;border-bottom:1px solid #d6e3f0;border-radius:8px 8px 0 0;padding:0 4px;min-height:42px}
+.ac-faculty-page .ac-co-tabs .ac-co-tab{appearance:none;display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:10px 16px;border:1px solid #d9e4ef;border-bottom:0;border-radius:8px 8px 0 0;background:#f7f9fc;color:#004179;font-family:inherit;font-size:13px;font-weight:750;line-height:1.2;cursor:pointer;white-space:nowrap}
+.ac-faculty-page .ac-co-tabs .ac-co-tab.active,.ac-faculty-page .ac-co-tabs .ac-co-tab[aria-selected="true"]{background:#fff;border-bottom:3px solid #f4c300;padding-bottom:7px;font-weight:800}
+.ac-faculty-page .ac-co-tabs .ac-co-tab:focus-visible{outline:2px solid #004179;outline-offset:-2px}
+.ac-faculty-page .ac-co-table-scroll{margin:0 7px;overflow-x:auto}
+.ac-faculty-page .ac-co-table{width:100%;min-width:1020px;border-collapse:separate;border-spacing:0 6px;table-layout:fixed;color:#004179}
+.ac-faculty-page .ac-co-table thead th{background:#fff0b6;color:#004179;font-size:13px;font-weight:800;text-align:left;padding:13px 14px;border-top:1px solid #f2d16c;border-bottom:1px solid #f2d16c}
+.ac-faculty-page .ac-co-table thead th:first-child{border-left:1px solid #f2d16c;border-radius:6px 0 0 6px}
+.ac-faculty-page .ac-co-table thead th:last-child{border-right:1px solid #f2d16c;border-radius:0 6px 6px 0}
+.ac-faculty-page .ac-co-table tbody td{background:#fff;color:#004179;font-size:13px;font-weight:650;vertical-align:middle;padding:15px 14px;border-top:1px solid #9bc9fb;border-bottom:1px solid #9bc9fb;line-height:1.45}
+.ac-faculty-page .ac-co-table tbody td:first-child{border-left:1px solid #9bc9fb;border-radius:8px 0 0 8px;font-weight:800}
+.ac-faculty-page .ac-co-table tbody td:last-child{border-right:1px solid #9bc9fb;border-radius:0 8px 8px 0}
+.ac-faculty-page #panel-calculated .ac-co-table th:nth-child(1){width:5%}
+.ac-faculty-page #panel-calculated .ac-co-table th:nth-child(2){width:30%}
+.ac-faculty-page #panel-calculated .ac-co-table th:nth-child(3){width:25%}
+.ac-faculty-page #panel-calculated .ac-co-table th:nth-child(4){width:13%}
+.ac-faculty-page #panel-calculated .ac-co-table th:nth-child(5){width:7%}
+.ac-faculty-page #panel-calculated .ac-co-table th:nth-child(6){width:10%}
+.ac-faculty-page #panel-calculated .ac-co-table th:nth-child(7){width:10%}
+.ac-faculty-page .ac-co-table .ac-co-chip{font-size:12px;font-weight:650;padding:5px 9px;border-color:#8ebbe8;color:#004179}
+.ac-faculty-page .ac-co-table .ac-co-status{font-size:12px;min-width:96px;text-align:center;padding:7px 12px}
+.ac-faculty-page .ac-co-table .ac-co-action{font-size:12px;padding:9px 13px;white-space:nowrap}
+@media(max-width:760px){.ac-faculty-page .ac-co-tabs{overflow-x:auto}.ac-faculty-page .ac-co-tabs .ac-co-tab{font-size:12px;padding-left:10px;padding-right:10px}}
+
+/* AC Faculty: remove text fading/blur on pointer hover; tabs remain crisp. */
+.ac-faculty-page .ac-co-content-heading,
+.ac-faculty-page .ac-co-content-heading *,
+.ac-faculty-page .ac-co-tabs *,
+.ac-faculty-page .ac-co-table-scroll,
+.ac-faculty-page .ac-co-table-scroll * {
+  filter: none !important;
+  text-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
+}
+.ac-faculty-page .ac-co-tabpanel[hidden] { display: none !important; }
+
+
+/* AC DEPARTMENT HEAD — content only; shared Department Head shell stays unchanged */
+.ac-dept-head-page .ac-dh-panel { min-width:0; height:auto!important; min-height:0!important; display:flex!important; flex-direction:column!important; overflow:visible!important; }
+.ac-dept-head-page .ac-dh-toolbar { flex:0 0 auto!important; display:flex!important; gap:12px!important; align-items:center!important; margin:0!important; padding:14px 16px!important; min-height:66px!important; }
+.ac-dept-head-page .ac-dh-toolbar .sodh-search { box-sizing:border-box; display:flex; align-items:center; flex:1 1 auto; width:auto; height:40px; min-width:180px; margin:0; padding:0 12px; border:1px solid #a8cafa; border-radius:9px; background:#fff; }
+.ac-dept-head-page .ac-dh-toolbar .sodh-search input { display:block; width:100%; height:100%; min-height:0; padding:0; border:0!important; border-radius:0; outline:0; box-shadow:none!important; background:transparent; color:#004179; }
+.ac-dept-head-page .ac-dh-reset { flex:0 0 145px; min-height:38px; background:#fff; border:1px solid #a8cafa; border-radius:9px; padding:8px 18px; color:#06447c; font-weight:700; cursor:pointer; }
+.ac-dept-head-page .ac-dh-tabs { box-sizing:border-box; display:flex!important; flex:0 0 auto!important; align-items:stretch!important; gap:0!important; width:100%; min-height:48px!important; height:auto!important; padding:0 12px!important; margin:0!important; overflow:visible!important; position:relative; z-index:3; background:#f3f6fa; border-bottom:1px solid #dce6f1; }
+.ac-dept-head-page .ac-dh-tab { box-sizing:border-box; appearance:none; display:inline-flex!important; align-items:center; justify-content:center; flex:0 0 auto!important; min-height:47px!important; height:auto!important; position:relative; border:1px solid #dce6f1; border-bottom:0; border-radius:9px 9px 0 0; background:#f8fafc; color:#06447c; font-weight:800!important; font-size:14px!important; line-height:1.3; padding:12px 22px!important; cursor:pointer; white-space:nowrap; }
+.ac-dept-head-page .ac-dh-tab.active,.ac-dept-head-page .ac-dh-tab[aria-selected="true"] { background:#fff; border-bottom:3px solid #f5bb00; }
+.ac-dept-head-page .ac-dh-tab-panel { box-sizing:border-box; flex:1 1 auto; min-height:0; width:100%; overflow:visible; padding:10px 12px 16px; }
+.ac-dept-head-page .ac-dh-tab-panel[hidden] { display:none!important; }
+.ac-dept-head-page .ac-dh-table-wrap { box-sizing:border-box; width:100%; overflow-x:auto; }
+.ac-dept-head-page .ac-dh-table { width:100%; min-width:990px; border-collapse:separate; border-spacing:0 7px; }
+.ac-dept-head-page .ac-dh-table thead th { background:#fff0b3; color:#003d75; text-align:left; }
+.ac-dept-head-page .ac-dh-table tbody td { background:#fff; color:#06447c; vertical-align:middle; }
+.ac-dept-head-page .ac-dh-table small { display:block; margin-top:4px; color:#667c95; font-size:11px; line-height:1.4; }
+.ac-dept-head-page .ac-dh-pill { display:inline-flex; align-items:center; justify-content:center; text-align:center; border-radius:999px; padding:7px 12px; font-weight:800; font-size:11px; min-width:86px; }
+.ac-dept-head-page .ac-dh-pill.met { background:#d4f2a1; color:#316600; }
+.ac-dept-head-page .ac-dh-pill.below { background:#ffecae; color:#a46a00; }
+.ac-dept-head-page .ac-dh-view { border:0; border-radius:999px; background:#00477e; color:#fff; padding:10px 16px; font-weight:800; font-size:11px; cursor:pointer; }
+.ac-dept-head-page .ac-dh-empty { padding:20px; text-align:center; color:#64748b; }
+.ac-dept-head-page .ac-dh-dialog { border:1px solid #c8ddfa; border-radius:16px; padding:24px; max-width:520px; width:calc(100% - 36px); color:#06447c; box-shadow:0 16px 48px #0002; }
+.ac-dept-head-page .ac-dh-dialog::backdrop { background:#10233a88; }
+.ac-dept-head-page .ac-dh-dialog-head { display:flex; justify-content:space-between; gap:20px; align-items:center; }
+.ac-dept-head-page .ac-dh-dialog-head h2 { margin:0; }
+.ac-dept-head-page #acDhDialogClose { border:0; background:none; font-size:28px; cursor:pointer; color:#06447c; }
+.ac-dept-head-page #acDhDialogDetails { white-space:pre-line; line-height:1.8; }
+@media(max-width:700px) { .ac-dept-head-page .ac-dh-toolbar { flex-direction:column; align-items:stretch!important; } .ac-dept-head-page .ac-dh-reset { flex-basis:auto; width:100%; } .ac-dept-head-page .ac-dh-tabs { overflow-x:auto!important; padding:0 5px!important; } }
+
+/* AC Department Head: course context card, using the shared four-card grid. */
+.dept-head-unified.ac-dept-head-page .dh-summary .ac-dh-course-card {justify-content:center!important;}
+.dept-head-unified.ac-dept-head-page .dh-summary .ac-dh-course-card .ac-dh-course-title {display:block!important;margin:0 0 5px!important;color:var(--dh-blue,#004179)!important;font-size:24px!important;font-weight:800!important;line-height:1.2!important;white-space:normal!important;}
+.dept-head-unified.ac-dept-head-page .dh-summary .ac-dh-course-card .ac-dh-course-subtitle {display:block!important;margin:0!important;color:#56799c!important;font-size:13px!important;font-weight:400!important;line-height:1.35!important;}
+@media(max-width:1150px){.dept-head-unified.ac-dept-head-page .dh-summary .ac-dh-course-card .ac-dh-course-title{font-size:20px!important;}}
+
+
+/* Requirement 8 — Student Compliance Reports (scoped to this page) */
+:is(.rp-student-page,.rp-faculty-page) .rp-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0 17px}
+:is(.rp-student-page,.rp-faculty-page) .rp-stat{min-height:92px!important;height:auto!important;padding:15px 20px 15px 28px!important;gap:3px!important}
+:is(.rp-student-page,.rp-faculty-page) .rp-stat .so-summary-accent{width:10px!important}
+:is(.rp-student-page,.rp-faculty-page) .rp-stat-blue .so-summary-accent{background:#bde3f8!important}:is(.rp-student-page,.rp-faculty-page) .rp-stat-green .so-summary-accent{background:#b7e76e!important}:is(.rp-student-page,.rp-faculty-page) .rp-stat-red .so-summary-accent{background:#f3aaaa!important}
+:is(.rp-student-page,.rp-faculty-page) .rp-stat-label{color:#557899;font-size:12px;font-weight:600}:is(.rp-student-page,.rp-faculty-page) .rp-stat .so-summary-number{font-size:30px!important;color:#07518a!important}
+:is(.rp-student-page,.rp-faculty-page) .rp-panel{background:#fff;border:1px solid #dce6f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 5px #0b3b6710}
+:is(.rp-student-page,.rp-faculty-page) .rp-panel-header{padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid #e7edf3}
+:is(.rp-student-page,.rp-faculty-page) .rp-panel-header h2{font-size:19px;color:#084a80;font-weight:800;margin:0 0 3px}:is(.rp-student-page,.rp-faculty-page) .rp-panel-header p{font-size:12px;color:#6c8196;margin:0}
+:is(.rp-student-page,.rp-faculty-page) .rp-outline-btn{border:1px solid #8bb9df;border-radius:20px;background:#fff;color:#0b5188;font-size:12px;font-weight:750;padding:7px 14px;cursor:pointer;white-space:nowrap}
+:is(.rp-student-page,.rp-faculty-page) .rp-outline-btn:hover,:is(.rp-student-page,.rp-faculty-page) .rp-outline-btn:focus-visible{background:#eaf4fc;border-color:#0b5188}
+:is(.rp-student-page,.rp-faculty-page) .rp-filters{display:grid;grid-template-columns:minmax(220px,2fr) minmax(150px,1fr) minmax(150px,1fr);gap:12px;padding:16px 20px}
+:is(.rp-student-page,.rp-faculty-page) .rp-filters input,:is(.rp-student-page,.rp-faculty-page) .rp-filters select{width:100%;min-width:0;border:1px solid #d3e1ed;border-radius:8px;padding:12px 13px;background:#fff;color:#234f76;font-size:13px;outline:none}
+:is(.rp-student-page,.rp-faculty-page) .rp-filters input:focus,:is(.rp-student-page,.rp-faculty-page) .rp-filters select:focus{border-color:#0b5188;box-shadow:0 0 0 2px #0b51881a}
+:is(.rp-student-page,.rp-faculty-page) .rp-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+:is(.rp-student-page,.rp-faculty-page) .rp-table-scroll{width:100%;overflow-x:auto}:is(.rp-student-page,.rp-faculty-page) .rp-table{border-collapse:collapse;width:100%;min-width:860px;font-size:12px;color:#466786}
+:is(.rp-student-page,.rp-faculty-page) .rp-table th{background:#ffedb3;color:#365e81;font-size:11px;text-align:left;font-weight:800;padding:12px 13px;white-space:nowrap}
+:is(.rp-student-page,.rp-faculty-page) .rp-table td{padding:15px 13px;border-bottom:1px solid #e9edf1;vertical-align:middle;line-height:1.4}
+:is(.rp-student-page,.rp-faculty-page) .rp-table tr:last-child td{border-bottom:0}:is(.rp-student-page,.rp-faculty-page) .rp-table td strong{display:block;color:#1c527e;font-size:12px;font-weight:800}:is(.rp-student-page,.rp-faculty-page) .rp-table td small{display:block;color:#7990a4;font-size:11px;margin-top:3px}
+:is(.rp-student-page,.rp-faculty-page) .rp-pill{display:inline-block;background:#def4ae;color:#4c7916;border-radius:18px;padding:5px 12px;font-size:11px;font-weight:750;white-space:nowrap}
+:is(.rp-student-page,.rp-faculty-page) .rp-actions{display:flex;flex-wrap:wrap;gap:6px}:is(.rp-student-page,.rp-faculty-page) .rp-actions .rp-outline-btn{padding:5px 12px;font-size:11px}
+:is(.rp-student-page,.rp-faculty-page) .rp-empty{padding:25px;text-align:center;color:#64809a;font-size:13px}
+:is(.rp-student-page,.rp-faculty-page) .rp-dialog{width:min(540px,calc(100vw - 30px));max-height:85vh;border:1px solid #dce6f0;border-radius:14px;padding:24px;color:#244c71;box-shadow:0 18px 60px #001b3440}
+:is(.rp-student-page,.rp-faculty-page) .rp-dialog::backdrop{background:#001b3480}:is(.rp-student-page,.rp-faculty-page) .rp-dialog-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}:is(.rp-student-page,.rp-faculty-page) .rp-dialog h2{color:#084a80;font-size:20px}:is(.rp-student-page,.rp-faculty-page) .rp-dialog-top button{background:transparent;border:0;font-size:28px;cursor:pointer;color:#315f85}
+:is(.rp-student-page,.rp-faculty-page) .rp-dialog #rpDialogBody{font-size:13px;line-height:1.8}:is(.rp-student-page,.rp-faculty-page) .rp-dialog-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px}:is(.rp-student-page,.rp-faculty-page) .rp-primary-btn{border:0;border-radius:20px;background:#084a80;color:white;padding:8px 19px;cursor:pointer;font-size:12px}
+@media(max-width:900px){:is(.rp-student-page,.rp-faculty-page) .rp-filters{grid-template-columns:1fr 1fr}:is(.rp-student-page,.rp-faculty-page) .rp-filters input{grid-column:1/-1}}
+@media(max-width:600px){:is(.rp-student-page,.rp-faculty-page) .rp-summary{grid-template-columns:1fr;gap:9px}:is(.rp-student-page,.rp-faculty-page) .rp-stat{min-height:72px!important}:is(.rp-student-page,.rp-faculty-page) .rp-panel-header{align-items:flex-start;flex-direction:column}:is(.rp-student-page,.rp-faculty-page) .rp-filters{grid-template-columns:1fr}:is(.rp-student-page,.rp-faculty-page) .rp-filters input{grid-column:auto}}
+
+/* Requirement 08: align report content with student Attainment workspace */
+:is(.rp-student-page,.rp-faculty-page) .rp-summary{margin:20px 0 24px!important;gap:12px!important}
+:is(.rp-student-page,.rp-faculty-page) .rp-stat{border-radius:11px!important;min-height:70px!important}
+:is(.rp-student-page,.rp-faculty-page) .rp-stat .so-summary-accent{background:#ffc400!important}
+:is(.rp-student-page,.rp-faculty-page) .rp-stat-label{color:#003f77!important;font-size:12px!important;font-weight:800!important}
+:is(.rp-student-page,.rp-faculty-page) .rp-stat .so-summary-number{color:#003f77!important;font-size:29px!important}
+.rp-student-page .so-page-heading{margin:0 0 17px!important;padding:0 18px!important}
+.rp-student-page .so-page-heading h1{font-size:17px!important;line-height:1.2!important;margin:0!important}
+.rp-student-page .so-page-heading p{font-size:12px!important;margin:3px 0 0!important}
+:is(.rp-student-page,.rp-faculty-page) .rp-panel-header{padding:0 18px 12px!important;border:0!important;background:transparent!important}
+:is(.rp-student-page,.rp-faculty-page) .rp-panel-header h2{font-size:14px!important}
+:is(.rp-student-page,.rp-faculty-page) .rp-filters{padding:10px 18px 17px!important;display:flex!important;gap:10px!important;align-items:center!important}
+:is(.rp-student-page,.rp-faculty-page) .rp-filters input{flex:1 1 45%!important;min-width:170px!important}
+:is(.rp-student-page,.rp-faculty-page) .rp-filters select{flex:0 1 25%!important;min-width:130px!important}
+:is(.rp-student-page,.rp-faculty-page) .rp-filters input,:is(.rp-student-page,.rp-faculty-page) .rp-filters select{padding:9px 12px!important;border-color:#9cc4f4!important;border-radius:7px!important;font-size:12px!important}
+:is(.rp-student-page,.rp-faculty-page) .rp-panel{border:0!important;box-shadow:none!important;background:transparent!important;overflow:visible!important;padding:0 18px!important}
+:is(.rp-student-page,.rp-faculty-page) .rp-table{border-collapse:separate!important;border-spacing:0 6px!important;min-width:930px!important;color:#003f77!important}
+:is(.rp-student-page,.rp-faculty-page) .rp-table th{background:#ffefb4!important;color:#003f77!important;padding:13px 12px!important;font-size:11px!important}
+:is(.rp-student-page,.rp-faculty-page) .rp-table th:first-child{border-radius:7px 0 0 7px}:is(.rp-student-page,.rp-faculty-page) .rp-table th:last-child{border-radius:0 7px 7px 0}
+:is(.rp-student-page,.rp-faculty-page) .rp-table tbody td{background:#fff!important;border-top:1px solid #a6caff!important;border-bottom:1px solid #a6caff!important;padding:12px!important;font-size:11px!important}
+:is(.rp-student-page,.rp-faculty-page) .rp-table tbody td:first-child{border-left:1px solid #a6caff!important;border-radius:7px 0 0 7px}:is(.rp-student-page,.rp-faculty-page) .rp-table tbody td:last-child{border-right:1px solid #a6caff!important;border-radius:0 7px 7px 0}
+:is(.rp-student-page,.rp-faculty-page) .rp-actions{flex-direction:row!important;flex-wrap:nowrap!important}
+:is(.rp-student-page,.rp-faculty-page) .rp-actions .rp-outline-btn{background:#00477f!important;color:#fff!important;border-color:#00477f!important;border-radius:20px!important}
+@media(max-width:700px){:is(.rp-student-page,.rp-faculty-page) .rp-filters{flex-wrap:wrap!important}:is(.rp-student-page,.rp-faculty-page) .rp-filters input{flex-basis:100%!important}:is(.rp-student-page,.rp-faculty-page) .rp-filters select{flex:1 1 40%!important}}
+
+
+/* RP STUDENT — report preview dialog, scoped to Requirement 8 */
+:is(.rp-student-page,.rp-faculty-page) .rp-dialog{width:min(760px,calc(100vw - 32px));max-width:760px;max-height:min(88vh,900px);padding:0;border:1px solid #b8d6fa;border-radius:16px;box-shadow:0 22px 70px #092f5860;color:#073e74;overflow:auto;background:#fff}
+:is(.rp-student-page,.rp-faculty-page) .rp-dialog::backdrop{background:rgba(5,30,58,.58);backdrop-filter:blur(2px)}
+:is(.rp-student-page,.rp-faculty-page) .rp-dialog-top{background:#0d4178;color:white;padding:22px 26px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-bottom:4px solid #ffbf00}
+:is(.rp-student-page,.rp-faculty-page) .rp-dialog-top h2{color:#fff!important;font-size:21px!important;margin:0!important;font-weight:800}
+:is(.rp-student-page,.rp-faculty-page) .rp-dialog-top .rp-preview-kicker{display:block;color:#ffd14e;font-size:10px;font-weight:800;letter-spacing:1px;margin-bottom:6px}
+.rp-student-page #rpClose{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.4);border-radius:9px;color:white;font-size:25px;line-height:1;width:36px;height:36px;cursor:pointer;flex-shrink:0}
+.rp-student-page #rpDialogBody{padding:24px 26px}
+:is(.rp-student-page,.rp-faculty-page) .rp-preview-intro{color:#526c86;font-size:12px;line-height:1.7;margin:0 0 17px}
+:is(.rp-student-page,.rp-faculty-page) .rp-preview-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin-bottom:19px}
+:is(.rp-student-page,.rp-faculty-page) .rp-preview-field{background:#f7faff;border:1px solid #dceafb;border-radius:10px;padding:12px 14px;min-width:0}
+:is(.rp-student-page,.rp-faculty-page) .rp-preview-field span{display:block;color:#647b92;font-size:10px;font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:.35px}
+:is(.rp-student-page,.rp-faculty-page) .rp-preview-field strong{display:block;color:#073e74;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+:is(.rp-student-page,.rp-faculty-page) .rp-preview-section{border:1px solid #d7e7f9;border-radius:11px;overflow:hidden;margin:15px 0}
+:is(.rp-student-page,.rp-faculty-page) .rp-preview-section h3{margin:0!important;padding:12px 15px;background:#ffefb5;color:#063e73;font-size:13px!important;font-weight:800}
+:is(.rp-student-page,.rp-faculty-page) .rp-preview-section-content{padding:15px;font-size:12px;line-height:1.75}
+:is(.rp-student-page,.rp-faculty-page) .rp-preview-section-content p{margin:0 0 8px}
+:is(.rp-student-page,.rp-faculty-page) .rp-preview-section-content p:last-child{margin-bottom:0}
+:is(.rp-student-page,.rp-faculty-page) .rp-preview-bullet{padding-left:18px;margin:0}
+:is(.rp-student-page,.rp-faculty-page) .rp-preview-bullet li{margin:6px 0}
+:is(.rp-student-page,.rp-faculty-page) .rp-preview-note{background:#f0f6ff;border-left:4px solid #1a6eb1;border-radius:6px;padding:12px 14px;color:#365b7c;font-size:11px;line-height:1.65;margin-top:17px}
+:is(.rp-student-page,.rp-faculty-page) .rp-dialog-actions{display:flex;justify-content:flex-end;gap:10px;padding:16px 26px 22px;border-top:1px solid #e3edf7;background:#fff}
+:is(.rp-student-page,.rp-faculty-page) .rp-dialog-actions button{padding:10px 18px!important;border-radius:20px!important;font-size:12px!important;font-weight:800!important;cursor:pointer}
+.rp-student-page #rpDialogDownload{background:#00477f!important;color:#fff!important;border:1px solid #00477f!important}
+.rp-student-page #rpDone{background:#fff!important;color:#00477f!important;border:1px solid #9fc6ed!important}
+@media(max-width:540px){:is(.rp-student-page,.rp-faculty-page) .rp-preview-meta{grid-template-columns:1fr}:is(.rp-student-page,.rp-faculty-page) .rp-dialog-top,.rp-student-page #rpDialogBody{padding:18px}:is(.rp-student-page,.rp-faculty-page) .rp-dialog-actions{padding:14px 18px;flex-wrap:wrap}}
+
+/* RP faculty dialog and status styles */
+.rp-faculty-page .rp-dialog::backdrop{background:rgba(0,27,52,.55)}
+.rp-faculty-page .rp-dialog[open]{position:fixed;inset:0;margin:auto;z-index:2147483647;background:white}
+.rp-faculty-page .rp-pill{background:#dff3b4;color:#477313}
+
+
+/* Requirement 08 — Compliance Reports / Department Head (scoped) */
+.rp-dept-head-page .rp-dh-summary{grid-template-columns:minmax(230px,1.6fr) repeat(3,minmax(130px,1fr));gap:12px}
+.rp-dept-head-page .rp-dh-summary .dh-stat{min-width:0}
+.rp-dept-head-page .rp-dh-intro{border-left:7px solid #f4c300}
+.rp-dept-head-page .rp-dh-intro>strong{display:block;font-size:20px;color:#004179;font-weight:800}
+.rp-dept-head-page .rp-dh-intro>p{margin:6px 0 0;font-size:13px;color:#52718c}
+.rp-dept-head-page .rp-dh-blue{border-left:7px solid #c9e7fb}
+.rp-dept-head-page .rp-dh-green{border-left:7px solid #b5eb67}
+.rp-dept-head-page .rp-dh-red{border-left:7px solid #f4a6ab}
+.rp-dept-head-page .rp-dh-panel{padding:0;overflow:hidden}
+.rp-dept-head-page .rp-dh-panel-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:17px 18px;border-bottom:1px solid #e3eaf0}
+.rp-dept-head-page .rp-dh-panel-heading h2{font-size:20px;color:#004179;margin:0;font-weight:800}
+.rp-dept-head-page .rp-dh-panel-heading p{font-size:13px;color:#5b7591;margin:3px 0 0}
+.rp-dept-head-page .rp-dh-btn{border:1px solid #a8c8e3;border-radius:7px;padding:8px 13px;background:white;color:#004179;font-size:13px;font-weight:700;cursor:pointer}
+.rp-dept-head-page .rp-dh-btn:hover,.rp-dept-head-page .rp-dh-actions button:hover{background:#edf6ff}
+.rp-dept-head-page .rp-dh-primary{background:#004179;color:white}
+.rp-dept-head-page .rp-dh-toolbar{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:10px;padding:13px 15px}
+.rp-dept-head-page .rp-dh-toolbar input,.rp-dept-head-page .rp-dh-toolbar select{min-width:0;width:100%;padding:10px;border:1px solid #d4e0ec;border-radius:7px;background:#fff;color:#174b7a;font-size:14px}
+.rp-dept-head-page .rp-dh-table-wrap{overflow-x:auto}
+.rp-dept-head-page .rp-dh-table{width:100%;min-width:860px;border-collapse:collapse}
+.rp-dept-head-page .rp-dh-table th{background:#ffefb5;color:#174b7a;text-align:left;font-size:12px;white-space:nowrap;padding:12px}
+.rp-dept-head-page .rp-dh-table td{padding:12px;font-size:12px;color:#315e87;vertical-align:middle;border-bottom:1px solid #e9edf2}
+.rp-dept-head-page .rp-dh-table td strong{display:block;color:#154d7d;font-weight:800}
+.rp-dept-head-page .rp-dh-table td small{display:block;color:#8394a6;font-size:11px}
+.rp-dept-head-page .rp-dh-pill{display:inline-block;padding:5px 12px;border-radius:30px;background:#e1f6b3;color:#467a09;font-weight:800;font-size:11px}
+.rp-dept-head-page .rp-dh-actions{display:flex;gap:5px;flex-wrap:wrap}
+.rp-dept-head-page .rp-dh-actions button{padding:5px 9px;border:1px solid #a8c8e3;border-radius:20px;background:#fff;color:#004179;font-size:11px;font-weight:750;cursor:pointer}
+.rp-dept-head-page .rp-dh-actions button[data-rpdh-action=print]{background:#004179;color:white;border-color:#004179}
+.rp-dept-head-page .rp-dh-empty{padding:20px;text-align:center;color:#5d7287}
+.rp-dept-head-page .rp-dh-dialog{width:min(740px,calc(100vw - 32px));max-height:85vh;border:1px solid #cbddeb;border-radius:15px;padding:0;box-shadow:0 25px 75px #052e5366;color:#174b7a;background:#fff}
+.rp-dept-head-page .rp-dh-dialog::backdrop{background:#082f57a8}
+.rp-dept-head-page .rp-dh-dialog-head{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;background:#004179;border-bottom:5px solid #f4c300;color:white}
+.rp-dept-head-page .rp-dh-dialog-head span{font-size:11px;letter-spacing:.7px;color:#f7d56b}
+.rp-dept-head-page .rp-dh-dialog-head h2{margin:3px 0 0;font-size:21px;color:white}
+.rp-dept-head-page .rp-dh-dialog-head button{border:0;background:transparent;color:white;font-size:28px;cursor:pointer}
+.rp-dept-head-page .rp-dh-dialog-content{padding:22px;font-size:14px;line-height:1.6}
+.rp-dept-head-page .rp-dh-dialog-content dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.rp-dept-head-page .rp-dh-dialog-content dl>div{background:#f5f8fb;padding:10px;border-radius:7px}
+.rp-dept-head-page .rp-dh-dialog-content dt{color:#6c8499;font-size:12px}
+.rp-dept-head-page .rp-dh-dialog-content dd{margin:2px 0 0;font-weight:700}
+.rp-dept-head-page .rp-dh-dialog-footer{display:flex;justify-content:flex-end;gap:8px;padding:14px 22px;border-top:1px solid #e1e8f0}
+@media(max-width:950px){.rp-dept-head-page .rp-dh-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.rp-dept-head-page .rp-dh-toolbar{grid-template-columns:1fr}}
+@media(max-width:560px){.rp-dept-head-page .rp-dh-summary{grid-template-columns:1fr}.rp-dept-head-page .rp-dh-dialog-content dl{grid-template-columns:1fr}}
+
+/* RP Department Head: consistent five-column academic filters */
+.rp-dept-head-page .sodh-filter-card.dh-filters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;align-items:end;padding:14px;border:1px solid #e1e8f0;border-radius:12px;background:#fff;box-shadow:0 3px 12px rgba(8,45,82,.05)}
+.rp-dept-head-page .dh-filters .sodh-filter-group{min-width:0;width:auto;margin:0;display:flex;flex-direction:column;gap:5px}
+.rp-dept-head-page .dh-filters .sodh-filter-group label{font-size:14px;font-weight:700;color:#004179;margin:0}
+.rp-dept-head-page .dh-filters .sodh-filter-group select{width:100%;min-width:0;height:39px;border:1px solid #a9c9f5;border-radius:5px;padding:0 12px;background-color:#fff;color:#004179;font-size:13px}
+@media(max-width:900px){.rp-dept-head-page .sodh-filter-card.dh-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.rp-dept-head-page .sodh-filter-card.dh-filters{grid-template-columns:1fr}}
+
+
+/* Requirement 7 — Gradebook Locking / Department Head; scoped styles only. */
+.gl-dept-head-page {--gl-blue:#004179;--gl-gold:#f4c300;--gl-border:#dce6ef;}
+.gl-dept-head-page .gl-logo b{font-size:31px;letter-spacing:-1.4px;color:#004179}.gl-dept-head-page .gl-logo b span,.gl-side-footer span{color:#f4b400}.gl-logo small,.gl-profile small{display:block;font-size:12px;color:#557795}.gl-profile{text-align:right;color:#004179;font-size:16px}.gl-side-heading{padding:22px 19px;color:white;border-bottom:1px solid #43749d}.gl-side-nav{padding:18px 10px;display:grid;gap:7px}.gl-side-nav a,.gl-side-active{display:block;padding:12px 15px;color:white;font-weight:700;font-size:14px;border-radius:20px}.gl-side-nav a:nth-of-type(2),.gl-side-nav a:nth-of-type(3),.gl-side-nav a:nth-of-type(4),.gl-side-nav a:nth-of-type(5){font-size:12px;padding-left:31px;font-weight:600}.gl-side-active{background:#f4c300;color:#004179}.gl-side-nav a.gl-side-current{border-left:4px solid #f4c300;border-radius:0}.gl-side-footer{margin-top:auto;padding:20px;color:white}.gl-side-footer strong{font-size:23px}.gl-side-footer small{display:block;color:#bed2e5}.gl-main{overflow:auto!important;gap:0}.gl-page-head h1{font-size:28px;color:#004179;font-weight:800}.gl-page-head p{font-size:13px;color:#66829d;margin:8px 0 15px}.gl-top-filters{margin-bottom:15px!important;grid-template-columns:repeat(5,minmax(0,1fr))!important}.gl-top-filters label{display:grid;gap:7px;font-size:14px;font-weight:700;color:#004179}.gl-top-filters select{height:39px;border:1px solid #9abde0;border-radius:5px;background:#fff;color:#004179;padding:0 12px;min-width:0}.gl-metrics{display:grid;grid-template-columns:1.65fr repeat(3,1fr);gap:12px;margin-bottom:15px}.gl-metric{background:white;position:relative;border-radius:12px;box-shadow:0 4px 16px #123b6810;min-height:94px;padding:17px 20px;overflow:hidden;display:flex;flex-direction:column;justify-content:center}.gl-metric:before{content:'';position:absolute;left:0;top:0;bottom:0;width:9px;background:#f4c300}.gl-metric.gl-blue:before{background:#c9e7f9}.gl-metric.gl-green-accent:before{background:#b5eb72}.gl-metric.gl-red-accent:before{background:#f4a3a7}.gl-metric strong{font-size:30px;line-height:1.15;color:#004179}.gl-metric.gl-center strong{font-size:20px}.gl-metric small{font-size:12px;color:#64819e}.gl-tabs{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap}.gl-tabs button{background:white;border:1px solid #d7e3ef;color:#004179;padding:12px 15px;border-radius:7px;font-weight:700;font-size:12px;cursor:pointer}.gl-tabs button.active{background:#f4c300;border-color:#f4c300}.gl-panel{background:white;border:1px solid #e4e9ee;border-radius:8px;min-height:250px}.gl-panel[hidden]{display:none!important}.gl-panel-head{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:15px;border-bottom:1px solid #e3e9ee}.gl-panel-head h2{font-size:19px;color:#004179}.gl-panel-head p{font-size:12px;color:#65819a;margin-top:3px}.gl-count{padding:7px 13px;background:#ffecae;color:#8d6b00;border-radius:20px;font-size:12px;white-space:nowrap}.gl-toolbar{display:grid;grid-template-columns:2fr 1fr;gap:9px;padding:12px}.gl-toolbar input{width:100%;height:40px;border:1px solid #c8d9e8;border-radius:7px;padding:0 12px;color:#004179}.gl-btn{cursor:pointer;font-weight:700;border-radius:25px;padding:7px 12px;font-size:12px}.gl-outline{border:1px solid #7db3da;background:white;color:#004179}.gl-gold{background:#f4c300;border:1px solid #f4c300;color:#004179}.gl-red-outline{border:1px solid #f3b0b0;color:#db4545;background:white}.gl-table-scroll{overflow:auto}.gl-table{width:100%;border-collapse:collapse;min-width:1050px}.gl-table th{background:#fff0b3;color:#004179;font-size:11px;text-align:left;padding:10px 9px;vertical-align:middle}.gl-table td{border-bottom:1px solid #e6e2ce;padding:13px 9px;font-size:11px;color:#345d7e;vertical-align:middle}.gl-table td strong{display:block;color:#24527d}.gl-table td small{display:block;color:#7890a4;margin-top:4px;font-size:10px}.gl-table .gl-actions{min-width:85px}.gl-actions .gl-btn{display:block;margin:3px auto;padding:6px 11px}.gl-pill{display:inline-block;padding:6px 12px;border-radius:30px;font-size:10px;font-weight:700;white-space:nowrap}.gl-green{background:#dcf5ac;color:#4d770a}.gl-yellow{background:#ffeba8;color:#926e00}.gl-red{background:#ffc6c6;color:#ae3c3c}.gl-muted{background:#e9eef3;color:#59758a}.gl-dialog{width:min(720px,calc(100vw - 30px));max-height:85vh;padding:0;border:1px solid #9fc1d8;border-radius:9px;color:#004179;box-shadow:0 20px 60px #092f5360}.gl-dialog::backdrop{background:#0c2d4e80}.gl-dialog-header{display:flex;justify-content:space-between;align-items:center;padding:20px;background:#f4f8fb;border-bottom:1px solid #dce7f0}.gl-dialog-header h2{font-size:20px}.gl-dialog-header button{font-size:25px;background:transparent;border:0;color:#7890a4;cursor:pointer}.gl-dialog-content{padding:18px;overflow:auto;max-height:60vh}.gl-dialog-footer{padding:13px 18px;display:flex;justify-content:flex-end;gap:10px}.gl-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.gl-detail{padding:13px;border:1px solid #dce6ef;border-radius:7px;min-height:60px}.gl-detail span{display:block;font-size:10px;font-weight:700;color:#7290a6;text-transform:uppercase;margin-bottom:7px}.gl-detail strong{font-size:12px;color:#23537d}.gl-notice{background:#fff8dc;border:1px solid #f6e2a2;border-radius:7px;padding:13px;color:#92732d;font-size:12px;margin:14px 0}.gl-dialog-content label{display:block;font-size:13px;font-weight:700;margin:14px 0 7px}.gl-dialog-content textarea{width:100%;min-height:85px;border:1px solid #bed4e5;border-radius:7px;padding:12px;resize:vertical}.gl-approved-list{padding:20px;display:grid;gap:10px}.gl-approved-list p,.gl-export-note{padding:12px;color:#365d7e}.gl-export-note{background:#fff9e5;margin:14px;border-radius:6px}.gl-error{color:#c53d3d;font-size:12px}.gl-dept-head-page .gl-table tr[hidden]{display:none!important}@media(max-width:1100px){.gl-metrics{grid-template-columns:repeat(2,1fr)}.gl-top-filters{grid-template-columns:repeat(3,minmax(0,1fr))!important}}@media(max-width:650px){.gl-top-filters{grid-template-columns:1fr!important}.gl-metrics{grid-template-columns:1fr}.gl-detail-grid{grid-template-columns:1fr}.gl-toolbar{grid-template-columns:1fr}}
+
+/* Requirement 7 GL: Department Head unified shell, no page scroll; table alone scrolls */
+html:has(.gl-dept-head-page),body.gl-dept-head-page{height:100%;overflow:hidden!important;}
+body.gl-dept-head-page{display:flex;flex-direction:column;}
+.gl-dept-head-page .so-shell{flex:1;min-height:0;overflow:hidden!important;}
+.gl-dept-head-page .so-sidebar{height:100%;overflow:hidden!important;}
+.gl-dept-head-page .gl-main{height:100%;min-height:0;overflow:hidden!important;display:flex;flex-direction:column;gap:0!important;}
+.gl-dept-head-page .gl-page-head,.gl-dept-head-page .gl-top-filters,.gl-dept-head-page .gl-metrics{flex-shrink:0;}
+.gl-dept-head-page .gl-panel[data-gl-panel="verification"]{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
+.gl-dept-head-page .gl-panel-head,.gl-dept-head-page .gl-toolbar{flex-shrink:0;}
+.gl-dept-head-page .gl-table-scroll{flex:1;min-height:0;overflow:auto;}
+.gl-dept-head-page .gl-panel[data-gl-panel="history"],.gl-dept-head-page .gl-panel[data-gl-panel="exports"]{display:none!important;}
+.gl-dept-head-page .gl-metrics{grid-template-columns:1.65fr repeat(3,minmax(0,1fr));}
+.gl-dept-head-page .gl-metric{box-shadow:none;border:1px solid #e4e9ee;}
+.gl-dept-head-page .gl-metric.gl-center strong{font-size:20px;}
+.gl-dept-head-page .so-topbar,.gl-dept-head-page .so-sidebar{flex-shrink:0;}
+@media(max-width:1000px){.gl-dept-head-page .gl-metrics{grid-template-columns:repeat(4,minmax(0,1fr));}.gl-dept-head-page .gl-metric{padding:12px;}.gl-dept-head-page .gl-metric.gl-center strong{font-size:15px;}}
+
+/* GL Department Head: match the Attainment Calculation summary cards.
+   All four left accent bars use the same NU gold. Scoped to Requirement 7. */
+.gl-dept-head-page .gl-metrics .gl-metric.sodh-summary-card {
+  border: 0;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(0,45,114,.16);
+  min-height: 82px;
+  padding: 20px 22px;
+  overflow: hidden;
+}
+.gl-dept-head-page .gl-metrics .gl-metric.sodh-summary-card::before {
+  content: none;
+}
+.gl-dept-head-page .gl-metrics .gl-metric.sodh-summary-card .sodh-summary-accent {
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 9px;
+  background: #F4C300;
+  display: block;
+}
+.gl-dept-head-page .gl-metrics .gl-metric.sodh-summary-card > small {
+  color: #004179;
+}
+.gl-dept-head-page .gl-metrics .gl-metric.sodh-summary-card > strong:not(:first-child) {
+  color: #003F73;
+}
+
+/* Requirement 7 — same shared Department Head visual system as Compliance Reports. */
+.gl-dept-head-page .gl-main { padding: 24px 24px 20px !important; }
+.gl-dept-head-page .gl-page-head { margin: 0 !important; }
+.gl-dept-head-page .gl-page-head h1 { font-size: 34px !important; line-height: 1.2 !important; font-weight: 800 !important; }
+.gl-dept-head-page .gl-page-head p { margin: 5px 0 17px !important; font-size: 13px !important; }
+.gl-dept-head-page .gl-top-filters { margin-bottom: 14px !important; }
+.gl-dept-head-page .gl-top-filters .sodh-filter-group { min-width: 0; }
+.gl-dept-head-page .gl-top-filters .sodh-filter-group label { display: block; }
+.gl-dept-head-page .gl-top-filters .sodh-filter-group select { width: 100%; }
+.gl-dept-head-page .gl-metrics { grid-template-columns: minmax(230px,1.6fr) repeat(3,minmax(130px,1fr)) !important; gap: 12px !important; margin-bottom: 15px !important; }
+.gl-dept-head-page .gl-metrics > .gl-metric.dh-stat { display: flex; flex-direction: column; justify-content: center; position: relative; min-width: 0; min-height: 90px; padding: 17px 18px 17px 20px; border: 1px solid #e4e9ee; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,45,114,.12); background: #fff; overflow: hidden; }
+.gl-dept-head-page .gl-metrics > .gl-metric.dh-stat::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 7px; background: #f4c300 !important; }
+.gl-dept-head-page .gl-metrics .gl-metric.dh-stat > .dh-stat-label { color: #004179; font-size: 13px; font-weight: 600; }
+.gl-dept-head-page .gl-metrics .gl-metric.dh-stat > .dh-stat-value { color: #004179; font-size: 30px; font-weight: 800; line-height: 1.15; }
+.gl-dept-head-page .gl-metrics .gl-metric.rp-dh-intro > strong { color: #004179; font-size: 20px; font-weight: 800; line-height: 1.25; }
+.gl-dept-head-page .gl-metrics .gl-metric.rp-dh-intro > p { color: #52718c; font-size: 13px; margin: 5px 0 0; }
+@media(max-width:950px){.gl-dept-head-page .gl-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:560px){.gl-dept-head-page .gl-metrics{grid-template-columns:1fr!important}}
+
+/* Requirement 7: GL Department Head — match CQI Department Head shared layout */
+.gl-dept-head-page .gl-main {padding:24px 24px 20px!important; overflow:hidden!important;}
+.gl-dept-head-page .gl-page-head h1 {font-size:inherit!important;}
+.gl-dept-head-page .gl-metrics.dh-summary {display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:14px!important;margin:0 0 14px!important;}
+.gl-dept-head-page .gl-metrics.dh-summary > .dh-stat {min-width:0!important;min-height:88px!important;padding:16px 20px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;background:#fff!important;border:1px solid #e2e9f0!important;border-radius:11px!important;box-shadow:0 2px 6px rgba(0,42,83,.09)!important;position:relative!important;overflow:hidden!important;}
+.gl-dept-head-page .gl-metrics.dh-summary > .dh-stat::before {content:''!important;position:absolute!important;left:0!important;top:0!important;bottom:0!important;width:7px!important;background:#f4c300!important;}
+.gl-dept-head-page .gl-metrics.dh-summary > .dh-stat .dh-stat-label {font-size:13px!important;font-weight:700!important;color:#004179!important;}
+.gl-dept-head-page .gl-metrics.dh-summary > .dh-stat .dh-stat-value {font-size:30px!important;font-weight:800!important;line-height:1.15!important;color:#004179!important;}
+.gl-dept-head-page .gl-top-filters.dh-filters {margin:0 0 14px!important;}
+@media(max-width:950px){.gl-dept-head-page .gl-metrics.dh-summary{grid-template-columns:repeat(2,minmax(0,1fr))!important;}}
