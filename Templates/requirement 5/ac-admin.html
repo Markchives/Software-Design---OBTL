@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Attainment Calculation | EduMetrics</title>
+<link href="../../Static/style.css" rel="stylesheet"/>
+</head>
+<body class="ac-admin-page so-student-page dept-head-unified"><header class="so-topbar">
+<div class="so-brand">
+<div class="so-brand-logo">
+                Edu<span>Metrics</span>
+</div>
+<div class="so-brand-subtitle">
+                Academic Assessment &amp; Grading System
+            </div>
+</div>
+<div class="so-user-area">
+<div class="edu-header-calendar-wrap"><button aria-expanded="false" aria-label="Open calendar" class="edu-header-calendar-btn" type="button"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><rect height="16" rx="2" width="18" x="3" y="5"></rect><path d="M7 3v4M17 3v4M3 10h18"></path></svg></button><div class="edu-header-calendar-popup" hidden=""><label>Calendar <input aria-label="Choose calendar date" type="date"/></label><p>Academic events are not connected yet.</p></div></div><button aria-label="Notifications" class="so-notification-btn" type="button">
+<img alt="Notifications" class="so-notification-image" src="../../Static/images/sidebar/notif.png"/>
+<span class="so-notification-dot"></span>
+</button>
+<div class="so-user-info">
+<strong id="departmentHeadName">System Administrator</strong>
+<span>Admin</span>
+</div>
+<div aria-hidden="true" class="so-avatar">AD</div>
+<span aria-hidden="true" class="so-online-dot"></span>
+</div>
+</header><div class="so-header-lines">
+<div class="so-header-blue"></div>
+<div class="so-header-gold"></div>
+</div><div class="so-shell ra-admin-shell"><aside class="so-sidebar">
+<nav aria-label="Administrator navigation" class="so-nav">
+<a class="so-nav-item" href="../requirement 2/cm-admin.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/home-white.png"/></span><span>Dashboard</span></a>
+<a class="so-nav-item" href="../requirement 7/gl-admin.html"><span class="so-nav-icon"><img alt="" height="16" src="../../Static/images/image.png" width="16"/></span><span>System Records</span></a>
+<div class="so-nav-group"><details open=""><summary class="so-nav-item so-products active"><span class="so-nav-icon"><img alt="" height="16" src="../../Static/images/image.png" width="16"/></span><span>Workflow</span></summary><div class="so-subnav">
+<a href="../requirement 4/ra-admin.html">Raw Entry</a><a aria-current="page" class="active" href="../requirement 5/ac-admin.html">Attainment Calculation</a><a href="../requirement 6/cqi-admin.html">CQI Action Planning</a><a href="../requirement 8/rp-admin.html">Compliance Report</a>
+</div></details></div>
+<a class="so-nav-item" href="../main/platform.html"><span>Platform</span></a>
+<a class="so-nav-item" href="../main/resources.html"><span>Resources</span></a>
+<a class="so-nav-item" href="../main/about-us.html"><span>About Us</span></a>
+</nav>
+<div class="so-sidebar-brand">
+<div class="so-sidebar-logo">
+                    Edu<span>Metrics</span>
+</div>
+<small>
+                    Academic Assessment &amp; Grading System
+                </small>
+</div>
+</aside><main class="so-main dh-main sodh-main cm-admin-main" id="mainContent">
+<section class="ra-admin-heading so-page-heading dh-heading cm-admin-heading"><h1>Attainment Calculation</h1><p>System-wide view of calculated Course Outcome attainment across departments. Admin can configure thresholds and report on results, but cannot edit individual attainment calculations.</p></section>
+<section aria-label="Attainment filters" class="ac-filters sodh-filter-card dh-filters cm-filters">
+<div class="ac-filter sodh-filter-group cm-filter"><label for="acYear">School Year</label><select id="acYear"><option>2026–2027</option><option>2025–2026</option></select></div>
+<div class="ac-filter sodh-filter-group cm-filter"><label for="acDepartment">Department</label><select id="acDepartment"><option value="">All Departments</option><option>Computer Engineering</option><option>Information Technology</option><option>Electronics Engineering</option><option>Civil Engineering</option><option>General Education</option><option>Mechanical Engineering</option></select></div>
+<div class="ac-filter sodh-filter-group cm-filter"><label for="acProgram">Program</label><select id="acProgram"><option value="">All Programs</option><option>BS Computer Engineering</option><option>BS Information Technology</option><option>BS Electronics Engineering</option></select></div>
+<div class="ac-filter sodh-filter-group cm-filter"><label for="acStatus">Attainment Status</label><select id="acStatus"><option value="">All Statuses</option><option value="on">On Target</option><option value="below">Below Target</option></select></div>
+</section>
+<section aria-label="System attainment summary" class="ra-admin-summary sodh-summary-grid dh-summary cm-summary">
+<div class="ra-admin-stat ac-overview-stat sodh-summary-card dh-stat cm-stat"><h2 class="ra-admin-stat-label">System Attainment<br/>Overview</h2><p>2026–2027 • All departments • Read-only results</p></div>
+<div class="ra-admin-stat ac-departments sodh-summary-card dh-stat cm-stat"><small class="ra-admin-stat-label sodh-summary-label dh-stat-label">Departments</small><strong class="ra-admin-stat-value sodh-summary-number dh-stat-value">6</strong></div>
+<div class="ra-admin-stat ac-target sodh-summary-card dh-stat cm-stat"><small class="ra-admin-stat-label sodh-summary-label dh-stat-label">COs On Target</small><strong class="ra-admin-stat-value sodh-summary-number dh-stat-value">142</strong></div>
+<div class="ra-admin-stat ac-below sodh-summary-card dh-stat cm-stat"><small class="ra-admin-stat-label sodh-summary-label dh-stat-label">COs Below Target</small><strong class="ra-admin-stat-value sodh-summary-number dh-stat-value">50</strong></div>
+</section>
+<div aria-label="Attainment views" class="ac-tabs sodh-tabs dh-tabs cm-tabs" role="tablist">
+<button aria-controls="panel-departments" aria-selected="true" class="ac-tab sodh-tab active dh-tab cm-tab" data-tab="departments" id="tab-departments" role="tab" type="button">Department Overview</button>
+<button aria-controls="panel-courses" aria-selected="false" class="ac-tab sodh-tab dh-tab cm-tab" data-tab="courses" id="tab-courses" role="tab" type="button">Course Attainment</button>
+<button aria-controls="panel-settings" aria-selected="false" class="ac-tab sodh-tab dh-tab cm-tab" data-tab="settings" id="tab-settings" role="tab" type="button">Threshold Settings</button>
+</div>
+<section aria-labelledby="tab-departments" class="ac-panel sodh-content-card dh-panel cm-panel" id="panel-departments" role="tabpanel">
+<div class="ac-panel-head sodh-toolbar cm-panel-header"><div><h2>Attainment by Department</h2><p>Aggregated, read-only attainment metrics for system oversight and reporting.</p></div><button class="ac-outline-btn sodh-export-btn" data-export="departments" type="button">Export Summary</button></div>
+<div class="ac-table-scroll sodh-table-wrap cm-table-wrap"><table class="ac-table sodh-table cm-table" id="acDepartmentTable"><thead><tr><th>Department</th><th>Programs</th><th>Courses</th><th>Total COs</th><th>On Target</th><th>Below Target</th><th>Average Attainment</th><th>Action</th></tr></thead><tbody>
+<tr data-attain="82" data-dept="Computer Engineering"><td><strong>Computer Engineering</strong></td><td>2</td><td>8</td><td>32</td><td><span class="ac-pill good">28</span></td><td><span class="ac-pill bad">4</span></td><td><strong>82%</strong><div class="ac-meter"><span style="width:82%"></span></div></td><td><button class="ac-details" data-department="Computer Engineering" type="button">View Details</button></td></tr>
+<tr data-attain="76" data-dept="Information Technology"><td><strong>Information Technology</strong></td><td>2</td><td>8</td><td>32</td><td><span class="ac-pill good">24</span></td><td><span class="ac-pill bad">8</span></td><td><strong>76%</strong><div class="ac-meter"><span style="width:76%"></span></div></td><td><button class="ac-details" data-department="Information Technology" type="button">View Details</button></td></tr>
+<tr data-attain="71" data-dept="Electronics Engineering"><td><strong>Electronics Engineering</strong></td><td>1</td><td>8</td><td>32</td><td><span class="ac-pill good">22</span></td><td><span class="ac-pill bad">10</span></td><td><strong>71%</strong><div class="ac-meter"><span style="width:71%"></span></div></td><td><button class="ac-details" data-department="Electronics Engineering" type="button">View Details</button></td></tr>
+<tr data-attain="79" data-dept="Civil Engineering"><td><strong>Civil Engineering</strong></td><td>1</td><td>8</td><td>32</td><td><span class="ac-pill good">25</span></td><td><span class="ac-pill bad">7</span></td><td><strong>79%</strong><div class="ac-meter"><span style="width:79%"></span></div></td><td><button class="ac-details" data-department="Civil Engineering" type="button">View Details</button></td></tr>
+<tr data-attain="74" data-dept="General Education"><td><strong>General Education</strong></td><td>3</td><td>8</td><td>32</td><td><span class="ac-pill good">23</span></td><td><span class="ac-pill bad">9</span></td><td><strong>74%</strong><div class="ac-meter"><span style="width:74%"></span></div></td><td><button class="ac-details" data-department="General Education" type="button">View Details</button></td></tr>
+</tbody></table></div><p class="ac-empty" hidden="" id="acDeptEmpty">No matching departments.</p><div class="ac-note"><strong>Admin boundary:</strong> attainment is calculated from assessment results. Individual CO values cannot be edited or overridden here.</div>
+</section>
+<section aria-labelledby="tab-courses" class="ac-panel sodh-content-card dh-panel cm-panel" hidden="" id="panel-courses" role="tabpanel">
+<div class="ac-panel-head sodh-toolbar cm-panel-header"><div><h2>Course Outcome Attainment Register</h2><p>Individual course results are visible for monitoring only. Corrections must be made in the academic workflow before gradebook lock.</p></div><button class="ac-outline-btn sodh-export-btn" data-export="courses" type="button">Export Results</button></div>
+<div class="ac-search-row sodh-toolbar"><input aria-label="Search course attainment" class="ac-search" id="acSearch" placeholder="Search course, section, faculty, or CO…" type="search"/><span class="ac-result-count" id="acResultCount">6 result(s)</span></div>
+<div class="ac-table-scroll sodh-table-wrap cm-table-wrap"><table class="ac-table sodh-table cm-table" id="acCourseTable"><thead><tr><th>Department</th><th>Course / Section</th><th>Faculty</th><th>CO</th><th>Attainment</th><th>Threshold</th><th>Status</th><th>Source</th></tr></thead><tbody>
+<tr data-attain="84" data-dept="Computer Engineering"><td>Computer Engineering</td><td><strong>Software Design – Lab</strong><small>COE232</small></td><td>Jeffrey T. Leonen</td><td><strong>CO1</strong><small>Apply fundamental software engineering principles.</small></td><td><strong>84%</strong></td><td>70%</td><td><span class="ac-pill good">On Target</span></td><td><span class="ac-pill source">Auto-calculated</span></td></tr>
+<tr data-attain="66" data-dept="Computer Engineering"><td>Computer Engineering</td><td><strong>Software Design – Lab</strong><small>COE232</small></td><td>Jeffrey T. Leonen</td><td><strong>CO3</strong><small>Apply advanced software design patterns.</small></td><td><strong>66%</strong></td><td>70%</td><td><span class="ac-pill bad">Below Target</span></td><td><span class="ac-pill source">Auto-calculated</span></td></tr>
+<tr data-attain="74" data-dept="Computer Engineering"><td>Computer Engineering</td><td><strong>Computer Networks</strong><small>COE233</small></td><td>Maria L. Santos</td><td><strong>CO1</strong><small>Configure and troubleshoot network infrastructure.</small></td><td><strong>74%</strong></td><td>70%</td><td><span class="ac-pill good">On Target</span></td><td><span class="ac-pill source">Auto-calculated</span></td></tr>
+<tr data-attain="68" data-dept="Information Technology"><td>Information Technology</td><td><strong>Database Systems</strong><small>IT234</small></td><td>Ryan P. Cruz</td><td><strong>CO2</strong><small>Design and query relational databases.</small></td><td><strong>68%</strong></td><td>70%</td><td><span class="ac-pill bad">Below Target</span></td><td><span class="ac-pill source">Auto-calculated</span></td></tr>
+<tr data-attain="71" data-dept="Electronics Engineering"><td>Electronics Engineering</td><td><strong>Signals and Systems</strong><small>ECE234</small></td><td>Roxanne D. Cruz</td><td><strong>CO4</strong><small>Analyze system response and signals.</small></td><td><strong>71%</strong></td><td>70%</td><td><span class="ac-pill good">On Target</span></td><td><span class="ac-pill source">Auto-calculated</span></td></tr>
+<tr data-attain="62" data-dept="Mechanical Engineering"><td>Mechanical Engineering</td><td><strong>Engineering Mechanics</strong><small>ME231</small></td><td>Daniel R. Tan</td><td><strong>CO2</strong><small>Apply mechanics principles to engineering problems.</small></td><td><strong>62%</strong></td><td>70%</td><td><span class="ac-pill bad">Below Target</span></td><td><span class="ac-pill source">Auto-calculated</span></td></tr>
+</tbody></table></div><p class="ac-empty" hidden="" id="acCourseEmpty">No matching course outcomes.</p><div class="ac-note">Individual attainment values are read-only. Admin can view and export oversight reports, but cannot change scores, mappings, or calculated outcomes.</div>
+</section>
+<section aria-labelledby="tab-settings" class="ac-panel sodh-content-card dh-panel cm-panel" hidden="" id="panel-settings" role="tabpanel">
+<div class="ac-panel-head sodh-toolbar cm-panel-header"><div><h2>System Attainment Threshold Settings</h2><p>Configure the institution-level target used to classify Course Outcomes.</p></div><span class="ac-setting-tag">System-wide setting</span></div>
+<div class="ac-threshold-body admin-settings-body"><div class="ac-threshold-box admin-settings-highlight"><small>CURRENT ATTAINMENT THRESHOLD</small><strong id="acCurrentThreshold">70%</strong><div class="ac-threshold-track"><span id="acThresholdBar" style="width:70%"></span></div></div>
+<form class="ac-threshold-form admin-settings-form" id="acThresholdForm"><label for="acThresholdInput">New threshold (%)</label><input class="ac-threshold-input" id="acThresholdInput" max="100" min="1" required="" step="1" type="number" value="70"/><p class="ac-help">Suggested institutional target: 70%. Changes affect status classification in this prototype; historical raw scores and individual calculations are not editable here.</p><div class="ac-form-actions"><button class="ac-outline-btn sodh-export-btn" id="acCancel" type="button">Cancel</button><button class="ac-save sodh-export-btn" type="submit">Save Threshold</button></div><p aria-live="polite" class="ac-help" id="acSaveMessage" role="status"></p></form>
+<div class="ac-note"><strong>Control note:</strong> threshold changes should be authorized, timestamped, and audit-logged in production. They do not permit manual alteration of an individual course's attainment value.</div>
+</div>
+</section>
+</main></div>
+<script defer="" src="../../Static/script.js"></script>
+</body>
+</html>

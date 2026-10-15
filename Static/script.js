@@ -6117,8 +6117,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const role = normalize(sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('verifiedRole') || query || 'student');
     const selected = allowed.includes(role) ? role : 'student';
     if (!sessionStorage.getItem('edumetricsRole') && sessionStorage.getItem('verificationCompleted') === 'true') sessionStorage.setItem('edumetricsRole', selected);
+    const dashboardContent = document.getElementById('dashboardRoleContent');
+    if (!dashboardContent) return;
     const tpl = document.getElementById('dashboard-template-' + selected);
-    document.getElementById('dashboardRoleContent').appendChild(tpl.content.cloneNode(true));
+    if (!tpl) return;
+    dashboardContent.appendChild(tpl.content.cloneNode(true));
     if (selected !== 'student') {
         const nav = document.getElementById('nav-template-' + selected);
         document.querySelector('.so-nav').replaceWith(nav.content.cloneNode(true));
@@ -6499,6 +6502,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const search = document.getElementById('raSearch');
   const type = document.getElementById('raType');
   const sort = document.getElementById('raSort');
+  if (!tbody || !search || !type || !sort) return;
   const rows = Array.from(tbody.querySelectorAll('tr'));
   function render() {
     const query = search.value.trim().toLowerCase();
@@ -6799,4 +6803,222 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     render();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+
+
+/* Logged-in Platform: role-aware dashboard navigation. */
+(function () {
+  function initLoggedInPlatform() {
+    const page = document.querySelector('.ed-platform-page');
+    if (!page) return;
+    let role = '';
+    try { role = (sessionStorage.getItem('userRole') || localStorage.getItem('userRole') || sessionStorage.getItem('role') || localStorage.getItem('role') || '').toLowerCase(); } catch (_) {}
+    if (role.includes('faculty') || role.includes('department')) role = 'faculty';
+    if (role.includes('head') || role.includes('department')) role = 'dept-head';
+    const template = document.getElementById('nav-template-' + role);
+    const current = page.querySelector('.so-sidebar .so-nav');
+    if (template && current) current.replaceWith(template.content.cloneNode(true));
+    const label = role === 'dept-head' ? 'Department Head' : role === 'faculty' ? 'Faculty' : 'Student';
+    const userInfo = page.querySelector('.so-user-info span');
+    if (userInfo) userInfo.textContent = label;
+    const userName = page.querySelector('#studentName');
+    if (userName && userName.textContent.trim() === 'Student' && label !== 'Student') userName.textContent = label;
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initLoggedInPlatform);
+  else initLoggedInPlatform();
+})();
+
+
+/* Blog layout switching: same article for public and signed-in prototype views. */
+(function () {
+  function initSharedBlogLayout() {
+    const body = document.body;
+    if (!body.classList.contains('blog-page') || body.dataset.blogLayoutReady) return;
+    let role = '';
+    try {
+      // Frontend prototype state only; the backend must verify the session later.
+      if (sessionStorage.getItem('verificationCompleted') !== 'true') return;
+      const value = (sessionStorage.getItem('edumetricsRole') ||
+        sessionStorage.getItem('verifiedRole') ||
+        sessionStorage.getItem('verificationRole') || '').toLowerCase();
+      role = ({'department-head':'dept-head','department_head':'dept-head',
+        'depthead':'dept-head'}[value] || value);
+    } catch (_) { return; }
+    if (!['student', 'faculty', 'dept-head'].includes(role)) return;
+
+    const main = body.querySelector('main.blog-main');
+    const originalHeader = body.querySelector('header.site-header');
+    if (!main || !originalHeader) return;
+
+    const holder = document.createElement('div');
+    holder.innerHTML = "<header class=\"so-topbar\">\n<div class=\"so-brand\"><div class=\"so-brand-logo\">Edu<span>Metrics</span></div><div class=\"so-brand-subtitle\">Academic Assessment &amp; Grading System</div></div>\n<div class=\"so-user-area\">\n<button aria-label=\"Notifications\" class=\"so-notification-btn\" type=\"button\"><img alt=\"Notifications\" class=\"so-notification-image\" src=\"../../Static/images/sidebar/notif.png\"/><span class=\"so-notification-dot\"></span></button>\n<div class=\"so-user-info\"><strong id=\"studentName\">Student</strong><span>Student</span></div>\n<div aria-hidden=\"true\" class=\"so-avatar\"><span class=\"sd-icon-placeholder\">●</span></div><span aria-hidden=\"true\" class=\"so-online-dot\"></span>\n</div>\n</header><div class=\"so-header-lines\"><div class=\"so-header-blue\"></div><div class=\"so-header-gold\"></div></div><aside class=\"so-sidebar\">\n<div class=\"so-pages-title\"><span class=\"so-grid-icon so-pages-image-wrap\"><img alt=\"\" class=\"so-pages-image\" src=\"../../Static/images/sidebar/pages.png\"/></span><span>Pages</span></div>\n<nav aria-label=\"Student navigation\" class=\"so-nav\">\n<a class=\"so-nav-item\" href=\"dashboard.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/home-white.png\"/></span><span>Home</span></a>\n<a class=\"so-nav-item\" href=\"courses.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/course-white.png\"/></span><span>My Courses</span></a>\n<a class=\"so-nav-item\" href=\"platform.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/pl-white.png\"/></span><span>Platform</span></a>\n<div class=\"so-nav-group\">\n<details><summary class=\"so-nav-item so-products\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/ws-blue.png\"/></span><span>Workflow</span></summary>\n<div class=\"so-subnav\"><a href=\"so-student.html\">Syllabus &amp; Outcomes</a><a href=\"#\">Curriculum Mapping</a><a href=\"#\">Class Roster</a><a href=\"#\">Assessment Entry</a><a href=\"#\">Attainment</a><a href=\"#\">CQI Planning</a><a href=\"#\">Gradebook</a><a href=\"#\">Compliance Report</a></div>\n</details>\n</div>\n<a aria-current=\"page\" class=\"so-nav-item sd-active\" href=\"resources.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/rs-white.png\"/></span><span>Resources</span></a>\n<a class=\"so-nav-item\" href=\"about us.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/au-white.png\"/></span><span>About Us</span></a>\n</nav>\n<div class=\"so-sidebar-brand\"><div class=\"so-sidebar-logo\">Edu<span>Metrics</span></div><small>Academic Assessment &amp; Grading System</small></div>\n</aside><template id=\"nav-template-faculty\"><nav aria-label=\"Faculty navigation\" class=\"so-nav\">\n<a class=\"so-nav-item\" href=\"dashboard.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/home-white.png\"/></span><span>Home</span></a>\n<a class=\"so-nav-item\" href=\"courses.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/course-white.png\"/></span><span>My Courses</span></a>\n<a class=\"so-nav-item\" href=\"platform.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/pl-white.png\"/></span><span>Platform</span></a>\n<div class=\"so-nav-group\">\n<details><summary class=\"so-nav-item so-products\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/ws-blue.png\"/></span><span>Workflow</span></summary>\n<div class=\"so-subnav\"><a href=\"so-faculty.html\">Syllabus &amp; Outcomes</a><a href=\"cm-faculty.html\">Curriculum Mapping</a><a href=\"cr-faculty.html\">Class Roster</a><a href=\"assessment-faculty.html\">Assessment Entry</a><a href=\"attainment-faculty.html\">Attainment</a><a href=\"cqi-faculty.html\">CQI Planning</a><a href=\"gradebook-faculty.html\">Gradebook</a><a href=\"compliance-faculty.html\">Compliance Report</a></div>\n</details>\n</div>\n<a aria-current=\"page\" class=\"so-nav-item sd-active\" href=\"resources.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/rs-white.png\"/></span><span>Resources</span></a>\n<a class=\"so-nav-item\" href=\"about us.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/au-white.png\"/></span><span>About Us</span></a>\n</nav></template><template id=\"nav-template-dept-head\"><nav aria-label=\"Department Head navigation\" class=\"so-nav\">\n<a class=\"so-nav-item\" href=\"dashboard.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/home-white.png\"/></span><span>Home</span></a>\n<a class=\"so-nav-item\" href=\"courses.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/course-white.png\"/></span><span>My Courses</span></a>\n<a class=\"so-nav-item\" href=\"platform.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/pl-white.png\"/></span><span>Platform</span></a>\n<div class=\"so-nav-group\">\n<details><summary class=\"so-nav-item so-products\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/ws-blue.png\"/></span><span>Workflow</span></summary>\n<div class=\"so-subnav\"><a href=\"so-dept-head.html\">Syllabus &amp; Outcomes</a><a href=\"cm-dept-head.html\">Curriculum Mapping</a><a href=\"cr-dept-head.html\">Class Roster</a><a href=\"assessment-dept-head.html\">Assessment Entry</a><a href=\"attainment-dept-head.html\">Attainment</a><a href=\"cqi-dept-head.html\">CQI Planning</a><a href=\"gradebook-dept-head.html\">Gradebook</a><a href=\"compliance-dept-head.html\">Compliance Report</a></div>\n</details>\n</div>\n<a aria-current=\"page\" class=\"so-nav-item sd-active\" href=\"resources.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/rs-white.png\"/></span><span>Resources</span></a>\n<a class=\"so-nav-item\" href=\"about us.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/au-white.png\"/></span><span>About Us</span></a>\n</nav></template>";
+    const baseUrl = new URL('../../main/resources.html', location.href);
+    holder.querySelectorAll('[href], [src]').forEach(function (node) {
+      ['href', 'src'].forEach(function (attribute) {
+        const value = node.getAttribute(attribute);
+        if (value && !value.startsWith('#') && !value.startsWith('/') &&
+            !/^(?:[a-z]+:|\/\/)/i.test(value)) {
+          node.setAttribute(attribute, new URL(value, baseUrl).href);
+        }
+      });
+    });
+    const topbar = holder.querySelector('.so-topbar');
+    const accent = holder.querySelector('.so-header-lines');
+    const sidebar = holder.querySelector('.so-sidebar');
+    if (!topbar || !accent || !sidebar) return;
+    const nav = holder.querySelector('#nav-template-' + role);
+    if (nav) {
+      const current = sidebar.querySelector('.so-nav');
+      if (current) current.replaceWith(nav.content.cloneNode(true));
+    }
+    const user = topbar.querySelector('.so-user-info');
+    const roleName = role === 'dept-head' ? 'Department Head' :
+      role === 'faculty' ? 'Faculty' : 'Student';
+    if (user) {
+      const name = user.querySelector('strong');
+      const subtitle = user.querySelector('span');
+      if (name) name.textContent = roleName;
+      if (subtitle) subtitle.textContent = roleName;
+    }
+    const breadcrumb = body.querySelector('.workflow-breadcrumb-wrap');
+    if (breadcrumb) {
+      const home = breadcrumb.querySelector('a');
+      const resources = breadcrumb.querySelectorAll('a')[1];
+      if (home) home.href = new URL('../../main/dashboard.html', location.href).href;
+      if (resources) resources.href = baseUrl.href;
+      main.prepend(breadcrumb);
+    }
+    const shell = document.createElement('div');
+    shell.className = 'so-shell';
+    const articleMain = document.createElement('main');
+    articleMain.className = 'so-main ed-platform-main ed-inside-main ed-blog-main';
+    while (main.firstChild) articleMain.appendChild(main.firstChild);
+    main.remove();
+    shell.append(sidebar, articleMain);
+    originalHeader.remove();
+    const footer = body.querySelector('footer.workflow-footer');
+    if (footer) footer.remove();
+    body.prepend(topbar, accent, shell);
+    body.classList.add('so-student-page', 'ed-dashboard-page', 'ed-inside-page', 'ed-blog-inside');
+    body.dataset.dashboardRole = role;
+    body.dataset.blogLayoutReady = 'true';
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSharedBlogLayout, {once:true});
+  } else initSharedBlogLayout();
+})();
+
+/* Admin module behavior — shared script, one controller per page. */
+/* CM Admin — frontend page controller */
+(function () {
+  function init() {
+    if (!document.body.classList.contains("cm-admin-page")) return;
+
+(()=>{'use strict';
+const users=[{name:'System Administrator',email:'admin@edumetrics.edu',role:'Admin',department:'System',scope:'System-wide',status:'Active',login:'Sep. 30, 2026 01:32'},{name:'Dr. Maria L. Santos',email:'maria.santos@edumetrics.edu',role:'Department Head',department:'Engineering',scope:'Department-wide',status:'Active',login:'Sep. 30, 2026 01:20'},{name:'Jeffrey T. Leonen',email:'jeffrey.leonen@edumetrics.edu',role:'Faculty',department:'Engineering',scope:'Assigned Courses',status:'Active',login:'Sep. 29, 2026 16:44'},{name:'Angel S. Villanueva',email:'angel.villanueva@edumetrics.edu',role:'Student',department:'Engineering',scope:'Own Student Records',status:'Active',login:'Sep. 29, 2026 15:12'},{name:'Former Faculty Account',email:'former.faculty@edumetrics.edu',role:'Faculty',department:'Engineering',scope:'Assigned Courses',status:'Suspended',login:'Sep. 12, 2026 09:21'}];
+const logs=[['Sep. 30, 2026 01:34:44','SECURITY','System Administrator','Access Control','Updated role permissions','SEC-00421'],['Sep. 30, 2026 01:20:17','INFO','Dr. Maria L. Santos','Curriculum Mapping','Verified CO-SO mapping','MAP-COE232-003'],['Sep. 29, 2026 16:44:03','INFO','Jeffrey T. Leonen','Assessment Entry','Updated raw assessment scores','ASM-COE232-014'],['Sep. 29, 2026 14:26:28','WARNING','System','Attainment','CO below target','CO-COE232-003'],['Sep. 29, 2026 14:17:10','ERROR','System','CQI Planning','CQI record creation failed','CQI-COE232-003'],['Sep. 29, 2026 16:50:19','SECURITY','System Administrator','User Management','Suspended account','U-118']];
+const sessions=[{name:'System Administrator',role:'Admin',device:'Chrome · Windows',ip:'10.20.1.12',login:'01:32',activity:'01:44'},{name:'Dr. Maria L. Santos',role:'Department Head',device:'Edge · Windows',ip:'10.20.2.41',login:'01:20',activity:'01:43'},{name:'Jeffrey T. Leonen',role:'Faculty',device:'Chrome · Windows',ip:'10.20.3.18',login:'16:44',activity:'16:59'}];
+const $=id=>document.getElementById(id);const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function notice(title,msg){$('dialogTitle').textContent=title;$('dialogText').textContent=msg;$('detailDialog').showModal()}
+function tab(name){document.querySelectorAll('.cm-admin-page [data-tab]').forEach(b=>{const active=b.dataset.tab===name;b.setAttribute('aria-selected',String(active));b.classList.toggle('active',active)});document.querySelectorAll('.cm-admin-page [data-panel]').forEach(p=>{const active=p.dataset.panel===name;p.hidden=!active;p.classList.toggle('active',active)})}
+function renderUsers(){const dept=$('department').value,role=$('role').value,status=$('status').value;const filtered=users.filter(u=>(!dept||u.department===dept)&&(!role||u.role===role)&&(!status||u.status===status));$('usersBody').innerHTML=filtered.map((u)=>`<tr><td><strong>${esc(u.name)}</strong><small>${esc(u.email)}</small></td><td><span class="cm-pill blue">${esc(u.role)}</span></td><td>${esc(u.department)}</td><td>${esc(u.scope)}</td><td><span class="cm-pill ${u.status==='Active'?'':'red'}">${u.status}</span></td><td>${esc(u.login)}</td><td><div class="sodh-toolbar-actions"><button type="button" class="sodh-export-btn" data-manage="${users.indexOf(u)}">Manage Access</button>${u.role==='Admin'?'':`<button type="button" class="sodh-export-btn" data-toggle="${users.indexOf(u)}">${u.status==='Active'?'Suspend':'Reactivate'}</button>`}</div></td></tr>`).join('')||'<tr><td colspan="7" class="cm-empty">No matching users.</td></tr>';$('activeCount').textContent=users.filter(u=>u.status==='Active').length}
+function renderLogs(){const query=$('logSearch').value.toLowerCase(),level=$('logLevel').value,module=$('module').value;const rows=logs.filter(r=>(!level||r[1]===level)&&(!module||r[3]===module)&&(!query||r.join(' ').toLowerCase().includes(query)));$('logsBody').innerHTML=rows.map(r=>`<tr><td>${esc(r[0])}</td><td><span class="cm-pill ${r[1]==='ERROR'?'red':r[1]==='WARNING'?'warn':r[1]==='SECURITY'?'blue':''}">${esc(r[1])}</span></td><td>${esc(r[2])}</td><td>${esc(r[3])}</td><td>${esc(r[4])}</td><td><span class="cm-pill blue">${esc(r[5])}</span></td><td><button class="cm-btn sodh-export-btn cm-record-action" data-log="${logs.indexOf(r)}">View Details</button></td></tr>`).join('')||'<tr><td colspan="7" class="cm-empty">No matching audit records.</td></tr>'}
+function renderSessions(){$('sessionsBody').innerHTML=sessions.map((s,i)=>`<tr><td><strong>${esc(s.name)}</strong></td><td>${esc(s.role)}</td><td>${esc(s.device)}</td><td>${esc(s.ip)}</td><td>${esc(s.login)}</td><td>${esc(s.activity)}</td><td><button class="cm-btn sodh-export-btn cm-record-action cm-record-danger" data-terminate="${i}">Terminate</button></td></tr>`).join('')||'<tr><td colspan="7" class="cm-empty">No active sessions.</td></tr>';$('sessionCount').textContent=sessions.length+' Active'}
+function exportCsv(){const rows=[['Timestamp','Level','User','Module','Action','Record ID'],...logs];const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='edumetrics-audit-records.csv';a.click();URL.revokeObjectURL(url)}
+document.addEventListener('click',e=>{const b=e.target.closest('button,a[data-tab-link]');if(!b)return;if(b.matches('[data-tab],[data-tab-go],[data-tab-link]')){if(b.tagName==='A')e.preventDefault();tab(b.dataset.tab||b.dataset.tabGo||b.dataset.tabLink)}if(b.dataset.info){const [title,...rest]=b.dataset.info.split('|');notice(title,rest.join('|'))}if(b.dataset.manage!==undefined){const u=users[+b.dataset.manage];notice('Manage Access — '+u.name,'Role: '+u.role+'\nAccess scope: '+u.scope+'\n\nThis prototype is read-only for permission editing.')}if(b.dataset.toggle!==undefined){const u=users[+b.dataset.toggle];u.status=u.status==='Active'?'Suspended':'Active';renderUsers();notice('Account Status Updated',u.name+' is now '+u.status+'. Frontend demonstration only.')}if(b.dataset.log!==undefined){const r=logs[+b.dataset.log];notice('Audit Record '+r[5],r.join('\n'))}if(b.dataset.terminate!==undefined){const s=sessions.splice(+b.dataset.terminate,1)[0];renderSessions();notice('Session Terminated',s.name+' session removed from the prototype view.')} });
+$('closeDialog').addEventListener('click',()=>$('detailDialog').close());$('addUser').addEventListener('click',()=>notice('Add User','User creation will be connected to the backend. This frontend prototype does not create real accounts.'));$('exportLogs').addEventListener('click',exportCsv);$('refreshLogs').addEventListener('click',renderLogs);['department','role','status'].forEach(id=>$(id).addEventListener('change',renderUsers));$('module').addEventListener('change',renderLogs);$('logSearch').addEventListener('input',renderLogs);$('logLevel').addEventListener('change',renderLogs);renderUsers();renderLogs();renderSessions();tab('security');
+})();
+
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, {once:true});
+  else init();
+})();
+
+/* AC Admin — frontend page controller */
+(function () {
+  function init() {
+    if (!document.body.classList.contains("ac-admin-page")) return;
+
+  (() => {
+    const tabs = [...document.querySelectorAll('.ac-tab')];
+    const panels = [...document.querySelectorAll('.ac-panel')];
+    const dept = document.getElementById('acDepartment');
+    const status = document.getElementById('acStatus');
+    const search = document.getElementById('acSearch');
+    const courseRows = [...document.querySelectorAll('#acCourseTable tbody tr')];
+    const deptRows = [...document.querySelectorAll('#acDepartmentTable tbody tr')];
+    const input = document.getElementById('acThresholdInput');
+    const current = document.getElementById('acCurrentThreshold');
+    const bar = document.getElementById('acThresholdBar');
+    let threshold = 70;
+    function showTab(id) {
+      tabs.forEach(tab => {const selected = tab.dataset.tab === id;tab.setAttribute('aria-selected', String(selected));tab.classList.toggle('active', selected);tab.tabIndex = selected ? 0 : -1;});
+      panels.forEach(panel => panel.hidden = panel.id !== 'panel-' + id);
+    }
+    tabs.forEach(tab => tab.addEventListener('click', () => showTab(tab.dataset.tab)));
+    function applyFilters() {
+      const selected = dept.value;
+      const selectedStatus = status.value;
+      const q = search.value.toLowerCase().trim();
+      let visible = 0;
+      courseRows.forEach(row => {
+        const score = Number(row.dataset.attain);
+        const match = (!selected || row.dataset.dept === selected) && (!selectedStatus || (selectedStatus === 'on' ? score >= threshold : score < threshold)) && row.textContent.toLowerCase().includes(q);
+        row.hidden = !match;if(match)visible++;
+        const badge = row.querySelector('.ac-pill:not(.source)');
+        badge.className = 'ac-pill ' + (score >= threshold ? 'good' : 'bad');
+        badge.textContent = score >= threshold ? 'On Target' : 'Below Target';
+        row.cells[5].textContent = threshold + '%';
+      });
+      deptRows.forEach(row => {row.hidden = !!selected && row.dataset.dept !== selected;});
+      document.getElementById('acResultCount').textContent = visible + ' result(s)';
+      document.getElementById('acCourseEmpty').hidden = visible !== 0;
+      document.getElementById('acDeptEmpty').hidden = deptRows.some(row => !row.hidden);
+    }
+    [dept,status,search].forEach(el => el.addEventListener(el === search ? 'input' : 'change',applyFilters));
+    document.querySelectorAll('[data-department]').forEach(button => button.addEventListener('click',() => {dept.value=button.dataset.department;showTab('courses');applyFilters();}));
+    document.getElementById('acCancel').addEventListener('click',() => {input.value=threshold;document.getElementById('acSaveMessage').textContent='';});
+    document.getElementById('acThresholdForm').addEventListener('submit',e => {e.preventDefault();const value=Number(input.value);if(!Number.isInteger(value)||value<1||value>100){document.getElementById('acSaveMessage').textContent='Enter a whole number from 1 to 100.';return;}threshold=value;current.textContent=value+'%';bar.style.width=value+'%';document.getElementById('acSaveMessage').textContent='Threshold updated for this page preview only.';applyFilters();});
+    document.querySelectorAll('[data-export]').forEach(button => button.addEventListener('click',() => {const table=document.getElementById(button.dataset.export==='departments'?'acDepartmentTable':'acCourseTable');const lines=[...table.rows].filter(row=>!row.hidden).map(row=>[...row.cells].slice(0,button.dataset.export==='departments'?-1:undefined).map(cell=>'"'+cell.innerText.replaceAll('"','""').replaceAll('\n',' ').trim()+'"').join(','));const blob=new Blob([lines.join('\r\n')],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='edumetrics-'+button.dataset.export+'-attainment.csv';a.click();URL.revokeObjectURL(url);}));
+    applyFilters();
+  })();
+  
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, {once:true});
+  else init();
+})();
+
+/* CQI Admin — frontend page controller */
+(function () {
+  function init() {
+    if (!document.body.classList.contains("cqi-admin-page")) return;
+
+(()=>{const records=[["CQI-COE232-003", "Computer Engineering", "Software Design \u2013 Lab", "Jeffrey T. Leonen", "CO3 \u2022 66%", "Supplemental lab sessions and quiz revisions", "In Progress", "Oct 12, 2026"], ["CQI-COE233-001", "Computer Engineering", "Computer Networks", "Maria L. Santos", "CO2 \u2022 62%", "Guided routing practice and formative checks", "Pending Approval", "Oct 13, 2026"], ["CQI-IT234-001", "Information Technology", "Database Systems", "Ryan P. Cruz", "CO2 \u2022 68%", "Additional SQL practice modules", "Completed", "Oct 10, 2026"], ["CQI-ECE234-004", "Electronics Engineering", "Signals and Systems", "Roxanne D. Cruz", "CO4 \u2022 65%", "Worked examples and weekly feedback", "Returned", "Oct 11, 2026"], ["CQI-ME231-003", "Mechanical Engineering", "Engineering Mechanics", "Daniel R. Tan", "CO2 \u2022 61%", "Concept review and additional problem sets", "Approved", "Oct 9, 2026"]];const tabs=[...document.querySelectorAll('.cqi-tab')];tabs.forEach(tab=>tab.addEventListener('click',()=>{tabs.forEach(t=>{const active=t===tab;t.setAttribute('aria-selected',String(active));t.classList.toggle('active',active);document.getElementById('panel-'+t.dataset.tab).hidden=!active;});}));const rows=[...document.querySelectorAll('#registerTable tbody tr')];const filters=['deptFilter','programFilter','statusFilter','registerSearch'].map(id=>document.getElementById(id));function filter(){let count=0,progress=0,pending=0;rows.forEach(row=>{const [dept,program,status,search]=filters.map(x=>x.value.trim().toLowerCase());const ok=(!dept||row.dataset.dept.toLowerCase()===dept)&&(!program||row.dataset.dept.toLowerCase()===program)&&(!status||row.dataset.status.toLowerCase()===status)&&(!search||row.textContent.toLowerCase().includes(search));row.hidden=!ok;if(ok){count++;if(['In Progress','Completed'].includes(row.dataset.status))progress++;if(row.dataset.status==='Pending Approval')pending++;}});document.getElementById('resultCount').textContent=count+' record(s)';document.getElementById('totalPlans').textContent=count;document.getElementById('progressPlans').textContent=progress;document.getElementById('pendingPlans').textContent=pending;}filters.forEach(el=>el.addEventListener(el.tagName==='INPUT'?'input':'change',filter));document.querySelectorAll('[data-record]').forEach(b=>b.addEventListener('click',()=>{const r=records[+b.dataset.record];document.getElementById('recordDetails').textContent='CQI ID: '+r[0]+'\nDepartment / Course: '+r[1]+' – '+r[2]+'\nFaculty Owner: '+r[3]+'\nCO Attainment: '+r[4]+' (Target 70%)\nIntervention: '+r[5]+'\nStatus: '+r[6]+'\nLast updated: '+r[7];document.getElementById('recordDialog').showModal();}));document.getElementById('addCategory').addEventListener('click',()=>document.getElementById('categoryDialog').showModal());document.querySelectorAll('[data-close-dialog]').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));document.getElementById('categoryForm').addEventListener('submit',e=>{e.preventDefault();const name=document.getElementById('categoryName').value.trim();if(!name)return;const tr=document.createElement('tr');const a=document.createElement('td'),d=document.createElement('td'),n=document.createElement('td'),s=document.createElement('td'),act=document.createElement('td');a.textContent=name;d.textContent='Custom intervention category';n.textContent='0';s.innerHTML='<span class="cqi-pill" data-cat-status>Active</span>';act.innerHTML='<button class="cqi-btn" data-toggle-category>Toggle Status</button>';tr.append(a,d,n,s,act);document.querySelector('#categoryTable tbody').append(tr);document.getElementById('categoryDialog').close();e.target.reset();});document.getElementById('categoryTable').addEventListener('click',e=>{if(!e.target.matches('[data-toggle-category]'))return;const pill=e.target.closest('tr').querySelector('[data-cat-status]');const inactive=pill.textContent==='Active';pill.textContent=inactive?'Inactive':'Active';pill.classList.toggle('red',inactive);});document.getElementById('savePermissions').addEventListener('click',()=>alert('Permissions saved for this frontend prototype only.'));document.getElementById('exportRegister').addEventListener('click',()=>{const csv=[['CQI ID','Department','Course','Faculty','CO / Attainment','Intervention','Status','Last Updated'],...records].map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='cqi-admin-register.csv';a.click();URL.revokeObjectURL(url);});})();
+
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, {once:true});
+  else init();
+})();
+
+/* GL Admin — frontend page controller */
+(function () {
+  function init() {
+    if (!document.body.classList.contains("gl-admin-page")) return;
+
+const sections=[...document.querySelectorAll('[data-panel]')];document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-tab]').forEach(b=>{b.setAttribute('aria-selected',String(b===button));b.classList.toggle('active',b===button)});sections.forEach(s=>s.hidden=s.dataset.panel!==button.dataset.tab)}));document.querySelectorAll('.gl-admin-query,.gl-admin-level').forEach(input=>input.addEventListener('input',()=>{const panel=input.closest('[data-panel]');const q=(panel.querySelector('.gl-admin-query')?.value||'').toLowerCase();const level=(panel.querySelector('.gl-admin-level')?.value||'').toLowerCase();panel.querySelectorAll('tbody tr').forEach(row=>{const t=row.innerText.toLowerCase();row.hidden=!(t.includes(q)&&t.includes(level))})}));document.querySelectorAll('[data-export]').forEach(button=>button.addEventListener('click',()=>{const panel=button.closest('[data-panel]');const lines=[...panel.querySelectorAll('tr')].filter(r=>!r.hidden).map(r=>[...r.querySelectorAll('th,td')].map(c=>'"'+c.innerText.replaceAll('"','""').replaceAll('\n',' ')+'"').join(','));const blob=new Blob([lines.join('\r\n')],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='edumetrics-'+panel.dataset.panel+'-sample.csv';a.click();URL.revokeObjectURL(url)}));const modal=document.getElementById('glDialog');document.querySelectorAll('[data-detail]').forEach(button=>button.addEventListener('click',()=>{const cells=[...button.closest('tr').cells];document.getElementById('glDialogTitle').textContent=button.dataset.detail.startsWith('reset')?'Password Reset Request':'Operation Details';const labels=button.dataset.detail.startsWith('reset')?['Request ID','User','Requested At','Verification','Status','Reviewed By']:['Timestamp','Actor','Operation','Module','Record ID','Result'];document.getElementById('glDialogBody').replaceChildren(...cells.slice(0,labels.length).map((cell,i)=>{const box=document.createElement('div');const small=document.createElement('small');small.textContent=labels[i];const strong=document.createElement('strong');strong.textContent=cell.innerText;box.append(small,strong);return box}));modal.hidden=false}));document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>modal.hidden=true));modal.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true});document.addEventListener('keydown',e=>{if(e.key==='Escape')modal.hidden=true});
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, {once:true});
+  else init();
+})();
+
+/* RP Admin — frontend page controller */
+(function () {
+  function init() {
+    if (!document.body.classList.contains("rp-admin-page")) return;
+
+(()=>{'use strict';const tabs=document.querySelectorAll('.rp-admin-tab'),panels={library:document.getElementById('panel-library'),permissions:document.getElementById('panel-permissions'),settings:document.getElementById('panel-settings')};tabs.forEach(b=>b.addEventListener('click',()=>{tabs.forEach(t=>{t.setAttribute('aria-selected',String(t===b));t.classList.toggle('active',t===b)});Object.entries(panels).forEach(([name,p])=>p.hidden=name!==b.dataset.tab)}));const rows=[...document.querySelectorAll('#reportRows tr')],search=document.getElementById('search'),type=document.getElementById('typeFilter'),status=document.getElementById('statusFilter');function filter(){const q=search.value.trim().toLowerCase();rows.forEach(r=>{r.hidden=!(r.textContent.toLowerCase().includes(q)&&(!type.value||r.dataset.type===type.value)&&(!status.value||r.dataset.status===status.value))})}search.addEventListener('input',filter);type.addEventListener('change',filter);status.addEventListener('change',filter);const modal=document.getElementById('modal'),content=document.getElementById('modalContent'),title=document.getElementById('modalTitle'),confirm=document.getElementById('modalConfirm'),toast=document.getElementById('toast');function notice(s){toast.textContent=s;toast.hidden=false;setTimeout(()=>toast.hidden=true,3000)}function close(){modal.hidden=true}document.getElementById('modalClose').onclick=close;modal.addEventListener('click',e=>{if(e.target===modal)close()});document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});function getRow(id){return rows.find(r=>r.cells[0].innerText.includes(id))}document.querySelector('#reportRows').addEventListener('click',e=>{const b=e.target.closest('button[data-action]');if(!b)return;const id=b.dataset.id,row=getRow(id);if(!row)return;if(b.dataset.action==='download'){const data=['Report ID,Course,Owner,Updated,Status,Description',[id,row.cells[1].innerText.replace(/\n/g,' '),row.cells[2].innerText,row.cells[3].innerText,row.dataset.status,row.cells[5].innerText].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')].join('\n');download(id+'.csv',data);return}title.textContent=b.dataset.action==='review'?'Review / Verification':'Compliance Report Details';content.innerHTML='<dl><dt>Report ID</dt><dd></dd><dt>Course</dt><dd></dd><dt>Owner</dt><dd></dd><dt>Status</dt><dd></dd></dl>'+(b.dataset.action==='review'?'<label style="font-size:12px">Review notes<textarea id="reviewNotes" placeholder="Record notes for review or verification..."></textarea></label>':'');const dd=content.querySelectorAll('dd');[id,row.cells[1].innerText,row.cells[2].innerText,row.dataset.status].forEach((v,i)=>dd[i].textContent=v);confirm.hidden=b.dataset.action!=='review';confirm.onclick=()=>{notice('Review recorded for '+id+' (frontend only).');close()};modal.hidden=false});function download(name,data){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([data],{type:'text/csv;charset=utf-8'}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}document.getElementById('exportList').onclick=()=>{const data=['Report ID,Course,Owner,Updated,Status,Description',...rows.filter(r=>!r.hidden).map(r=>[r.cells[0].innerText,r.cells[1].innerText,r.cells[2].innerText,r.cells[3].innerText,r.dataset.status,r.cells[5].innerText].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','))].join('\n');download('compliance-report-index.csv',data)};document.getElementById('settingsForm').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;sessionStorage.setItem('rpAdminSettings',JSON.stringify({header:f.elements.namedItem("header").checked,date:f.elements.namedItem("date").checked,students:f.elements.namedItem("students").checked,footer:f.elements.namedItem("footer").value}));notice('Document settings saved in this browser.')});})();
+
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, {once:true});
+  else init();
 })();

@@ -264,47 +264,18 @@
             font-weight: 700;
         }
 
-        .signature-pad-wrapper {
-            width: 100%;
-            height: 150px;
-            overflow: hidden;
-            border: 1px solid #B9CDDC;
-            border-radius: 8px;
-            background: #FFFFFF;
-        }
-
-        .signature-pad {
-            display: block;
-            width: 100%;
-            height: 100%;
-            cursor: crosshair;
-            touch-action: none;
-        }
-
-        .signature-helper {
-            margin: 6px 0 0;
-            color: #7A8E9F;
-            font-size: 10px;
-            line-height: 1.4;
-        }
-
-        .clear-signature-button {
-            margin-top: 9px;
-            height: 34px;
-            padding: 0 14px;
-            border: 1px solid #B7CAD8;
-            border-radius: 6px;
-            background: #FFFFFF;
-            color: #004179;
-            font-family: inherit;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .clear-signature-button:hover {
-            background: #F4F7FB;
-        }
+        .signature-upload-box { position: relative; height: 160px; overflow: hidden; border: 1px dashed #B9CDDC; border-radius: 8px; background: #FAFCFE; }
+        .signature-pad { display: block; width: 100%; height: 100%; cursor: crosshair; touch-action: none; }
+        .signature-preview { display: none; position: absolute; inset: 0; width: 100%; height: 100%; padding: 12px; object-fit: contain; background: #FAFCFE; pointer-events: none; }
+        .signature-preview.visible { display: block; }
+        .signature-upload-input { display: none; }
+        .reflection-signature-group .signature-controls { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: flex-start; column-gap: 6px; row-gap: 6px; margin-top: 10px; }
+        .reflection-signature-group .signature-controls .signature-upload-action,
+        .reflection-signature-group .signature-controls .clear-signature-button { display: inline-flex; align-items: center; justify-content: center; height: 36px; min-height: 36px; margin: 0; padding: 0 14px; width: auto; min-width: 0; flex: 0 0 auto; align-self: center; line-height: 1; box-sizing: border-box; border: 1px solid #B7CAD8; border-radius: 6px; background: #FFFFFF; color: #004179; font: 700 11px Arial, Helvetica, sans-serif; cursor: pointer; }
+        .reflection-signature-group .signature-controls .signature-upload-action:hover,
+        .reflection-signature-group .signature-controls .clear-signature-button:hover { background: #F4F7FB; }
+        .reflection-signature-group .signature-controls .signature-upload-action:focus-visible { outline: 3px solid #F4C300; outline-offset: 3px; }
+        .signature-helper { margin: 7px 0 0; color: #7A8E9F; font-size: 10px; line-height: 1.4; }
 
         .reflection-date-input {
             width: 100%;
@@ -663,28 +634,21 @@
                 <div class="reflection-signature-section">
 
                     <div class="reflection-signature-group">
-                        <label for="studentSignature">
+                        <label for="studentSignatureUpload">
                             Signature of Student
                         </label>
 
-                        <div class="signature-pad-wrapper">
-                            <canvas
-                                id="studentSignature"
-                                class="signature-pad"
-                            ></canvas>
+                        <div class="signature-upload-box" id="signatureUploadBox">
+                            <canvas id="studentSignature" class="signature-pad" aria-label="Draw your signature"></canvas>
+                            <img id="studentSignaturePreview" class="signature-preview" alt="Uploaded signature preview">
                         </div>
-
-                        <p class="signature-helper">
-                            Sign inside the box using your mouse or touchscreen.
-                        </p>
-
-                        <button
-                            type="button"
-                            class="clear-signature-button"
-                            id="clearSignatureButton"
-                        >
-                            Clear Signature
-                        </button>
+                        <div class="signature-controls">
+                            <input type="file" id="studentSignatureUpload" class="signature-upload-input"
+                                   accept="image/png,image/jpeg,image/webp" aria-label="Upload e-signature image">
+                            <button type="button" class="signature-upload-action" id="signatureUploadAction">Upload Signature</button>
+                            <button type="button" class="clear-signature-button" id="clearSignatureButton">Remove Signature</button>
+                        </div>
+                        <p class="signature-helper">Draw in the box or upload PNG, JPG, WEBP (maximum 1 MB). One signature only.</p>
                     </div>
 
                     <div class="reflection-date-group">
@@ -760,12 +724,17 @@
             const actions = document.getElementById("reflectionActions");
             const doneButton = document.getElementById("reflectionDoneButton");
 
+            const signatureInput = document.getElementById("studentSignatureUpload");
+            const signaturePreview = document.getElementById("studentSignaturePreview");
             const signatureCanvas = document.getElementById("studentSignature");
             const signatureContext = signatureCanvas.getContext("2d");
             const clearSignatureButton = document.getElementById("clearSignatureButton");
-
+            const uploadAction = document.getElementById("signatureUploadAction");
+            uploadAction.addEventListener("click", function () { signatureInput.click(); });
+            let signatureData = "";
+            let hasDrawing = false;
             let isDrawing = false;
-            let hasSignature = false;
+            let uploadToken = 0;
 
             /* Back navigation */
 
@@ -793,78 +762,93 @@
                 window.location.href = "../so-student.html";
             });
 
-            /* Signature canvas */
-
+            /* Signature: either draw on the canvas or upload one image. */
             function resizeSignatureCanvas() {
                 const rect = signatureCanvas.getBoundingClientRect();
+                if (!rect.width || !rect.height) return;
+                const previous = hasDrawing ? signatureCanvas.toDataURL("image/png") : "";
                 const ratio = Math.max(window.devicePixelRatio || 1, 1);
-
-                signatureCanvas.width = rect.width * ratio;
-                signatureCanvas.height = rect.height * ratio;
-
+                signatureCanvas.width = Math.round(rect.width * ratio);
+                signatureCanvas.height = Math.round(rect.height * ratio);
                 signatureContext.setTransform(ratio, 0, 0, ratio, 0, 0);
-                signatureContext.lineWidth = 2;
+                signatureContext.strokeStyle = "#173B5C";
+                signatureContext.lineWidth = 2.5;
                 signatureContext.lineCap = "round";
                 signatureContext.lineJoin = "round";
-                signatureContext.strokeStyle = "#173B5C";
+                if (previous) {
+                    const image = new Image();
+                    image.onload = () => signatureContext.drawImage(image, 0, 0, rect.width, rect.height);
+                    image.src = previous;
+                }
             }
-
-            function getSignaturePosition(event) {
+            function resetSignature() {
+                uploadToken++;
+                signatureInput.value = "";
+                signatureData = "";
+                hasDrawing = false;
+                isDrawing = false;
+                signaturePreview.removeAttribute("src");
+                signaturePreview.classList.remove("visible");
+                signatureContext.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+                uploadAction.textContent = "Upload Signature";
+            }
+            function pointerPosition(event) {
                 const rect = signatureCanvas.getBoundingClientRect();
-
-                return {
-                    x: event.clientX - rect.left,
-                    y: event.clientY - rect.top
-                };
+                return { x: event.clientX - rect.left, y: event.clientY - rect.top };
             }
-
             signatureCanvas.addEventListener("pointerdown", function (event) {
-                const position = getSignaturePosition(event);
-
-                isDrawing = true;
-
+                if (signaturePreview.classList.contains("visible")) resetSignature();
+                const position = pointerPosition(event);
                 signatureContext.beginPath();
                 signatureContext.moveTo(position.x, position.y);
-
-                signatureCanvas.setPointerCapture(event.pointerId);
-            });
-
-            signatureCanvas.addEventListener("pointermove", function (event) {
-                if (!isDrawing) {
-                    return;
-                }
-
-                const position = getSignaturePosition(event);
-
-                signatureContext.lineTo(position.x, position.y);
+                signatureContext.lineTo(position.x + 0.01, position.y + 0.01);
                 signatureContext.stroke();
-
-                hasSignature = true;
+                isDrawing = true;
+                hasDrawing = true;
+                signatureCanvas.setPointerCapture(event.pointerId);
                 hideMessage();
             });
-
-            signatureCanvas.addEventListener("pointerup", function (event) {
+            signatureCanvas.addEventListener("pointermove", function (event) {
+                if (!isDrawing) return;
+                const position = pointerPosition(event);
+                signatureContext.lineTo(position.x, position.y);
+                signatureContext.stroke();
+            });
+            function endDrawing(event) {
                 isDrawing = false;
-
-                if (signatureCanvas.hasPointerCapture(event.pointerId)) {
-                    signatureCanvas.releasePointerCapture(event.pointerId);
+                if (signatureCanvas.hasPointerCapture(event.pointerId)) signatureCanvas.releasePointerCapture(event.pointerId);
+            }
+            signatureCanvas.addEventListener("pointerup", endDrawing);
+            signatureCanvas.addEventListener("pointercancel", endDrawing);
+            signatureInput.addEventListener("change", function () {
+                const file = signatureInput.files && signatureInput.files[0];
+                if (!file) return;
+                if (!["image/png", "image/jpeg", "image/webp"].includes(file.type) || file.size > 1024 * 1024) {
+                    signatureInput.value = "";
+                    message.textContent = "Please upload a PNG, JPG, or WEBP signature image up to 1 MB.";
+                    message.classList.add("show");
+                    return;
                 }
+                const token = ++uploadToken;
+                const reader = new FileReader();
+                reader.onload = function () {
+                    if (token !== uploadToken) return;
+                    resetSignature();
+                    signatureData = String(reader.result || "");
+                    signaturePreview.src = signatureData;
+                    signaturePreview.classList.add("visible");
+                    uploadAction.textContent = "Change Signature";
+                    hideMessage();
+                };
+                reader.onerror = function () {
+                    message.textContent = "Could not read the signature image. Please try again.";
+                    message.classList.add("show");
+                };
+                reader.readAsDataURL(file);
             });
-
-            signatureCanvas.addEventListener("pointercancel", function () {
-                isDrawing = false;
-            });
-
-            clearSignatureButton.addEventListener("click", function () {
-                signatureContext.clearRect(
-                    0,
-                    0,
-                    signatureCanvas.width,
-                    signatureCanvas.height
-                );
-
-                hasSignature = false;
-            });
+            clearSignatureButton.addEventListener("click", resetSignature);
+            resizeSignatureCanvas();
+            window.addEventListener("resize", resizeSignatureCanvas);
 
             /* Validation */
 
@@ -873,7 +857,7 @@
                     answer1.value.trim() &&
                     answer2.value.trim() &&
                     dateInput.value &&
-                    hasSignature
+                    Boolean(signatureData || hasDrawing)
                 ) {
                     message.classList.remove("show");
                 }
@@ -901,9 +885,10 @@
                 if (
                     !firstAnswer ||
                     !secondAnswer ||
-                    !hasSignature ||
+                    !(signatureData || hasDrawing) ||
                     !selectedDate
                 ) {
+                    message.textContent = "Please complete both reflections, draw or upload your signature, and select a date.";
                     message.classList.add("show");
 
                     message.scrollIntoView({
@@ -932,7 +917,7 @@
                 assessmentData.reflection = {
                     bestPerformanceIndicator: firstAnswer,
                     weakestPerformanceIndicator: secondAnswer,
-                    signature: signatureCanvas.toDataURL("image/png"),
+                    signature: signatureData || (hasDrawing ? signatureCanvas.toDataURL("image/png") : ""),
                     date: selectedDate,
                     submittedAt: new Date().toISOString()
                 };
@@ -950,7 +935,6 @@
                 window.location.href = "../so-student.html";
             });
 
-            resizeSignatureCanvas();
         });
     </script>
 </body>

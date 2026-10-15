@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Raw Score Troubleshooting | EduMetrics</title>
+<link href="../../Static/style.css" rel="stylesheet"/>
+</head>
+<body class="ra-admin-page so-student-page dept-head-unified"><header class="so-topbar">
+<div class="so-brand">
+<div class="so-brand-logo">
+                Edu<span>Metrics</span>
+</div>
+<div class="so-brand-subtitle">
+                Academic Assessment &amp; Grading System
+            </div>
+</div>
+<div class="so-user-area">
+<div class="edu-header-calendar-wrap"><button aria-expanded="false" aria-label="Open calendar" class="edu-header-calendar-btn" type="button"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><rect height="16" rx="2" width="18" x="3" y="5"></rect><path d="M7 3v4M17 3v4M3 10h18"></path></svg></button><div class="edu-header-calendar-popup" hidden=""><label>Calendar <input aria-label="Choose calendar date" type="date"/></label><p>Academic events are not connected yet.</p></div></div><button aria-label="Notifications" class="so-notification-btn" type="button">
+<img alt="Notifications" class="so-notification-image" src="../../Static/images/sidebar/notif.png"/>
+<span class="so-notification-dot"></span>
+</button>
+<div class="so-user-info">
+<strong id="departmentHeadName">System Administrator</strong>
+<span>Admin</span>
+</div>
+<div aria-hidden="true" class="so-avatar">AD</div>
+<span aria-hidden="true" class="so-online-dot"></span>
+</div>
+</header><div class="so-header-lines">
+<div class="so-header-blue"></div>
+<div class="so-header-gold"></div>
+</div><div class="so-shell ra-admin-shell"><aside class="so-sidebar">
+<nav aria-label="Administrator navigation" class="so-nav">
+<a class="so-nav-item" href="../requirement 2/cm-admin.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/home-white.png"/></span><span>Dashboard</span></a>
+<a class="so-nav-item" href="../requirement 7/gl-admin.html"><span class="so-nav-icon"><img alt="" height="16" src="../../Static/images/image.png" width="16"/></span><span>System Records</span></a>
+<div class="so-nav-group"><details open=""><summary class="so-nav-item so-products active"><span class="so-nav-icon"><img alt="" height="16" src="../../Static/images/image.png" width="16"/></span><span>Workflow</span></summary><div class="so-subnav">
+<a aria-current="page" class="active" href="../requirement 4/ra-admin.html">Raw Entry</a><a href="../requirement 5/ac-admin.html">Attainment Calculation</a><a href="../requirement 6/cqi-admin.html">CQI Action Planning</a><a href="../requirement 8/rp-admin.html">Compliance Report</a>
+</div></details></div>
+<a class="so-nav-item" href="../main/platform.html"><span>Platform</span></a>
+<a class="so-nav-item" href="../main/resources.html"><span>Resources</span></a>
+<a class="so-nav-item" href="../main/about-us.html"><span>About Us</span></a>
+</nav>
+<div class="so-sidebar-brand">
+<div class="so-sidebar-logo">
+                    Edu<span>Metrics</span>
+</div>
+<small>
+                    Academic Assessment &amp; Grading System
+                </small>
+</div>
+</aside><main class="so-main dh-main sodh-main" id="mainContent">
+<section class="ra-admin-heading so-page-heading dh-heading">
+<h1>Raw Score Troubleshooting</h1>
+<p>Admin access is limited to system-level diagnostics when needed. Admin cannot enter, edit, or save assessment scores.</p>
+</section>
+<section aria-label="Raw score access status" class="ra-admin-summary sodh-summary-grid dh-summary">
+<div class="ra-admin-stat ra-admin-stat-primary sodh-summary-card dh-stat">
+<span class="ra-admin-stat-label sodh-summary-label dh-stat-label">Restricted Score Access</span>
+<strong class="ra-admin-stat-value sodh-summary-number dh-stat-value">Read-only</strong>
+</div>
+<div class="ra-admin-stat ra-admin-stat-restricted sodh-summary-card dh-stat">
+<span class="ra-admin-stat-label sodh-summary-label dh-stat-label">Score Entry</span>
+<strong class="ra-admin-stat-value sodh-summary-number dh-stat-value">Disabled</strong>
+</div>
+<div class="ra-admin-stat ra-admin-stat-restricted sodh-summary-card dh-stat">
+<span class="ra-admin-stat-label sodh-summary-label dh-stat-label">Score Editing</span>
+<strong class="ra-admin-stat-value sodh-summary-number dh-stat-value">Disabled</strong>
+</div>
+<div class="ra-admin-stat ra-admin-stat-limited sodh-summary-card dh-stat">
+<span class="ra-admin-stat-label sodh-summary-label dh-stat-label">Troubleshooting</span>
+<strong class="ra-admin-stat-value sodh-summary-number dh-stat-value">Limited</strong>
+</div>
+</section>
+<section aria-labelledby="accessPolicyHeading" class="ra-admin-panel sodh-content-card"><div class="sodh-toolbar ra-policy-header"><div><h2 id="accessPolicyHeading">Access Policy</h2><p>Raw assessment scores are owned by the academic workflow. Faculty enter and edit scores for their assigned courses and sections; Department Heads review scores without editing. Admin does not have score-entry or score-editing privileges.</p></div></div>
+<div class="ra-policy-body"><div class="ra-admin-notice" role="note">
+<p><strong>System-level visibility:</strong> use audit logs and error records in Administration to investigate score-module issues. Do not modify academic score records from this account. This prototype does not expose actual score values on this page.</p>
+</div><div class="ra-admin-actions">
+<a class="sodh-export-btn ra-policy-link" href="../requirement 2/cm-admin.html">Return to Administration</a>
+<a class="sodh-export-btn ra-policy-link" href="ra-dept-head.html">Department Head Review (read-only)</a>
+</div></div></section>
+</main></div>
+<script defer="" src="../../Static/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1" name="viewport"/><title>Admin Dashboard | EduMetrics</title><link href="../../Static/style.css" rel="stylesheet"/>
+</head>
+<body class="so-student-page dept-head-unified cm-admin-page">
+<header class="so-topbar">
+<div class="so-brand">
+<div class="so-brand-logo">
+                Edu<span>Metrics</span>
+</div>
+<div class="so-brand-subtitle">
+                Academic Assessment &amp; Grading System
+            </div>
+</div>
+<div class="so-user-area">
+<div class="edu-header-calendar-wrap"><button aria-expanded="false" aria-label="Open calendar" class="edu-header-calendar-btn" type="button"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><rect height="16" rx="2" width="18" x="3" y="5"></rect><path d="M7 3v4M17 3v4M3 10h18"></path></svg></button><div class="edu-header-calendar-popup" hidden=""><label>Calendar <input aria-label="Choose calendar date" type="date"/></label><p>Academic events are not connected yet.</p></div></div><button aria-label="Notifications" class="so-notification-btn" type="button">
+<img alt="Notifications" class="so-notification-image" src="../../Static/images/sidebar/notif.png"/>
+<span class="so-notification-dot"></span>
+</button>
+<div class="so-user-info">
+<strong id="departmentHeadName">System Administrator</strong>
+<span>Admin</span>
+</div>
+<div aria-hidden="true" class="so-avatar">AD</div>
+<span aria-hidden="true" class="so-online-dot"></span>
+</div>
+</header>
+<div class="so-header-lines">
+<div class="so-header-blue"></div>
+<div class="so-header-gold"></div>
+</div>
+<div class="so-shell ra-admin-shell"><aside class="so-sidebar">
+<nav aria-label="Administrator navigation" class="so-nav">
+<a aria-current="page" class="so-nav-item active" href="../requirement 2/cm-admin.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/home-white.png"/></span><span>Dashboard</span></a>
+<a class="so-nav-item" href="../requirement 7/gl-admin.html"><span class="so-nav-icon"><img alt="" height="16" src="../../Static/images/image.png" width="16"/></span><span>System Records</span></a>
+<div class="so-nav-group"><details><summary class="so-nav-item so-products"><span class="so-nav-icon"><img alt="" height="16" src="../../Static/images/image.png" width="16"/></span><span>Workflow</span></summary><div class="so-subnav">
+<a href="../requirement 4/ra-admin.html">Raw Entry</a><a href="../requirement 5/ac-admin.html">Attainment Calculation</a><a href="../requirement 6/cqi-admin.html">CQI Action Planning</a><a href="../requirement 8/rp-admin.html">Compliance Report</a>
+</div></details></div>
+<a class="so-nav-item" href="../main/platform.html"><span>Platform</span></a>
+<a class="so-nav-item" href="../main/resources.html"><span>Resources</span></a>
+<a class="so-nav-item" href="../main/about-us.html"><span>About Us</span></a>
+</nav>
+<div class="so-sidebar-brand">
+<div class="so-sidebar-logo">
+                    Edu<span>Metrics</span>
+</div>
+<small>
+                    Academic Assessment &amp; Grading System
+                </small>
+</div>
+</aside>
+<main class="dh-main cm-admin-main sodh-main"><section class="dh-heading cm-admin-heading so-page-heading"><h1>Admin Dashboard</h1><p>Manage system access and security, and access records for debugging and system maintenance.</p></section>
+<section aria-label="Administration filters" class="dh-filters cm-filters sodh-filter-card"><div class="cm-filter sodh-filter-group"><label for="year">School Year</label><select id="year"><option>2026–2027</option><option>2025–2026</option></select></div><div class="cm-filter sodh-filter-group"><label for="department">Department</label><select id="department"><option value="">All Departments</option><option>Engineering</option><option>System</option></select></div><div class="cm-filter sodh-filter-group"><label for="module">Module</label><select id="module"><option value="">All Modules</option><option>Access Control</option><option>Curriculum Mapping</option><option>Assessment Entry</option><option>Attainment</option><option>CQI Planning</option><option>User Management</option></select></div><div class="cm-filter sodh-filter-group"><label for="role">Role</label><select id="role"><option value="">All Roles</option><option>Admin</option><option>Department Head</option><option>Faculty</option><option>Student</option></select></div><div class="cm-filter sodh-filter-group"><label for="status">Status</label><select id="status"><option value="">All Statuses</option><option>Active</option><option>Suspended</option></select></div></section>
+<section class="dh-summary cm-summary sodh-summary-grid"><div class="dh-stat cm-stat sodh-summary-card"><h2>System Administration</h2><p>Access control, security, audit records &amp; maintenance</p></div><div class="dh-stat cm-stat sodh-summary-card"><small class="dh-stat-label sodh-summary-label">Active Users</small><strong class="dh-stat-value sodh-summary-number" id="activeCount">4</strong></div><div class="dh-stat cm-stat sodh-summary-card"><small class="dh-stat-label sodh-summary-label">Security Events</small><strong class="dh-stat-value sodh-summary-number">4</strong></div><div class="dh-stat cm-stat sodh-summary-card"><small class="dh-stat-label sodh-summary-label">System Issues</small><strong class="dh-stat-value sodh-summary-number">2</strong></div></section>
+<div aria-label="Administration sections" class="dh-tabs cm-tabs sodh-tabs" role="tablist"><button aria-selected="true" class="dh-tab cm-tab sodh-tab active" data-tab="security" role="tab" type="button">Access &amp; Security</button><button aria-selected="false" class="dh-tab cm-tab sodh-tab" data-tab="logs" role="tab" type="button">Audit &amp; Debug Logs</button><button aria-selected="false" class="dh-tab cm-tab sodh-tab" data-tab="sessions" role="tab" type="button">Active Sessions</button><button aria-selected="false" class="dh-tab cm-tab sodh-tab" data-tab="maintenance" role="tab" type="button">System Maintenance</button></div>
+<section class="dh-panel cm-panel sodh-content-card sodh-tab-panel" data-panel="security" role="tabpanel"><div class="cm-panel-header sodh-toolbar"><div><h2>User Access &amp; Role Management</h2><p>Manage user accounts, roles, permissions, and account security.</p></div><button class="cm-btn cm-btn-gold sodh-export-btn" id="addUser" type="button">+ Add User</button></div><div class="cm-table-wrap sodh-table-wrap"><table class="cm-table sodh-table"><thead><tr><th>User</th><th>Role</th><th>Department</th><th>Access Scope</th><th>Account Status</th><th>Last Login</th><th>Action</th></tr></thead><tbody id="usersBody"></tbody></table></div></section>
+<section class="dh-panel cm-panel sodh-content-card sodh-tab-panel" data-panel="logs" hidden="" role="tabpanel"><div class="cm-panel-header sodh-toolbar"><div><h2>Audit &amp; Debug Logs</h2><p>Access system records for troubleshooting, security review, and maintenance.</p></div></div><div class="sodh-toolbar" aria-label="Audit log filters and export"><div class="sodh-toolbar-actions"><label class="sodh-search"><span aria-hidden="true">⌕</span><input id="logSearch" type="search" aria-label="Search logs" placeholder="Search user, action, module, record ID..."></label><div class="sodh-filter-group"><select aria-label="Filter log level" class="sodh-filter-select cm-log-level-select" id="logLevel"><option value="">All Levels</option><option>Security</option><option>Info</option><option>Warning</option><option>Error</option></select></div></div><button class="sodh-export-btn" id="exportLogs" type="button">Export Records</button></div><div class="cm-table-wrap sodh-table-wrap"><table class="cm-table sodh-table"><thead><tr><th>Timestamp</th><th>Level</th><th>User</th><th>Module</th><th>Action / Event</th><th>Record ID</th><th>Action</th></tr></thead><tbody id="logsBody"></tbody></table></div></section>
+<section class="dh-panel cm-panel sodh-content-card sodh-tab-panel" data-panel="sessions" hidden="" role="tabpanel"><div class="cm-panel-header sodh-toolbar"><div><h2>Active Sessions</h2><p>Review current sessions and terminate sessions when a security concern is identified.</p></div></div><div class="cm-table-wrap sodh-table-wrap"><table class="cm-table sodh-table"><thead><tr><th>User</th><th>Role</th><th>Device / Browser</th><th>IP / Session</th><th>Login Time</th><th>Last Activity</th><th>Action</th></tr></thead><tbody id="sessionsBody"></tbody></table></div></section>
+<section class="dh-panel cm-panel sodh-content-card sodh-tab-panel" data-panel="maintenance" hidden="" role="tabpanel"><div class="cm-panel-header sodh-toolbar"><div><h2>System Maintenance</h2><p>Review system health and use diagnostic records when troubleshooting application issues.</p></div></div><div aria-label="System health overview" class="cm-health-grid"><div class="cm-health-card"><span aria-hidden="true" class="cm-health-icon">✓</span><div class="cm-health-copy"><h3>Application Status</h3><p>All core services operational</p></div><span class="cm-health-status">Healthy</span></div><div class="cm-health-card"><span aria-hidden="true" class="cm-health-icon">▣</span><div class="cm-health-copy"><h3>Database</h3><p>Last backup: Sep. 30, 2026 · 01:00</p></div><span class="cm-health-status">Healthy</span></div><div class="cm-health-card"><span aria-hidden="true" class="cm-health-icon">⚠</span><div class="cm-health-copy"><h3>Error Monitoring</h3><p>2 unresolved system records</p></div><button class="cm-health-action danger" data-info="Error Monitoring|Two example unresolved system issues. Backend monitoring is not connected." type="button">View Errors</button></div><div class="cm-health-card"><span aria-hidden="true" class="cm-health-icon">↻</span><div class="cm-health-copy"><h3>Audit Records</h3><p>Retention: 365 days</p></div><button class="cm-health-action outline" data-tab-go="logs" type="button">Open Logs</button></div></div><div class="cm-note">Maintenance access: use audit and debug records to trace system actions, identify errors, and support authorized maintenance. Destructive system actions are intentionally separated from routine log review.</div></section>
+</main></div><dialog class="cm-dialog" id="detailDialog"><h2 id="dialogTitle"></h2><p id="dialogText"></p><footer><button class="cm-btn cm-btn-solid" id="closeDialog" type="button">Close</button></footer></dialog>
+<script defer="" src="../../Static/script.js"></script>
+</body></html>
