@@ -1403,8 +1403,8 @@ body.so-reflection-page{margin:0;min-height:100vh;background:#F4F7FB;color:#173B
 .so-student-page .so-products.active{min-height:63px;padding:9px 15px;border-radius:32px;background:#F4C300!important;color:#003F73!important;border:none!important;}
 .so-student-page .so-subnav{padding:6px 4px 8px 17px;display:flex!important;flex-direction:column!important;gap:3px;width:auto!important;margin:7px 0 12px 53px;padding-left:15px;}
 .so-student-page .so-subnav a{width:100%!important;min-height:42px!important;padding:9px 6px 9px 12px!important;position:relative;display:flex;align-items:center;color:#FFFFFF!important;font-size:17px!important;font-weight:600!important;line-height:1.2!important;white-space:normal;margin:0!important;text-align:left!important;text-decoration:none!important;}
-.so-student-page .so-subnav a.active::before{content:"";width:3px;height:25px;position:absolute;left:0!important;top:5px;border-radius:3px;background:#F4C300!important;bottom:5px;}
-.so-student-page .so-subnav a.active{position:relative;color:#FFFFFF!important;padding-left:12px!important;}
+.so-student-page .so-subnav a:is(.active,[aria-current="page"])::before{content:"";width:3px;height:25px;position:absolute;left:0!important;top:5px;border-radius:3px;background:#F4C300!important;bottom:5px;}
+.so-student-page .so-subnav a:is(.active,[aria-current="page"]){position:relative;color:#FFFFFF!important;padding-left:12px!important;}
 .so-student-page .so-nav > .so-nav-item{flex-shrink:0;}
 .so-student-page .so-sidebar-brand{position:absolute!important;left:0!important;right:0!important;bottom:0!important;width:100%!important;margin:0!important;padding:17px 20px 19px!important;background:#004179!important;z-index:20;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;}
 .so-student-page .so-sidebar-logo{color:#F4C300!important;font-size:25px!important;font-weight:800!important;line-height:1!important;margin:0!important;text-align:center!important;}

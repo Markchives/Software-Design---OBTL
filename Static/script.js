@@ -6976,7 +6976,39 @@ $('closeDialog').addEventListener('click',()=>$('detailDialog').close());$('addU
       document.getElementById('acDeptEmpty').hidden = deptRows.some(row => !row.hidden);
     }
     [dept,status,search].forEach(el => el.addEventListener(el === search ? 'input' : 'change',applyFilters));
-    document.querySelectorAll('[data-department]').forEach(button => button.addEventListener('click',() => {dept.value=button.dataset.department;showTab('courses');applyFilters();}));
+    const deptDialog = document.getElementById('acDeptDialog');
+    const deptDialogTitle = document.getElementById('acDeptDialogTitle');
+    const deptDialogSummary = document.getElementById('acDeptDialogSummary');
+    const deptDialogCourses = document.getElementById('acDeptDialogCourses');
+    let detailDepartment = '';
+    document.querySelectorAll('#acDepartmentTable [data-department]').forEach(button => button.addEventListener('click', () => {
+      const row = button.closest('tr');
+      if (!row || !deptDialog) return;
+      detailDepartment = button.dataset.department;
+      deptDialogTitle.textContent = detailDepartment + ' — Attainment Details';
+      deptDialogSummary.replaceChildren();
+      [['Programs', row.cells[1].textContent.trim()], ['Total COs', row.cells[3].textContent.trim()], ['Average Attainment', row.cells[6].querySelector('strong')?.textContent.trim() || '—']].forEach(([label, value]) => {
+        const card = document.createElement('div');
+        const caption = document.createElement('small'); caption.textContent = label;
+        const number = document.createElement('strong'); number.textContent = value;
+        card.append(caption, number); deptDialogSummary.append(card);
+      });
+      deptDialogCourses.replaceChildren();
+      const matches = courseRows.filter(course => course.dataset.dept === detailDepartment);
+      matches.forEach(course => {
+        const item = document.createElement('div'); item.className = 'ac-dialog-course';
+        const name = document.createElement('strong'); name.textContent = course.cells[1].textContent.trim().replace(/\s+/g, ' ');
+        const detail = document.createElement('small'); detail.textContent = course.cells[3].textContent.trim().replace(/\s+/g, ' ') + ' · ' + course.cells[4].textContent.trim() + ' attainment';
+        item.append(name, detail); deptDialogCourses.append(item);
+      });
+      if (!matches.length) { const empty = document.createElement('p'); empty.textContent = 'No individual course records are available in this demo for this department.'; deptDialogCourses.append(empty); }
+      deptDialog.showModal();
+    }));
+    ['acDeptDialogClose', 'acDeptDialogDismiss'].forEach(id => document.getElementById(id)?.addEventListener('click', () => deptDialog.close()));
+    deptDialog?.addEventListener('click', event => { if (event.target === deptDialog) deptDialog.close(); });
+    document.getElementById('acDeptDialogViewCourses')?.addEventListener('click', () => {
+      dept.value = detailDepartment; showTab('courses'); applyFilters(); deptDialog.close();
+    });
     document.getElementById('acCancel').addEventListener('click',() => {input.value=threshold;document.getElementById('acSaveMessage').textContent='';});
     document.getElementById('acThresholdForm').addEventListener('submit',e => {e.preventDefault();const value=Number(input.value);if(!Number.isInteger(value)||value<1||value>100){document.getElementById('acSaveMessage').textContent='Enter a whole number from 1 to 100.';return;}threshold=value;current.textContent=value+'%';bar.style.width=value+'%';document.getElementById('acSaveMessage').textContent='Threshold updated for this page preview only.';applyFilters();});
     document.querySelectorAll('[data-export]').forEach(button => button.addEventListener('click',() => {const table=document.getElementById(button.dataset.export==='departments'?'acDepartmentTable':'acCourseTable');const lines=[...table.rows].filter(row=>!row.hidden).map(row=>[...row.cells].slice(0,button.dataset.export==='departments'?-1:undefined).map(cell=>'"'+cell.innerText.replaceAll('"','""').replaceAll('\n',' ').trim()+'"').join(','));const blob=new Blob([lines.join('\r\n')],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='edumetrics-'+button.dataset.export+'-attainment.csv';a.click();URL.revokeObjectURL(url);}));
