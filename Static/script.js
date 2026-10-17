@@ -1352,6 +1352,66 @@ function toggleLoginPassword() {
     togglePassword("loginPassword", document.querySelector(".password-toggle"));
 }
 
+/* Registration: use the existing department field for the role-specific dropdown. */
+(function () {
+    function initializeRegistrationChoice() {
+        if (!document.body.classList.contains('registration-page')) return;
+        const field = document.getElementById('department');
+        if (!field || field.tagName !== 'INPUT') return;
+        const role = new URLSearchParams(window.location.search).get('role') ||
+            sessionStorage.getItem('selectedRole') || 'student';
+        const engineeringPrograms = [
+            ['BSCE', 'BS Civil Engineering'],
+            ['BSCpE', 'BS Computer Engineering'],
+            ['BSEE', 'BS Electrical Engineering'],
+            ['BSECE', 'BS Electronics Engineering'],
+            ['BSME', 'BS Mechanical Engineering'],
+            ['BSIE', 'BS Industrial Engineering'],
+            ['BSChE', 'BS Chemical Engineering']
+        ];
+        const departments = [
+            ['College of Engineering', 'College of Engineering'],
+            ['College of Computer Studies', 'College of Computer Studies'],
+            ['College of Business and Accountancy', 'College of Business and Accountancy'],
+            ['College of Arts and Sciences', 'College of Arts and Sciences'],
+            ['College of Education', 'College of Education'],
+            ['College of Architecture', 'College of Architecture'],
+            ['College of Tourism and Hospitality Management', 'College of Tourism and Hospitality Management']
+        ];
+        const isAdmin = role === 'admin-security';
+        const isStaff = role === 'faculty' || role === 'department-head' || role === 'dept-head';
+        if (!isAdmin && !isStaff && role !== 'student') return;
+        const label = isAdmin ? 'Select Role' : isStaff ? 'Select Department' : 'Select Engineering Program';
+        const options = isAdmin ? [
+            ['IT Administrator', 'IT Administrator'],
+            ['Systems Administrator', 'Systems Administrator'],
+            ['Network Administrator', 'Network Administrator'],
+            ['IT Security Officer', 'IT Security Officer'],
+            ['Technical Support Specialist', 'Technical Support Specialist'],
+            ['Database Administrator', 'Database Administrator']
+        ] : isStaff ? departments : engineeringPrograms;
+        const select = document.createElement('select');
+        for (const attribute of field.attributes) {
+            if (!['type', 'placeholder', 'autocomplete', 'value'].includes(attribute.name)) {
+                select.setAttribute(attribute.name, attribute.value);
+            }
+        }
+        select.setAttribute('aria-label', label);
+        select.required = true;
+        const placeholder = new Option(label, '');
+        placeholder.disabled = true;
+        placeholder.selected = true;
+        select.add(placeholder);
+        options.forEach(([value, text]) => select.add(new Option(text, value)));
+        field.replaceWith(select);
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeRegistrationChoice);
+    } else {
+        initializeRegistrationChoice();
+    }
+})();
+
 /* REGISTRATION PASSWORD */
 function toggleSignupPassword(inputId, button) {
     togglePassword(inputId, button);
@@ -6138,6 +6198,195 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 
 
+/* Shared profile menu: dashboard and account settings use the existing avatar. */
+(function () {
+  function initAccountMenu() {
+    const area = document.querySelector('.so-topbar .so-user-area');
+    if (!area || area.querySelector('.so-account-menu')) return;
+    const avatar = area.querySelector('.so-avatar');
+    if (!avatar) return;
+    avatar.setAttribute('role', 'button');
+    avatar.setAttribute('tabindex', '0');
+    avatar.setAttribute('aria-label', 'Open profile menu');
+    avatar.setAttribute('aria-haspopup', 'true');
+    avatar.setAttribute('aria-expanded', 'false');
+    const menu = document.createElement('div');
+    menu.className = 'so-account-menu';
+    menu.hidden = true;
+    const profile = document.createElement('a');
+    const templatesRoot = window.location.pathname.split('/Templates/')[0];
+    const currentFile = decodeURIComponent(window.location.pathname).split('/').pop().toLowerCase();
+    const normalizeMenuRole = value => ({'department-head':'dept-head','department_head':'dept-head','admin-security':'admin'}[value] || value);
+    const roleFromPage = /(?:^|-)admin(?:\.html)?$/.test(currentFile.replace(/\.html$/, '')) || document.body.classList.contains('cm-admin-page') || /-admin-page/.test(document.body.className)
+      ? 'admin'
+      : /-dept-head(?:\.html)?$/.test(currentFile) ? 'dept-head'
+      : /-faculty(?:\.html)?$/.test(currentFile) ? 'faculty'
+      : '';
+    const menuRole = normalizeMenuRole(roleFromPage || new URLSearchParams(location.search).get('role') || sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || document.body.dataset.role || 'student');
+    if (roleFromPage) {
+      sessionStorage.setItem('edumetricsRole', roleFromPage);
+      sessionStorage.setItem('userRole', roleFromPage);
+    }
+    const accountUrl = new URL(window.location.pathname.includes('/Templates/')
+      ? templatesRoot + '/Templates/main/account-settings.html'
+      : '/account-settings', window.location.origin);
+    accountUrl.searchParams.set('role', menuRole);
+    profile.href = accountUrl.href;
+    profile.textContent = 'Profile';
+    const logout = document.createElement('a');
+    logout.href = '/logout';
+    logout.textContent = 'Log Out';
+    menu.append(profile, logout);
+    area.appendChild(menu);
+    function close() { menu.hidden = true; avatar.setAttribute('aria-expanded', 'false'); }
+    function toggle() { const show = menu.hidden; menu.hidden = !show; avatar.setAttribute('aria-expanded', String(show)); }
+    avatar.addEventListener('click', function (event) { event.stopPropagation(); toggle(); });
+    avatar.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggle(); }
+    });
+    document.addEventListener('click', function (event) { if (!area.contains(event.target)) close(); });
+    document.addEventListener('keydown', function (event) { if (event.key === 'Escape') close(); });
+    logout.addEventListener('click', function () {
+      sessionStorage.removeItem('edumetricsRole');
+      sessionStorage.removeItem('userRole');
+      sessionStorage.removeItem('verifiedRole');
+    });
+  }
+  function initAccountSettings() {
+    const page = document.querySelector('.account-settings-page');
+    if (!page) return;
+    const normalize = value => ({'department-head':'dept-head','department_head':'dept-head','depthead':'dept-head','admin-security':'admin'}[value] || value);
+    const params = new URLSearchParams(location.search);
+    const raw = params.get('role') || sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || sessionStorage.getItem('verifiedRole') || page.dataset.role || 'student';
+    const role = normalize(raw.toLowerCase());
+    const selected = ['student','faculty','dept-head','admin'].includes(role) ? role : 'student';
+    const roleNames = {student:'Student',faculty:'Faculty','dept-head':'Department Head',admin:'Admin'};
+    const label = roleNames[selected];
+    sessionStorage.setItem('edumetricsRole',selected);
+    sessionStorage.setItem('userRole',selected);
+    page.dataset.role = selected;
+    page.dataset.dashboardRole = selected;
+
+    if (selected === 'admin') {
+      const template = document.getElementById('account-admin-shell');
+      if (template) {
+        const nodes = template.content.cloneNode(true);
+        ['.so-topbar','.so-sidebar'].forEach(selector => {
+          const current = page.querySelector(selector);
+          const replacement = nodes.querySelector(selector);
+          if (current && replacement) current.replaceWith(replacement);
+        });
+      }
+    } else if (selected !== 'student') {
+      const template = document.getElementById('nav-template-' + selected);
+      const current = page.querySelector('.so-sidebar .so-nav');
+      if (template && current) current.replaceWith(template.content.cloneNode(true));
+    }
+    const info = page.querySelector('.so-user-info');
+    if (info) {
+      const heading = info.querySelector('strong');
+      const subtitle = info.querySelector('span');
+      if (heading) heading.textContent = selected === 'admin' ? 'System Administrator' : label;
+      if (subtitle) subtitle.textContent = label;
+    }
+    const nav = page.querySelector('.so-sidebar .so-nav');
+    if (nav) {
+      nav.querySelectorAll('a[href]').forEach(a => {
+        const url = new URL(a.getAttribute('href'),location.href);
+        const file = decodeURIComponent(url.pathname).split('/').pop().toLowerCase();
+        if (file === 'dashboard.html' || ['platform.html','resources.html','about us.html'].includes(file)) {
+          url.searchParams.set('role',selected);
+          a.href = url.href;
+        } else if (file === 'courses.html' && selected === 'faculty') {
+          url.pathname = url.pathname.replace(/courses\.html$/i,'courses-faculty.html');
+          a.href = url.href;
+        } else if (file === 'platform-admin.html' || file === 'resources-admin.html' || file === 'about-us-admin.html') {
+          url.searchParams.set('role','admin');
+          a.href = url.href;
+        }
+        a.classList.remove('active','sd-active');
+        a.removeAttribute('aria-current');
+      });
+    }
+    const name = page.querySelector('#accountName');
+    const stored = (keys) => keys.map(k => sessionStorage.getItem(k)).find(v => v && v.trim()) || '';
+    const prefix = selected === 'student' ? 'student' : selected === 'faculty' ? 'faculty' : selected === 'dept-head' ? 'deptHead' : 'admin';
+    const accountFields = {
+      accountFullName: stored([prefix+'Name','userName','fullName']),
+      accountStudentId: stored(selected === 'student' ? ['studentId','userId'] : selected === 'faculty' ? ['facultyId','employeeId'] : selected === 'dept-head' ? ['deptHeadId','employeeId'] : ['adminId','employeeId']),
+      accountProgram: stored(selected === 'student' ? ['studentProgram','program'] : selected === 'faculty' ? ['facultyDepartment','department'] : selected === 'dept-head' ? ['deptHeadDepartment','department'] : ['adminDepartment','department']),
+      accountDetailEmail: stored([prefix+'Email','userEmail','email'])
+    };
+    const idLabel = page.querySelector('#accountIdLabel');
+    if (idLabel) idLabel.textContent = selected === 'student' ? 'Student ID' : selected === 'admin' ? 'Admin ID' : 'Employee ID';
+    const programLabel = page.querySelector('#accountProgramLabel');
+    if (programLabel) programLabel.textContent = selected === 'student' ? 'Program' : selected === 'admin' ? 'Department' : 'Department';
+    Object.entries(accountFields).forEach(([id,value]) => {
+      const el = page.querySelector('#'+id);
+      if (el) el.textContent = value || 'Not available';
+    });
+    if (name) name.textContent = accountFields.accountFullName || (selected === 'admin' ? 'Administrator Account' : label + ' Account');
+    page.querySelectorAll('[data-account-role-label]').forEach(el => { el.textContent = label; });
+    document.dispatchEvent(new Event('edumetrics:nav-ready'));
+    const photoInput = page.querySelector('#accountPhotoInput');
+    const photo = page.querySelector('#accountProfileImage');
+    const photoMessage = page.querySelector('#accountPhotoMessage');
+    const photoKey = 'edumetrics-' + selected + '-profile-photo';
+    function showPhoto(data) {
+      if (!photo || !data) return;
+      photo.src = data;
+      photo.hidden = false;
+      page.querySelector('.so-topbar .so-avatar .sd-icon-placeholder')?.setAttribute('hidden', '');
+      const avatar = page.querySelector('.so-topbar .so-avatar');
+      if (avatar) {
+        let avatarPhoto = avatar.querySelector('.account-avatar-photo');
+        if (!avatarPhoto) { avatarPhoto = document.createElement('img'); avatarPhoto.className = 'account-avatar-photo'; avatar.appendChild(avatarPhoto); }
+        avatarPhoto.src = data;
+      }
+    }
+    try { showPhoto(localStorage.getItem(photoKey)); } catch (_) {}
+    photoInput?.addEventListener('change', () => {
+      const file = photoInput.files?.[0];
+      if (!file) return;
+      if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 1024 * 1024) {
+        photoMessage.textContent = 'Choose a JPG, PNG or WebP image up to 1 MB.';
+        photoInput.value = '';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        try { localStorage.setItem(photoKey, String(reader.result)); showPhoto(String(reader.result)); photoMessage.textContent = 'Profile photo saved in this browser.'; }
+        catch (_) { photoMessage.textContent = 'Unable to save photo in this browser.'; }
+      };
+      reader.readAsDataURL(file);
+    });
+    const form = page.querySelector('#changePasswordForm');
+    page.querySelectorAll('[data-account-password-toggle]').forEach(button => button.addEventListener('click', () => {
+      const field = button.parentElement.querySelector('input');
+      field.type = field.type === 'password' ? 'text' : 'password';
+      button.setAttribute('aria-label', (field.type === 'password' ? 'Show' : 'Hide') + ' password');
+    }));
+    form?.addEventListener('submit', event => {
+      event.preventDefault();
+      const current = form.elements.currentPassword.value;
+      const next = form.elements.newPassword.value;
+      const confirm = form.elements.confirmPassword.value;
+      const message = page.querySelector('#passwordMessage');
+      if (!current || !next || !confirm) message.textContent = 'Complete all password fields.';
+      else if (next !== confirm) message.textContent = 'New password and confirmation do not match.';
+      else if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(next)) message.textContent = 'Use at least 8 characters with a letter, number, and special character.';
+      else message.textContent = 'Password changes require the connected Flask backend. No changes were saved.';
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAccountSettings);
+    document.addEventListener('DOMContentLoaded', initAccountMenu);
+  } else { initAccountSettings(); initAccountMenu(); }
+  // Role-aware information pages replace their header after DOMContentLoaded.
+  // Rebind the menu to the new avatar once the replacement is complete.
+  document.addEventListener('edumetrics:profile-shell-ready', initAccountMenu);
+})();
+
 /* Shared main-page navigation and active indicator (single source of truth). */
 (function () {
   function initRoleNavigation() {
@@ -6841,10 +7090,12 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   function initLoggedInInfoPage() {
     const page = document.querySelector('.ed-platform-page, .ed-resources-inside-page, .ed-about-inside-page');
     if (!page) return;
+    // Select the signed-in role before changing any shared page shell.
     const normalize = value => ({ 'department-head': 'dept-head', 'department_head': 'dept-head', 'depthead': 'dept-head' }[value] || value);
     const requested = new URLSearchParams(location.search).get('role');
     const stored = sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || sessionStorage.getItem('verifiedRole');
     const role = normalize((requested || stored || 'student').toLowerCase());
+    if (role === 'admin') { sessionStorage.setItem('edumetricsRole', 'admin'); sessionStorage.setItem('userRole', 'admin'); const shell = document.getElementById('ed-admin-shell'); if (shell) { const nodes = shell.content.cloneNode(true); ['.so-topbar','.so-header-lines','.so-sidebar'].forEach(selector => { const current = page.querySelector(selector), replacement = nodes.querySelector(selector); if (current && replacement) current.replaceWith(replacement); }); page.querySelectorAll('.so-sidebar a[href]').forEach(link => { const target = new URL(link.getAttribute('href'), location.href); if (['platform.html','resources.html','about us.html'].includes(decodeURIComponent(target.pathname).split('/').pop().toLowerCase())) { target.searchParams.set('role','admin'); link.href = target.href; } }); } document.dispatchEvent(new Event('edumetrics:profile-shell-ready')); return; }
     const selected = ['student', 'faculty', 'dept-head'].includes(role) ? role : 'student';
     sessionStorage.setItem('edumetricsRole', selected);
     sessionStorage.setItem('userRole', selected);
@@ -6870,6 +7121,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     }
     page.dataset.dashboardRole = selected;
     document.dispatchEvent(new Event('edumetrics:nav-ready'));
+    document.dispatchEvent(new Event('edumetrics:profile-shell-ready'));
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initLoggedInInfoPage);
   else initLoggedInInfoPage();

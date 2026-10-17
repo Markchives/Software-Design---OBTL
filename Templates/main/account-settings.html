@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Account Settings | EduMetrics</title><link href="../../Static/style.css" rel="stylesheet"/>
+</head>
+<body class="so-student-page ed-dashboard-page account-settings-page" data-role="student">
+<header class="so-topbar">
+<div class="so-brand"><div class="so-brand-logo">Edu<span>Metrics</span></div><div class="so-brand-subtitle">Academic Assessment &amp; Grading System</div></div>
+<div class="so-user-area"><div class="edu-header-calendar-wrap"><button aria-expanded="false" aria-haspopup="dialog" aria-label="Open calendar" class="edu-header-calendar-btn" type="button"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><rect height="16" rx="2" width="18" x="3" y="5"></rect><path d="M7 3v4M17 3v4M3 10h18"></path></svg></button><div aria-label="Calendar" class="edu-header-calendar-popup" hidden="" role="dialog"><label>Calendar <input aria-label="Choose calendar date" type="date"/></label><p>Academic events are not connected yet.</p></div></div>
+<button aria-label="Notifications" class="so-notification-btn" type="button"><img alt="Notifications" class="so-notification-image" src="../../Static/images/sidebar/notif.png"/><span class="so-notification-dot"></span></button>
+<div class="so-user-info"><strong id="studentName">Student</strong><span>Student</span></div>
+<div aria-hidden="true" class="so-avatar"><span class="sd-icon-placeholder">●</span></div><span aria-hidden="true" class="so-online-dot"></span>
+</div>
+</header>
+<div class="so-header-lines"><div class="so-header-blue"></div><div class="so-header-gold"></div></div>
+<div class="so-shell">
+<aside class="so-sidebar">
+<div class="so-pages-title"><span class="so-grid-icon so-pages-image-wrap"><img alt="" class="so-pages-image" src="../../Static/images/sidebar/pages.png"/></span><span>Pages</span></div>
+<nav aria-label="Student navigation" class="so-nav">
+<a class="so-nav-item" href="dashboard.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/home-white.png"/></span><span>Dashboard</span></a>
+<a class="so-nav-item" href="courses.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/course-white.png"/></span><span>My Courses</span></a>
+<a class="so-nav-item" href="platform.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/pl-white.png"/></span><span>Platform</span></a>
+<a class="so-nav-item" href="resources.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/rs-white.png"/></span><span>Resources</span></a>
+<a class="so-nav-item" href="about us.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/au-white.png"/></span><span>About Us</span></a>
+</nav>
+<div class="so-sidebar-brand"><div class="so-sidebar-logo">Edu<span>Metrics</span></div><small>Academic Assessment &amp; Grading System</small></div>
+</aside>
+<main class="so-main account-settings-content">
+<h1>Account Settings</h1>
+<section class="account-identity"><div class="account-profile-controls"><div aria-hidden="true" class="account-person-icon account-photo-wrap"><img alt="Account profile photo" hidden="" id="accountProfileImage"/></div><label class="account-upload-control" for="accountPhotoInput">Upload Profile Photo</label><input accept="image/png,image/jpeg,image/webp" hidden="" id="accountPhotoInput" type="file"/><p aria-live="polite" id="accountPhotoMessage" role="status"></p></div><div class="account-profile-summary"><h2 id="accountName">Student Account</h2></div><section aria-label="Account details" class="account-hero-details"><h3>Account Details</h3><div><strong>Full Name</strong><span id="accountFullName">Not available</span></div><div><strong id="accountIdLabel">Student ID</strong><span id="accountStudentId">Not available</span></div><div><strong id="accountProgramLabel">Program</strong><span id="accountProgram">Not available</span></div><div><strong>Email</strong><span id="accountDetailEmail">Not available</span></div></section></section>
+<div class="account-panels-grid"><section class="account-panel"><h2 class="account-password-heading">Change Password</h2><form class="account-panel-body account-password-form" id="changePasswordForm">
+<div class="account-password-fields">
+<label>Current Password<div class="account-password-input"><svg aria-hidden="true" viewbox="0 0 24 24"><rect height="11" rx="2" width="18" x="3" y="10"></rect><path d="M7 10V7a5 5 0 0 1 10 0v3M8 15h.01M12 15h.01M16 15h.01"></path></svg><input autocomplete="current-password" name="currentPassword" placeholder="Enter your current password" required="" type="password"/><button aria-label="Show current password" data-account-password-toggle="" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div></label>
+<label>New Password<div class="account-password-input"><svg aria-hidden="true" viewbox="0 0 24 24"><rect height="11" rx="2" width="18" x="3" y="10"></rect><path d="M7 10V7a5 5 0 0 1 10 0v3M8 15h.01M12 15h.01M16 15h.01"></path></svg><input autocomplete="new-password" minlength="8" name="newPassword" placeholder="Enter your new password" required="" type="password"/><button aria-label="Show new password" data-account-password-toggle="" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div></label>
+<label>Confirm Password<div class="account-password-input"><svg aria-hidden="true" viewbox="0 0 24 24"><rect height="11" rx="2" width="18" x="3" y="10"></rect><path d="M7 10V7a5 5 0 0 1 10 0v3M8 15h.01M12 15h.01M16 15h.01"></path></svg><input autocomplete="new-password" minlength="8" name="confirmPassword" placeholder="Confirm your password" required="" type="password"/><button aria-label="Show confirmation password" data-account-password-toggle="" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div></label>
+</div>
+<div class="account-password-actions"><div class="password-guidance"><strong>Password Requirements:</strong><span data-password-rule="length">At least 8 characters</span><span data-password-rule="number">Include at least one number</span><span data-password-rule="letter">Include at least one letter</span><span data-password-rule="special">Include at least one special character</span></div><button class="account-save-button" type="submit">Save Password</button></div>
+<p aria-live="polite" class="account-form-message" id="passwordMessage" role="status"></p>
+</form></section></div>
+</main>
+</div>
+<script defer="" src="../../Static/script.js"></script>
+<template id="nav-template-faculty"><nav aria-label="Faculty navigation" class="so-nav">
+<a aria-current="page" class="so-nav-item sd-active" href="dashboard.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/home-white.png"/></span><span>Dashboard</span></a>
+<a class="so-nav-item" href="../main/courses-faculty.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/course-white.png"/></span><span>My Courses</span></a>
+<a class="so-nav-item" href="../main/platform.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/pl-white.png"/></span><span>Platform</span></a>
+<a class="so-nav-item" href="../main/resources.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/rs-white.png"/></span><span>Resources</span></a>
+<a class="so-nav-item" href="../main/about us.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/au-white.png"/></span><span>About Us</span></a>
+</nav></template><template id="nav-template-dept-head"><nav aria-label="Department Head navigation" class="so-nav">
+<a aria-current="page" class="so-nav-item sd-active" href="dashboard.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/home-white.png"/></span><span>Dashboard</span></a>
+<a class="so-nav-item" href="../main/platform.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/pl-white.png"/></span><span>Platform</span></a>
+<div class="so-nav-group">
+<details><summary class="so-nav-item so-products" style="cursor:pointer;list-style:none"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/ws-white.png"/></span><span>Workflow</span></summary>
+<div class="so-subnav"><a href="../requirement 1/so-dept-head.html">Syllabus &amp; Outcomes</a><a href="../requirement 2/cm-dept-head.html">Curriculum Mapping</a><a href="../requirement 3/cr-dept-head.html">Class Roster</a><a href="../requirement 4/ra-dept-head.html">Assessment Entry</a><a href="../requirement 5/ac-dept-head.html">Attainment</a><a href="../requirement 6/cqi-dept-head.html">CQI Planning</a><a href="../requirement 7/gl-dept-head.html">Gradebook</a><a href="../requirement 8/rp-dept-head.html">Compliance Report</a></div>
+</details>
+</div>
+<a class="so-nav-item" href="../main/resources.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/rs-white.png"/></span><span>Resources</span></a>
+<a class="so-nav-item" href="../main/about us.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/au-white.png"/></span><span>About Us</span></a>
+</nav></template><template id="account-admin-shell"><header class="so-topbar">
+<div class="so-brand">
+<div class="so-brand-logo">
+                Edu<span>Metrics</span>
+</div>
+<div class="so-brand-subtitle">
+                Academic Assessment &amp; Grading System
+            </div>
+</div>
+<div class="so-user-area">
+<div class="edu-header-calendar-wrap"><button aria-expanded="false" aria-label="Open calendar" class="edu-header-calendar-btn" type="button"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><rect height="16" rx="2" width="18" x="3" y="5"></rect><path d="M7 3v4M17 3v4M3 10h18"></path></svg></button><div class="edu-header-calendar-popup" hidden=""><label>Calendar <input aria-label="Choose calendar date" type="date"/></label><p>Academic events are not connected yet.</p></div></div><button aria-label="Notifications" class="so-notification-btn" type="button">
+<img alt="Notifications" class="so-notification-image" src="../../Static/images/sidebar/notif.png"/>
+<span class="so-notification-dot"></span>
+</button>
+<div class="so-user-info">
+<strong id="departmentHeadName">System Administrator</strong>
+<span>Admin</span>
+</div>
+<div aria-hidden="true" class="so-avatar">AD</div>
+<span aria-hidden="true" class="so-online-dot"></span>
+</div>
+</header><aside class="so-sidebar">
+<nav aria-label="Administrator navigation" class="so-nav">
+<a class="so-nav-item" href="../requirement 2/cm-admin.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/home-white.png"/></span><span>Dashboard</span></a>
+<a class="so-nav-item" href="../requirement 7/gl-admin.html"><span class="so-nav-icon so-nav-image-wrap"><svg aria-hidden="true" class="so-nav-image" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg></span><span>System Records</span></a>
+<div class="so-nav-group"><details><summary class="so-nav-item so-products"><span class="so-nav-icon" so-nav-image-wrap"=""><img alt="" class="so-nav-image" src="../../Static/images/sidebar/ws-white.png"/></span><span>Workflow</span></summary><div class="so-subnav">
+<a class="" href="../requirement 4/ra-admin.html">Raw Entry</a><a class="" href="../requirement 5/ac-admin.html">Attainment Calculation</a><a class="" href="../requirement 6/cqi-admin.html">CQI Action Planning</a><a class="" href="../requirement 8/rp-admin.html">Compliance Report</a>
+</div></details></div>
+<a class="so-nav-item" href="platform.html"><span class="so-nav-icon" so-nav-image-wrap"=""><img alt="" class="so-nav-image" src="../../Static/images/sidebar/pl-white.png"/></span><span>Platform</span></a>
+<a class="so-nav-item" href="resources.html"><span class="so-nav-icon" so-nav-image-wrap"=""><img alt="" class="so-nav-image" src="../../Static/images/sidebar/rs-white.png"/></span><span>Resources</span></a>
+<a class="so-nav-item" href="about us.html"><span class="so-nav-icon" so-nav-image-wrap"=""><img alt="" class="so-nav-image" src="../../Static/images/sidebar/au-white.png"/></span><span>About Us</span></a>
+</nav>
+<div class="so-sidebar-brand">
+<div class="so-sidebar-logo">
+                    Edu<span>Metrics</span>
+</div>
+<small>
+                    Academic Assessment &amp; Grading System
+                </small>
+</div>
+</aside></template></body>
+</html>
