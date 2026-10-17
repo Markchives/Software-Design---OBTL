@@ -3824,8 +3824,6 @@ body > #rrDialog[hidden]{display:none!important;}
 :is(.student-courses-page,.faculty-courses-page) .sc-open-course:focus-visible{outline:2px solid #f4c300;outline-offset:4px;border-radius:3px;}
 :is(.student-courses-page,.faculty-courses-page) .sc-footnote{margin:18px 2px 0;font-size:11px;color:#71869c;line-height:1.5;}
 /* Student My Courses and Hidden Courses: scoped enhancements to existing shared course design. */
-.student-courses-page .so-sidebar .so-nav-item[href="courses.html"]{background:#ffca05!important;color:#004179!important;border-radius:24px!important;font-weight:800!important;}
-.student-courses-page .so-sidebar .so-nav-item[href="courses.html"] .so-nav-image{filter:brightness(0) saturate(100%) invert(18%) sepia(67%) saturate(1721%) hue-rotate(183deg) brightness(89%)!important;}
 .student-courses-page .sc-content{height:100%;display:flex;flex-direction:column;padding-bottom:0;min-height:0;}
 .student-courses-page .sc-hero{min-height:115px;padding:17px 26px;flex-shrink:0;}
 .student-courses-page .sc-hero h1{font-size:28px;margin:4px 0;}
@@ -5356,3 +5354,50 @@ body.ed-inside-page .ed-inside-main .public-page-cta .workflow-container{width:m
 .admin-panel-top{justify-content:flex-start}
 .admin-settings-note{margin:14px 16px!important;padding:12px 14px;border:1px solid #d8e2ea;border-left:3px solid #f4c300;border-radius:6px;background:#f8fafc;color:#56708d;font-size:12px;line-height:1.6;flex:0 0 auto}
 @media(max-width:760px){.admin-settings-body{grid-template-columns:1fr}.admin-settings-form{padding:14px}}
+
+/* Shared selected-tab indicator across EduMetrics modules. */
+:is(.sodh-tabs,.cm-tabs,.ac-co-tabs,.ac-dh-tabs,.ac-tabs,.dh-tabs,.so-tabs,.gl-tabs) > :is(button,a,[role="tab"]):is(.active,.is-active,[aria-selected="true"]),
+:is(.sodh-tabs,.cm-tabs,.ac-co-tabs,.ac-dh-tabs,.ac-tabs,.dh-tabs,.so-tabs,.gl-tabs) > :is(button,a,[role="tab"])[aria-current="page"] {
+  border-bottom: 3px solid #F4C300;
+}
+
+/* Dashboard composer — shared by Faculty and Department Head. */
+.ed-dashboard-page .sd-update-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ed-dashboard-page .sd-create-post-btn,.ed-dashboard-page .sd-compose-actions button[type="submit"]{background:#ffc526;color:#073e74;border:0;border-radius:8px;padding:10px 13px;font-weight:800;cursor:pointer}
+.ed-dashboard-page .sd-create-post-btn{font-size:12px;padding:8px 11px;line-height:1.25}
+.ed-dashboard-page .sd-create-post-btn:hover,.ed-dashboard-page .sd-compose-actions button[type="submit"]:hover{background:#f4b900}
+.ed-dashboard-page .sd-compose-overlay{position:fixed;inset:0;z-index:10000;background:rgba(5,30,55,.55);display:flex;align-items:center;justify-content:center;padding:20px}
+.ed-dashboard-page .sd-compose-overlay[hidden]{display:none}
+.ed-dashboard-page .sd-compose-panel{width:min(100%,520px);background:white;border-radius:14px;padding:24px;box-shadow:0 16px 45px rgba(0,0,0,.15);color:#073e74}
+.ed-dashboard-page .sd-compose-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.ed-dashboard-page .sd-compose-top h2{margin:0;font-size:21px}
+.ed-dashboard-page #sdComposeClose{background:transparent;border:0;font-size:28px;cursor:pointer;color:#073e74}
+.ed-dashboard-page #sdComposeForm{display:grid;gap:10px}
+.ed-dashboard-page #sdComposeForm label{font-weight:700;font-size:13px}
+.ed-dashboard-page #sdComposeForm input,.ed-dashboard-page #sdComposeForm textarea{width:100%;box-sizing:border-box;padding:11px;border:1px solid #cbd9e8;border-radius:8px;font:inherit;color:#073e74;resize:vertical}
+.ed-dashboard-page .sd-compose-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:10px}
+.ed-dashboard-page .sd-compose-actions button{padding:10px 14px;border-radius:8px;cursor:pointer}
+.ed-dashboard-page .sd-created-post{padding-right:14px}
+.ed-dashboard-page .sd-created-post .sd-post-body{padding-left:0}
+.ed-dashboard-page .sd-created-post .sd-post-body p{white-space:pre-wrap;overflow-wrap:anywhere}
+body.sd-compose-open{overflow:hidden}
+
+/* Shared sidebar selection: one visual rule for active main-page links. */
+.so-student-page .so-sidebar .so-nav > a.so-nav-item:is(.active,.sd-active,[aria-current="page"]),
+.so-student-page .so-sidebar .so-nav-group summary.so-nav-item:is(.active,.sd-active,[aria-current="page"]){background:#F4C300!important;color:#003F73!important;border-radius:24px!important;font-weight:800!important;}
+.so-student-page .so-sidebar .so-nav > a.so-nav-item:is(.active,.sd-active,[aria-current="page"]) .so-nav-image,
+.so-student-page .so-sidebar .so-nav-group summary.so-nav-item:is(.active,.sd-active,[aria-current="page"]) .so-nav-image{filter:brightness(0) saturate(100%) invert(18%) sepia(75%) saturate(1463%) hue-rotate(178deg) brightness(91%) contrast(101%)!important;}
+
+/* Password recovery: reuse the existing login layout and controls. */
+.auth-reset-page .auth-form-panel{padding-top:42px!important;padding-bottom:42px!important;}
+.auth-reset-page .form-heading h2{font-size:clamp(29px,3vw,43px)!important;white-space:normal!important;transform:none!important;}
+.auth-reset-page .form-heading p{display:block!important;margin:12px 0 20px!important;font-size:19px!important;color:#56708d!important;}
+.auth-reset-page .form-group>label{display:block!important;font-size:19px!important;color:#004179!important;}
+.auth-reset-page .auth-form{gap:17px!important;}
+.auth-reset-page .input-wrapper input{padding-left:17px!important;}
+.auth-reset-page .reset-help{color:#56708d;font-size:17px;line-height:1.5;}
+.auth-reset-page .reset-form-message{min-height:20px;color:#b42318;font-size:16px;}
+.auth-reset-page .reset-form-message.is-success{color:#167349;}
+.auth-reset-page .primary-auth-button{width:auto!important;min-width:220px!important;padding:0 20px!important;margin:8px auto 0!important;}
+.auth-reset-page .password-toggle{font-size:16px!important;cursor:pointer;}
+@media(max-width:900px){.auth-reset-page .auth-form-panel{padding:28px!important;}}

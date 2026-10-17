@@ -6114,7 +6114,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const allowed = ['student', 'faculty', 'dept-head'];
     const query = new URLSearchParams(location.search).get('role');
     const normalize = v => ({ 'department-head': 'dept-head', 'department_head': 'dept-head', 'depthead': 'dept-head', 'head': 'dept-head' }[v] || v);
-    const role = normalize(sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('verifiedRole') || query || 'student');
+    const role = normalize(query || sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('verifiedRole') || 'student');
     const selected = allowed.includes(role) ? role : 'student';
     if (!sessionStorage.getItem('edumetricsRole') && sessionStorage.getItem('verificationCompleted') === 'true') sessionStorage.setItem('edumetricsRole', selected);
     const dashboardContent = document.getElementById('dashboardRoleContent');
@@ -6126,12 +6126,121 @@ document.addEventListener("DOMContentLoaded", function () {
         const nav = document.getElementById('nav-template-' + selected);
         document.querySelector('.so-nav').replaceWith(nav.content.cloneNode(true));
     }
-    const names = { student: ['Student', 'Student'], faculty: ['Prof. Maria', 'Faculty'], 'dept-head': ['Department Head', 'Department Head'] };
+    const names = { student: ['Student', 'Student'], faculty: ['Faculty', 'Faculty'], 'dept-head': ['Department Head', 'Department Head'] };
     const user = document.querySelector('.so-user-info');
     user.querySelector('strong').textContent = names[selected][0];
     user.querySelector('span').textContent = names[selected][1];
     document.title = names[selected][1] + ' Dashboard | EduMetrics';
     document.body.dataset.dashboardRole = selected;
+    // Keep the preview role when navigating to shared main pages.
+    sessionStorage.setItem('edumetricsRole', selected);
+    sessionStorage.setItem('userRole', selected);
+})();
+
+
+/* Shared main-page navigation and active indicator (single source of truth). */
+(function () {
+  function initRoleNavigation() {
+    const path = decodeURIComponent(location.pathname).toLowerCase();
+    if (!path.includes('/templates/main/')) return;
+    const current = path.split('/').pop();
+    const pages = ['dashboard.html', 'courses.html', 'courses-faculty.html', 'hidden-courses.html', 'hidden-courses-faculty.html', 'platform.html', 'resources.html', 'about us.html'];
+    if (!pages.includes(current)) return;
+    const normalize = value => ({'department-head':'dept-head','department_head':'dept-head','depthead':'dept-head'}[value] || value);
+    const urlRole = new URLSearchParams(location.search).get('role');
+    const stored = sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || '';
+    const role = normalize((urlRole || stored || 'student').toLowerCase());
+    if (!['student', 'faculty', 'dept-head'].includes(role)) return;
+    sessionStorage.setItem('edumetricsRole', role);
+    sessionStorage.setItem('userRole', role);
+    const nav = document.querySelector('.so-sidebar .so-nav');
+    if (!nav) return;
+    // Department Head does not have My Courses; Student and Faculty retain theirs.
+    if (role === 'dept-head') {
+      [...nav.querySelectorAll(':scope > a.so-nav-item')].filter(a => a.textContent.trim() === 'My Courses').forEach(a => a.remove());
+    }
+    nav.querySelectorAll('a[href]').forEach(link => {
+      const href = link.getAttribute('href');
+      if (!href || href.startsWith('#')) return;
+      const target = new URL(href, location.href);
+      const file = decodeURIComponent(target.pathname).split('/').pop().toLowerCase();
+      if (file === 'dashboard.html') target.searchParams.set('role', role);
+      else if (['courses.html','courses-faculty.html'].includes(file)) {
+        if (role === 'dept-head') return;
+        target.pathname = target.pathname.replace(/[^/]+$/, role === 'faculty' ? 'courses-faculty.html' : 'courses.html');
+      } else if (['platform.html','resources.html','about us.html'].includes(file)) {
+        target.pathname = target.pathname.replace(/\/webpage\//i, '/main/');
+        target.searchParams.set('role', role);
+      } else return;
+      link.href = target.href;
+    });
+    const activeFile = current.startsWith('hidden-courses') ? (role === 'faculty' ? 'courses-faculty.html' : 'courses.html') : current;
+    nav.querySelectorAll(':scope > a.so-nav-item').forEach(link => {
+      const file = decodeURIComponent(new URL(link.href, location.href).pathname).split('/').pop().toLowerCase();
+      const active = file === activeFile;
+      link.classList.toggle('active', active);
+      link.classList.toggle('sd-active', active);
+      if (active) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    });
+    // Workflow indicator is reserved for Department Head requirement pages.
+    nav.querySelectorAll('.so-nav-group summary.so-nav-item').forEach(summary => {
+      summary.classList.remove('active', 'sd-active');
+      summary.removeAttribute('aria-current');
+    });
+  }
+  document.addEventListener('edumetrics:nav-ready', initRoleNavigation);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initRoleNavigation);
+  else initRoleNavigation();
+})();
+
+/* Dashboard posts: one shared composer for Faculty and Department Head previews. */
+(function () {
+  const root = document.getElementById('dashboardRoleContent');
+  const role = document.body.dataset.dashboardRole;
+  const allowed = role === 'faculty' || role === 'dept-head';
+  if (!root || !allowed) return;
+  const feed = document.getElementById('sdPosts');
+  const empty = document.getElementById('sdEmpty');
+  const overlay = document.getElementById('sdComposeOverlay');
+  const form = document.getElementById('sdComposeForm');
+  const trigger = root.querySelector('[data-create-post]');
+  if (!feed || !overlay || !form || !trigger) return;
+  const key = 'edumetrics-dashboard-posts-v1-' + role;
+  let posts = [];
+  try { const saved = JSON.parse(localStorage.getItem(key) || '[]'); if (Array.isArray(saved)) posts = saved; } catch (_) {}
+  function render() {
+    feed.replaceChildren();
+    posts.forEach(function (post) {
+      const card = document.createElement('article'); card.className = 'sd-post sd-created-post';
+      const author = document.createElement('div'); author.className = 'sd-post-author';
+      const by = document.createElement('div');
+      const name = document.createElement('strong'); name.textContent = role === 'faculty' ? 'Faculty' : 'Department Head';
+      const date = document.createElement('small'); date.textContent = post.date || '';
+      by.append(name,date); author.append(by);
+      const body = document.createElement('div'); body.className = 'sd-post-body';
+      const title = document.createElement('strong'); title.textContent = post.title;
+      const message = document.createElement('p'); message.textContent = post.message;
+      body.append(title,message); card.append(author,body); feed.append(card);
+    });
+    empty.hidden = posts.length > 0;
+  }
+  function close() { overlay.hidden = true; document.body.classList.remove('sd-compose-open'); trigger.focus(); }
+  trigger.addEventListener('click', function () { overlay.hidden = false; document.body.classList.add('sd-compose-open'); document.getElementById('sdComposeSubject').focus(); });
+  document.getElementById('sdComposeClose').addEventListener('click',close);
+  document.getElementById('sdComposeCancel').addEventListener('click',close);
+  overlay.addEventListener('click',function(e){ if(e.target === overlay) close(); });
+  document.addEventListener('keydown',function(e){ if(e.key === 'Escape' && !overlay.hidden) close(); });
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    const title = document.getElementById('sdComposeSubject').value.trim();
+    const message = document.getElementById('sdComposeMessage').value.trim();
+    if (!title || !message) return;
+    posts.unshift({title:title,message:message,date:new Date().toLocaleString()});
+    try { localStorage.setItem(key,JSON.stringify(posts)); } catch (_) {}
+    form.reset(); render(); close();
+  });
+  render();
 })();
 
 /* Dashboard interactions: filter, reactions, comments and reader */
@@ -6727,26 +6836,43 @@ function close(){calendars.forEach(x=>{x.p.hidden=true;x.b.setAttribute('aria-ex
 calendars.forEach(x=>x.b.addEventListener('click',e=>{e.stopPropagation();const show=x.p.hidden;close();x.p.hidden=!show;x.b.setAttribute('aria-expanded',String(show))}));document.addEventListener('click',e=>{if(!calendars.some(x=>x.w.contains(e.target)))close()});document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();})();
 
-/* Logged-in Platform: role-aware dashboard navigation. */
+/* Logged-in main information pages: reuse role-specific navigation and header. */
 (function () {
-  function initLoggedInPlatform() {
-    const page = document.querySelector('.ed-platform-page');
+  function initLoggedInInfoPage() {
+    const page = document.querySelector('.ed-platform-page, .ed-resources-inside-page, .ed-about-inside-page');
     if (!page) return;
-    let role = '';
-    try { role = (sessionStorage.getItem('userRole') || localStorage.getItem('userRole') || sessionStorage.getItem('role') || localStorage.getItem('role') || '').toLowerCase(); } catch (_) {}
-    if (role.includes('faculty') || role.includes('department')) role = 'faculty';
-    if (role.includes('head') || role.includes('department')) role = 'dept-head';
-    const template = document.getElementById('nav-template-' + role);
+    const normalize = value => ({ 'department-head': 'dept-head', 'department_head': 'dept-head', 'depthead': 'dept-head' }[value] || value);
+    const requested = new URLSearchParams(location.search).get('role');
+    const stored = sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || sessionStorage.getItem('verifiedRole');
+    const role = normalize((requested || stored || 'student').toLowerCase());
+    const selected = ['student', 'faculty', 'dept-head'].includes(role) ? role : 'student';
+    sessionStorage.setItem('edumetricsRole', selected);
+    sessionStorage.setItem('userRole', selected);
+    const template = document.getElementById('nav-template-' + selected);
     const current = page.querySelector('.so-sidebar .so-nav');
     if (template && current) current.replaceWith(template.content.cloneNode(true));
-    const label = role === 'dept-head' ? 'Department Head' : role === 'faculty' ? 'Faculty' : 'Student';
-    const userInfo = page.querySelector('.so-user-info span');
-    if (userInfo) userInfo.textContent = label;
-    const userName = page.querySelector('#studentName');
-    if (userName && userName.textContent.trim() === 'Student' && label !== 'Student') userName.textContent = label;
+    const pathname = decodeURIComponent(location.pathname).split('/').pop().toLowerCase();
+    page.querySelectorAll('.so-sidebar .so-nav > a[href]').forEach(link => {
+      const target = new URL(link.getAttribute('href'), location.href);
+      const active = decodeURIComponent(target.pathname).split('/').pop().toLowerCase() === pathname;
+      link.classList.toggle('sd-active', active);
+      link.classList.toggle('active', active);
+      if (active) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    });
+    const label = selected === 'dept-head' ? 'Department Head' : selected === 'faculty' ? 'Faculty' : 'Student';
+    const info = page.querySelector('.so-user-info');
+    if (info) {
+      const name = info.querySelector('strong');
+      const subtitle = info.querySelector('span');
+      if (name) name.textContent = label;
+      if (subtitle) subtitle.textContent = label;
+    }
+    page.dataset.dashboardRole = selected;
+    document.dispatchEvent(new Event('edumetrics:nav-ready'));
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initLoggedInPlatform);
-  else initLoggedInPlatform();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initLoggedInInfoPage);
+  else initLoggedInInfoPage();
 })();
 
 
@@ -6974,4 +7100,45 @@ const sections=[...document.querySelectorAll('[data-panel]')];document.querySele
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, {once:true});
   else init();
+})();
+
+/* Password recovery pages: one scoped controller, no duplicate auth handlers. */
+(function () {
+  function initPasswordRecovery() {
+    if (!document.body.classList.contains('auth-reset-page')) return;
+    const role = new URLSearchParams(location.search).get('role') || sessionStorage.getItem('verificationRole') || 'student';
+    const label = document.getElementById('loginRoleLabel');
+    if (label) label.textContent = ({student:'Student',faculty:'Faculty','dept-head':'Department Head','department-head':'Department Head','admin-security':'Admin & Security'})[role] || 'Student';
+    const back = document.getElementById('resetBackLink');
+    if (back) back.href += '?role=' + encodeURIComponent(role);
+    document.querySelectorAll('[data-toggle-password]').forEach(button => button.addEventListener('click', function () {
+      const field = document.getElementById(button.dataset.togglePassword);
+      if (!field) return;
+      field.type = field.type === 'password' ? 'text' : 'password';
+      button.setAttribute('aria-label', field.type === 'password' ? 'Show password' : 'Hide password');
+    }));
+    const message = document.getElementById('resetFormMessage');
+    function feedback(value, success) { if (message) { message.textContent = value; message.classList.toggle('is-success', !!success); } }
+    const forgot = document.getElementById('forgotPasswordForm');
+    if (forgot) forgot.addEventListener('submit', async function (event) {
+      event.preventDefault();
+      const email = document.getElementById('resetEmail').value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return feedback('Enter a valid email address.');
+      sessionStorage.setItem('verificationEmail', email);
+      sessionStorage.setItem('verificationRole', role);
+      sessionStorage.setItem('verificationPurpose', 'password_reset');
+      feedback('Email saved. Verification delivery requires the connected backend.', true);
+    });
+    const reset = document.getElementById('resetPasswordForm');
+    if (reset) reset.addEventListener('submit', function (event) {
+      event.preventDefault();
+      const password = document.getElementById('newPassword').value;
+      const confirm = document.getElementById('confirmPassword').value;
+      if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(password)) return feedback('Password must have 8+ characters, a letter, number, and special character.');
+      if (password !== confirm) return feedback('Passwords do not match.');
+      feedback('Password validated. Saving requires a verified reset token and backend.', true);
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initPasswordRecovery);
+  else initPasswordRecovery();
 })();
