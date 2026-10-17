@@ -3883,6 +3883,13 @@ body > #rrDialog[hidden]{display:none!important;}
 .faculty-courses-page .fc-heading-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
 .faculty-courses-page .fc-create-btn,.fc-dialog .fc-create-btn{background:#ffc900;color:#004179;border:1px solid #efbd00;border-radius:9px;padding:11px 18px;font:800 13px Arial,sans-serif;cursor:pointer;}
 .faculty-courses-page .fc-create-btn:hover,.fc-dialog .fc-create-btn:hover{background:#f2bd00;}
+
+.faculty-courses-page .fcm-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;}
+.faculty-courses-page .fcm-action{display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:6px 11px;border:1px solid #b9d1e8;border-radius:7px;background:#fff;color:#004179;font:700 11px Arial,sans-serif;line-height:1.2;white-space:nowrap;cursor:pointer;transition:background-color .15s,border-color .15s;}
+.faculty-courses-page .fcm-action:hover{background:#f0f6fc;border-color:#004179;}
+.faculty-courses-page .fcm-action:focus-visible{outline:2px solid #ffc900;outline-offset:2px;}
+.faculty-courses-page .fcm-action.fcm-hide{margin-left:auto;}
+
 .fc-dialog{width:min(540px,calc(100% - 32px));border:1px solid #d8e4f0;border-radius:16px;padding:0;background:#fff;color:#004179;box-shadow:0 18px 55px #002c5640;}
 .fc-dialog::backdrop{background:#082b4f99;}
 .fc-dialog .fc-form{padding:24px;}
