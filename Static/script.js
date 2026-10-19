@@ -6513,6 +6513,39 @@ document.addEventListener("DOMContentLoaded", function () {
 
 /* Shared main-page navigation and active indicator (single source of truth). */
 (function () {
+    function addDepartmentHeadAccountRequests() {
+        const addLink = nav => {
+            if (!nav || nav.querySelector('[data-account-approval-nav]')) return;
+            const link = document.createElement('a');
+            link.className = 'so-nav-item';
+            link.href = '/account-approvals.html';
+            link.textContent = 'Account Requests';
+            link.dataset.accountApprovalNav = 'true';
+            if (location.pathname.toLowerCase().endsWith('/account-approvals.html')) {
+                link.classList.add('active');
+                link.setAttribute('aria-current', 'page');
+            }
+            const dashboardLink = [...nav.querySelectorAll(':scope > a.so-nav-item')]
+                .find(item => item.textContent.trim() === 'Dashboard' || item.textContent.trim() === 'Home');
+            nav.insertBefore(link, dashboardLink ? dashboardLink.nextSibling : nav.firstChild);
+        };
+
+        document.querySelectorAll('.so-sidebar nav[aria-label="Department Head navigation"]')
+            .forEach(addLink);
+        document.querySelectorAll('template').forEach(template => {
+            addLink(template.content.querySelector('nav[aria-label="Department Head navigation"]'));
+        });
+    }
+
+    document.addEventListener('edumetrics:nav-ready', addDepartmentHeadAccountRequests);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', addDepartmentHeadAccountRequests, { once: true });
+    } else {
+        addDepartmentHeadAccountRequests();
+    }
+})();
+
+(function () {
     function initRoleNavigation() {
         const path = decodeURIComponent(location.pathname).toLowerCase();
         if (!path.includes('/templates/main/')) return;
