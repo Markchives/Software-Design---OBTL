@@ -5876,9 +5876,21 @@ document.addEventListener("DOMContentLoaded", function () {
         const menu = document.getElementById("loginDropdownMenu");
         if (!dropdown || !button || !menu) return;
 
+        let closingAnimation;
         function setOpen(open) {
-            dropdown.classList.toggle("open", open);
-            menu.classList.toggle("show", open);
+            if (closingAnimation) { closingAnimation.cancel(); closingAnimation = null; }
+            if (open) {
+                dropdown.classList.add("open");
+                menu.classList.add("show");
+                if (!matchMedia('(prefers-reduced-motion: reduce)').matches) menu.animate(
+                    [{opacity:0, transform:'translateY(-9px) scale(.98)'}, {opacity:1, transform:'translateY(0) scale(1)'}],
+                    {duration:210, easing:'cubic-bezier(.2,.8,.2,1)'});
+            } else if (menu.classList.contains("show") && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                closingAnimation = menu.animate(
+                    [{opacity:1, transform:'translateY(0)'}, {opacity:0, transform:'translateY(-7px)'}],
+                    {duration:150, easing:'ease-in'});
+                closingAnimation.onfinish = () => { dropdown.classList.remove("open"); menu.classList.remove("show"); closingAnimation = null; };
+            } else { dropdown.classList.remove("open"); menu.classList.remove("show"); }
             button.setAttribute("aria-expanded", String(open));
         }
 
@@ -6238,8 +6250,23 @@ document.addEventListener("DOMContentLoaded", function () {
     logout.textContent = 'Log Out';
     menu.append(profile, logout);
     area.appendChild(menu);
-    function close() { menu.hidden = true; avatar.setAttribute('aria-expanded', 'false'); }
-    function toggle() { const show = menu.hidden; menu.hidden = !show; avatar.setAttribute('aria-expanded', String(show)); }
+    let menuAnimation;
+    function close() {
+      if (menu.hidden) return;
+      if (menuAnimation) menuAnimation.cancel();
+      avatar.setAttribute('aria-expanded', 'false');
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) { menu.hidden = true; return; }
+      menuAnimation = menu.animate([{opacity:1, transform:'translateY(0)'}, {opacity:0, transform:'translateY(-6px)'}], {duration:140, easing:'ease-in'});
+      menuAnimation.onfinish = () => { menu.hidden = true; menuAnimation = null; };
+    }
+    function toggle() {
+      const show = avatar.getAttribute('aria-expanded') !== 'true';
+      if (!show) { close(); return; }
+      if (menuAnimation) { menuAnimation.cancel(); menuAnimation = null; }
+      menu.hidden = false;
+      avatar.setAttribute('aria-expanded', 'true');
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) menu.animate([{opacity:0, transform:'translateY(-8px)'}, {opacity:1, transform:'translateY(0)'}], {duration:200, easing:'ease-out'});
+    }
     avatar.addEventListener('click', function (event) { event.stopPropagation(); toggle(); });
     avatar.addEventListener('keydown', function (event) {
       if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggle(); }
@@ -6706,57 +6733,142 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// Faculty Courses: page-scoped creation; demo-only until a backend is connected.
-(function(){function init(){const dialog=document.getElementById('fcCreateDialog'),form=document.getElementById('fcCreateForm'),grid=document.getElementById('facultyCourseGrid');if(!dialog||!form||!grid)return;const open=document.getElementById('fcOpenCreate');const close=()=>dialog.close();open?.addEventListener('click',()=>dialog.showModal());document.getElementById('fcCloseCreate')?.addEventListener('click',close);document.getElementById('fcCancelCreate')?.addEventListener('click',close);dialog.addEventListener('click',e=>{if(e.target===dialog)close()});form.addEventListener('submit',e=>{e.preventDefault();if(!form.reportValidity())return;const data=new FormData(form),code=String(data.get('code')).trim(),title=String(data.get('title')).trim(),section=String(data.get('section')).trim(),term=String(data.get('term'));if(!code||!title||!section)return;const article=document.createElement('article');article.className='sc-course-card';const top=document.createElement('div');top.className='sc-card-top';const icon=document.createElement('span');icon.className='sc-course-icon';icon.textContent=code.slice(0,2).toUpperCase();const status=document.createElement('span');status.className='sc-enrolled';status.textContent='NEW COURSE';top.append(icon,status);const body=document.createElement('div');body.className='sc-course-body';const label=document.createElement('span');label.className='sc-course-code';label.textContent=code+' · '+term;const heading=document.createElement('h2');heading.textContent=title;const info=document.createElement('p');info.className='sc-faculty';info.textContent='Assigned faculty · You';const sec=document.createElement('p');sec.className='sc-section';sec.textContent='Section '+section;body.append(label,heading,info,sec);const bottom=document.createElement('div');bottom.className='sc-card-bottom';const note=document.createElement('div');note.className='sc-progress-top';note.textContent='0 enrolled students · Demo';bottom.append(note);article.append(top,body,bottom);grid.prepend(article);const count=document.getElementById('facultyCourseCount');if(count)count.textContent=String(grid.children.length).padStart(2,'0');form.reset();close()})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init()})();
-
-/* SHARED HEADER CALENDAR — one delegated controller for all EduMetrics pages. */
+// Faculty Courses: create and restore demo courses in this browser only.
 (function () {
-  "use strict";
-  let active = null;
-  function closeCalendar() {
-    if (!active) return;
-    active.popup.hidden = true;
-    active.button.setAttribute('aria-expanded', 'false');
-    active = null;
-  }
-  document.addEventListener('click', function (event) {
-    const button = event.target.closest('.edu-header-calendar-btn');
-    if (button) {
-      event.preventDefault();
-      const wrap = button.closest('.edu-header-calendar-wrap');
-      const popup = wrap && wrap.querySelector('.edu-header-calendar-popup');
-      if (!popup) return;
-      const wasOpen = active && active.button === button;
-      closeCalendar();
-      if (wasOpen) return;
-      const date = popup.querySelector('input[type="date"]');
-      if (date && !date.value) {
-        const now = new Date();
-        date.value = [now.getFullYear(), String(now.getMonth()+1).padStart(2,'0'), String(now.getDate()).padStart(2,'0')].join('-');
-      }
-      // Portaling the popup to body prevents fixed headers/scroll containers from clipping it.
-      if (popup.parentElement !== document.body) document.body.appendChild(popup);
-      const rect = button.getBoundingClientRect();
-      const width = Math.min(290, window.innerWidth - 24);
-      popup.style.position = 'fixed';
-      popup.style.width = width + 'px';
-      popup.style.left = Math.max(12, Math.min(rect.right - width, window.innerWidth - width - 12)) + 'px';
-      popup.style.top = Math.min(rect.bottom + 10, window.innerHeight - 180) + 'px';
-      popup.style.right = 'auto';
-      popup.hidden = false;
-      button.setAttribute('aria-expanded', 'true');
-      active = {button, popup};
-      return;
+  function init() {
+    if (!document.body.classList.contains('faculty-courses-page')) return;
+    const dialog = document.getElementById('fcCreateDialog');
+    const form = document.getElementById('fcCreateForm');
+    const grid = document.getElementById('facultyCourseGrid');
+    const open = document.getElementById('fcmOpenCreate');
+    if (!dialog || !form || !grid || !open) return;
+    const storageKey = 'edumetrics-faculty-demo-courses-v1';
+    let courses = [];
+    try {
+      const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      if (Array.isArray(stored)) courses = stored.filter(item => item && typeof item.code === 'string' && typeof item.title === 'string');
+    } catch (_) { /* Browser storage unavailable. */ }
+    function render() {
+      grid.querySelectorAll('[data-fc-demo-course]').forEach(node => node.remove());
+      const empty = document.getElementById('fcmEmpty');
+      if (empty) empty.hidden = courses.length > 0 || grid.querySelector('.sc-course-card') !== null;
+      courses.forEach(course => {
+        const card = document.createElement('article'); card.className = 'sc-course-card';
+        card.dataset.fcDemoCourse = 'true';
+        const top = document.createElement('div'); top.className = 'sc-card-top';
+        const symbol = document.createElement('span'); symbol.className = 'sc-course-icon'; symbol.textContent = course.code.slice(0, 2).toUpperCase();
+        const status = document.createElement('span'); status.className = 'sc-enrolled'; status.textContent = 'NEW COURSE';
+        top.append(symbol, status);
+        const body = document.createElement('div'); body.className = 'sc-course-body';
+        const code = document.createElement('span'); code.className = 'sc-course-code'; code.textContent = course.code;
+        const name = document.createElement('h2'); name.textContent = course.title;
+        const note = document.createElement('p'); note.className = 'sc-faculty'; note.textContent = 'Assigned faculty · You';
+        body.append(code, name, note);
+        const bottom = document.createElement('div'); bottom.className = 'sc-card-bottom';
+        const summary = document.createElement('div'); summary.className = 'sc-progress-top'; summary.textContent = '0 enrolled students · Demo';
+        bottom.append(summary); card.append(top, body, bottom); grid.append(card);
+      });
+      const count = document.getElementById('facultyCourseCount');
+      if (count) count.textContent = String(grid.querySelectorAll('.sc-course-card').length).padStart(2, '0');
     }
-    if (active && !active.popup.contains(event.target)) closeCalendar();
-  });
-  document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape' && active) {closeCalendar();}
-  });
-  window.addEventListener('resize', closeCalendar);
-  window.addEventListener('scroll', closeCalendar, true);
-})();;
+    const close = () => { if (dialog.open) dialog.close(); };
+    open.addEventListener('click', () => { form.reset(); dialog.showModal(); form.elements.code.focus(); });
+    document.getElementById('fcCloseCreate')?.addEventListener('click', close);
+    document.getElementById('fcCancelCreate')?.addEventListener('click', close);
+    dialog.addEventListener('click', event => { if (event.target === dialog) close(); });
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      const code = form.elements.code.value.trim();
+      const title = form.elements.title.value.trim();
+      if (!code || !title) return;
+      if (courses.some(course => course.code.toLowerCase() === code.toLowerCase())) {
+        form.elements.code.setCustomValidity('This course code already exists.');
+        form.elements.code.reportValidity(); return;
+      }
+      courses.push({code, title});
+      try { localStorage.setItem(storageKey, JSON.stringify(courses)); } catch (_) { /* Session-only if storage unavailable. */ }
+      render(); close();
+    });
+    form.elements.code.addEventListener('input', () => form.elements.code.setCustomValidity(''));
+    render();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, {once:true});
+  else init();
+})();
 
+/* Shared calendar: reuse the existing header popup on every role/page. */
+(function () {
+  'use strict';
+  let opened = null;
+  const pad = n => String(n).padStart(2, '0');
+  function close() {
+    if (!opened) return;
+    opened.popup.hidden = true;
+    opened.wrap.appendChild(opened.popup);
+    opened.button.setAttribute('aria-expanded', 'false');
+    opened = null;
+  }
+  function place() {
+    if (!opened) return;
+    const r = opened.button.getBoundingClientRect();
+    opened.popup.style.left = Math.max(8, Math.min(r.right - 224, innerWidth - 232)) + 'px';
+    const height = opened.popup.getBoundingClientRect().height || 260;
+    opened.popup.style.top = (r.bottom + 8 + height <= innerHeight ? r.bottom + 8 : Math.max(8, r.top - height - 8)) + 'px';
+  }
+  function draw(popup, year, month) {
+    const input = popup.querySelector('input[type="date"]');
+    const selected = input?.value || '';
+    const first = new Date(year, month, 1).getDay();
+    const days = new Date(year, month + 1, 0).getDate();
+    const head = document.createElement('div'); head.className = 'edu-calendar-head';
+    const title = document.createElement('strong');
+    title.textContent = new Date(year, month, 1).toLocaleDateString('en-US', {month:'long', year:'numeric'});
+    head.append(title);
+    [-1, 1].forEach(step => {
+      const arrow = document.createElement('button'); arrow.type = 'button';
+      arrow.className = 'edu-calendar-arrow'; arrow.textContent = step < 0 ? '‹' : '›';
+      arrow.setAttribute('aria-label', step < 0 ? 'Previous month' : 'Next month');
+      arrow.addEventListener('click', () => draw(popup, year + Math.floor((month + step) / 12), (month + step + 12) % 12));
+      head.append(arrow);
+    });
+    const grid = document.createElement('div'); grid.className = 'edu-calendar-grid';
+    ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(day => {
+      const label = document.createElement('span'); label.className = 'edu-calendar-weekday'; label.textContent = day; grid.append(label);
+    });
+    for (let i = 0; i < Math.ceil((first + days) / 7) * 7; i++) {
+      const date = new Date(year, month, i - first + 1);
+      const value = date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate());
+      const day = document.createElement('button'); day.type = 'button'; day.className = 'edu-calendar-day';
+      day.textContent = date.getDate();
+      if (date.getMonth() !== month) day.classList.add('outside');
+      if (value === selected) day.classList.add('selected');
+      day.addEventListener('click', () => { if (input) { input.value = value; input.dispatchEvent(new Event('change', {bubbles:true})); } close(); });
+      grid.append(day);
+    }
+    popup.replaceChildren(input, head, grid);
+  }
+  document.addEventListener('click', event => {
+    const button = event.target.closest('.edu-header-calendar-btn');
+    if (!button) { if (opened && !opened.popup.contains(event.target)) close(); return; }
+    event.preventDefault();
+    if (opened?.button === button) { close(); return; }
+    close();
+    const popup = button.closest('.edu-header-calendar-wrap')?.querySelector('.edu-header-calendar-popup');
+    if (!popup) return;
+    const input = popup.querySelector('input[type="date"]');
+    const now = new Date();
+    if (input && !input.value) input.value = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate());
+    const date = input?.value ? new Date(input.value + 'T12:00:00') : now;
+    draw(popup, date.getFullYear(), date.getMonth());
+    const wrap = button.closest('.edu-header-calendar-wrap');
+    document.body.appendChild(popup);
+    popup.hidden = false; button.setAttribute('aria-expanded', 'true'); opened = {popup, button, wrap}; place();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  window.addEventListener('resize', place);
+  window.addEventListener('scroll', place, true);
+})();
 
 /* Page-specific initialization moved from HTML: no inline JavaScript. */
 
@@ -7080,9 +7192,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 const page=decodeURIComponent(location.pathname).split('/').pop().toLowerCase();
 document.querySelectorAll('.so-subnav a[href]').forEach(a=>{let u;try{u=new URL(a.getAttribute('href'),location.href)}catch{return}const yes=decodeURIComponent(u.pathname).split('/').pop().toLowerCase()===page;a.classList.toggle('active',yes);if(yes)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
 document.querySelectorAll('.so-nav-group details').forEach(d=>{const s=d.querySelector('summary');if(!s)return;const sync=()=>s.setAttribute('aria-expanded',String(d.open));sync();d.addEventListener('toggle',sync)});
-const calendars=[...document.querySelectorAll('.edu-header-calendar-wrap')].map(w=>({w,b:w.querySelector('.edu-header-calendar-btn'),p:w.querySelector('.edu-header-calendar-popup')})).filter(x=>x.b&&x.p);
-function close(){calendars.forEach(x=>{x.p.hidden=true;x.b.setAttribute('aria-expanded','false')})}
-calendars.forEach(x=>x.b.addEventListener('click',e=>{e.stopPropagation();const show=x.p.hidden;close();x.p.hidden=!show;x.b.setAttribute('aria-expanded',String(show))}));document.addEventListener('click',e=>{if(!calendars.some(x=>x.w.contains(e.target)))close()});document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});}
+}
+
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();})();
 
 /* Logged-in main information pages: reuse role-specific navigation and header. */
@@ -7095,10 +7206,31 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     const requested = new URLSearchParams(location.search).get('role');
     const stored = sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || sessionStorage.getItem('verifiedRole');
     const role = normalize((requested || stored || 'student').toLowerCase());
+    if (role === 'admin') {
+      page.querySelectorAll('a[href]').forEach(function (link) {
+        const target = new URL(link.getAttribute('href'), location.href);
+        const filename = decodeURIComponent(target.pathname).split('/').pop().toLowerCase();
+        if (/^blog[1-6]\.html$|^brochure[1-6]\.html$/.test(filename) ||
+            ['platform.html', 'resources.html', 'about us.html'].includes(filename)) {
+          target.searchParams.set('role', 'admin');
+          link.href = target.href;
+        }
+      });
+    }
     if (role === 'admin') { sessionStorage.setItem('edumetricsRole', 'admin'); sessionStorage.setItem('userRole', 'admin'); const shell = document.getElementById('ed-admin-shell'); if (shell) { const nodes = shell.content.cloneNode(true); ['.so-topbar','.so-header-lines','.so-sidebar'].forEach(selector => { const current = page.querySelector(selector), replacement = nodes.querySelector(selector); if (current && replacement) current.replaceWith(replacement); }); page.querySelectorAll('.so-sidebar a[href]').forEach(link => { const target = new URL(link.getAttribute('href'), location.href); if (['platform.html','resources.html','about us.html'].includes(decodeURIComponent(target.pathname).split('/').pop().toLowerCase())) { target.searchParams.set('role','admin'); link.href = target.href; } }); } document.dispatchEvent(new Event('edumetrics:profile-shell-ready')); return; }
     const selected = ['student', 'faculty', 'dept-head'].includes(role) ? role : 'student';
     sessionStorage.setItem('edumetricsRole', selected);
     sessionStorage.setItem('userRole', selected);
+    // Carry the selected role into resource detail URLs instead of relying on stale session state.
+    page.querySelectorAll('a[href]').forEach(function (link) {
+      const target = new URL(link.getAttribute('href'), location.href);
+      const filename = decodeURIComponent(target.pathname).split('/').pop().toLowerCase();
+      if (/^blog[1-6]\.html$|^brochure[1-6]\.html$/.test(filename) ||
+          ['platform.html', 'resources.html', 'about us.html', 'dashboard.html'].includes(filename)) {
+        target.searchParams.set('role', selected);
+        link.href = target.href;
+      }
+    });
     const template = document.getElementById('nav-template-' + selected);
     const current = page.querySelector('.so-sidebar .so-nav');
     if (template && current) current.replaceWith(template.content.cloneNode(true));
@@ -7128,83 +7260,124 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 
 
-/* Blog layout switching: same article for public and signed-in prototype views. */
+/* Shared logged-in article and brochure shell; reuse the existing Resources header/sidebar. */
 (function () {
-  function initSharedBlogLayout() {
+  async function initSharedResourceDetail() {
     const body = document.body;
-    if (!body.classList.contains('blog-page') || body.dataset.blogLayoutReady) return;
-    let role = '';
-    try {
-      // Frontend prototype state only; the backend must verify the session later.
-      if (sessionStorage.getItem('verificationCompleted') !== 'true') return;
-      const value = (sessionStorage.getItem('edumetricsRole') ||
-        sessionStorage.getItem('verifiedRole') ||
-        sessionStorage.getItem('verificationRole') || '').toLowerCase();
-      role = ({'department-head':'dept-head','department_head':'dept-head',
-        'depthead':'dept-head'}[value] || value);
-    } catch (_) { return; }
-    if (!['student', 'faculty', 'dept-head'].includes(role)) return;
-
-    const main = body.querySelector('main.blog-main');
+    if ((!body.classList.contains('blog-page') && !body.classList.contains('brochure-page')) || body.dataset.blogLayoutReady) return;
+    const normalize = value => ({'department-head':'dept-head','department_head':'dept-head','depthead':'dept-head'}[value] || value);
+    const params = new URLSearchParams(location.search);
+    const stored = sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || sessionStorage.getItem('verifiedRole') || '';
+    const role = normalize((params.get('role') || stored).toLowerCase());
+    if (!['student','faculty','dept-head','admin'].includes(role)) return;
+    sessionStorage.setItem('edumetricsRole', role);
+    sessionStorage.setItem('userRole', role);
+    const originalMain = body.querySelector('main.blog-main, main.brochure-main');
     const originalHeader = body.querySelector('header.site-header');
-    if (!main || !originalHeader) return;
-
-    const holder = document.createElement('div');
-    holder.innerHTML = "<header class=\"so-topbar\">\n<div class=\"so-brand\"><div class=\"so-brand-logo\">Edu<span>Metrics</span></div><div class=\"so-brand-subtitle\">Academic Assessment &amp; Grading System</div></div>\n<div class=\"so-user-area\">\n<button aria-label=\"Notifications\" class=\"so-notification-btn\" type=\"button\"><img alt=\"Notifications\" class=\"so-notification-image\" src=\"../../Static/images/sidebar/notif.png\"/><span class=\"so-notification-dot\"></span></button>\n<div class=\"so-user-info\"><strong id=\"studentName\">Student</strong><span>Student</span></div>\n<div aria-hidden=\"true\" class=\"so-avatar\"><span class=\"sd-icon-placeholder\">●</span></div><span aria-hidden=\"true\" class=\"so-online-dot\"></span>\n</div>\n</header><div class=\"so-header-lines\"><div class=\"so-header-blue\"></div><div class=\"so-header-gold\"></div></div><aside class=\"so-sidebar\">\n<div class=\"so-pages-title\"><span class=\"so-grid-icon so-pages-image-wrap\"><img alt=\"\" class=\"so-pages-image\" src=\"../../Static/images/sidebar/pages.png\"/></span><span>Pages</span></div>\n<nav aria-label=\"Student navigation\" class=\"so-nav\">\n<a class=\"so-nav-item\" href=\"dashboard.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/home-white.png\"/></span><span>Home</span></a>\n<a class=\"so-nav-item\" href=\"courses.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/course-white.png\"/></span><span>My Courses</span></a>\n<a class=\"so-nav-item\" href=\"platform.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/pl-white.png\"/></span><span>Platform</span></a>\n<div class=\"so-nav-group\">\n<details><summary class=\"so-nav-item so-products\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/ws-blue.png\"/></span><span>Workflow</span></summary>\n<div class=\"so-subnav\"><a href=\"so-student.html\">Syllabus &amp; Outcomes</a><a href=\"#\">Curriculum Mapping</a><a href=\"#\">Class Roster</a><a href=\"#\">Assessment Entry</a><a href=\"#\">Attainment</a><a href=\"#\">CQI Planning</a><a href=\"#\">Gradebook</a><a href=\"#\">Compliance Report</a></div>\n</details>\n</div>\n<a aria-current=\"page\" class=\"so-nav-item sd-active\" href=\"resources.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/rs-white.png\"/></span><span>Resources</span></a>\n<a class=\"so-nav-item\" href=\"about us.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/au-white.png\"/></span><span>About Us</span></a>\n</nav>\n<div class=\"so-sidebar-brand\"><div class=\"so-sidebar-logo\">Edu<span>Metrics</span></div><small>Academic Assessment &amp; Grading System</small></div>\n</aside><template id=\"nav-template-faculty\"><nav aria-label=\"Faculty navigation\" class=\"so-nav\">\n<a class=\"so-nav-item\" href=\"dashboard.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/home-white.png\"/></span><span>Home</span></a>\n<a class=\"so-nav-item\" href=\"courses.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/course-white.png\"/></span><span>My Courses</span></a>\n<a class=\"so-nav-item\" href=\"platform.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/pl-white.png\"/></span><span>Platform</span></a>\n<div class=\"so-nav-group\">\n<details><summary class=\"so-nav-item so-products\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/ws-blue.png\"/></span><span>Workflow</span></summary>\n<div class=\"so-subnav\"><a href=\"so-faculty.html\">Syllabus &amp; Outcomes</a><a href=\"cm-faculty.html\">Curriculum Mapping</a><a href=\"cr-faculty.html\">Class Roster</a><a href=\"assessment-faculty.html\">Assessment Entry</a><a href=\"attainment-faculty.html\">Attainment</a><a href=\"cqi-faculty.html\">CQI Planning</a><a href=\"gradebook-faculty.html\">Gradebook</a><a href=\"compliance-faculty.html\">Compliance Report</a></div>\n</details>\n</div>\n<a aria-current=\"page\" class=\"so-nav-item sd-active\" href=\"resources.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/rs-white.png\"/></span><span>Resources</span></a>\n<a class=\"so-nav-item\" href=\"about us.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/au-white.png\"/></span><span>About Us</span></a>\n</nav></template><template id=\"nav-template-dept-head\"><nav aria-label=\"Department Head navigation\" class=\"so-nav\">\n<a class=\"so-nav-item\" href=\"dashboard.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/home-white.png\"/></span><span>Home</span></a>\n<a class=\"so-nav-item\" href=\"courses.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/course-white.png\"/></span><span>My Courses</span></a>\n<a class=\"so-nav-item\" href=\"platform.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/pl-white.png\"/></span><span>Platform</span></a>\n<div class=\"so-nav-group\">\n<details><summary class=\"so-nav-item so-products\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/ws-blue.png\"/></span><span>Workflow</span></summary>\n<div class=\"so-subnav\"><a href=\"so-dept-head.html\">Syllabus &amp; Outcomes</a><a href=\"cm-dept-head.html\">Curriculum Mapping</a><a href=\"cr-dept-head.html\">Class Roster</a><a href=\"assessment-dept-head.html\">Assessment Entry</a><a href=\"attainment-dept-head.html\">Attainment</a><a href=\"cqi-dept-head.html\">CQI Planning</a><a href=\"gradebook-dept-head.html\">Gradebook</a><a href=\"compliance-dept-head.html\">Compliance Report</a></div>\n</details>\n</div>\n<a aria-current=\"page\" class=\"so-nav-item sd-active\" href=\"resources.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/rs-white.png\"/></span><span>Resources</span></a>\n<a class=\"so-nav-item\" href=\"about us.html\"><span class=\"so-nav-icon so-nav-image-wrap\"><img alt=\"\" class=\"so-nav-image\" src=\"../../Static/images/sidebar/au-white.png\"/></span><span>About Us</span></a>\n</nav></template>";
-    const baseUrl = new URL('../../main/resources.html', location.href);
-    holder.querySelectorAll('[href], [src]').forEach(function (node) {
-      ['href', 'src'].forEach(function (attribute) {
-        const value = node.getAttribute(attribute);
-        if (value && !value.startsWith('#') && !value.startsWith('/') &&
-            !/^(?:[a-z]+:|\/\/)/i.test(value)) {
-          node.setAttribute(attribute, new URL(value, baseUrl).href);
-        }
+    if (!originalMain || !originalHeader) return;
+    const resourcesUrl = new URL('../../main/resources.html', location.href);
+    resourcesUrl.searchParams.set('role', role);
+    let source;
+    try {
+      const response = await fetch(resourcesUrl.href, {credentials:'same-origin'});
+      if (!response.ok) return;
+      source = new DOMParser().parseFromString(await response.text(), 'text/html');
+    } catch (_) { return; }
+    const sourceBody = source.body;
+    const topbar = sourceBody.querySelector('.so-topbar');
+    const lines = sourceBody.querySelector('.so-header-lines');
+    const sidebar = sourceBody.querySelector('.so-sidebar');
+    if (!topbar || !lines || !sidebar) return;
+    // Resolve existing Resources assets and links before moving its shell into this page.
+    [topbar, sidebar].forEach(root => root.querySelectorAll('[src],[href]').forEach(node => {
+      ['src','href'].forEach(attr => {
+        const value = node.getAttribute(attr);
+        if (value && !value.startsWith('#') && !/^(?:[a-z]+:|\/\/)/i.test(value)) node.setAttribute(attr, new URL(value, resourcesUrl).href);
       });
-    });
-    const topbar = holder.querySelector('.so-topbar');
-    const accent = holder.querySelector('.so-header-lines');
-    const sidebar = holder.querySelector('.so-sidebar');
-    if (!topbar || !accent || !sidebar) return;
-    const nav = holder.querySelector('#nav-template-' + role);
-    if (nav) {
-      const current = sidebar.querySelector('.so-nav');
-      if (current) current.replaceWith(nav.content.cloneNode(true));
+    }));
+    if (role === 'admin') {
+      const template = source.getElementById('ed-admin-shell');
+      if (template) {
+        const fragment = template.content.cloneNode(true);
+        ['.so-topbar','.so-header-lines','.so-sidebar'].forEach(selector => {
+          const old = sourceBody.querySelector(selector);
+          const fresh = fragment.querySelector(selector);
+          if (old && fresh) old.replaceWith(fresh);
+        });
+      }
+    } else {
+      const template = source.getElementById('nav-template-' + role);
+      const nav = sidebar.querySelector('.so-nav');
+      if (template && nav) nav.replaceWith(template.content.cloneNode(true));
     }
-    const user = topbar.querySelector('.so-user-info');
-    const roleName = role === 'dept-head' ? 'Department Head' :
-      role === 'faculty' ? 'Faculty' : 'Student';
-    if (user) {
-      const name = user.querySelector('strong');
-      const subtitle = user.querySelector('span');
+    const finalTopbar = sourceBody.querySelector('.so-topbar');
+    const finalLines = sourceBody.querySelector('.so-header-lines');
+    const finalSidebar = sourceBody.querySelector('.so-sidebar');
+    if (!finalTopbar || !finalLines || !finalSidebar) return;
+    [finalTopbar, finalSidebar].forEach(root => root.querySelectorAll('[src],[href]').forEach(node => {
+      ['src','href'].forEach(attr => {
+        const value = node.getAttribute(attr);
+        if (value && !value.startsWith('#') && !/^(?:[a-z]+:|\/\/)/i.test(value)) node.setAttribute(attr, new URL(value, resourcesUrl).href);
+      });
+    }));
+    const dashboard = new URL(role === 'admin' ? '../requirement 2/cm-admin.html' : 'dashboard.html', resourcesUrl);
+    if (role !== 'admin') dashboard.searchParams.set('role', role);
+    finalSidebar.querySelectorAll('a[href]').forEach(link => {
+      const file = decodeURIComponent(new URL(link.href, location.href).pathname).split('/').pop().toLowerCase();
+      if (file === 'dashboard.html' || (role === 'admin' && /^(dashboard|cm-admin)\.html$/.test(file))) link.href = dashboard.href;
+      if (['platform.html','resources.html','about us.html'].includes(file)) {
+        const target = new URL(link.href, location.href);
+        target.searchParams.set('role', role);
+        link.href = target.href;
+      }
+      const active = file === 'resources.html';
+      link.classList.toggle('active', active);
+      link.classList.toggle('sd-active', active);
+      if (active) link.setAttribute('aria-current','page'); else link.removeAttribute('aria-current');
+    });
+    const roleName = {'student':'Student','faculty':'Faculty','dept-head':'Department Head','admin':'Admin'}[role];
+    const info = finalTopbar.querySelector('.so-user-info');
+    if (info) {
+      const name = info.querySelector('strong');
+      const label = info.querySelector('span');
       if (name) name.textContent = roleName;
-      if (subtitle) subtitle.textContent = roleName;
+      if (label) label.textContent = roleName;
     }
     const breadcrumb = body.querySelector('.workflow-breadcrumb-wrap');
     if (breadcrumb) {
-      const home = breadcrumb.querySelector('a');
-      const resources = breadcrumb.querySelectorAll('a')[1];
-      if (home) home.href = new URL('../../main/dashboard.html', location.href).href;
-      if (resources) resources.href = baseUrl.href;
-      main.prepend(breadcrumb);
+      const links = breadcrumb.querySelectorAll('a');
+      if (links.length === 1) links[0].href = resourcesUrl.href;
+      else {
+        if (links[0]) links[0].href = dashboard.href;
+        if (links[1]) links[1].href = resourcesUrl.href;
+      }
+      originalMain.prepend(breadcrumb);
     }
+    originalMain.querySelectorAll('a[href]').forEach(link => {
+      const target = new URL(link.getAttribute('href'), location.href);
+      const file = decodeURIComponent(target.pathname).split('/').pop().toLowerCase();
+      if (file === 'resources.html' || /^blog[1-6]\.html$|^brochure[1-6]\.html$/.test(file)) {
+        target.searchParams.set('role', role);
+        link.href = target.href;
+      }
+    });
     const shell = document.createElement('div');
     shell.className = 'so-shell';
-    const articleMain = document.createElement('main');
-    articleMain.className = 'so-main ed-platform-main ed-inside-main ed-blog-main';
-    while (main.firstChild) articleMain.appendChild(main.firstChild);
-    main.remove();
-    shell.append(sidebar, articleMain);
+    const main = document.createElement('main');
+    main.className = 'so-main ed-platform-main ed-inside-main ed-blog-main';
+    while (originalMain.firstChild) main.appendChild(originalMain.firstChild);
+    shell.append(finalSidebar, main);
+    originalMain.replaceWith(shell);
     originalHeader.remove();
-    const footer = body.querySelector('footer.workflow-footer');
-    if (footer) footer.remove();
-    body.prepend(topbar, accent, shell);
-    body.classList.add('so-student-page', 'ed-dashboard-page', 'ed-inside-page', 'ed-blog-inside');
+    body.querySelector('footer.workflow-footer')?.remove();
+    body.prepend(finalTopbar, finalLines);
+    body.classList.add('so-student-page','ed-dashboard-page','ed-inside-page','ed-blog-inside');
     body.dataset.dashboardRole = role;
     body.dataset.blogLayoutReady = 'true';
+    document.dispatchEvent(new Event('edumetrics:profile-shell-ready'));
   }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSharedBlogLayout, {once:true});
-  } else initSharedBlogLayout();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initSharedResourceDetail, {once:true});
+  else initSharedResourceDetail();
 })();
 
 /* Admin module behavior — shared script, one controller per page. */
