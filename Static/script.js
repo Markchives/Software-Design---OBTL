@@ -6175,8 +6175,15 @@ document.addEventListener("DOMContentLoaded", function () {
 (function () {
     if (sessionStorage.getItem('verificationCompleted') !== 'true') return;
     const role = sessionStorage.getItem('verifiedRole') || sessionStorage.getItem('verificationRole');
-    const normalized = role === 'department-head' ? 'dept-head' : role;
-    if (['student', 'faculty', 'dept-head'].includes(normalized)) {
+    const normalizeRole = value => ({
+        'dept-head': 'department-head',
+        'department_head': 'department-head',
+        'depthead': 'department-head',
+        'head': 'department-head',
+        'department-head': 'department-head'
+    }[value] || value);
+    const normalized = normalizeRole(role);
+    if (['student', 'faculty', 'department-head'].includes(normalized)) {
         sessionStorage.setItem('edumetricsRole', normalized);
     }
 })();
@@ -6185,10 +6192,19 @@ document.addEventListener("DOMContentLoaded", function () {
 (function () {
     // Login must set sessionStorage.edumetricsRole before navigating here.
     // ?role=... is supported for direct preview and development.
-    const allowed = ['student', 'faculty', 'dept-head'];
+    const allowed = ['student', 'faculty', 'department-head'];
     const query = new URLSearchParams(location.search).get('role');
-    const normalize = v => ({ 'department-head': 'dept-head', 'department_head': 'dept-head', 'depthead': 'dept-head', 'head': 'dept-head' }[v] || v);
-    const role = normalize(query || sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('verifiedRole') || 'student');
+    const normalize = v => ({
+        'department-head': 'department-head',
+        'department_head': 'department-head',
+        'dept-head': 'department-head',
+        'depthead': 'department-head',
+        'head': 'department-head',
+        'admin': 'admin-security',
+        'admin-security': 'admin-security',
+        'admin_security': 'admin-security'
+    }[v] || v);
+    const role = normalize((query || sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('verifiedRole') || 'student').toString().trim().toLowerCase());
     const selected = allowed.includes(role) ? role : 'student';
     if (!sessionStorage.getItem('edumetricsRole') && sessionStorage.getItem('verificationCompleted') === 'true') sessionStorage.setItem('edumetricsRole', selected);
     const dashboardContent = document.getElementById('dashboardRoleContent');
@@ -6200,7 +6216,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const nav = document.getElementById('nav-template-' + selected);
         document.querySelector('.so-nav').replaceWith(nav.content.cloneNode(true));
     }
-    const names = { student: ['Student', 'Student'], faculty: ['Faculty', 'Faculty'], 'dept-head': ['Department Head', 'Department Head'] };
+    const names = { student: ['Student', 'Student'], faculty: ['Faculty', 'Faculty'], 'department-head': ['Department Head', 'Department Head'] };
     const user = document.querySelector('.so-user-info');
     user.querySelector('strong').textContent = names[selected][0];
     user.querySelector('span').textContent = names[selected][1];

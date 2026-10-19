@@ -75,6 +75,22 @@ _login_attempts = {}
 _login_attempts_lock = Lock()
 
 
+def normalize_role_name(role):
+    if role is None:
+        return None
+
+    normalized = str(role).strip().lower()
+    aliases = {
+        "dept-head": "department-head",
+        "department_head": "department-head",
+        "depthead": "department-head",
+        "head": "department-head",
+        "admin": "admin-security",
+        "admin_security": "admin-security",
+    }
+    return aliases.get(normalized, normalized)
+
+
 def require_role(required_role):
     def decorator(view_function):
         @wraps(view_function)
@@ -677,6 +693,33 @@ def faculty_dashboard():
     return render_template("requirement 1/so-faculty.html")
 
 
+@app.get("/requirement 1/so-dept-head.html")
+@require_role("department-head")
+def dept_head_dashboard():
+    return render_template("requirement 1/so-dept-head.html")
+
+
+@app.get("/requirement 2/cm-dept-head.html")
+@app.get("/requirement 3/cr-dept-head.html")
+@app.get("/requirement 4/ra-dept-head.html")
+@app.get("/requirement 5/ac-dept-head.html")
+@app.get("/requirement 6/cqi-dept-head.html")
+@app.get("/requirement 7/gl-dept-head.html")
+@app.get("/requirement 8/rp-dept-head.html")
+@require_role("department-head")
+def dept_head_workflow_page():
+    return render_template(request.path.lstrip("/"))
+
+
+@app.get("/main/dashboard.html")
+@app.get("/main/platform.html")
+@app.get("/main/resources.html")
+@app.get("/main/about us.html")
+@require_role("department-head")
+def dept_head_main_page():
+    return render_template(request.path.lstrip("/"))
+
+
 @app.get("/requirement 2/cm-admin.html")
 @require_role("admin-security")
 def admin_dashboard():
@@ -721,7 +764,7 @@ def register():
     password = data.get("password", "")
     first_name = str(data.get("firstName", "")).strip()
     last_name = str(data.get("lastName", "")).strip()
-    role = str(data.get("role", "student")).strip().lower()
+    role = normalize_role_name(data.get("role", "student"))
 
     allowed_roles = {
         "student",
@@ -819,7 +862,7 @@ def get_user_role(user):
         return None
 
     app_metadata = getattr(user, "app_metadata", None) or {}
-    return app_metadata.get("role")
+    return normalize_role_name(app_metadata.get("role"))
 
 
 @app.get("/auth/callback")
@@ -841,7 +884,7 @@ def auth_callback():
     if not code:
         return "Missing OAuth authorization code.", 400
 
-    requested_role = session.get("oauth_requested_role")
+    requested_role = normalize_role_name(session.get("oauth_requested_role"))
     allowed_roles = {
         "student",
         "faculty",
@@ -947,6 +990,7 @@ def require_admin_security(view_function):
 
 
 def assign_trusted_role(user_id, role):
+    normalized_role = normalize_role_name(role)
     allowed_roles = {
         "student",
         "faculty",
@@ -957,14 +1001,14 @@ def assign_trusted_role(user_id, role):
     if not admin_supabase:
         raise RuntimeError("Supabase Admin client is not configured.")
 
-    if role not in allowed_roles:
+    if normalized_role not in allowed_roles:
         raise ValueError("Invalid role.")
 
     return admin_supabase.auth.admin.update_user_by_id(
         user_id,
         {
             "app_metadata": {
-                "role": role
+                "role": normalized_role
             }
         }
     )
@@ -1025,7 +1069,7 @@ def login():
 
     email = str(data.get("email", "")).strip().lower()
     password = data.get("password", "")
-    selected_role = str(data.get("role", "")).strip().lower()
+    selected_role = normalize_role_name(data.get("role", ""))
     remember_me = data.get("rememberMe") is True
 
     allowed_roles = {
