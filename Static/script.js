@@ -5307,16 +5307,31 @@ document.addEventListener("DOMContentLoaded", function () {
 
 (function () {
     const empty = document.getElementById("studentCoursesEmpty");
-    const list = document.getElementById("studentCoursesList");
-    if (!empty || !list) {
+    const list = document.getElementById("studentCoursesList") ||
+        document.getElementById("studentCourseGrid");
+    if (!list) {
         return;
     }
 
     function showEmptyState(title, message) {
-        empty.querySelector("h3").textContent = title;
-        empty.querySelector("p").textContent = message;
-        empty.hidden = false;
-        list.hidden = true;
+        list.replaceChildren();
+
+        if (empty) {
+            empty.querySelector("h3").textContent = title;
+            empty.querySelector("p").textContent = message;
+            empty.hidden = false;
+            list.hidden = true;
+            return;
+        }
+
+        const state = document.createElement("div");
+        state.className = "sc-empty-state";
+        const heading = document.createElement("h3");
+        heading.textContent = title;
+        const description = document.createElement("p");
+        description.textContent = message;
+        state.append(heading, description);
+        list.appendChild(state);
     }
 
     fetch("/api/student/courses", {
@@ -5348,33 +5363,52 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
+            const heroCount = document.querySelector(".sc-hero-count strong");
+            if (heroCount) {
+                heroCount.textContent = String(courses.length).padStart(2, "0");
+            }
+
+            if (empty) {
+                empty.hidden = true;
+            }
+            list.hidden = false;
             list.replaceChildren();
             courses.forEach(function (course) {
-                const row = document.createElement("div");
-                row.className = "so-course-enrollment-row";
+                const card = document.createElement("article");
+                card.className = "sc-course-card";
+                card.dataset.courseId = course.enrollment_id;
 
-                const info = document.createElement("div");
-                info.className = "so-course-enrollment-info";
+                const top = document.createElement("div");
+                top.className = "sc-card-top";
+                const icon = document.createElement("span");
+                icon.className = "sc-course-icon";
+                icon.textContent = String(course.course_code || "").slice(0, 2);
+                const status = document.createElement("span");
+                status.className = "sc-enrolled";
+                status.textContent = String(course.enrollment_status || "active").toUpperCase();
+                top.append(icon, status);
 
-                const title = document.createElement("strong");
-                title.textContent = course.course_code + " - " + course.course_title;
-
-                const details = document.createElement("span");
-                details.textContent = [course.section_name, course.academic_year_name]
+                const body = document.createElement("div");
+                body.className = "sc-course-body";
+                const code = document.createElement("span");
+                code.className = "sc-course-code";
+                code.textContent = course.course_code || "Course";
+                const title = document.createElement("h2");
+                title.textContent = course.course_title || "Untitled course";
+                const section = document.createElement("p");
+                section.className = "sc-section";
+                section.textContent = [course.section_name, course.academic_year_name]
                     .filter(Boolean)
                     .join(" - ");
+                body.append(code, title, section);
 
-                const status = document.createElement("span");
-                status.className = "so-course-enrollment-status";
-                status.textContent = "Active";
+                const bottom = document.createElement("div");
+                bottom.className = "sc-card-bottom";
+                bottom.textContent = "Enrolled course";
 
-                info.append(title, details);
-                row.append(info, status);
-                list.appendChild(row);
+                card.append(top, body, bottom);
+                list.appendChild(card);
             });
-
-            empty.hidden = true;
-            list.hidden = false;
         })
         .catch(function (error) {
             console.error("Unable to load student courses:", error);

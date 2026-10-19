@@ -537,6 +537,15 @@
                         return;
                     }
 
+                    if (result.status === "approval_pending") {
+                        showLoginModal(
+                            "Account awaiting approval",
+                            result.message || "Your account is waiting for approval.",
+                            "!"
+                        );
+                        return;
+                    }
+
                     if (result.status === "login_otp_required") {
                         sessionStorage.setItem("verificationEmail", email);
                         sessionStorage.setItem("verificationPurpose", "login");

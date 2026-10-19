@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Account Approvals | EduMetrics</title>
+  <link rel="stylesheet" href="/Static/style.css"/>
+  <style>
+    .approval-main{max-width:1100px;margin:24px auto;padding:24px;color:#173f70}
+    .approval-header{display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:3px solid #efbd00;padding-bottom:16px}
+    .approval-header h1{margin:0;font-size:28px}
+    .approval-header a{color:#17477d;font-weight:700}
+    .approval-status{padding:18px 0;color:#526d89}
+    .approval-list{display:grid;gap:12px}
+    .approval-request{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;padding:18px;border:1px solid #d8e4ef;border-radius:8px;background:#fff}
+    .approval-request h2{margin:0 0 8px;font-size:18px}
+    .approval-details{display:flex;flex-wrap:wrap;gap:8px 20px;color:#526d89;font-size:13px}
+    .approval-actions{display:flex;gap:8px}
+    .approval-actions button{border:1px solid #17477d;border-radius:4px;padding:9px 13px;font:inherit;font-weight:700;cursor:pointer}
+    .approval-accept{background:#17477d;color:#fff}
+    .approval-reject{background:#fff;color:#8a2635;border-color:#b34a56!important}
+    .approval-error{color:#8a2635}
+    @media(max-width:650px){.approval-main{padding:16px}.approval-request{grid-template-columns:1fr}.approval-actions button{flex:1}}
+  </style>
+</head>
+<body class="so-student-page" data-reviewer-role="{{ reviewer_role }}">
+  <header class="so-topbar">
+    <div class="so-brand">
+      <div class="so-brand-logo">Edu<span>Metrics</span></div>
+      <div class="so-brand-subtitle">Academic Assessment &amp; Grading System</div>
+    </div>
+  </header>
+  <div class="so-header-lines"><div class="so-header-blue"></div><div class="so-header-gold"></div></div>
+  <main class="approval-main">
+    <div class="approval-header">
+      <h1>Account approval requests</h1>
+      <a href="/main/dashboard.html">Dashboard</a>
+    </div>
+    <p id="approvalStatus" class="approval-status" role="status">Loading requests...</p>
+    <section id="approvalList" class="approval-list" aria-label="Pending account requests"></section>
+  </main>
+  <script>
+    const approvalStatus = document.getElementById("approvalStatus");
+    const approvalList = document.getElementById("approvalList");
+
+    async function loadRequests() {
+      approvalStatus.textContent = "Loading requests...";
+      approvalStatus.classList.remove("approval-error");
+      approvalList.replaceChildren();
+      try {
+        const response = await fetch("/api/account-role-requests", {
+          headers: { Accept: "application/json" },
+          credentials: "same-origin"
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Requests could not be loaded.");
+        const requests = Array.isArray(result.requests) ? result.requests : [];
+        if (!requests.length) {
+          approvalStatus.textContent = "There are no pending requests.";
+          return;
+        }
+        approvalStatus.textContent = requests.length + " pending request" + (requests.length === 1 ? "" : "s");
+        requests.forEach((request) => {
+          const profile = request.profile_data || {};
+          const card = document.createElement("article");
+          card.className = "approval-request";
+          const details = document.createElement("div");
+          const title = document.createElement("h2");
+          title.textContent = profile.full_name || profile.email || "Account request";
+          const metadata = document.createElement("div");
+          metadata.className = "approval-details";
+          [
+            ["Role", request.requested_role],
+            ["Email", profile.email],
+            ["ID", profile.id_number],
+            ["Department / Program", profile.department_name || profile.program_name || profile.department_or_program],
+            ["Submitted", request.submitted_at]
+          ].forEach(([label, value]) => {
+            if (!value) return;
+            const item = document.createElement("span");
+            item.textContent = label + ": " + value;
+            metadata.appendChild(item);
+          });
+          details.append(title, metadata);
+          const actions = document.createElement("div");
+          actions.className = "approval-actions";
+          const approve = document.createElement("button");
+          approve.className = "approval-accept";
+          approve.type = "button";
+          approve.textContent = "Approve";
+          approve.addEventListener("click", () => decide(request.id, "approved"));
+          const reject = document.createElement("button");
+          reject.className = "approval-reject";
+          reject.type = "button";
+          reject.textContent = "Reject";
+          reject.addEventListener("click", () => {
+            const reason = window.prompt("Reason for rejection:");
+            if (reason === null) return;
+            decide(request.id, "rejected", reason.trim());
+          });
+          actions.append(approve, reject);
+          card.append(details, actions);
+          approvalList.appendChild(card);
+        });
+      } catch (error) {
+        approvalStatus.textContent = error.message;
+        approvalStatus.classList.add("approval-error");
+      }
+    }
+
+    async function decide(requestId, decision, reason = "") {
+      try {
+        const response = await fetch("/api/account-role-requests/" + encodeURIComponent(requestId) + "/decision", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ decision, reason })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Decision could not be saved.");
+        await loadRequests();
+      } catch (error) {
+        approvalStatus.textContent = error.message;
+        approvalStatus.classList.add("approval-error");
+      }
+    }
+
+    loadRequests();
+  </script>
+</body>
+</html>

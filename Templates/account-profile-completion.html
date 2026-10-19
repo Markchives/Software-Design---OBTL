@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Complete Your Profile | EduMetrics</title>
+  <link rel="stylesheet" href="/Static/style.css"/>
+</head>
+<body class="so-student-page">
+  <header class="so-topbar">
+    <div class="so-brand">
+      <div class="so-brand-logo">Edu<span>Metrics</span></div>
+      <div class="so-brand-subtitle">Academic Assessment &amp; Grading System</div>
+    </div>
+  </header>
+  <div class="so-header-lines"><div class="so-header-blue"></div><div class="so-header-gold"></div></div>
+  <main class="so-main" style="max-width:720px;margin:40px auto;padding:24px;">
+    <h1>Complete your profile</h1>
+    <p>Signed in as {{ email }}. Add your institution information to continue.</p>
+    <form id="profileForm" data-role="{{ requested_role }}" style="display:grid;gap:16px;">
+      <label>Full name
+        <input name="fullName" autocomplete="name" required value="{{ full_name }}"/>
+      </label>
+      <label>
+        {% if requested_role == 'student' %}Student ID number{% else %}Employee ID number{% endif %}
+        <input name="idNumber" autocomplete="off" required/>
+      </label>
+      {% if requested_role in ('student', 'faculty', 'department-head') %}
+      <label>{% if requested_role == 'student' %}Program{% else %}Department{% endif %}
+        <input name="department" autocomplete="organization" required/>
+      </label>
+      {% endif %}
+      <p id="profileError" role="alert" hidden></p>
+      <button class="sc-action-primary" type="submit">Continue</button>
+    </form>
+  </main>
+  <script>
+    const profileForm = document.getElementById("profileForm");
+    profileForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const formData = new FormData(profileForm);
+      const error = document.getElementById("profileError");
+      const button = profileForm.querySelector("button[type='submit']");
+      button.disabled = true;
+      error.hidden = true;
+      try {
+        const response = await fetch("/api/auth/complete-profile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({
+            fullName: formData.get("fullName"),
+            idNumber: formData.get("idNumber"),
+            department: formData.get("department") || ""
+          })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Profile could not be saved.");
+        window.location.href = result.status === "approval_pending"
+          ? "/account-pending.html"
+          : "/main/dashboard.html";
+      } catch (requestError) {
+        error.textContent = requestError.message;
+        error.hidden = false;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

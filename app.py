@@ -17,7 +17,7 @@ from flask import (
     g,
 )
 from supabase import create_client, Client
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from werkzeug.utils import secure_filename
 
 
@@ -91,6 +91,26 @@ def normalize_role_name(role):
     return aliases.get(normalized, normalized)
 
 
+def has_active_role_record(user_id, role):
+    if not admin_supabase:
+        raise RuntimeError("Supabase Admin client is not configured.")
+
+    rows = (
+        admin_supabase.table("users")
+        .select("role, is_active")
+        .eq("id", str(user_id))
+        .limit(1)
+        .execute()
+        .data
+        or []
+    )
+    return bool(
+        rows
+        and normalize_role_name(rows[0].get("role")) == role
+        and rows[0].get("is_active") is True
+    )
+
+
 def require_role(required_role):
     def decorator(view_function):
         @wraps(view_function)
@@ -105,6 +125,15 @@ def require_role(required_role):
 
             if get_user_role(user) != required_role:
                 return "You are not authorized to view this page.", 403
+
+            try:
+                if not has_active_role_record(user.id, required_role):
+                    return "Your account is not active for this role.", 403
+                if has_pending_role_request(user.id):
+                    return "Your account is awaiting approval.", 403
+            except Exception:
+                app.logger.exception("Unable to verify the user's active role")
+                return "Authorization could not be verified.", 503
 
             g.authenticated_user = user
             return view_function(*args, **kwargs)
@@ -733,11 +762,33 @@ def dept_head_workflow_page():
 def main_dashboard_page():
     role = normalize_role_name(get_user_role(g.authenticated_user))
 
+    if role not in {"student", "faculty", "department-head", "admin-security"}:
+        return "You are not authorized to view this page.", 403
+
+    try:
+        if has_pending_role_request(g.authenticated_user.id):
+            session.clear()
+            return redirect(url_for("account_pending_page"))
+
+        if not has_active_role_record(g.authenticated_user.id, role):
+            session["profile_completion_role"] = role
+            session["profile_completion_mode"] = (
+                "repair" if role == "student" else "request"
+            )
+            return redirect(url_for("complete_profile_page"))
+
+        profile_complete = has_role_profile(g.authenticated_user.id, role)
+    except Exception:
+        app.logger.exception("Unable to verify account profile completeness")
+        return "Account profile could not be verified.", 503
+
+    if not profile_complete:
+        session["profile_completion_role"] = role
+        session["profile_completion_mode"] = "repair"
+        return redirect(url_for("complete_profile_page"))
+
     if role == "admin-security":
         return redirect("/requirement%202/cm-admin.html")
-
-    if role not in {"student", "faculty", "department-head"}:
-        return "You are not authorized to view this page.", 403
 
     return render_template("main/dashboard.html", dashboard_role=role)
 
@@ -787,6 +838,142 @@ def register_page():
     return render_template("registration.html")
 
 
+@app.get("/complete-profile")
+@require_authenticated
+def complete_profile_page():
+    role = normalize_role_name(session.get("profile_completion_role"))
+    if role not in {"student", "faculty", "department-head", "admin-security"}:
+        return redirect("/main/dashboard.html")
+
+    metadata = getattr(g.authenticated_user, "user_metadata", None) or {}
+    full_name = (
+        metadata.get("full_name")
+        or metadata.get("name")
+        or " ".join(filter(None, (
+            metadata.get("first_name"),
+            metadata.get("last_name"),
+        )))
+    )
+    return render_template(
+        "account-profile-completion.html",
+        requested_role=role,
+        email=getattr(g.authenticated_user, "email", "") or "",
+        full_name=full_name,
+    )
+
+
+@app.get("/account-pending.html")
+def account_pending_page():
+    return render_template("account-pending.html")
+
+
+@app.get("/account-approvals.html")
+@require_authenticated
+def account_approvals_page():
+    role = normalize_role_name(get_user_role(g.authenticated_user))
+    if role not in {"admin-security", "department-head"}:
+        return "You are not authorized to review account requests.", 403
+
+    try:
+        if not has_active_role_record(g.authenticated_user.id, role):
+            return "Reviewer account is not active.", 403
+        if has_pending_role_request(g.authenticated_user.id):
+            return "Pending accounts cannot review requests.", 403
+    except Exception:
+        app.logger.exception("Unable to verify account reviewer access")
+        return "Authorization could not be verified.", 503
+
+    return render_template("account-approvals.html", reviewer_role=role)
+
+
+@app.post("/api/auth/complete-profile")
+@require_authenticated
+def complete_profile():
+    role = normalize_role_name(session.get("profile_completion_role"))
+    if role not in {"student", "faculty", "department-head", "admin-security"}:
+        return jsonify({"error": "Profile completion is not active for this account."}), 403
+    completion_mode = session.get("profile_completion_mode", "signup")
+    if completion_mode == "repair" and normalize_role_name(
+        get_user_role(g.authenticated_user)
+    ) != role:
+        return jsonify({"error": "This profile can only be completed by its assigned role."}), 403
+
+    data = get_json_data()
+    full_name = str(data.get("fullName", "")).strip()
+    id_number = str(data.get("idNumber", "")).strip()
+    department_name = str(data.get("department", "")).strip()
+
+    if not full_name or not id_number:
+        return jsonify({"error": "Name and student or employee ID are required."}), 400
+
+    profile_data = {
+        "email": str(g.authenticated_user.email or "").strip().lower(),
+        "full_name": full_name,
+        "id_number": id_number,
+    }
+
+    try:
+        if role == "student":
+            program_name = department_name
+            program_id = find_reference_id("programs", program_name)
+            if not program_id:
+                return jsonify({"error": "Select a program that exists in the system."}), 400
+            profile_data["program_name"] = program_name
+            provision_student_profile(
+                g.authenticated_user,
+                full_name,
+                id_number,
+                program_id,
+            )
+            session.pop("profile_completion_role", None)
+            session.pop("profile_completion_mode", None)
+            session["user_role"] = "student"
+            return jsonify({"status": "profile_complete", "role": "student"}), 200
+
+        department_id = None
+        if role in {"faculty", "department-head"}:
+            if not department_name:
+                return jsonify({"error": "A department is required."}), 400
+            department_id = find_reference_id("departments", department_name)
+            if not department_id:
+                return jsonify({"error": "Select a department that exists in the system."}), 400
+            profile_data["department_name"] = department_name
+
+        if completion_mode == "repair":
+            save_trusted_role_profile(
+                g.authenticated_user,
+                role,
+                full_name,
+                id_number,
+                department_id,
+            )
+            session.pop("profile_completion_role", None)
+            session.pop("profile_completion_mode", None)
+            session["user_role"] = role
+            return jsonify({"status": "profile_complete", "role": role}), 200
+
+        create_pending_role_request(
+            g.authenticated_user,
+            role,
+            profile_data,
+            department_id,
+        )
+        if normalize_role_name(get_user_role(g.authenticated_user)) == role:
+            try:
+                admin_supabase.table("users").update({
+                    "is_active": False,
+                }).eq("id", str(g.authenticated_user.id)).execute()
+            finally:
+                clear_trusted_role(g.authenticated_user.id)
+        session.clear()
+        return jsonify({"status": "approval_pending"}), 200
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+    except Exception:
+        app.logger.exception("OAuth profile completion failed")
+        return jsonify({"error": "Profile could not be saved. Please try again."}), 500
+
+
 @app.get("/login page.html")
 def login_page():
     oauth_error = request.args.get("oauth_error")
@@ -820,6 +1007,8 @@ def register():
     password = data.get("password", "")
     first_name = str(data.get("firstName", "")).strip()
     last_name = str(data.get("lastName", "")).strip()
+    id_number = str(data.get("idNumber", "")).strip()
+    department_name = str(data.get("department", "")).strip()
     role = normalize_role_name(data.get("role", "student"))
 
     allowed_roles = {
@@ -845,12 +1034,51 @@ def register():
             )
         }), 400
 
+    if not id_number:
+        return jsonify({
+            "error": "A student or employee ID number is required."
+        }), 400
+
+    if role in {"student", "faculty", "department-head"} and not department_name:
+        return jsonify({
+            "error": "A program or department is required for this role."
+        }), 400
+
     if not isinstance(password, str) or len(password) < 8:
         return jsonify({
             "error": "Password must contain at least 8 characters."
         }), 400
 
     try:
+        department_id = None
+        program_id = None
+        if role in {"faculty", "department-head"}:
+            department_id = find_reference_id("departments", department_name)
+            if not department_id:
+                return jsonify({
+                    "error": "Select a department that exists in the system."
+                }), 400
+        elif role == "student":
+            program_id = find_reference_id("programs", department_name)
+            if not program_id:
+                return jsonify({
+                    "error": "Select a program that exists in the system."
+                }), 400
+
+            existing_student = (
+                admin_supabase.table("student_profiles")
+                .select("id")
+                .eq("student_number", id_number)
+                .limit(1)
+                .execute()
+                .data
+                or []
+            )
+            if existing_student:
+                return jsonify({
+                    "error": "That student ID is already registered."
+                }), 409
+
         # Check existing accounts before attempting registration.
         existing_user = find_auth_user_by_email(email)
 
@@ -876,11 +1104,56 @@ def register():
         })
 
         if result.user:
-            assign_trusted_role(result.user.id, role)
+            full_name = f"{first_name} {last_name}".strip()
+            profile_data = {
+                "email": email,
+                "full_name": full_name,
+                "id_number": id_number,
+                "department_or_program": department_name,
+            }
+
+            try:
+                if role == "student":
+                    provision_student_profile(
+                        result.user,
+                        full_name,
+                        id_number,
+                        program_id,
+                    )
+                else:
+                    create_pending_role_request(
+                        result.user,
+                        role,
+                        profile_data,
+                        department_id,
+                    )
+            except Exception:
+                try:
+                    admin_supabase.table("student_profiles").delete().eq(
+                        "user_id", str(result.user.id)
+                    ).execute()
+                    admin_supabase.table("account_role_requests").delete().eq(
+                        "auth_user_id", str(result.user.id)
+                    ).execute()
+                    admin_supabase.table("users").delete().eq(
+                        "id", str(result.user.id)
+                    ).execute()
+                    admin_supabase.auth.admin.delete_user(str(result.user.id))
+                except Exception:
+                    app.logger.exception(
+                        "Unable to clean up incomplete signup for user %s",
+                        result.user.id,
+                    )
+                raise
 
         # Preserve the existing email-verification workflow.
         return jsonify({
             "status": "request_processed",
+            "account_status": (
+                "active_after_email_verification"
+                if role == "student"
+                else "pending_approval"
+            ),
             "message": (
                 "If registration is accepted, check your email "
                 "for the verification instructions."
@@ -976,19 +1249,19 @@ def auth_callback():
 
         actual_role = get_user_role(result.user)
 
-        # Assign the selected role to a new Google account.
         if actual_role is None:
-            if requested_role == "admin-security":
-                auth_client.auth.sign_out()
+            existing_request = get_pending_role_request(result.user.id)
+            if existing_request:
                 session.clear()
-                return (
-                    "Admin-Security access must be assigned by an administrator.",
-                    403,
-                )
+                return redirect(url_for("account_pending_page"))
 
-            # Use the Supabase Admin client to assign trusted role metadata.
-            assign_trusted_role(result.user.id, requested_role)
-            actual_role = requested_role
+            session.clear()
+            session.permanent = True
+            session["access_token"] = result.session.access_token
+            session["refresh_token"] = result.session.refresh_token
+            session["user_id"] = result.user.id
+            session["profile_completion_role"] = requested_role
+            return redirect(url_for("complete_profile_page"))
 
         # Existing accounts must match their trusted assigned role.
         if actual_role not in allowed_roles or actual_role != requested_role:
@@ -1030,9 +1303,190 @@ def require_admin_security(view_function):
                 "error": "Administrator access required."
             }), 403
 
+        try:
+            if not has_active_role_record(user.id, "admin-security"):
+                return jsonify({
+                    "error": "Administrator account is not active."
+                }), 403
+            if has_pending_role_request(user.id):
+                return jsonify({
+                    "error": "Pending accounts cannot access administrator APIs."
+                }), 403
+        except Exception:
+            app.logger.exception("Unable to verify administrator role")
+            return jsonify({
+                "error": "Authorization could not be verified."
+            }), 503
+
         return view_function(*args, **kwargs)
 
     return wrapped
+
+
+@app.get("/api/account-role-requests")
+def list_account_role_requests():
+    user = get_authenticated_user()
+    if not user:
+        return jsonify({"error": "Authentication required."}), 401
+
+    reviewer_role = normalize_role_name(get_user_role(user))
+    if reviewer_role not in {"admin-security", "department-head"}:
+        return jsonify({"error": "You are not authorized to review account requests."}), 403
+
+    try:
+        if not has_active_role_record(user.id, reviewer_role):
+            return jsonify({"error": "Reviewer account is not active."}), 403
+        if has_pending_role_request(user.id):
+            return jsonify({"error": "Pending accounts cannot review requests."}), 403
+
+        query = (
+            admin_supabase.table("account_role_requests")
+            .select(
+                "id, auth_user_id, requested_role, requested_department_id, "
+                "profile_data, submitted_at"
+            )
+            .eq("status", "pending")
+        )
+        if reviewer_role == "admin-security":
+            query = query.in_("requested_role", ["department-head", "admin-security"])
+        else:
+            reviewer_department = (
+                admin_supabase.table("dept_head_profiles")
+                .select("department_id")
+                .eq("user_id", str(user.id))
+                .limit(1)
+                .execute()
+                .data
+                or []
+            )
+            if not reviewer_department or not reviewer_department[0].get("department_id"):
+                return jsonify({"error": "Reviewer department is not configured."}), 403
+            query = (
+                query.eq("requested_role", "faculty")
+                .eq("requested_department_id", reviewer_department[0]["department_id"])
+            )
+
+        requests = query.order("submitted_at").execute().data or []
+        return jsonify({"requests": requests}), 200
+    except Exception:
+        app.logger.exception("Unable to list account role requests")
+        return jsonify({"error": "Account requests could not be loaded."}), 500
+
+
+@app.post("/api/account-role-requests/<request_id>/decision")
+def decide_account_role_request(request_id):
+    user = get_authenticated_user()
+    if not user:
+        return jsonify({"error": "Authentication required."}), 401
+
+    reviewer_role = normalize_role_name(get_user_role(user))
+    if reviewer_role not in {"admin-security", "department-head"}:
+        return jsonify({"error": "You are not authorized to decide account requests."}), 403
+
+    data = get_json_data()
+    decision = str(data.get("decision", "")).strip().lower()
+    reason = str(data.get("reason", "")).strip()
+    if decision not in {"approved", "rejected"}:
+        return jsonify({"error": "Decision must be approved or rejected."}), 400
+    if decision == "rejected" and not reason:
+        return jsonify({"error": "A reason is required when rejecting a request."}), 400
+
+    try:
+        if not has_active_role_record(user.id, reviewer_role):
+            return jsonify({"error": "Reviewer account is not active."}), 403
+        if has_pending_role_request(user.id):
+            return jsonify({"error": "Pending accounts cannot decide requests."}), 403
+
+        request_rows = (
+            admin_supabase.table("account_role_requests")
+            .select(
+                "id, auth_user_id, requested_role, requested_department_id, profile_data"
+            )
+            .eq("id", request_id)
+            .eq("status", "pending")
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if not request_rows:
+            return jsonify({"error": "Pending account request was not found."}), 404
+
+        role_request = request_rows[0]
+        if str(role_request["auth_user_id"]) == str(user.id):
+            return jsonify({"error": "You cannot approve or reject your own request."}), 403
+
+        requested_role = role_request["requested_role"]
+        if reviewer_role == "admin-security":
+            if requested_role not in {"department-head", "admin-security"}:
+                return jsonify({"error": "Admins may review only Admin or Department Head requests."}), 403
+        else:
+            if requested_role != "faculty":
+                return jsonify({"error": "Department Heads may review only Faculty requests."}), 403
+            reviewer_department = (
+                admin_supabase.table("dept_head_profiles")
+                .select("department_id")
+                .eq("user_id", str(user.id))
+                .limit(1)
+                .execute()
+                .data
+                or []
+            )
+            if (
+                not reviewer_department
+                or reviewer_department[0].get("department_id")
+                != role_request.get("requested_department_id")
+            ):
+                return jsonify({"error": "You may only review Faculty requests for your department."}), 403
+
+        if decision == "approved":
+            target_user = find_auth_user_by_email(
+                str((role_request.get("profile_data") or {}).get("email", ""))
+            )
+            if not target_user or str(target_user.id) != str(role_request["auth_user_id"]):
+                return jsonify({"error": "The requested Auth account could not be found."}), 409
+            if not getattr(target_user, "email_confirmed_at", None):
+                return jsonify({"error": "The requester must confirm their email before approval."}), 409
+
+            profile_data = role_request.get("profile_data") or {}
+            save_trusted_role_profile(
+                target_user,
+                requested_role,
+                str(profile_data.get("full_name", "")).strip(),
+                str(profile_data.get("id_number", "")).strip(),
+                role_request.get("requested_department_id"),
+            )
+            assign_trusted_role(target_user.id, requested_role)
+
+        update_result = (
+            admin_supabase.table("account_role_requests")
+            .update({
+                "status": decision,
+                "decided_by": str(user.id),
+                "decided_at": datetime.now(timezone.utc).isoformat(),
+                "decision_reason": reason or None,
+            })
+            .select("id")
+            .eq("id", request_id)
+            .eq("status", "pending")
+            .execute()
+        )
+        if not update_result.data:
+            return jsonify({"error": "The request was already decided."}), 409
+
+        if decision == "approved":
+            try:
+                admin_supabase.auth.admin.update_user_by_id(
+                    role_request["auth_user_id"],
+                    {"ban_duration": "none"},
+                )
+            except Exception:
+                app.logger.exception("Unable to clear pending account lockout")
+
+        return jsonify({"status": decision}), 200
+    except Exception:
+        app.logger.exception("Unable to decide account role request")
+        return jsonify({"error": "The account request could not be processed."}), 500
 
 
 def assign_trusted_role(user_id, role):
@@ -1057,6 +1511,16 @@ def assign_trusted_role(user_id, role):
                 "role": normalized_role
             }
         }
+    )
+
+
+def clear_trusted_role(user_id):
+    if not admin_supabase:
+        raise RuntimeError("Supabase Admin client is not configured.")
+
+    return admin_supabase.auth.admin.update_user_by_id(
+        user_id,
+        {"app_metadata": {"role": None}},
     )
 
 
@@ -1103,6 +1567,197 @@ def find_auth_user_by_email(email):
             return None
 
         page += 1
+
+
+def find_reference_id(table_name, value):
+    if not admin_supabase:
+        raise RuntimeError("Supabase Admin client is not configured.")
+
+    normalized = str(value or "").strip().casefold()
+    if not normalized:
+        return None
+
+    result = (
+        admin_supabase.table(table_name)
+        .select("id, name, code")
+        .execute()
+    )
+    for record in result.data or []:
+        if normalized in {
+            str(record.get("name") or "").strip().casefold(),
+            str(record.get("code") or "").strip().casefold(),
+        }:
+            return record["id"]
+    return None
+
+
+def get_pending_role_request(user_id, requested_role=None):
+    if not admin_supabase:
+        raise RuntimeError("Supabase Admin client is not configured.")
+
+    query = (
+        admin_supabase.table("account_role_requests")
+        .select("id, requested_role, requested_department_id, profile_data, status")
+        .eq("auth_user_id", str(user_id))
+        .eq("status", "pending")
+    )
+    if requested_role:
+        query = query.eq("requested_role", requested_role)
+    rows = query.limit(1).execute().data or []
+    return rows[0] if rows else None
+
+
+def has_pending_role_request(user_id):
+    if not admin_supabase:
+        raise RuntimeError("Supabase Admin client is not configured.")
+
+    rows = (
+        admin_supabase.table("account_role_requests")
+        .select("id")
+        .eq("auth_user_id", str(user_id))
+        .eq("status", "pending")
+        .limit(1)
+        .execute()
+        .data
+        or []
+    )
+    return bool(rows)
+
+
+def create_pending_role_request(user, role, profile_data, department_id=None):
+    if role not in {"faculty", "department-head", "admin-security"}:
+        raise ValueError("Only approval-required roles may have pending requests.")
+    if role in {"faculty", "department-head"} and not department_id:
+        raise ValueError("A department is required for this role request.")
+
+    existing = get_pending_role_request(user.id)
+    if existing:
+        if existing["requested_role"] == role:
+            return existing
+        raise ValueError("This account already has a pending role request.")
+
+    result = (
+        admin_supabase.table("account_role_requests")
+        .insert({
+            "auth_user_id": str(user.id),
+            "requested_role": role,
+            "requested_department_id": department_id,
+            "profile_data": profile_data,
+        })
+        .execute()
+    )
+    rows = result.data or []
+    return rows[0] if rows else None
+
+
+def provision_student_profile(user, full_name, student_number, program_id=None):
+    if not admin_supabase:
+        raise RuntimeError("Supabase Admin client is not configured.")
+
+    existing_profiles = (
+        admin_supabase.table("student_profiles")
+        .select("id, user_id")
+        .eq("student_number", student_number)
+        .limit(1)
+        .execute()
+        .data
+        or []
+    )
+    if existing_profiles and str(existing_profiles[0]["user_id"]) != str(user.id):
+        raise ValueError("That student number is already assigned to another account.")
+
+    admin_supabase.table("users").upsert({
+        "id": str(user.id),
+        "email": str(user.email or "").strip().lower(),
+        "full_name": full_name,
+        "role": "student",
+        "is_active": True,
+    }, on_conflict="id").execute()
+
+    admin_supabase.table("student_profiles").upsert({
+        "user_id": str(user.id),
+        "student_number": student_number,
+        "program_id": program_id,
+        "is_enrolled": True,
+    }, on_conflict="user_id").execute()
+
+    assign_trusted_role(user.id, "student")
+
+
+def has_role_profile(user_id, role):
+    if not admin_supabase:
+        raise RuntimeError("Supabase Admin client is not configured.")
+
+    if role == "admin-security":
+        rows = (
+            admin_supabase.table("admin_security_profiles")
+            .select("id")
+            .eq("user_id", str(user_id))
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        return bool(rows)
+
+    profile_tables = {
+        "student": "student_profiles",
+        "faculty": "faculty_profiles",
+        "department-head": "dept_head_profiles",
+        "admin-security": "admin_security_profiles",
+    }
+    table_name = profile_tables.get(role)
+    if not table_name:
+        return False
+
+    required_fields = {
+        "student": ("student_number", "program_id"),
+        "faculty": ("employee_number", "department_id"),
+        "department-head": ("employee_number", "department_id"),
+        "admin-security": ("employee_number",),
+    }[role]
+    rows = (
+        admin_supabase.table(table_name)
+        .select(", ".join(required_fields))
+        .eq("user_id", str(user_id))
+        .limit(1)
+        .execute()
+        .data
+        or []
+    )
+    return bool(rows) and all(rows[0].get(field) for field in required_fields)
+
+
+def save_trusted_role_profile(user, role, full_name, id_number, department_id=None, program_id=None):
+    if role == "student":
+        provision_student_profile(user, full_name, id_number, program_id)
+        return
+
+    admin_supabase.table("users").upsert({
+        "id": str(user.id),
+        "email": str(user.email or "").strip().lower(),
+        "full_name": full_name,
+        "role": role,
+        "is_active": True,
+    }, on_conflict="id").execute()
+
+    if role == "admin-security":
+        admin_supabase.table("admin_security_profiles").upsert({
+            "user_id": str(user.id),
+            "employee_number": id_number,
+        }, on_conflict="user_id").execute()
+    elif role == "faculty":
+        admin_supabase.table("faculty_profiles").upsert({
+            "user_id": str(user.id),
+            "employee_number": id_number,
+            "department_id": department_id,
+        }, on_conflict="user_id").execute()
+    elif role == "department-head":
+        admin_supabase.table("dept_head_profiles").upsert({
+            "user_id": str(user.id),
+            "employee_number": id_number,
+            "department_id": department_id,
+        }, on_conflict="user_id").execute()
 
 
 def get_json_data():
@@ -1173,14 +1828,6 @@ def login():
 
         actual_role = get_user_role(result.user)
 
-        if actual_role != selected_role:
-            auth_client.auth.sign_out()
-            return jsonify({
-                "error": "The selected role does not match this account."
-            }), 403
-
-        session["user_role"] = actual_role
-
         if not result.user.email_confirmed_at:
             auth_client.auth.sign_out()
 
@@ -1193,6 +1840,27 @@ def login():
                 "status": "verification_required",
                 "message": "Check your email for a signup verification code."
             }), 200
+
+        if actual_role != selected_role:
+            pending_request = (
+                get_pending_role_request(result.user.id, selected_role)
+                if actual_role is None
+                else None
+            )
+            auth_client.auth.sign_out()
+            if pending_request:
+                return jsonify({
+                    "status": "approval_pending",
+                    "message": (
+                        "Your account is waiting for approval. "
+                        "You cannot access role-specific pages until it is approved."
+                    ),
+                }), 200
+            return jsonify({
+                "error": "The selected role does not match this account."
+            }), 403
+
+        session["user_role"] = actual_role
 
         # Check remembered accounts for this browser.
 

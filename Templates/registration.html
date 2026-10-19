@@ -419,6 +419,18 @@
                 document.getElementById(
                     "department"
                 );
+            const roleDepartmentGroup = roleDepartment
+                ? roleDepartment.closest(".form-group")
+                : null;
+            const departmentRequired =
+                currentRegistrationRole !== "admin-security";
+
+            if (roleDepartmentGroup) {
+                roleDepartmentGroup.hidden = !departmentRequired;
+            }
+            if (roleDepartment) {
+                roleDepartment.required = departmentRequired;
+            }
 
 
             if (currentRegistrationRole === "student") {
@@ -944,7 +956,10 @@
                 }
 
                 /* DEPARTMENT / PROGRAM */
-                if (!selectedDepartment) {
+                if (
+                    currentRegistrationRole !== "admin-security" &&
+                    !selectedDepartment
+                ) {
                     let secondaryFieldLabel =
                         "Program";
                     if (
@@ -1098,6 +1113,8 @@
                             body: JSON.stringify({
                                 firstName: first,
                                 lastName: last,
+                                idNumber: accountId,
+                                department: selectedDepartment,
                                 email: email,
                                 password: password,
                                 role: currentRegistrationRole
