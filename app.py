@@ -742,6 +742,12 @@ def main_dashboard_page():
     return render_template("main/dashboard.html", dashboard_role=role)
 
 
+@app.get("/main/courses-faculty.html")
+@require_role("faculty")
+def faculty_courses_page():
+    return render_template("main/courses-faculty.html")
+
+
 @app.get("/main/platform.html")
 @app.get("/main/resources.html")
 @app.get("/main/about us.html")
