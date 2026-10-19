@@ -6,47 +6,156 @@
   <title>Complete Your Profile | EduMetrics</title>
   <link rel="stylesheet" href="/Static/style.css"/>
 </head>
-<body class="so-student-page">
-  <header class="so-topbar">
-    <div class="so-brand">
-      <div class="so-brand-logo">Edu<span>Metrics</span></div>
-      <div class="so-brand-subtitle">Academic Assessment &amp; Grading System</div>
+<body class="registration-page profile-completion-page">
+  <header class="site-header auth-site-header">
+    <a href="/" class="brand-area auth-header-brand" aria-label="EduMetrics home">
+      <div class="brand"><span>Edu</span>Metrics</div>
+      <p>Academic Assessment &amp; Grading System</p>
+    </a>
+    <div class="top-actions auth-header-actions">
+      <div class="login-pill auth-role-pill" aria-label="Account role">
+        <span>
+          {% if requested_role == 'admin-security' %}Admin &amp; Security
+          {% elif requested_role == 'department-head' %}Department Head
+          {% elif requested_role == 'faculty' %}Faculty
+          {% else %}Student{% endif %}
+        </span>
+      </div>
     </div>
   </header>
-  <div class="so-header-lines"><div class="so-header-blue"></div><div class="so-header-gold"></div></div>
-  <main class="so-main" style="max-width:720px;margin:40px auto;padding:24px;">
-    <h1>Complete your profile</h1>
-    <p>Signed in as {{ email }}. Add your institution information to continue.</p>
-    <form id="profileForm" data-role="{{ requested_role }}" style="display:grid;gap:16px;">
-      <label>Full name
-        <input name="fullName" autocomplete="name" required value="{{ full_name }}"/>
-      </label>
-      <label>
-        {% if requested_role == 'student' %}Student ID number{% else %}Employee ID number{% endif %}
-        <input name="idNumber" autocomplete="off" required/>
-      </label>
-      {% if requested_role in ('student', 'faculty', 'department-head') %}
-      <label>{% if requested_role == 'student' %}Program{% else %}Department{% endif %}
-        <input name="department" autocomplete="organization" required/>
-      </label>
-      {% endif %}
-      <p id="profileError" role="alert" hidden></p>
-      <button class="sc-action-primary" type="submit">Continue</button>
-    </form>
+
+  <main class="auth-container registration-main">
+    <div class="registration-stage">
+      <div class="registration-top-row">
+        <a href="/logout" class="registration-back">
+          <span class="registration-back-arrow" aria-hidden="true">←</span>
+          <span>Sign out</span>
+        </a>
+      </div>
+
+      <section class="auth-card registration-card" aria-label="Complete EduMetrics profile">
+        <div class="auth-form-panel registration-form-panel">
+          <div class="form-heading">
+            <h2>Complete your profile</h2>
+          </div>
+          <p class="profile-completion-intro">Signed in as <strong>{{ email }}</strong>. Add your institution information to continue.</p>
+
+          <form id="profileForm" class="auth-form" data-role="{{ requested_role }}" novalidate>
+            <div class="form-group">
+              <div class="input-wrapper">
+                <span class="input-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"></circle><path d="M5.5 19c.7-3.5 3-5.3 6.5-5.3s5.8 1.8 6.5 5.3"></path></svg>
+                </span>
+                <input type="text" name="fullName" placeholder="Full Name" aria-label="Full name" autocomplete="name" required value="{{ full_name }}"/>
+              </div>
+              <small class="form-error"></small>
+            </div>
+
+            <div class="form-group">
+              <div class="input-wrapper">
+                <span class="input-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><path d="M7 15c.4-1.5 1.2-2.3 2-2.3s1.6.8 2 2.3M14 9h3.5M14 12h3.5"></path></svg>
+                </span>
+                <input type="text" name="idNumber" placeholder="{% if requested_role == 'student' %}Student ID Number{% else %}Employee ID Number{% endif %}" aria-label="{% if requested_role == 'student' %}Student ID number{% else %}Employee ID number{% endif %}" autocomplete="off" required/>
+              </div>
+              <small class="form-error"></small>
+            </div>
+
+            {% if requested_role in ('student', 'faculty', 'department-head') %}
+            <div class="form-group">
+              <div class="input-wrapper">
+                <span class="input-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M3 9l9-5 9 5-9 5-9-5z"></path><path d="M6 11.5V16c3.5 2.4 8.5 2.4 12 0v-4.5"></path></svg>
+                </span>
+                <select name="department" id="profileDepartment" aria-label="{% if requested_role == 'student' %}Program{% else %}Department{% endif %}" required disabled>
+                  <option value="" selected>
+                    {% if requested_role == 'student' %}Loading programs...{% else %}Loading departments...{% endif %}
+                  </option>
+                </select>
+              </div>
+              <small class="form-error" id="profileOptionsError" role="status"></small>
+            </div>
+            {% endif %}
+
+            <p id="profileError" role="alert" hidden></p>
+            <button class="primary-auth-button" type="submit">Continue</button>
+          </form>
+        </div>
+
+        <div class="auth-brand-panel registration-brand-panel">
+          <div class="auth-logo"><span class="gold-text">Edu</span>Metrics</div>
+          <p class="auth-brand-subtitle">Academic Assessment &amp; Grading System</p>
+          <div class="auth-gold-line"></div>
+          <h2 class="brand-heading">Measure Learning.<br/>Improve <span class="gold-text">Outcomes.</span></h2>
+          <div class="brand-features">
+            <div class="brand-feature">
+              <img src="/Static/images/icons/curriculum mapping.png" alt="" class="brand-feature-icon-image"/>
+              <span>Curriculum Mapping</span>
+            </div>
+            <div class="brand-feature">
+              <img src="/Static/images/icons/assessment &amp; grading.png" alt="" class="brand-feature-icon-image"/>
+              <span>Assessment &amp; Grading</span>
+            </div>
+            <div class="brand-feature">
+              <img src="/Static/images/icons/outcome attainment.png" alt="" class="brand-feature-icon-image"/>
+              <span>Outcome Attainment</span>
+            </div>
+            <div class="brand-feature">
+              <img src="/Static/images/icons/cqi analytics.png" alt="" class="brand-feature-icon-image"/>
+              <span>CQI Analytics</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
   </main>
+
   <script>
     const profileForm = document.getElementById("profileForm");
-    profileForm.addEventListener("submit", async (event) => {
+    const profileRole = profileForm.dataset.role;
+    const departmentSelect = document.getElementById("profileDepartment");
+    const profileError = document.getElementById("profileError");
+
+    async function loadProfileOptions() {
+      if (!departmentSelect) return;
+      const errorMessage = document.getElementById("profileOptionsError");
+      try {
+        const response = await fetch("/api/registration-options/" + encodeURIComponent(profileRole), {
+          headers: { Accept: "application/json" },
+          credentials: "same-origin"
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Options could not be loaded.");
+        if (!Array.isArray(result.options) || result.options.length === 0) {
+          throw new Error("No programs or departments are available. Please contact an administrator.");
+        }
+        departmentSelect.replaceChildren(new Option(
+          profileRole === "student" ? "Select Program" : "Select Department",
+          ""
+        ));
+        result.options.forEach(option => {
+          departmentSelect.add(new Option(option.label, option.value));
+        });
+        departmentSelect.disabled = false;
+      } catch (error) {
+        errorMessage.textContent = error.message;
+      }
+    }
+
+    loadProfileOptions();
+
+    profileForm.addEventListener("submit", async event => {
       event.preventDefault();
+      if (!profileForm.reportValidity()) return;
+
       const formData = new FormData(profileForm);
-      const error = document.getElementById("profileError");
       const button = profileForm.querySelector("button[type='submit']");
       button.disabled = true;
-      error.hidden = true;
+      profileError.hidden = true;
       try {
         const response = await fetch("/api/auth/complete-profile", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
           credentials: "same-origin",
           body: JSON.stringify({
             fullName: formData.get("fullName"),
@@ -59,9 +168,9 @@
         window.location.href = result.status === "approval_pending"
           ? "/account-pending.html"
           : "/main/dashboard.html";
-      } catch (requestError) {
-        error.textContent = requestError.message;
-        error.hidden = false;
+      } catch (error) {
+        profileError.textContent = error.message;
+        profileError.hidden = false;
       } finally {
         button.disabled = false;
       }
