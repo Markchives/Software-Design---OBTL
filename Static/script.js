@@ -1,520 +1,522 @@
 /* AC Faculty: accessible attainment / assessment input tabs and breakdown */
 (function () {
-  function initAcFaculty() {
-    const root = document.querySelector('.ac-faculty-page');
-    if (!root || root.dataset.acFacultyInitialized === 'true') return;
-    root.dataset.acFacultyInitialized = 'true';
-    const tabs = Array.from(root.querySelectorAll('.ac-co-tabs [role="tab"]'));
-    function activateTab(tab) {
-      if (!tab) return;
-      tabs.forEach(function (item) {
-        const selected = item === tab;
-        item.classList.toggle('active', selected);
-        item.classList.toggle('is-active', selected);
-        item.setAttribute('aria-selected', String(selected));
-        item.tabIndex = selected ? 0 : -1;
-        const panel = root.querySelector('#' + item.getAttribute('aria-controls'));
-        if (panel) {
-          panel.hidden = !selected;
-          // Some shared faculty CSS overrides [hidden] with display rules.
-          panel.style.setProperty('display', selected ? 'block' : 'none', 'important');
-          panel.setAttribute('aria-hidden', String(!selected));
+    function initAcFaculty() {
+        const root = document.querySelector('.ac-faculty-page');
+        if (!root || root.dataset.acFacultyInitialized === 'true') return;
+        root.dataset.acFacultyInitialized = 'true';
+        const tabs = Array.from(root.querySelectorAll('.ac-co-tabs [role="tab"]'));
+        function activateTab(tab) {
+            if (!tab) return;
+            tabs.forEach(function (item) {
+                const selected = item === tab;
+                item.classList.toggle('active', selected);
+                item.classList.toggle('is-active', selected);
+                item.setAttribute('aria-selected', String(selected));
+                item.tabIndex = selected ? 0 : -1;
+                const panel = root.querySelector('#' + item.getAttribute('aria-controls'));
+                if (panel) {
+                    panel.hidden = !selected;
+                    // Some shared faculty CSS overrides [hidden] with display rules.
+                    panel.style.setProperty('display', selected ? 'block' : 'none', 'important');
+                    panel.setAttribute('aria-hidden', String(!selected));
+                }
+            });
         }
-      });
-    }
-    tabs.forEach(function (tab, index) {
-      tab.setAttribute('type', 'button');
-      tab.addEventListener('click', function () { activateTab(tab); });
-      tab.addEventListener('keydown', function (event) {
-        if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
-        event.preventDefault();
-        const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
-        activateTab(tabs[next]); tabs[next].focus();
-      });
-    });
-    activateTab(tabs.find(function (tab) { return tab.getAttribute('aria-selected') === 'true'; }) || tabs[0]);
+        tabs.forEach(function (tab, index) {
+            tab.setAttribute('type', 'button');
+            tab.addEventListener('click', function () { activateTab(tab); });
+            tab.addEventListener('keydown', function (event) {
+                if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
+                event.preventDefault();
+                const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+                activateTab(tabs[next]); tabs[next].focus();
+            });
+        });
+        activateTab(tabs.find(function (tab) { return tab.getAttribute('aria-selected') === 'true'; }) || tabs[0]);
 
-    const modal = root.querySelector('#ac-co-breakdown');
-    const content = root.querySelector('#ac-co-breakdown-content');
-    const closeButton = root.querySelector('.ac-co-dialog-close');
-    const heading = root.querySelector('#ac-dialog-title');
-    if (!modal || !content) return;
-    // Keep the overlay outside the workspace scroll/stacking context.
-    if (modal.parentElement !== document.body) document.body.appendChild(modal);
-    let previousFocus = null;
-    function closeModal() {
-      if (modal.hidden) return;
-      modal.hidden = true;
-      document.body.classList.remove('ac-breakdown-open');
-      if (previousFocus && previousFocus.isConnected) previousFocus.focus();
+        const modal = root.querySelector('#ac-co-breakdown');
+        const content = root.querySelector('#ac-co-breakdown-content');
+        const closeButton = root.querySelector('.ac-co-dialog-close');
+        const heading = root.querySelector('#ac-dialog-title');
+        if (!modal || !content) return;
+        // Keep the overlay outside the workspace scroll/stacking context.
+        if (modal.parentElement !== document.body) document.body.appendChild(modal);
+        let previousFocus = null;
+        function closeModal() {
+            if (modal.hidden) return;
+            modal.hidden = true;
+            document.body.classList.remove('ac-breakdown-open');
+            if (previousFocus && previousFocus.isConnected) previousFocus.focus();
+        }
+        document.addEventListener('click', function (event) {
+            const button = event.target.closest('.ac-faculty-page .ac-co-action[data-co]');
+            if (!button) return;
+            event.stopImmediatePropagation();
+            event.preventDefault();
+            const row = button.closest('tr');
+            if (!row) return;
+            const cells = row.cells;
+            const co = button.dataset.co;
+            const description = cells[1]?.textContent.trim() || '';
+            const attainment = cells[3]?.textContent.trim() || '';
+            const target = cells[4]?.textContent.trim() || '';
+            const status = cells[5]?.textContent.trim() || '';
+            const assessments = [...cells[2].querySelectorAll('.ac-co-chip')].map(chip => chip.textContent.trim());
+            heading.textContent = co + ' — Attainment Breakdown';
+            content.replaceChildren();
+            const intro = document.createElement('p');
+            intro.className = 'ac-breakdown-description';
+            intro.textContent = description;
+            content.appendChild(intro);
+            const grid = document.createElement('div');
+            grid.className = 'ac-breakdown-grid';
+            [['Calculated Attainment', attainment], ['Target', target], ['Status', status]].forEach(([label, value]) => {
+                const item = document.createElement('div');
+                item.className = 'ac-breakdown-stat';
+                const small = document.createElement('span'); small.textContent = label;
+                const strong = document.createElement('strong'); strong.textContent = value;
+                item.append(small, strong); grid.appendChild(item);
+            });
+            content.appendChild(grid);
+            const title = document.createElement('h3'); title.textContent = 'Assessments Contributing';
+            content.appendChild(title);
+            const list = document.createElement('ul'); list.className = 'ac-breakdown-assessments';
+            assessments.forEach(name => {
+                const item = document.createElement('li'); item.textContent = name;
+                list.appendChild(item);
+            });
+            content.appendChild(list);
+            const note = document.createElement('p'); note.className = 'ac-breakdown-note';
+            note.textContent = 'Assessment weights and individual contribution calculations are not available in this demo.';
+            content.appendChild(note);
+            previousFocus = button;
+            modal.hidden = false;
+            document.body.classList.add('ac-breakdown-open');
+            closeButton?.focus();
+        }, true);
+        closeButton?.addEventListener('click', closeModal);
+        modal.addEventListener('click', function (event) { if (event.target === modal) closeModal(); });
+        document.addEventListener('keydown', function (event) {
+            if (modal.hidden) return;
+            if (event.key === 'Escape') { event.preventDefault(); closeModal(); }
+            if (event.key === 'Tab') {
+                const focusable = [...modal.querySelectorAll('button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')];
+                if (!focusable.length) return;
+                const first = focusable[0], last = focusable[focusable.length - 1];
+                if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+                else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+            }
+        });
     }
-    document.addEventListener('click', function (event) {
-        const button = event.target.closest('.ac-faculty-page .ac-co-action[data-co]');
-        if (!button) return;
-        event.stopImmediatePropagation();
-        event.preventDefault();
-        const row = button.closest('tr');
-        if (!row) return;
-        const cells = row.cells;
-        const co = button.dataset.co;
-        const description = cells[1]?.textContent.trim() || '';
-        const attainment = cells[3]?.textContent.trim() || '';
-        const target = cells[4]?.textContent.trim() || '';
-        const status = cells[5]?.textContent.trim() || '';
-        const assessments = [...cells[2].querySelectorAll('.ac-co-chip')].map(chip => chip.textContent.trim());
-        heading.textContent = co + ' — Attainment Breakdown';
-        content.replaceChildren();
-        const intro = document.createElement('p');
-        intro.className = 'ac-breakdown-description';
-        intro.textContent = description;
-        content.appendChild(intro);
-        const grid = document.createElement('div');
-        grid.className = 'ac-breakdown-grid';
-        [['Calculated Attainment', attainment], ['Target', target], ['Status', status]].forEach(([label, value]) => {
-          const item = document.createElement('div');
-          item.className = 'ac-breakdown-stat';
-          const small = document.createElement('span'); small.textContent = label;
-          const strong = document.createElement('strong'); strong.textContent = value;
-          item.append(small, strong); grid.appendChild(item);
-        });
-        content.appendChild(grid);
-        const title = document.createElement('h3'); title.textContent = 'Assessments Contributing';
-        content.appendChild(title);
-        const list = document.createElement('ul'); list.className = 'ac-breakdown-assessments';
-        assessments.forEach(name => {
-          const item = document.createElement('li'); item.textContent = name;
-          list.appendChild(item);
-        });
-        content.appendChild(list);
-        const note = document.createElement('p'); note.className = 'ac-breakdown-note';
-        note.textContent = 'Assessment weights and individual contribution calculations are not available in this demo.';
-        content.appendChild(note);
-        previousFocus = button;
-        modal.hidden = false;
-        document.body.classList.add('ac-breakdown-open');
-        closeButton?.focus();
-    }, true);
-    closeButton?.addEventListener('click', closeModal);
-    modal.addEventListener('click', function (event) { if (event.target === modal) closeModal(); });
-    document.addEventListener('keydown', function (event) {
-      if (modal.hidden) return;
-      if (event.key === 'Escape') { event.preventDefault(); closeModal(); }
-      if (event.key === 'Tab') {
-        const focusable = [...modal.querySelectorAll('button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')];
-        if (!focusable.length) return;
-        const first = focusable[0], last = focusable[focusable.length - 1];
-        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-      }
-    });
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initAcFaculty);
-  else initAcFaculty();
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initAcFaculty);
+    else initAcFaculty();
 })();
 
 
 
 /* RP FACULTY — report index, previews, downloads and filters. */
 (function () {
-  'use strict';
-  if (!document.querySelector('.rp-faculty-page')) return;
-  const $ = id => document.getElementById(id);
-  const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const reports = {
-    'SYL-COE232-2026': ['Course Syllabus Matrix', 'Approved syllabus and course outcome alignment.', ['Course: Software Design – Lab (COE232)', 'CO/SO alignment and assessment mapping', 'Syllabus status: Verified']],
-    'GM-COE232-2026': ['Class Master Grading Sheet', 'Master grading sheet from the approved locked gradebook.', ['Course: Software Design – Lab (COE232)', 'Gradebook status: Locked', 'Detailed student grade records require authorized backend access.']],
-    'CQI-COE232-2026': ['Automated CQI Action Report', 'Approved continuous quality improvement actions.', ['Unmet Course Outcome evidence', 'Interventions and action plans', 'Expected improvements and follow-up measures']]
-  };
-  const rows = () => Array.from(document.querySelectorAll('#rpRows tr'));
-  const info = row => ({id:row.dataset.id,type:row.dataset.type,status:row.dataset.status,course:row.cells[1]?.innerText.trim()||'',owner:row.cells[2]?.innerText.trim()||'',updated:row.cells[3]?.innerText.trim()||'',description:row.cells[5]?.innerText.trim()||''});
-  let selected=null;
-  function preview(row){
-    selected=row;
-    const d=info(row), r=reports[d.id]||[d.type,d.description,[]];
-    $('rpDialogTitle').textContent=r[0];
-    $('rpDialogBody').innerHTML='<p class="rp-preview-intro">'+esc(r[1])+'</p><div class="rp-preview-meta">'+[['Report ID',d.id],['Course / Section',d.course],['Owner',d.owner],['Updated',d.updated],['Status',d.status]].map(([a,b])=>'<div class="rp-preview-field"><span>'+esc(a)+'</span><strong>'+esc(b)+'</strong></div>').join('')+'</div><section class="rp-preview-section"><h3>Report Contents</h3><ul class="rp-preview-bullet">'+r[2].map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></section><p class="rp-preview-note">Demo preview only. Not an official academic document.</p>';
-    const dialog=$('rpDialog');if(dialog.parentElement!==document.body)document.body.appendChild(dialog);
-    if(!dialog.open)dialog.showModal();
-  }
-  function downloadFile(filename,content,type){const url=URL.createObjectURL(new Blob([content],{type}));const a=document.createElement('a');a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);}
-  function download(row){const d=info(row),r=reports[d.id]||[d.type,d.description,[]];const html='<!doctype html><html><head><meta charset="utf-8"><title>'+esc(r[0])+'</title><style>body{font:16px Arial;max-width:820px;margin:40px auto;color:#004179;line-height:1.6;padding:24px}header{border-bottom:5px solid #f4c300}h2{background:#ffedb3;padding:10px}</style></head><body><header><h1>EduMetrics — '+esc(r[0])+'</h1></header><p>'+esc(r[1])+'</p><p><b>Report ID:</b> '+esc(d.id)+'</p><p><b>Course:</b> '+esc(d.course)+'</p><p><b>Owner:</b> '+esc(d.owner)+'</p><p><b>Status:</b> '+esc(d.status)+'</p><h2>Report Contents</h2><ul>'+r[2].map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul><p>Demo only — not an official academic record.</p></body></html>';downloadFile(d.id+'-demo-report.html',html,'text/html;charset=utf-8');}
-  function filter(){const q=($('rpSearch')?.value||'').toLowerCase().trim(),type=$('rpType')?.value||'all',status=$('rpStatus')?.value||'all';let visible=0;rows().forEach(row=>{const ok=row.textContent.toLowerCase().includes(q)&&(type==='all'||row.dataset.type===type)&&(status==='all'||row.dataset.status===status);row.hidden=!ok;if(ok)visible++;});if($('rpEmpty'))$('rpEmpty').hidden=visible>0;}
-  document.addEventListener('click',e=>{const button=e.target.closest('button');if(!button)return;const row=button.closest('#rpRows tr');if(row&&(button.matches('.rp-view,.rp-download'))){e.preventDefault();if(button.matches('.rp-view'))preview(row);else download(row);return;}if(button.id==='rpClose'||button.id==='rpDone'){$('rpDialog').close();return;}if(button.id==='rpDialogDownload'&&selected){download(selected);return;}if(button.id==='rpExport'){const head=['Report ID','Report Type','Course / Section','Owner','Updated','Status','Description'];const data=[head,...rows().filter(r=>!r.hidden).map(r=>{const d=info(r);return [d.id,d.type,d.course,d.owner,d.updated,d.status,d.description]})];downloadFile('faculty-compliance-report-index.csv',data.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n'),'text/csv;charset=utf-8');}},true);
-  document.addEventListener('input',e=>{if(e.target.id==='rpSearch')filter()},true);
-  document.addEventListener('change',e=>{if(e.target.id==='rpType'||e.target.id==='rpStatus')filter()},true);
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',filter,{once:true});else filter();
+    'use strict';
+    if (!document.querySelector('.rp-faculty-page')) return;
+    const $ = id => document.getElementById(id);
+    const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const reports = {
+        'SYL-COE232-2026': ['Course Syllabus Matrix', 'Approved syllabus and course outcome alignment.', ['Course: Software Design – Lab (COE232)', 'CO/SO alignment and assessment mapping', 'Syllabus status: Verified']],
+        'GM-COE232-2026': ['Class Master Grading Sheet', 'Master grading sheet from the approved locked gradebook.', ['Course: Software Design – Lab (COE232)', 'Gradebook status: Locked', 'Detailed student grade records require authorized backend access.']],
+        'CQI-COE232-2026': ['Automated CQI Action Report', 'Approved continuous quality improvement actions.', ['Unmet Course Outcome evidence', 'Interventions and action plans', 'Expected improvements and follow-up measures']]
+    };
+    const rows = () => Array.from(document.querySelectorAll('#rpRows tr'));
+    const info = row => ({ id: row.dataset.id, type: row.dataset.type, status: row.dataset.status, course: row.cells[1]?.innerText.trim() || '', owner: row.cells[2]?.innerText.trim() || '', updated: row.cells[3]?.innerText.trim() || '', description: row.cells[5]?.innerText.trim() || '' });
+    let selected = null;
+    function preview(row) {
+        selected = row;
+        const d = info(row), r = reports[d.id] || [d.type, d.description, []];
+        $('rpDialogTitle').textContent = r[0];
+        $('rpDialogBody').innerHTML = '<p class="rp-preview-intro">' + esc(r[1]) + '</p><div class="rp-preview-meta">' + [['Report ID', d.id], ['Course / Section', d.course], ['Owner', d.owner], ['Updated', d.updated], ['Status', d.status]].map(([a, b]) => '<div class="rp-preview-field"><span>' + esc(a) + '</span><strong>' + esc(b) + '</strong></div>').join('') + '</div><section class="rp-preview-section"><h3>Report Contents</h3><ul class="rp-preview-bullet">' + r[2].map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></section><p class="rp-preview-note">Demo preview only. Not an official academic document.</p>';
+        const dialog = $('rpDialog'); if (dialog.parentElement !== document.body) document.body.appendChild(dialog);
+        if (!dialog.open) dialog.showModal();
+    }
+    function downloadFile(filename, content, type) { const url = URL.createObjectURL(new Blob([content], { type })); const a = document.createElement('a'); a.href = url; a.download = filename; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000); }
+    function download(row) { const d = info(row), r = reports[d.id] || [d.type, d.description, []]; const html = '<!doctype html><html><head><meta charset="utf-8"><title>' + esc(r[0]) + '</title><style>body{font:16px Arial;max-width:820px;margin:40px auto;color:#004179;line-height:1.6;padding:24px}header{border-bottom:5px solid #f4c300}h2{background:#ffedb3;padding:10px}</style></head><body><header><h1>EduMetrics — ' + esc(r[0]) + '</h1></header><p>' + esc(r[1]) + '</p><p><b>Report ID:</b> ' + esc(d.id) + '</p><p><b>Course:</b> ' + esc(d.course) + '</p><p><b>Owner:</b> ' + esc(d.owner) + '</p><p><b>Status:</b> ' + esc(d.status) + '</p><h2>Report Contents</h2><ul>' + r[2].map(x => '<li>' + esc(x) + '</li>').join('') + '</ul><p>Demo only — not an official academic record.</p></body></html>'; downloadFile(d.id + '-demo-report.html', html, 'text/html;charset=utf-8'); }
+    function filter() { const q = ($('rpSearch')?.value || '').toLowerCase().trim(), type = $('rpType')?.value || 'all', status = $('rpStatus')?.value || 'all'; let visible = 0; rows().forEach(row => { const ok = row.textContent.toLowerCase().includes(q) && (type === 'all' || row.dataset.type === type) && (status === 'all' || row.dataset.status === status); row.hidden = !ok; if (ok) visible++; }); if ($('rpEmpty')) $('rpEmpty').hidden = visible > 0; }
+    document.addEventListener('click', e => { const button = e.target.closest('button'); if (!button) return; const row = button.closest('#rpRows tr'); if (row && (button.matches('.rp-view,.rp-download'))) { e.preventDefault(); if (button.matches('.rp-view')) preview(row); else download(row); return; } if (button.id === 'rpClose' || button.id === 'rpDone') { $('rpDialog').close(); return; } if (button.id === 'rpDialogDownload' && selected) { download(selected); return; } if (button.id === 'rpExport') { const head = ['Report ID', 'Report Type', 'Course / Section', 'Owner', 'Updated', 'Status', 'Description']; const data = [head, ...rows().filter(r => !r.hidden).map(r => { const d = info(r); return [d.id, d.type, d.course, d.owner, d.updated, d.status, d.description] })]; downloadFile('faculty-compliance-report-index.csv', data.map(row => row.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\r\n'), 'text/csv;charset=utf-8'); } }, true);
+    document.addEventListener('input', e => { if (e.target.id === 'rpSearch') filter() }, true);
+    document.addEventListener('change', e => { if (e.target.id === 'rpType' || e.target.id === 'rpStatus') filter() }, true);
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', filter, { once: true }); else filter();
 })();
 
 /* RP STUDENT — reliable, standalone delegated report actions (shared script.js) */
 (function () {
-  'use strict';
-  const content = {
-    'STU-SO-014': ['Student Outcome Statement Summary', 'Student Outcomes describe the competencies expected from the BS Computer Engineering program.', ['Program: BS Computer Engineering', 'Section reference: COE232', 'Published Student Outcome statements and individual attainment records will appear when connected to the institution.']],
-    'STU-SYL-014': ['Course Syllabus Matrix', 'A course-level overview of syllabus topics and Course Outcome alignment.', ['CO1 — Apply fundamental software engineering principles.', 'CO2 — Design and analyze software requirements.', 'CO3 — Apply advanced software design patterns.', 'CO4 — Implement and test software solutions in a laboratory environment.']],
-    'STU-CQI-014': ['CQI Action Report', 'Student-visible Continuous Quality Improvement actions for the selected course.', ['Review the latest course announcements and improvement activities.', 'Use assigned resources to improve below-target outcomes.', 'Approved institutional CQI action details require backend integration.']]
-  };
-  const byId = id => document.getElementById(id);
-  const safe = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  function record(row) {
-    const c = row.cells;
-    return {id:row.dataset.id || '',type:row.dataset.type || '',course:c[1]?.querySelector('strong')?.textContent.trim() || '',section:c[1]?.querySelector('small')?.textContent.trim() || '',owner:c[2]?.textContent.trim() || '',updated:c[3]?.textContent.trim() || '',status:row.dataset.status || '',description:c[5]?.textContent.trim() || ''};
-  }
-  function report(row) {
-    const d = record(row), details = content[d.id] || [d.type,d.description,[]];
-    return {d, title:details[0],intro:details[1],items:details[2]};
-  }
-  let activeRow = null;
-  function getDialog() {
-    let dialog = byId('rpDialog');
-    if (!dialog) {
-      dialog = document.createElement('dialog');
-      dialog.id = 'rpDialog'; dialog.className = 'rp-dialog';
-      dialog.innerHTML = '<div class="rp-dialog-top"><h2 id="rpDialogTitle">Report Preview</h2><button type="button" id="rpClose" aria-label="Close preview">×</button></div><div id="rpDialogBody"></div><div class="rp-dialog-actions"><button type="button" class="rp-outline-btn" id="rpDialogDownload">Download Report</button><button type="button" class="rp-primary-btn" id="rpDone">Close</button></div>';
+    'use strict';
+    const content = {
+        'STU-SO-014': ['Student Outcome Statement Summary', 'Student Outcomes describe the competencies expected from the BS Computer Engineering program.', ['Program: BS Computer Engineering', 'Section reference: COE232', 'Published Student Outcome statements and individual attainment records will appear when connected to the institution.']],
+        'STU-SYL-014': ['Course Syllabus Matrix', 'A course-level overview of syllabus topics and Course Outcome alignment.', ['CO1 — Apply fundamental software engineering principles.', 'CO2 — Design and analyze software requirements.', 'CO3 — Apply advanced software design patterns.', 'CO4 — Implement and test software solutions in a laboratory environment.']],
+        'STU-CQI-014': ['CQI Action Report', 'Student-visible Continuous Quality Improvement actions for the selected course.', ['Review the latest course announcements and improvement activities.', 'Use assigned resources to improve below-target outcomes.', 'Approved institutional CQI action details require backend integration.']]
+    };
+    const byId = id => document.getElementById(id);
+    const safe = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    function record(row) {
+        const c = row.cells;
+        return { id: row.dataset.id || '', type: row.dataset.type || '', course: c[1]?.querySelector('strong')?.textContent.trim() || '', section: c[1]?.querySelector('small')?.textContent.trim() || '', owner: c[2]?.textContent.trim() || '', updated: c[3]?.textContent.trim() || '', status: row.dataset.status || '', description: c[5]?.textContent.trim() || '' };
     }
-    if (dialog.parentNode !== document.body) document.body.appendChild(dialog);
-    return dialog;
-  }
-  function openPreview(row) {
-    const dialog = getDialog(), r = report(row);
-    activeRow = row;
-    const title = byId('rpDialogTitle'), body = byId('rpDialogBody');
-    if (!title || !body) return;
-    title.textContent = r.title;
-    body.innerHTML = '<p class="rp-preview-intro">'+safe(r.intro)+'</p><div class="rp-preview-meta">'+
-      [['Report ID',r.d.id],['Course / Program',r.d.course],['Section',r.d.section],['Owner / Scope',r.d.owner],['Updated',r.d.updated],['Status',r.d.status]].map(([label,value])=>'<div class="rp-preview-field"><span>'+safe(label)+'</span><strong>'+safe(value)+'</strong></div>').join('')+
-      '</div><section class="rp-preview-section"><h3>Report Contents</h3><div class="rp-preview-section-content"><ul class="rp-preview-bullet">'+r.items.map(item=>'<li>'+safe(item)+'</li>').join('')+'</ul></div></section><p class="rp-preview-note">Demo preview only — not an official academic record.</p>';
-    dialog.removeAttribute('hidden');
-    if (!dialog.open) {
-      try { dialog.showModal(); } catch (_) { dialog.setAttribute('open',''); }
+    function report(row) {
+        const d = record(row), details = content[d.id] || [d.type, d.description, []];
+        return { d, title: details[0], intro: details[1], items: details[2] };
     }
-  }
-  function closePreview() {
-    const dialog = byId('rpDialog'); if (!dialog) return;
-    if (dialog.open && typeof dialog.close === 'function') dialog.close();
-    else dialog.removeAttribute('open');
-  }
-  function save(name,contents,type) {
-    const url = URL.createObjectURL(new Blob([contents],{type}));
-    const link = document.createElement('a'); link.href=url;link.download=name;
-    document.body.appendChild(link);link.click();link.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),1500);
-  }
-  function download(row) {
-    const r = report(row);
-    const html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>'+safe(r.title)+'</title><style>body{font-family:Arial,sans-serif;max-width:820px;margin:36px auto;padding:24px;color:#063e73;line-height:1.6}header{border-bottom:5px solid #f4c300;padding-bottom:14px}h1{font-size:27px}h2{background:#fff0b7;padding:12px}li{margin:10px 0}.note{background:#eff6ff;padding:14px;border-left:4px solid #00477f}</style></head><body><header><strong>EduMetrics · Compliance Reports</strong><h1>'+safe(r.title)+'</h1><p>'+safe(r.intro)+'</p></header><p><strong>Report ID:</strong> '+safe(r.d.id)+'</p><p><strong>Course:</strong> '+safe(r.d.course)+' · '+safe(r.d.section)+'</p><p><strong>Owner / Scope:</strong> '+safe(r.d.owner)+'</p><p><strong>Updated:</strong> '+safe(r.d.updated)+'</p><h2>Report Contents</h2><ul>'+r.items.map(item=>'<li>'+safe(item)+'</li>').join('')+'</ul><p class="note">Illustrative demo report only. Not an official certified academic record.</p></body></html>';
-    save(r.d.id+'-demo-report.html',html,'text/html;charset=utf-8');
-  }
-  function filter() {
-    const body = byId('rpRows'); if (!body) return;
-    const query=(byId('rpSearch')?.value||'').toLowerCase().trim();
-    const type=byId('rpType')?.value||'all', status=byId('rpStatus')?.value||'all';
-    let shown=0;
-    [...body.rows].forEach(row=>{const d=record(row);const match=(row.textContent+' '+d.id).toLowerCase().includes(query)&&(type==='all'||type===d.type)&&(status==='all'||status===d.status);row.hidden=!match;if(match)shown++;});
-    if (byId('rpEmpty')) byId('rpEmpty').hidden=shown>0;
-  }
-  // Attach at document level: works regardless of when the page loads or where the buttons sit.
-  document.addEventListener('click',event=>{
-    if (!document.body.classList.contains('rp-student-page')) return;
-    const button=event.target.closest('button'); if (!button) return;
-    const row=button.closest('#rpRows tr');
-    if (row && (button.classList.contains('rp-view') || button.classList.contains('rp-download'))) {
-      event.preventDefault(); event.stopImmediatePropagation();
-      if (button.classList.contains('rp-view')) openPreview(row); else download(row);
-      return;
+    let activeRow = null;
+    function getDialog() {
+        let dialog = byId('rpDialog');
+        if (!dialog) {
+            dialog = document.createElement('dialog');
+            dialog.id = 'rpDialog'; dialog.className = 'rp-dialog';
+            dialog.innerHTML = '<div class="rp-dialog-top"><h2 id="rpDialogTitle">Report Preview</h2><button type="button" id="rpClose" aria-label="Close preview">×</button></div><div id="rpDialogBody"></div><div class="rp-dialog-actions"><button type="button" class="rp-outline-btn" id="rpDialogDownload">Download Report</button><button type="button" class="rp-primary-btn" id="rpDone">Close</button></div>';
+        }
+        if (dialog.parentNode !== document.body) document.body.appendChild(dialog);
+        return dialog;
     }
-    if (button.id==='rpClose'||button.id==='rpDone') {event.preventDefault();closePreview();}
-    if (button.id==='rpDialogDownload'&&activeRow) {event.preventDefault();download(activeRow);}
-    if (button.id==='rpExport') {
-      event.preventDefault();const rows=[...document.querySelectorAll('#rpRows tr')].filter(row=>!row.hidden);
-      const columns=[['Report ID','Type','Course','Section','Owner','Updated','Status','Description'],...rows.map(row=>{const d=record(row);return [d.id,d.type,d.course,d.section,d.owner,d.updated,d.status,d.description];})];
-      save('student-compliance-report-index.csv',columns.map(c=>c.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n'),'text/csv;charset=utf-8');
+    function openPreview(row) {
+        const dialog = getDialog(), r = report(row);
+        activeRow = row;
+        const title = byId('rpDialogTitle'), body = byId('rpDialogBody');
+        if (!title || !body) return;
+        title.textContent = r.title;
+        body.innerHTML = '<p class="rp-preview-intro">' + safe(r.intro) + '</p><div class="rp-preview-meta">' +
+            [['Report ID', r.d.id], ['Course / Program', r.d.course], ['Section', r.d.section], ['Owner / Scope', r.d.owner], ['Updated', r.d.updated], ['Status', r.d.status]].map(([label, value]) => '<div class="rp-preview-field"><span>' + safe(label) + '</span><strong>' + safe(value) + '</strong></div>').join('') +
+            '</div><section class="rp-preview-section"><h3>Report Contents</h3><div class="rp-preview-section-content"><ul class="rp-preview-bullet">' + r.items.map(item => '<li>' + safe(item) + '</li>').join('') + '</ul></div></section><p class="rp-preview-note">Demo preview only — not an official academic record.</p>';
+        dialog.removeAttribute('hidden');
+        if (!dialog.open) {
+            try { dialog.showModal(); } catch (_) { dialog.setAttribute('open', ''); }
+        }
     }
-  },true);
-  document.addEventListener('input',event=>{if(event.target.id==='rpSearch')filter();},true);
-  document.addEventListener('change',event=>{if(['rpType','rpStatus'].includes(event.target.id))filter();},true);
-  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&byId('rpDialog')?.open)closePreview();});
-  function initialize() {
-    document.querySelectorAll('.rp-student-page #rpRows .rp-actions button.rp-view, .rp-student-page #rpRows .rp-actions button.rp-download').forEach(button => {
-      button.disabled = false;
-      button.removeAttribute('aria-disabled');
-    });
-    filter();
-  }
-  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',initialize,{once:true}); else initialize();
+    function closePreview() {
+        const dialog = byId('rpDialog'); if (!dialog) return;
+        if (dialog.open && typeof dialog.close === 'function') dialog.close();
+        else dialog.removeAttribute('open');
+    }
+    function save(name, contents, type) {
+        const url = URL.createObjectURL(new Blob([contents], { type }));
+        const link = document.createElement('a'); link.href = url; link.download = name;
+        document.body.appendChild(link); link.click(); link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+    }
+    function download(row) {
+        const r = report(row);
+        const html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>' + safe(r.title) + '</title><style>body{font-family:Arial,sans-serif;max-width:820px;margin:36px auto;padding:24px;color:#063e73;line-height:1.6}header{border-bottom:5px solid #f4c300;padding-bottom:14px}h1{font-size:27px}h2{background:#fff0b7;padding:12px}li{margin:10px 0}.note{background:#eff6ff;padding:14px;border-left:4px solid #00477f}</style></head><body><header><strong>EduMetrics · Compliance Reports</strong><h1>' + safe(r.title) + '</h1><p>' + safe(r.intro) + '</p></header><p><strong>Report ID:</strong> ' + safe(r.d.id) + '</p><p><strong>Course:</strong> ' + safe(r.d.course) + ' · ' + safe(r.d.section) + '</p><p><strong>Owner / Scope:</strong> ' + safe(r.d.owner) + '</p><p><strong>Updated:</strong> ' + safe(r.d.updated) + '</p><h2>Report Contents</h2><ul>' + r.items.map(item => '<li>' + safe(item) + '</li>').join('') + '</ul><p class="note">Illustrative demo report only. Not an official certified academic record.</p></body></html>';
+        save(r.d.id + '-demo-report.html', html, 'text/html;charset=utf-8');
+    }
+    function filter() {
+        const body = byId('rpRows'); if (!body) return;
+        const query = (byId('rpSearch')?.value || '').toLowerCase().trim();
+        const type = byId('rpType')?.value || 'all', status = byId('rpStatus')?.value || 'all';
+        let shown = 0;
+        [...body.rows].forEach(row => { const d = record(row); const match = (row.textContent + ' ' + d.id).toLowerCase().includes(query) && (type === 'all' || type === d.type) && (status === 'all' || status === d.status); row.hidden = !match; if (match) shown++; });
+        if (byId('rpEmpty')) byId('rpEmpty').hidden = shown > 0;
+    }
+    // Attach at document level: works regardless of when the page loads or where the buttons sit.
+    document.addEventListener('click', event => {
+        if (!document.body.classList.contains('rp-student-page')) return;
+        const button = event.target.closest('button'); if (!button) return;
+        const row = button.closest('#rpRows tr');
+        if (row && (button.classList.contains('rp-view') || button.classList.contains('rp-download'))) {
+            event.preventDefault(); event.stopImmediatePropagation();
+            if (button.classList.contains('rp-view')) openPreview(row); else download(row);
+            return;
+        }
+        if (button.id === 'rpClose' || button.id === 'rpDone') { event.preventDefault(); closePreview(); }
+        if (button.id === 'rpDialogDownload' && activeRow) { event.preventDefault(); download(activeRow); }
+        if (button.id === 'rpExport') {
+            event.preventDefault(); const rows = [...document.querySelectorAll('#rpRows tr')].filter(row => !row.hidden);
+            const columns = [['Report ID', 'Type', 'Course', 'Section', 'Owner', 'Updated', 'Status', 'Description'], ...rows.map(row => { const d = record(row); return [d.id, d.type, d.course, d.section, d.owner, d.updated, d.status, d.description]; })];
+            save('student-compliance-report-index.csv', columns.map(c => c.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\r\n'), 'text/csv;charset=utf-8');
+        }
+    }, true);
+    document.addEventListener('input', event => { if (event.target.id === 'rpSearch') filter(); }, true);
+    document.addEventListener('change', event => { if (['rpType', 'rpStatus'].includes(event.target.id)) filter(); }, true);
+    document.addEventListener('keydown', event => { if (event.key === 'Escape' && byId('rpDialog')?.open) closePreview(); });
+    function initialize() {
+        document.querySelectorAll('.rp-student-page #rpRows .rp-actions button.rp-view, .rp-student-page #rpRows .rp-actions button.rp-download').forEach(button => {
+            button.disabled = false;
+            button.removeAttribute('aria-disabled');
+        });
+        filter();
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialize, { once: true }); else initialize();
 })();
 
 /* AC Department Head: Gradebook navigation and tab controller (early, independent). */
 (function () {
-  "use strict";
-  function activateGradebook(showGradebook) {
-    var root = document.querySelector(".ac-dept-head-page");
-    if (!root) return;
-    var tabs = [document.getElementById("acDhTabAttainment"), document.getElementById("acDhTabApproval")];
-    var panels = [document.getElementById("acDhPanelAttainment"), document.getElementById("acDhPanelApproval")];
-    if (tabs.some(function (x) { return !x; }) || panels.some(function (x) { return !x; })) return;
-    var selected = showGradebook ? 1 : 0;
-    tabs.forEach(function (tab, i) {
-      var active = i === selected;
-      tab.classList.toggle("active", active);
-      tab.classList.toggle("is-active", active);
-      tab.setAttribute("aria-selected", String(active));
-      tab.tabIndex = active ? 0 : -1;
-      panels[i].hidden = !active;
-      panels[i].setAttribute("aria-hidden", String(!active));
-      panels[i].style.setProperty("display", active ? "block" : "none", "important");
-    });
-  }
-  document.addEventListener("click", function (event) {
-    var target = event.target.closest("#acDhTabApproval, #acDhTabAttainment, [data-ac-gradebook-link]");
-    if (!target || !document.querySelector(".ac-dept-head-page")) return;
-    // Sidebar Gradebook is a real page link; do not intercept navigation.
-    if (target.hasAttribute("data-ac-gradebook-link")) return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    var gradebook = target.id === "acDhTabApproval";
-    activateGradebook(gradebook);
+    "use strict";
+    function activateGradebook(showGradebook) {
+        var root = document.querySelector(".ac-dept-head-page");
+        if (!root) return;
+        var tabs = [document.getElementById("acDhTabAttainment"), document.getElementById("acDhTabApproval")];
+        var panels = [document.getElementById("acDhPanelAttainment"), document.getElementById("acDhPanelApproval")];
+        if (tabs.some(function (x) { return !x; }) || panels.some(function (x) { return !x; })) return;
+        var selected = showGradebook ? 1 : 0;
+        tabs.forEach(function (tab, i) {
+            var active = i === selected;
+            tab.classList.toggle("active", active);
+            tab.classList.toggle("is-active", active);
+            tab.setAttribute("aria-selected", String(active));
+            tab.tabIndex = active ? 0 : -1;
+            panels[i].hidden = !active;
+            panels[i].setAttribute("aria-hidden", String(!active));
+            panels[i].style.setProperty("display", active ? "block" : "none", "important");
+        });
+    }
+    document.addEventListener("click", function (event) {
+        var target = event.target.closest("#acDhTabApproval, #acDhTabAttainment, [data-ac-gradebook-link]");
+        if (!target || !document.querySelector(".ac-dept-head-page")) return;
+        // Sidebar Gradebook is a real page link; do not intercept navigation.
+        if (target.hasAttribute("data-ac-gradebook-link")) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        var gradebook = target.id === "acDhTabApproval";
+        activateGradebook(gradebook);
 
-  }, true);
-  function initial() {
-    if (location.hash === "#gradebook-approval") activateGradebook(true);
-  }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initial);
-  else initial();
-  window.addEventListener("hashchange", initial);
+    }, true);
+    function initial() {
+        if (location.hash === "#gradebook-approval") activateGradebook(true);
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initial);
+    else initial();
+    window.addEventListener("hashchange", initial);
 })();
 
 (function initRaDepartmentHeadTabs() {
-  function setup() {
-    // Tabs are handled by the existing shared .sodh-tab / data-tab handler.
-    if (!document.getElementById('ra-review-table')) return;
+    function setup() {
+        // Tabs are handled by the existing shared .sodh-tab / data-tab handler.
+        if (!document.getElementById('ra-review-table')) return;
 
-    const rows = Array.from(document.querySelectorAll('#ra-review-table tbody tr'));
-    const search = document.getElementById('ra-search');
-    const status = document.getElementById('ra-status-filter');
-    const course = document.getElementById('ra-course');
-    const faculty = document.getElementById('ra-faculty');
-    function filter() {
-      const q = (search?.value || '').toLowerCase();
-      const st = status?.value || '';
-      const c = course?.value || '';
-      const f = faculty?.value || '';
-      rows.forEach(row => {
-        row.hidden = !(row.textContent.toLowerCase().includes(q)
-          && (!st || row.dataset.status === st)
-          && (!c || row.dataset.course === c)
-          && (!f || row.dataset.faculty === f));
-      });
+        const rows = Array.from(document.querySelectorAll('#ra-review-table tbody tr'));
+        const search = document.getElementById('ra-search');
+        const status = document.getElementById('ra-status-filter');
+        const course = document.getElementById('ra-course');
+        const faculty = document.getElementById('ra-faculty');
+        function filter() {
+            const q = (search?.value || '').toLowerCase();
+            const st = status?.value || '';
+            const c = course?.value || '';
+            const f = faculty?.value || '';
+            rows.forEach(row => {
+                row.hidden = !(row.textContent.toLowerCase().includes(q)
+                    && (!st || row.dataset.status === st)
+                    && (!c || row.dataset.course === c)
+                    && (!f || row.dataset.faculty === f));
+            });
+        }
+        [search, status, course, faculty].forEach(el => {
+            if (el) el.addEventListener(el === search ? 'input' : 'change', filter);
+        });
+        const dialog = document.getElementById('ra-dialog');
+        document.querySelectorAll('[data-view],[data-query]').forEach(button => {
+            button.addEventListener('click', () => {
+                if (!dialog || typeof dialog.showModal !== 'function') return;
+                const query = button.dataset.query;
+                const title = document.getElementById('ra-dialog-title');
+                const body = document.getElementById('ra-dialog-body');
+                if (!title || !body) return;
+                title.textContent = query ? 'Faculty Query (Demo)' : 'Assessment Scores (View Only)';
+                body.textContent = query
+                    ? `Prepare a query for ${query.split('|')[1]} regarding ${query.split('|')[0]}. Sending requires a backend connection.`
+                    : `${button.dataset.view}: detailed student scores will appear here when connected to assessment records.`;
+                dialog.showModal();
+            });
+        });
     }
-    [search, status, course, faculty].forEach(el => {
-      if (el) el.addEventListener(el === search ? 'input' : 'change', filter);
-    });
-    const dialog = document.getElementById('ra-dialog');
-    document.querySelectorAll('[data-view],[data-query]').forEach(button => {
-      button.addEventListener('click', () => {
-        if (!dialog || typeof dialog.showModal !== 'function') return;
-        const query = button.dataset.query;
-        const title = document.getElementById('ra-dialog-title');
-        const body = document.getElementById('ra-dialog-body');
-        if (!title || !body) return;
-        title.textContent = query ? 'Faculty Query (Demo)' : 'Assessment Scores (View Only)';
-        body.textContent = query
-          ? `Prepare a query for ${query.split('|')[1]} regarding ${query.split('|')[0]}. Sending requires a backend connection.`
-          : `${button.dataset.view}: detailed student scores will appear here when connected to assessment records.`;
-        dialog.showModal();
-      });
-    });
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setup, { once: true });
-  } else {
-    setup();
-  }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setup, { once: true });
+    } else {
+        setup();
+    }
 })();
 
 /* CQI Department Head — single evidence/review controller */
 (function () {
-  function initCQIDepartmentHead() {
-    var page = document.querySelector('.cqi-dept-head-page');
-    if (!page) return;
-    var table = page.querySelector('#cqiDhTable');
-    if (!table || !table.tBodies.length) return;
-    var rows = Array.from(table.tBodies[0].rows);
-    var search = page.querySelector('#cqiDhSearch');
-    var course = page.querySelector('#cqiDhCourse');
-    var status = page.querySelector('#cqiDhStatus');
-    var topCourse = page.querySelector('#cqiDhCourseTop');
-    var topSection = page.querySelector('#cqiDhSection');
-    var dialog = page.querySelector('#cqiDhDialog');
-    var details = page.querySelector('#cqiDhDialogDetails');
-    var feedbackPanel = page.querySelector('#cqiDhFeedbackPanel');
-    var mainActions = page.querySelector('#cqiDhMainActions');
-    var notes = page.querySelector('#cqiDhReviewNotes');
-    var validation = page.querySelector('#cqiDhValidation');
-    var selected = null;
-    function apply() {
-      var term = search.value.trim().toLowerCase();
-      var visible = 0;
-      rows.forEach(function (row) {
-        var match = (!term || (row.textContent + ' ' + row.dataset.id + ' ' + row.dataset.faculty).toLowerCase().includes(term)) &&
-          (!course.value || row.dataset.course === course.value) &&
-          (!status.value || row.dataset.status === status.value) &&
-          (!topCourse || !topCourse.value || row.dataset.course === topCourse.value) &&
-          (!topSection || !topSection.value || row.dataset.section === topSection.value);
-        row.hidden = !match;
-        if (match) visible++;
-      });
-      var empty = page.querySelector('#cqiDhEmpty');
-      if (empty) empty.hidden = visible !== 0;
-    }
-    [search, course, status, topCourse, topSection].filter(Boolean).forEach(function (el) {
-      el.addEventListener(el === search ? 'input' : 'change', apply);
-    });
-    var reviewStorageKey = 'edumetrics-cqi-dept-reviews-v1';
-    function loadReviews() {
-      try {
-        var saved = JSON.parse(localStorage.getItem(reviewStorageKey) || '{}');
-        rows.forEach(function (row) {
-          var state = saved[row.dataset.id];
-          if (!state) return;
-          if (state.status) row.dataset.status = state.status;
-          if (state.feedback) row.dataset.reviewNotes = state.feedback;
-          var badge = row.querySelector('.cqi-dh-status');
-          if (badge && state.status) {
-            badge.textContent = state.status;
-            badge.className = 'cqi-dh-status ' + state.status.toLowerCase().replace(/\s+/g, '-');
-          }
+    function initCQIDepartmentHead() {
+        var page = document.querySelector('.cqi-dept-head-page');
+        if (!page) return;
+        var table = page.querySelector('#cqiDhTable');
+        if (!table || !table.tBodies.length) return;
+        var rows = Array.from(table.tBodies[0].rows);
+        var search = page.querySelector('#cqiDhSearch');
+        var course = page.querySelector('#cqiDhCourse');
+        var status = page.querySelector('#cqiDhStatus');
+        var topCourse = page.querySelector('#cqiDhCourseTop');
+        var topSection = page.querySelector('#cqiDhSection');
+        var dialog = page.querySelector('#cqiDhDialog');
+        var details = page.querySelector('#cqiDhDialogDetails');
+        var feedbackPanel = page.querySelector('#cqiDhFeedbackPanel');
+        var mainActions = page.querySelector('#cqiDhMainActions');
+        var notes = page.querySelector('#cqiDhReviewNotes');
+        var validation = page.querySelector('#cqiDhValidation');
+        var selected = null;
+        function apply() {
+            var term = search.value.trim().toLowerCase();
+            var visible = 0;
+            rows.forEach(function (row) {
+                var match = (!term || (row.textContent + ' ' + row.dataset.id + ' ' + row.dataset.faculty).toLowerCase().includes(term)) &&
+                    (!course.value || row.dataset.course === course.value) &&
+                    (!status.value || row.dataset.status === status.value) &&
+                    (!topCourse || !topCourse.value || row.dataset.course === topCourse.value) &&
+                    (!topSection || !topSection.value || row.dataset.section === topSection.value);
+                row.hidden = !match;
+                if (match) visible++;
+            });
+            var empty = page.querySelector('#cqiDhEmpty');
+            if (empty) empty.hidden = visible !== 0;
+        }
+        [search, course, status, topCourse, topSection].filter(Boolean).forEach(function (el) {
+            el.addEventListener(el === search ? 'input' : 'change', apply);
         });
-      } catch (error) { /* Ignore disabled storage. */ }
+        var reviewStorageKey = 'edumetrics-cqi-dept-reviews-v1';
+        function loadReviews() {
+            try {
+                var saved = JSON.parse(localStorage.getItem(reviewStorageKey) || '{}');
+                rows.forEach(function (row) {
+                    var state = saved[row.dataset.id];
+                    if (!state) return;
+                    if (state.status) row.dataset.status = state.status;
+                    if (state.feedback) row.dataset.reviewNotes = state.feedback;
+                    var badge = row.querySelector('.cqi-dh-status');
+                    if (badge && state.status) {
+                        badge.textContent = state.status;
+                        badge.className = 'cqi-dh-status ' + state.status.toLowerCase().replace(/\s+/g, '-');
+                    }
+                });
+            } catch (error) { /* Ignore disabled storage. */ }
+        }
+        function saveReview(row) {
+            try {
+                var saved = JSON.parse(localStorage.getItem(reviewStorageKey) || '{}');
+                saved[row.dataset.id] = { status: row.dataset.status, feedback: row.dataset.reviewNotes || '' };
+                localStorage.setItem(reviewStorageKey, JSON.stringify(saved));
+            } catch (error) { /* Demo still works for this page load. */ }
+        }
+        function updateCounts() {
+            [['cqiDhTotal', rows.length], ['cqiDhReview', rows.filter(function (r) { return r.dataset.status === 'Submitted'; }).length],
+            ['cqiDhApproved', rows.filter(function (r) { return r.dataset.status === 'Approved'; }).length],
+            ['cqiDhOngoing', rows.filter(function (r) { return r.dataset.status === 'Ongoing'; }).length]].forEach(function (item) {
+                var el = page.querySelector('#' + item[0]);
+                if (el) el.textContent = item[1];
+            });
+        }
+        function closeDialog() {
+            if (dialog.open && typeof dialog.close === 'function') dialog.close();
+            else dialog.removeAttribute('open');
+        }
+        function setReviewMode(enabled) {
+            feedbackPanel.hidden = !enabled;
+            mainActions.hidden = enabled;
+            validation.hidden = true;
+            if (enabled) notes.focus();
+        }
+        function addDetail(label, value) {
+            var item = document.createElement('div');
+            var full = ['Outcome Concern', 'Expected Improvement', 'Previous Review Feedback', 'Supporting Evidence'].includes(label);
+            item.className = 'cqi-dh-detail' + (full ? ' cqi-dh-detail-wide' : '');
+            var heading = document.createElement('span');
+            heading.className = 'cqi-dh-detail-label';
+            heading.textContent = label;
+            var content = document.createElement('p');
+            content.className = 'cqi-dh-detail-value';
+            content.textContent = value || 'Not provided';
+            item.append(heading, content);
+            details.appendChild(item);
+        }
+        table.addEventListener('click', function (event) {
+            var button = event.target.closest('button[data-action="evidence"]');
+            if (!button) return;
+            selected = button.closest('tr');
+            if (!selected) return;
+            var data = selected.dataset;
+            details.replaceChildren();
+            addDetail('CQI ID', data.id);
+            addDetail('Course / Section', data.course + ' · ' + data.section);
+            addDetail('Faculty', data.faculty);
+            addDetail('CO Attainment', data.co + ' · ' + data.attainment + ' (Target ≥ ' + data.target + ')');
+            addDetail('Outcome Concern', data.note);
+            addDetail('Expected Improvement', data.goal);
+            addDetail('Current Status', data.status);
+            if (data.reviewNotes) addDetail('Previous Review Feedback', data.reviewNotes);
+            addDetail('Supporting Evidence', 'No evidence files are connected in this demo.');
+            notes.value = data.reviewNotes || '';
+            setReviewMode(false);
+            var editable = data.status === 'Submitted';
+            page.querySelector('#cqiDhReviewAction').disabled = !editable;
+            page.querySelector('#cqiDhApprove').disabled = !editable;
+            if (typeof dialog.showModal === 'function') dialog.showModal();
+            else dialog.setAttribute('open', '');
+        });
+        function setStatus(next) {
+            if (!selected) return;
+            selected.dataset.status = next;
+            var badge = selected.querySelector('.cqi-dh-status');
+            if (badge) { badge.textContent = next; badge.className = 'cqi-dh-status ' + next.toLowerCase().replace(/\s+/g, '-'); }
+            saveReview(selected);
+            updateCounts();
+            apply();
+            closeDialog();
+        }
+        page.querySelector('#cqiDhReviewAction').addEventListener('click', function () { setReviewMode(true); });
+        page.querySelector('#cqiDhBack').addEventListener('click', function () { setReviewMode(false); });
+        page.querySelector('#cqiDhReturn').addEventListener('click', function () {
+            if (!selected) return;
+            var feedback = notes.value.trim();
+            if (!feedback) { validation.hidden = false; notes.focus(); return; }
+            selected.dataset.reviewNotes = feedback;
+            setStatus('For Revision');
+        });
+        page.querySelector('#cqiDhApprove').addEventListener('click', function () { setStatus('Approved'); });
+        ['cqiDhClose', 'cqiDhX'].forEach(function (id) { page.querySelector('#' + id).addEventListener('click', closeDialog); });
+        dialog.addEventListener('click', function (event) { if (event.target === dialog) closeDialog(); });
+        loadReviews();
+        updateCounts();
+        apply();
     }
-    function saveReview(row) {
-      try {
-        var saved = JSON.parse(localStorage.getItem(reviewStorageKey) || '{}');
-        saved[row.dataset.id] = {status: row.dataset.status, feedback: row.dataset.reviewNotes || ''};
-        localStorage.setItem(reviewStorageKey, JSON.stringify(saved));
-      } catch (error) { /* Demo still works for this page load. */ }
-    }
-    function updateCounts() {
-      [['cqiDhTotal', rows.length], ['cqiDhReview', rows.filter(function (r) { return r.dataset.status === 'Submitted'; }).length],
-       ['cqiDhApproved', rows.filter(function (r) { return r.dataset.status === 'Approved'; }).length],
-       ['cqiDhOngoing', rows.filter(function (r) { return r.dataset.status === 'Ongoing'; }).length]].forEach(function (item) {
-        var el = page.querySelector('#' + item[0]);
-        if (el) el.textContent = item[1];
-      });
-    }
-    function closeDialog() {
-      if (dialog.open && typeof dialog.close === 'function') dialog.close();
-      else dialog.removeAttribute('open');
-    }
-    function setReviewMode(enabled) {
-      feedbackPanel.hidden = !enabled;
-      mainActions.hidden = enabled;
-      validation.hidden = true;
-      if (enabled) notes.focus();
-    }
-    function addDetail(label, value) {
-      var item = document.createElement('div');
-      var full = ['Outcome Concern', 'Expected Improvement', 'Previous Review Feedback', 'Supporting Evidence'].includes(label);
-      item.className = 'cqi-dh-detail' + (full ? ' cqi-dh-detail-wide' : '');
-      var heading = document.createElement('span');
-      heading.className = 'cqi-dh-detail-label';
-      heading.textContent = label;
-      var content = document.createElement('p');
-      content.className = 'cqi-dh-detail-value';
-      content.textContent = value || 'Not provided';
-      item.append(heading, content);
-      details.appendChild(item);
-    }
-    table.addEventListener('click', function (event) {
-      var button = event.target.closest('button[data-action="evidence"]');
-      if (!button) return;
-      selected = button.closest('tr');
-      if (!selected) return;
-      var data = selected.dataset;
-      details.replaceChildren();
-      addDetail('CQI ID', data.id);
-      addDetail('Course / Section', data.course + ' · ' + data.section);
-      addDetail('Faculty', data.faculty);
-      addDetail('CO Attainment', data.co + ' · ' + data.attainment + ' (Target ≥ ' + data.target + ')');
-      addDetail('Outcome Concern', data.note);
-      addDetail('Expected Improvement', data.goal);
-      addDetail('Current Status', data.status);
-      if (data.reviewNotes) addDetail('Previous Review Feedback', data.reviewNotes);
-      addDetail('Supporting Evidence', 'No evidence files are connected in this demo.');
-      notes.value = data.reviewNotes || '';
-      setReviewMode(false);
-      var editable = data.status === 'Submitted';
-      page.querySelector('#cqiDhReviewAction').disabled = !editable;
-      page.querySelector('#cqiDhApprove').disabled = !editable;
-      if (typeof dialog.showModal === 'function') dialog.showModal();
-      else dialog.setAttribute('open', '');
-    });
-    function setStatus(next) {
-      if (!selected) return;
-      selected.dataset.status = next;
-      var badge = selected.querySelector('.cqi-dh-status');
-      if (badge) { badge.textContent = next; badge.className = 'cqi-dh-status ' + next.toLowerCase().replace(/\s+/g, '-'); }
-      saveReview(selected);
-      updateCounts();
-      apply();
-      closeDialog();
-    }
-    page.querySelector('#cqiDhReviewAction').addEventListener('click', function () { setReviewMode(true); });
-    page.querySelector('#cqiDhBack').addEventListener('click', function () { setReviewMode(false); });
-    page.querySelector('#cqiDhReturn').addEventListener('click', function () {
-      if (!selected) return;
-      var feedback = notes.value.trim();
-      if (!feedback) { validation.hidden = false; notes.focus(); return; }
-      selected.dataset.reviewNotes = feedback;
-      setStatus('For Revision');
-    });
-    page.querySelector('#cqiDhApprove').addEventListener('click', function () { setStatus('Approved'); });
-    ['cqiDhClose', 'cqiDhX'].forEach(function (id) { page.querySelector('#' + id).addEventListener('click', closeDialog); });
-    dialog.addEventListener('click', function (event) { if (event.target === dialog) closeDialog(); });
-    loadReviews();
-    updateCounts();
-    apply();
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initCQIDepartmentHead);
-  else initCQIDepartmentHead();
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initCQIDepartmentHead);
+    else initCQIDepartmentHead();
 })();
 
 /* CQI FACULTY — scoped CRUD demo controller (one initializer) */
-(function(){
-  'use strict';
-  const page=document.querySelector('.cqi-faculty-page');
-  if(!page)return;
-  const $=id=>document.getElementById(id);
-  const body=$('cqiFacultyRows'),modal=$('cqiFacultyModal'),deleteModal=$('cqiFacultyDeleteModal');
-  const search=$('cqiFacultySearch'),status=$('cqiFacultyStatus'),feedback=$('cqiFacultyFeedback');
-  let current=null,pendingDelete=null,returnFocus=null;
-  const fields={id:'cqifId',course:'cqifCourse',section:'cqifSection',co:'cqifCo',attainment:'cqifAttainment',target:'cqifTarget',note:'cqifNote',goal:'cqifGoal',status:'cqifStatus'};
-  const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  function show(which){returnFocus=document.activeElement;which.hidden=false;document.body.style.overflow='hidden';(which.querySelector('input,button'))?.focus();}
-  function close(){modal.hidden=true;deleteModal.hidden=true;document.body.style.overflow='';returnFocus?.focus();}
-  function updateSummary(){
-    const rows=Array.from(body.rows);
-    const below=new Set(rows.filter(row=>{
-      const value=parseFloat(row.dataset.attainment),target=parseFloat(row.dataset.target);
-      return Number.isFinite(value)&&Number.isFinite(target)&&value<target;
-    }).map(row=>row.dataset.co));
-    $('cqifDraftCount').textContent=String(rows.filter(row=>row.dataset.status==='draft').length);
-    $('cqifBelowCount').textContent=String(below.size);
-    $('cqifReviewCount').textContent=String(rows.filter(row=>row.dataset.status==='submitted').length);
-  }
-  function filter(){updateSummary();const q=search.value.trim().toLowerCase(),s=status.value;let count=0;Array.from(body.rows).forEach(row=>{const ok=(!q||(row.textContent+' '+row.dataset.course+' '+row.dataset.section+' '+row.dataset.note).toLowerCase().includes(q))&&(s==='all'||row.dataset.status===s);row.hidden=!ok;if(ok)count++;});$('cqiFacultyEmpty').hidden=count>0;}
-  function edit(row){current=row;Object.entries(fields).forEach(([key,id])=>{$(id).value=row?row.dataset[key]||'':key==='status'?'draft':'';});$('cqiFacultyModalTitle').textContent=row?'Edit CQI Plan':'Create CQI Plan';show(modal);}
-  function rowMarkup(d){const state=d.status==='submitted'?'Submitted':'Draft';return '<td><strong>'+esc(d.id)+'</strong></td><td><strong>'+esc(d.co)+'</strong></td><td><strong>'+esc(d.attainment)+'</strong><small>Target ≥ '+esc(d.target)+'</small></td><td>'+esc(d.note)+'</td><td>'+esc(d.goal)+'</td><td><span class="cqi-faculty-status is-'+esc(d.status)+'">'+state+'</span></td><td><div class="cqi-faculty-row-actions"><button type="button" data-cqif-edit><span aria-hidden="true">✎</span> Edit</button><button type="button" class="cqi-faculty-delete" data-cqif-delete><span aria-hidden="true">🗑</span> Delete</button></div></td>';}
-  $('cqiFacultyCreate').addEventListener('click',()=>edit(null));
-  body.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const row=b.closest('tr');if(b.matches('[data-cqif-edit]'))edit(row);else if(b.matches('[data-cqif-delete]')){pendingDelete=row;$('cqifDeleteName').textContent=row.dataset.id;show(deleteModal);}});
-  $('cqiFacultyForm').addEventListener('submit',e=>{e.preventDefault();const d={};Object.entries(fields).forEach(([key,id])=>d[key]=$(id).value.trim());if(!d.id||!d.course||!d.section||!d.co||!d.goal||!d.note||!d.attainment||!d.target)return;
-    const collision=Array.from(body.rows).some(r=>r!==current&&r.dataset.id.toLowerCase()===d.id.toLowerCase());if(collision){$('cqifId').setCustomValidity('CQI ID already exists');$('cqifId').reportValidity();return;} $('cqifId').setCustomValidity('');
-    const row=current||body.insertRow();Object.entries(d).forEach(([key,value])=>row.dataset[key]=value);row.innerHTML=rowMarkup(d);feedback.textContent=current?'CQI plan updated in this demo.':'CQI plan created in this demo.';close();filter();});
-  $('cqifId').addEventListener('input',()=>{$('cqifId').setCustomValidity('');});
-  $('cqifDeleteConfirm').addEventListener('click',()=>{if(pendingDelete){pendingDelete.remove();pendingDelete=null;feedback.textContent='CQI plan deleted from this demo.';}close();filter();});
-  document.querySelectorAll('[data-cqif-close]').forEach(b=>b.addEventListener('click',close));
-  [modal,deleteModal].forEach(m=>m.addEventListener('click',e=>{if(e.target===m)close();}));
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(!modal.hidden||!deleteModal.hidden))close();});
-  search.addEventListener('input',filter);status.addEventListener('change',filter);filter();
+(function () {
+    'use strict';
+    const page = document.querySelector('.cqi-faculty-page');
+    if (!page) return;
+    const $ = id => document.getElementById(id);
+    const body = $('cqiFacultyRows'), modal = $('cqiFacultyModal'), deleteModal = $('cqiFacultyDeleteModal');
+    const search = $('cqiFacultySearch'), status = $('cqiFacultyStatus'), feedback = $('cqiFacultyFeedback');
+    let current = null, pendingDelete = null, returnFocus = null;
+    const fields = { id: 'cqifId', course: 'cqifCourse', section: 'cqifSection', co: 'cqifCo', attainment: 'cqifAttainment', target: 'cqifTarget', note: 'cqifNote', goal: 'cqifGoal', status: 'cqifStatus' };
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    function show(which) { returnFocus = document.activeElement; which.hidden = false; document.body.style.overflow = 'hidden'; (which.querySelector('input,button'))?.focus(); }
+    function close() { modal.hidden = true; deleteModal.hidden = true; document.body.style.overflow = ''; returnFocus?.focus(); }
+    function updateSummary() {
+        const rows = Array.from(body.rows);
+        const below = new Set(rows.filter(row => {
+            const value = parseFloat(row.dataset.attainment), target = parseFloat(row.dataset.target);
+            return Number.isFinite(value) && Number.isFinite(target) && value < target;
+        }).map(row => row.dataset.co));
+        $('cqifDraftCount').textContent = String(rows.filter(row => row.dataset.status === 'draft').length);
+        $('cqifBelowCount').textContent = String(below.size);
+        $('cqifReviewCount').textContent = String(rows.filter(row => row.dataset.status === 'submitted').length);
+    }
+    function filter() { updateSummary(); const q = search.value.trim().toLowerCase(), s = status.value; let count = 0; Array.from(body.rows).forEach(row => { const ok = (!q || (row.textContent + ' ' + row.dataset.course + ' ' + row.dataset.section + ' ' + row.dataset.note).toLowerCase().includes(q)) && (s === 'all' || row.dataset.status === s); row.hidden = !ok; if (ok) count++; }); $('cqiFacultyEmpty').hidden = count > 0; }
+    function edit(row) { current = row; Object.entries(fields).forEach(([key, id]) => { $(id).value = row ? row.dataset[key] || '' : key === 'status' ? 'draft' : ''; }); $('cqiFacultyModalTitle').textContent = row ? 'Edit CQI Plan' : 'Create CQI Plan'; show(modal); }
+    function rowMarkup(d) { const state = d.status === 'submitted' ? 'Submitted' : 'Draft'; return '<td><strong>' + esc(d.id) + '</strong></td><td><strong>' + esc(d.co) + '</strong></td><td><strong>' + esc(d.attainment) + '</strong><small>Target ≥ ' + esc(d.target) + '</small></td><td>' + esc(d.note) + '</td><td>' + esc(d.goal) + '</td><td><span class="cqi-faculty-status is-' + esc(d.status) + '">' + state + '</span></td><td><div class="cqi-faculty-row-actions"><button type="button" data-cqif-edit><span aria-hidden="true">✎</span> Edit</button><button type="button" class="cqi-faculty-delete" data-cqif-delete><span aria-hidden="true">🗑</span> Delete</button></div></td>'; }
+    $('cqiFacultyCreate').addEventListener('click', () => edit(null));
+    body.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const row = b.closest('tr'); if (b.matches('[data-cqif-edit]')) edit(row); else if (b.matches('[data-cqif-delete]')) { pendingDelete = row; $('cqifDeleteName').textContent = row.dataset.id; show(deleteModal); } });
+    $('cqiFacultyForm').addEventListener('submit', e => {
+        e.preventDefault(); const d = {}; Object.entries(fields).forEach(([key, id]) => d[key] = $(id).value.trim()); if (!d.id || !d.course || !d.section || !d.co || !d.goal || !d.note || !d.attainment || !d.target) return;
+        const collision = Array.from(body.rows).some(r => r !== current && r.dataset.id.toLowerCase() === d.id.toLowerCase()); if (collision) { $('cqifId').setCustomValidity('CQI ID already exists'); $('cqifId').reportValidity(); return; } $('cqifId').setCustomValidity('');
+        const row = current || body.insertRow(); Object.entries(d).forEach(([key, value]) => row.dataset[key] = value); row.innerHTML = rowMarkup(d); feedback.textContent = current ? 'CQI plan updated in this demo.' : 'CQI plan created in this demo.'; close(); filter();
+    });
+    $('cqifId').addEventListener('input', () => { $('cqifId').setCustomValidity(''); });
+    $('cqifDeleteConfirm').addEventListener('click', () => { if (pendingDelete) { pendingDelete.remove(); pendingDelete = null; feedback.textContent = 'CQI plan deleted from this demo.'; } close(); filter(); });
+    document.querySelectorAll('[data-cqif-close]').forEach(b => b.addEventListener('click', close));
+    [modal, deleteModal].forEach(m => m.addEventListener('click', e => { if (e.target === m) close(); }));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && (!modal.hidden || !deleteModal.hidden)) close(); });
+    search.addEventListener('input', filter); status.addEventListener('change', filter); filter();
 })();
 
 /* CQI STUDENT — one scoped controller for search, status filter and read-only action modal. */
@@ -587,11 +589,11 @@
     const page = document.querySelector('.cm-faculty-page, .cm-dept-head-page');
     if (!page) return;
     let overlay = null, previousFocus = null;
-    const escapeHtml = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const escapeHtml = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     function close() {
         if (!overlay) return;
         overlay.classList.remove('is-open');
-        overlay.setAttribute('aria-hidden','true');
+        overlay.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
         if (previousFocus) previousFocus.focus();
     }
@@ -600,35 +602,35 @@
         const scores = (row.dataset.coScores || '').split(',').map(Number).filter(Number.isFinite);
         const known = scores.length;
         const met = scores.filter(v => v >= 70).length;
-        const average = known ? Math.round(scores.reduce((a,b)=>a+b,0)/known) : null;
+        const average = known ? Math.round(scores.reduce((a, b) => a + b, 0) / known) : null;
         if (!overlay) {
             overlay = document.createElement('div');
             overlay.className = 'cm-outcome-overlay';
-            overlay.setAttribute('aria-hidden','true');
+            overlay.setAttribute('aria-hidden', 'true');
             document.body.appendChild(overlay);
-            overlay.addEventListener('click', e => {if(e.target === overlay || e.target.closest('.cm-outcome-close')) close();});
-            document.addEventListener('keydown',e => {if(e.key === 'Escape' && overlay.classList.contains('is-open')) close();});
+            overlay.addEventListener('click', e => { if (e.target === overlay || e.target.closest('.cm-outcome-close')) close(); });
+            document.addEventListener('keydown', e => { if (e.key === 'Escape' && overlay.classList.contains('is-open')) close(); });
         }
-        const rows = Array.from({length:10},(_,i) => {
+        const rows = Array.from({ length: 10 }, (_, i) => {
             const value = scores[i], available = i < known;
             const status = !available ? 'Not recorded' : value >= 70 ? 'Met' : 'Needs Improvement';
-            return '<div class="cm-outcome-detail-item"><strong>CO'+(i+1)+'</strong>'+
-                '<span class="cm-outcome-track"><span class="cm-outcome-fill" style="width:'+(available?value:0)+'%"></span></span>'+
-                '<strong>'+(available?value+'%':'—')+'</strong><em>'+status+'</em></div>';
+            return '<div class="cm-outcome-detail-item"><strong>CO' + (i + 1) + '</strong>' +
+                '<span class="cm-outcome-track"><span class="cm-outcome-fill" style="width:' + (available ? value : 0) + '%"></span></span>' +
+                '<strong>' + (available ? value + '%' : '—') + '</strong><em>' + status + '</em></div>';
         }).join('');
-        overlay.innerHTML = '<section class="cm-outcome-dialog" role="dialog" aria-modal="true" aria-labelledby="cmOutcomeTitle">'+
-            '<div class="cm-outcome-modal-head"><div><h2 id="cmOutcomeTitle">Student Outcome Attainment</h2>'+
-            '<p><strong>'+escapeHtml(cells[2].textContent.trim())+'</strong> · '+escapeHtml(cells[1].textContent.trim())+
-            ' · '+escapeHtml(row.dataset.course || 'Course not specified')+' · '+escapeHtml(row.dataset.section || 'Section not specified')+
-            '</p></div><button type="button" class="cm-outcome-close" aria-label="Close">×</button></div>'+
-            '<div class="cm-outcome-metrics"><div class="cm-outcome-metric"><small>Average (recorded COs)</small><strong>'+(average===null?'—':average+'%')+'</strong></div>'+
-            '<div class="cm-outcome-metric"><small>Outcomes Met</small><strong>'+met+'/10</strong></div>'+
-            '<div class="cm-outcome-metric"><small>Recorded Outcomes</small><strong>'+known+'/10</strong></div></div>'+
-            '<div class="cm-outcome-detail-list">'+rows+'</div>'+
+        overlay.innerHTML = '<section class="cm-outcome-dialog" role="dialog" aria-modal="true" aria-labelledby="cmOutcomeTitle">' +
+            '<div class="cm-outcome-modal-head"><div><h2 id="cmOutcomeTitle">Student Outcome Attainment</h2>' +
+            '<p><strong>' + escapeHtml(cells[2].textContent.trim()) + '</strong> · ' + escapeHtml(cells[1].textContent.trim()) +
+            ' · ' + escapeHtml(row.dataset.course || 'Course not specified') + ' · ' + escapeHtml(row.dataset.section || 'Section not specified') +
+            '</p></div><button type="button" class="cm-outcome-close" aria-label="Close">×</button></div>' +
+            '<div class="cm-outcome-metrics"><div class="cm-outcome-metric"><small>Average (recorded COs)</small><strong>' + (average === null ? '—' : average + '%') + '</strong></div>' +
+            '<div class="cm-outcome-metric"><small>Outcomes Met</small><strong>' + met + '/10</strong></div>' +
+            '<div class="cm-outcome-metric"><small>Recorded Outcomes</small><strong>' + known + '/10</strong></div></div>' +
+            '<div class="cm-outcome-detail-list">' + rows + '</div>' +
             '<p class="cm-outcome-note">Demo data currently contains CO1–CO5 only. CO6–CO10 are shown as not recorded; the average excludes missing outcomes. Met threshold: 70%.</p></section>';
         previousFocus = document.activeElement;
         overlay.classList.add('is-open');
-        overlay.setAttribute('aria-hidden','false');
+        overlay.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
         overlay.querySelector('.cm-outcome-close').focus();
     }
@@ -5883,12 +5885,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 dropdown.classList.add("open");
                 menu.classList.add("show");
                 if (!matchMedia('(prefers-reduced-motion: reduce)').matches) menu.animate(
-                    [{opacity:0, transform:'translateY(-9px) scale(.98)'}, {opacity:1, transform:'translateY(0) scale(1)'}],
-                    {duration:210, easing:'cubic-bezier(.2,.8,.2,1)'});
+                    [{ opacity: 0, transform: 'translateY(-9px) scale(.98)' }, { opacity: 1, transform: 'translateY(0) scale(1)' }],
+                    { duration: 210, easing: 'cubic-bezier(.2,.8,.2,1)' });
             } else if (menu.classList.contains("show") && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
                 closingAnimation = menu.animate(
-                    [{opacity:1, transform:'translateY(0)'}, {opacity:0, transform:'translateY(-7px)'}],
-                    {duration:150, easing:'ease-in'});
+                    [{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(-7px)' }],
+                    { duration: 150, easing: 'ease-in' });
                 closingAnimation.onfinish = () => { dropdown.classList.remove("open"); menu.classList.remove("show"); closingAnimation = null; };
             } else { dropdown.classList.remove("open"); menu.classList.remove("show"); }
             button.setAttribute("aria-expanded", String(open));
@@ -6212,311 +6214,354 @@ document.addEventListener("DOMContentLoaded", function () {
 
 /* Shared profile menu: dashboard and account settings use the existing avatar. */
 (function () {
-  function initAccountMenu() {
-    const area = document.querySelector('.so-topbar .so-user-area');
-    if (!area || area.querySelector('.so-account-menu')) return;
-    const avatar = area.querySelector('.so-avatar');
-    if (!avatar) return;
-    avatar.setAttribute('role', 'button');
-    avatar.setAttribute('tabindex', '0');
-    avatar.setAttribute('aria-label', 'Open profile menu');
-    avatar.setAttribute('aria-haspopup', 'true');
-    avatar.setAttribute('aria-expanded', 'false');
-    const menu = document.createElement('div');
-    menu.className = 'so-account-menu';
-    menu.hidden = true;
-    const profile = document.createElement('a');
-    const templatesRoot = window.location.pathname.split('/Templates/')[0];
-    const currentFile = decodeURIComponent(window.location.pathname).split('/').pop().toLowerCase();
-    const normalizeMenuRole = value => ({'department-head':'dept-head','department_head':'dept-head','admin-security':'admin'}[value] || value);
-    const roleFromPage = /(?:^|-)admin(?:\.html)?$/.test(currentFile.replace(/\.html$/, '')) || document.body.classList.contains('cm-admin-page') || /-admin-page/.test(document.body.className)
-      ? 'admin'
-      : /-dept-head(?:\.html)?$/.test(currentFile) ? 'dept-head'
-      : /-faculty(?:\.html)?$/.test(currentFile) ? 'faculty'
-      : '';
-    const menuRole = normalizeMenuRole(roleFromPage || new URLSearchParams(location.search).get('role') || sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || document.body.dataset.role || 'student');
-    if (roleFromPage) {
-      sessionStorage.setItem('edumetricsRole', roleFromPage);
-      sessionStorage.setItem('userRole', roleFromPage);
-    }
-    const accountUrl = new URL(window.location.pathname.includes('/Templates/')
-      ? templatesRoot + '/Templates/main/account-settings.html'
-      : '/account-settings', window.location.origin);
-    accountUrl.searchParams.set('role', menuRole);
-    profile.href = accountUrl.href;
-    profile.textContent = 'Profile';
-    const logout = document.createElement('a');
-    logout.href = '/logout';
-    logout.textContent = 'Log Out';
-    menu.append(profile, logout);
-    area.appendChild(menu);
-    let menuAnimation;
-    function close() {
-      if (menu.hidden) return;
-      if (menuAnimation) menuAnimation.cancel();
-      avatar.setAttribute('aria-expanded', 'false');
-      if (matchMedia('(prefers-reduced-motion: reduce)').matches) { menu.hidden = true; return; }
-      menuAnimation = menu.animate([{opacity:1, transform:'translateY(0)'}, {opacity:0, transform:'translateY(-6px)'}], {duration:140, easing:'ease-in'});
-      menuAnimation.onfinish = () => { menu.hidden = true; menuAnimation = null; };
-    }
-    function toggle() {
-      const show = avatar.getAttribute('aria-expanded') !== 'true';
-      if (!show) { close(); return; }
-      if (menuAnimation) { menuAnimation.cancel(); menuAnimation = null; }
-      menu.hidden = false;
-      avatar.setAttribute('aria-expanded', 'true');
-      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) menu.animate([{opacity:0, transform:'translateY(-8px)'}, {opacity:1, transform:'translateY(0)'}], {duration:200, easing:'ease-out'});
-    }
-    avatar.addEventListener('click', function (event) { event.stopPropagation(); toggle(); });
-    avatar.addEventListener('keydown', function (event) {
-      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggle(); }
-    });
-    document.addEventListener('click', function (event) { if (!area.contains(event.target)) close(); });
-    document.addEventListener('keydown', function (event) { if (event.key === 'Escape') close(); });
-    logout.addEventListener('click', function () {
-      sessionStorage.removeItem('edumetricsRole');
-      sessionStorage.removeItem('userRole');
-      sessionStorage.removeItem('verifiedRole');
-    });
-  }
-  function initAccountSettings() {
-    const page = document.querySelector('.account-settings-page');
-    if (!page) return;
-    const normalize = value => ({'department-head':'dept-head','department_head':'dept-head','depthead':'dept-head','admin-security':'admin'}[value] || value);
-    const params = new URLSearchParams(location.search);
-    const raw = params.get('role') || sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || sessionStorage.getItem('verifiedRole') || page.dataset.role || 'student';
-    const role = normalize(raw.toLowerCase());
-    const selected = ['student','faculty','dept-head','admin'].includes(role) ? role : 'student';
-    const roleNames = {student:'Student',faculty:'Faculty','dept-head':'Department Head',admin:'Admin'};
-    const label = roleNames[selected];
-    sessionStorage.setItem('edumetricsRole',selected);
-    sessionStorage.setItem('userRole',selected);
-    page.dataset.role = selected;
-    page.dataset.dashboardRole = selected;
-
-    if (selected === 'admin') {
-      const template = document.getElementById('account-admin-shell');
-      if (template) {
-        const nodes = template.content.cloneNode(true);
-        ['.so-topbar','.so-sidebar'].forEach(selector => {
-          const current = page.querySelector(selector);
-          const replacement = nodes.querySelector(selector);
-          if (current && replacement) current.replaceWith(replacement);
-        });
-      }
-    } else if (selected !== 'student') {
-      const template = document.getElementById('nav-template-' + selected);
-      const current = page.querySelector('.so-sidebar .so-nav');
-      if (template && current) current.replaceWith(template.content.cloneNode(true));
-    }
-    const info = page.querySelector('.so-user-info');
-    if (info) {
-      const heading = info.querySelector('strong');
-      const subtitle = info.querySelector('span');
-      if (heading) heading.textContent = selected === 'admin' ? 'System Administrator' : label;
-      if (subtitle) subtitle.textContent = label;
-    }
-    const nav = page.querySelector('.so-sidebar .so-nav');
-    if (nav) {
-      nav.querySelectorAll('a[href]').forEach(a => {
-        const url = new URL(a.getAttribute('href'),location.href);
-        const file = decodeURIComponent(url.pathname).split('/').pop().toLowerCase();
-        if (file === 'dashboard.html' || ['platform.html','resources.html','about us.html'].includes(file)) {
-          url.searchParams.set('role',selected);
-          a.href = url.href;
-        } else if (file === 'courses.html' && selected === 'faculty') {
-          url.pathname = url.pathname.replace(/courses\.html$/i,'courses-faculty.html');
-          a.href = url.href;
-        } else if (file === 'platform-admin.html' || file === 'resources-admin.html' || file === 'about-us-admin.html') {
-          url.searchParams.set('role','admin');
-          a.href = url.href;
+    function initAccountMenu() {
+        const area = document.querySelector('.so-topbar .so-user-area');
+        if (!area || area.querySelector('.so-account-menu')) return;
+        const avatar = area.querySelector('.so-avatar');
+        if (!avatar) return;
+        avatar.setAttribute('role', 'button');
+        avatar.setAttribute('tabindex', '0');
+        avatar.setAttribute('aria-label', 'Open profile menu');
+        avatar.setAttribute('aria-haspopup', 'true');
+        avatar.setAttribute('aria-expanded', 'false');
+        const menu = document.createElement('div');
+        menu.className = 'so-account-menu';
+        menu.hidden = true;
+        const profile = document.createElement('a');
+        const templatesRoot = window.location.pathname.split('/Templates/')[0];
+        const currentFile = decodeURIComponent(window.location.pathname).split('/').pop().toLowerCase();
+        const normalizeMenuRole = value => ({ 'department-head': 'dept-head', 'department_head': 'dept-head', 'admin-security': 'admin' }[value] || value);
+        const roleFromPage = /(?:^|-)admin(?:\.html)?$/.test(currentFile.replace(/\.html$/, '')) || document.body.classList.contains('cm-admin-page') || /-admin-page/.test(document.body.className)
+            ? 'admin'
+            : /-dept-head(?:\.html)?$/.test(currentFile) ? 'dept-head'
+                : /-faculty(?:\.html)?$/.test(currentFile) ? 'faculty'
+                    : '';
+        const menuRole = normalizeMenuRole(roleFromPage || new URLSearchParams(location.search).get('role') || sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || document.body.dataset.role || 'student');
+        if (roleFromPage) {
+            sessionStorage.setItem('edumetricsRole', roleFromPage);
+            sessionStorage.setItem('userRole', roleFromPage);
         }
-        a.classList.remove('active','sd-active');
-        a.removeAttribute('aria-current');
-      });
+        const accountUrl = new URL(window.location.pathname.includes('/Templates/')
+            ? templatesRoot + '/Templates/main/account-settings.html'
+            : '/account-settings', window.location.origin);
+        accountUrl.searchParams.set('role', menuRole);
+        profile.href = accountUrl.href;
+        profile.textContent = 'Profile';
+        const logout = document.createElement('a');
+        logout.href = '/logout';
+        logout.textContent = 'Log Out';
+        menu.append(profile, logout);
+        area.appendChild(menu);
+        let menuAnimation;
+        function close() {
+            if (menu.hidden) return;
+            if (menuAnimation) menuAnimation.cancel();
+            avatar.setAttribute('aria-expanded', 'false');
+            if (matchMedia('(prefers-reduced-motion: reduce)').matches) { menu.hidden = true; return; }
+            menuAnimation = menu.animate([{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(-6px)' }], { duration: 140, easing: 'ease-in' });
+            menuAnimation.onfinish = () => { menu.hidden = true; menuAnimation = null; };
+        }
+        function toggle() {
+            const show = avatar.getAttribute('aria-expanded') !== 'true';
+            if (!show) { close(); return; }
+            if (menuAnimation) { menuAnimation.cancel(); menuAnimation = null; }
+            menu.hidden = false;
+            avatar.setAttribute('aria-expanded', 'true');
+            if (!matchMedia('(prefers-reduced-motion: reduce)').matches) menu.animate([{ opacity: 0, transform: 'translateY(-8px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 200, easing: 'ease-out' });
+        }
+        avatar.addEventListener('click', function (event) { event.stopPropagation(); toggle(); });
+        avatar.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggle(); }
+        });
+        document.addEventListener('click', function (event) { if (!area.contains(event.target)) close(); });
+        document.addEventListener('keydown', function (event) { if (event.key === 'Escape') close(); });
+        logout.addEventListener('click', async function (event) {
+            event.preventDefault();
+
+
+
+            const normalizeRole = (value) => {
+                const role = (value || '').toLowerCase();
+
+                if (role === 'admin') return 'admin-security';
+                if (role === 'dept-head' || role === 'department_head') {
+                    return 'department-head';
+                }
+
+                return role;
+            };
+
+            const role = normalizeRole(
+                sessionStorage.getItem('edumetricsRole') ||
+                sessionStorage.getItem('userRole') ||
+                sessionStorage.getItem('verifiedRole') ||
+                sessionStorage.getItem('verificationRole') ||
+                new URLSearchParams(window.location.search).get('role') ||
+                'student'
+            );
+
+
+
+            try {
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                });
+            } catch (error) {
+                console.error('Logout request failed:', error);
+            } finally {
+                sessionStorage.removeItem('edumetricsRole');
+                sessionStorage.removeItem('userRole');
+                sessionStorage.removeItem('verifiedRole');
+
+                window.location.href =
+                    '/login%20page.html?role=' + encodeURIComponent(role);
+            }
+        });
+
     }
-    const name = page.querySelector('#accountName');
-    const stored = (keys) => keys.map(k => sessionStorage.getItem(k)).find(v => v && v.trim()) || '';
-    const prefix = selected === 'student' ? 'student' : selected === 'faculty' ? 'faculty' : selected === 'dept-head' ? 'deptHead' : 'admin';
-    const accountFields = {
-      accountFullName: stored([prefix+'Name','userName','fullName']),
-      accountStudentId: stored(selected === 'student' ? ['studentId','userId'] : selected === 'faculty' ? ['facultyId','employeeId'] : selected === 'dept-head' ? ['deptHeadId','employeeId'] : ['adminId','employeeId']),
-      accountProgram: stored(selected === 'student' ? ['studentProgram','program'] : selected === 'faculty' ? ['facultyDepartment','department'] : selected === 'dept-head' ? ['deptHeadDepartment','department'] : ['adminDepartment','department']),
-      accountDetailEmail: stored([prefix+'Email','userEmail','email'])
-    };
-    const idLabel = page.querySelector('#accountIdLabel');
-    if (idLabel) idLabel.textContent = selected === 'student' ? 'Student ID' : selected === 'admin' ? 'Admin ID' : 'Employee ID';
-    const programLabel = page.querySelector('#accountProgramLabel');
-    if (programLabel) programLabel.textContent = selected === 'student' ? 'Program' : selected === 'admin' ? 'Department' : 'Department';
-    Object.entries(accountFields).forEach(([id,value]) => {
-      const el = page.querySelector('#'+id);
-      if (el) el.textContent = value || 'Not available';
-    });
-    if (name) name.textContent = accountFields.accountFullName || (selected === 'admin' ? 'Administrator Account' : label + ' Account');
-    page.querySelectorAll('[data-account-role-label]').forEach(el => { el.textContent = label; });
-    document.dispatchEvent(new Event('edumetrics:nav-ready'));
-    const photoInput = page.querySelector('#accountPhotoInput');
-    const photo = page.querySelector('#accountProfileImage');
-    const photoMessage = page.querySelector('#accountPhotoMessage');
-    const photoKey = 'edumetrics-' + selected + '-profile-photo';
-    function showPhoto(data) {
-      if (!photo || !data) return;
-      photo.src = data;
-      photo.hidden = false;
-      page.querySelector('.so-topbar .so-avatar .sd-icon-placeholder')?.setAttribute('hidden', '');
-      const avatar = page.querySelector('.so-topbar .so-avatar');
-      if (avatar) {
-        let avatarPhoto = avatar.querySelector('.account-avatar-photo');
-        if (!avatarPhoto) { avatarPhoto = document.createElement('img'); avatarPhoto.className = 'account-avatar-photo'; avatar.appendChild(avatarPhoto); }
-        avatarPhoto.src = data;
-      }
+    function initAccountSettings() {
+        const page = document.querySelector('.account-settings-page');
+        if (!page) return;
+        const normalize = value => ({ 'department-head': 'dept-head', 'department_head': 'dept-head', 'depthead': 'dept-head', 'admin-security': 'admin' }[value] || value);
+        const params = new URLSearchParams(location.search);
+        const raw = params.get('role') || sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || sessionStorage.getItem('verifiedRole') || page.dataset.role || 'student';
+        const role = normalize(raw.toLowerCase());
+        const selected = ['student', 'faculty', 'dept-head', 'admin'].includes(role) ? role : 'student';
+        const roleNames = { student: 'Student', faculty: 'Faculty', 'dept-head': 'Department Head', admin: 'Admin' };
+        const label = roleNames[selected];
+        sessionStorage.setItem('edumetricsRole', selected);
+        sessionStorage.setItem('userRole', selected);
+        page.dataset.role = selected;
+        page.dataset.dashboardRole = selected;
+
+        if (selected === 'admin') {
+            const template = document.getElementById('account-admin-shell');
+            if (template) {
+                const nodes = template.content.cloneNode(true);
+                ['.so-topbar', '.so-sidebar'].forEach(selector => {
+                    const current = page.querySelector(selector);
+                    const replacement = nodes.querySelector(selector);
+                    if (current && replacement) current.replaceWith(replacement);
+                });
+            }
+        } else if (selected !== 'student') {
+            const template = document.getElementById('nav-template-' + selected);
+            const current = page.querySelector('.so-sidebar .so-nav');
+            if (template && current) current.replaceWith(template.content.cloneNode(true));
+        }
+        const info = page.querySelector('.so-user-info');
+        if (info) {
+            const heading = info.querySelector('strong');
+            const subtitle = info.querySelector('span');
+            if (heading) heading.textContent = selected === 'admin' ? 'System Administrator' : label;
+            if (subtitle) subtitle.textContent = label;
+        }
+        const nav = page.querySelector('.so-sidebar .so-nav');
+        if (nav) {
+            nav.querySelectorAll('a[href]').forEach(a => {
+                const url = new URL(a.getAttribute('href'), location.href);
+                const file = decodeURIComponent(url.pathname).split('/').pop().toLowerCase();
+                if (file === 'dashboard.html' || ['platform.html', 'resources.html', 'about us.html'].includes(file)) {
+                    url.searchParams.set('role', selected);
+                    a.href = url.href;
+                } else if (file === 'courses.html' && selected === 'faculty') {
+                    url.pathname = url.pathname.replace(/courses\.html$/i, 'courses-faculty.html');
+                    a.href = url.href;
+                } else if (file === 'platform-admin.html' || file === 'resources-admin.html' || file === 'about-us-admin.html') {
+                    url.searchParams.set('role', 'admin');
+                    a.href = url.href;
+                }
+                a.classList.remove('active', 'sd-active');
+                a.removeAttribute('aria-current');
+            });
+        }
+        const name = page.querySelector('#accountName');
+        const stored = (keys) => keys.map(k => sessionStorage.getItem(k)).find(v => v && v.trim()) || '';
+        const prefix = selected === 'student' ? 'student' : selected === 'faculty' ? 'faculty' : selected === 'dept-head' ? 'deptHead' : 'admin';
+        const accountFields = {
+            accountFullName: stored([prefix + 'Name', 'userName', 'fullName']),
+            accountStudentId: stored(selected === 'student' ? ['studentId', 'userId'] : selected === 'faculty' ? ['facultyId', 'employeeId'] : selected === 'dept-head' ? ['deptHeadId', 'employeeId'] : ['adminId', 'employeeId']),
+            accountProgram: stored(selected === 'student' ? ['studentProgram', 'program'] : selected === 'faculty' ? ['facultyDepartment', 'department'] : selected === 'dept-head' ? ['deptHeadDepartment', 'department'] : ['adminDepartment', 'department']),
+            accountDetailEmail: stored([prefix + 'Email', 'userEmail', 'email'])
+        };
+        const idLabel = page.querySelector('#accountIdLabel');
+        if (idLabel) idLabel.textContent = selected === 'student' ? 'Student ID' : selected === 'admin' ? 'Admin ID' : 'Employee ID';
+        const programLabel = page.querySelector('#accountProgramLabel');
+        if (programLabel) programLabel.textContent = selected === 'student' ? 'Program' : selected === 'admin' ? 'Department' : 'Department';
+        Object.entries(accountFields).forEach(([id, value]) => {
+            const el = page.querySelector('#' + id);
+            if (el) el.textContent = value || 'Not available';
+        });
+        if (name) name.textContent = accountFields.accountFullName || (selected === 'admin' ? 'Administrator Account' : label + ' Account');
+        page.querySelectorAll('[data-account-role-label]').forEach(el => { el.textContent = label; });
+        document.dispatchEvent(new Event('edumetrics:nav-ready'));
+        const photoInput = page.querySelector('#accountPhotoInput');
+        const photo = page.querySelector('#accountProfileImage');
+        const photoMessage = page.querySelector('#accountPhotoMessage');
+        const photoKey = 'edumetrics-' + selected + '-profile-photo';
+        function showPhoto(data) {
+            if (!photo || !data) return;
+            photo.src = data;
+            photo.hidden = false;
+            page.querySelector('.so-topbar .so-avatar .sd-icon-placeholder')?.setAttribute('hidden', '');
+            const avatar = page.querySelector('.so-topbar .so-avatar');
+            if (avatar) {
+                let avatarPhoto = avatar.querySelector('.account-avatar-photo');
+                if (!avatarPhoto) { avatarPhoto = document.createElement('img'); avatarPhoto.className = 'account-avatar-photo'; avatar.appendChild(avatarPhoto); }
+                avatarPhoto.src = data;
+            }
+        }
+        try { showPhoto(localStorage.getItem(photoKey)); } catch (_) { }
+        photoInput?.addEventListener('change', () => {
+            const file = photoInput.files?.[0];
+            if (!file) return;
+            if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 1024 * 1024) {
+                photoMessage.textContent = 'Choose a JPG, PNG or WebP image up to 1 MB.';
+                photoInput.value = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = () => {
+                try { localStorage.setItem(photoKey, String(reader.result)); showPhoto(String(reader.result)); photoMessage.textContent = 'Profile photo saved in this browser.'; }
+                catch (_) { photoMessage.textContent = 'Unable to save photo in this browser.'; }
+            };
+            reader.readAsDataURL(file);
+        });
+        const form = page.querySelector('#changePasswordForm');
+        page.querySelectorAll('[data-account-password-toggle]').forEach(button => button.addEventListener('click', () => {
+            const field = button.parentElement.querySelector('input');
+            field.type = field.type === 'password' ? 'text' : 'password';
+            button.setAttribute('aria-label', (field.type === 'password' ? 'Show' : 'Hide') + ' password');
+        }));
+        form?.addEventListener('submit', event => {
+            event.preventDefault();
+            const current = form.elements.currentPassword.value;
+            const next = form.elements.newPassword.value;
+            const confirm = form.elements.confirmPassword.value;
+            const message = page.querySelector('#passwordMessage');
+            if (!current || !next || !confirm) message.textContent = 'Complete all password fields.';
+            else if (next !== confirm) message.textContent = 'New password and confirmation do not match.';
+            else if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(next)) message.textContent = 'Use at least 8 characters with a letter, number, and special character.';
+            else message.textContent = 'Password changes require the connected Flask backend. No changes were saved.';
+        });
     }
-    try { showPhoto(localStorage.getItem(photoKey)); } catch (_) {}
-    photoInput?.addEventListener('change', () => {
-      const file = photoInput.files?.[0];
-      if (!file) return;
-      if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 1024 * 1024) {
-        photoMessage.textContent = 'Choose a JPG, PNG or WebP image up to 1 MB.';
-        photoInput.value = '';
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = () => {
-        try { localStorage.setItem(photoKey, String(reader.result)); showPhoto(String(reader.result)); photoMessage.textContent = 'Profile photo saved in this browser.'; }
-        catch (_) { photoMessage.textContent = 'Unable to save photo in this browser.'; }
-      };
-      reader.readAsDataURL(file);
-    });
-    const form = page.querySelector('#changePasswordForm');
-    page.querySelectorAll('[data-account-password-toggle]').forEach(button => button.addEventListener('click', () => {
-      const field = button.parentElement.querySelector('input');
-      field.type = field.type === 'password' ? 'text' : 'password';
-      button.setAttribute('aria-label', (field.type === 'password' ? 'Show' : 'Hide') + ' password');
-    }));
-    form?.addEventListener('submit', event => {
-      event.preventDefault();
-      const current = form.elements.currentPassword.value;
-      const next = form.elements.newPassword.value;
-      const confirm = form.elements.confirmPassword.value;
-      const message = page.querySelector('#passwordMessage');
-      if (!current || !next || !confirm) message.textContent = 'Complete all password fields.';
-      else if (next !== confirm) message.textContent = 'New password and confirmation do not match.';
-      else if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(next)) message.textContent = 'Use at least 8 characters with a letter, number, and special character.';
-      else message.textContent = 'Password changes require the connected Flask backend. No changes were saved.';
-    });
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAccountSettings);
-    document.addEventListener('DOMContentLoaded', initAccountMenu);
-  } else { initAccountSettings(); initAccountMenu(); }
-  // Role-aware information pages replace their header after DOMContentLoaded.
-  // Rebind the menu to the new avatar once the replacement is complete.
-  document.addEventListener('edumetrics:profile-shell-ready', initAccountMenu);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAccountSettings);
+        document.addEventListener('DOMContentLoaded', initAccountMenu);
+    } else { initAccountSettings(); initAccountMenu(); }
+    // Role-aware information pages replace their header after DOMContentLoaded.
+    // Rebind the menu to the new avatar once the replacement is complete.
+    document.addEventListener('edumetrics:profile-shell-ready', initAccountMenu);
 })();
 
 /* Shared main-page navigation and active indicator (single source of truth). */
 (function () {
-  function initRoleNavigation() {
-    const path = decodeURIComponent(location.pathname).toLowerCase();
-    if (!path.includes('/templates/main/')) return;
-    const current = path.split('/').pop();
-    const pages = ['dashboard.html', 'courses.html', 'courses-faculty.html', 'hidden-courses.html', 'hidden-courses-faculty.html', 'platform.html', 'resources.html', 'about us.html'];
-    if (!pages.includes(current)) return;
-    const normalize = value => ({'department-head':'dept-head','department_head':'dept-head','depthead':'dept-head'}[value] || value);
-    const urlRole = new URLSearchParams(location.search).get('role');
-    const stored = sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || '';
-    const role = normalize((urlRole || stored || 'student').toLowerCase());
-    if (!['student', 'faculty', 'dept-head'].includes(role)) return;
-    sessionStorage.setItem('edumetricsRole', role);
-    sessionStorage.setItem('userRole', role);
-    const nav = document.querySelector('.so-sidebar .so-nav');
-    if (!nav) return;
-    // Department Head does not have My Courses; Student and Faculty retain theirs.
-    if (role === 'dept-head') {
-      [...nav.querySelectorAll(':scope > a.so-nav-item')].filter(a => a.textContent.trim() === 'My Courses').forEach(a => a.remove());
+    function initRoleNavigation() {
+        const path = decodeURIComponent(location.pathname).toLowerCase();
+        if (!path.includes('/templates/main/')) return;
+        const current = path.split('/').pop();
+        const pages = ['dashboard.html', 'courses.html', 'courses-faculty.html', 'hidden-courses.html', 'hidden-courses-faculty.html', 'platform.html', 'resources.html', 'about us.html'];
+        if (!pages.includes(current)) return;
+        const normalize = value => ({ 'department-head': 'dept-head', 'department_head': 'dept-head', 'depthead': 'dept-head' }[value] || value);
+        const urlRole = new URLSearchParams(location.search).get('role');
+        const stored = sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || '';
+        const role = normalize((urlRole || stored || 'student').toLowerCase());
+        if (!['student', 'faculty', 'dept-head'].includes(role)) return;
+        sessionStorage.setItem('edumetricsRole', role);
+        sessionStorage.setItem('userRole', role);
+        const nav = document.querySelector('.so-sidebar .so-nav');
+        if (!nav) return;
+        // Department Head does not have My Courses; Student and Faculty retain theirs.
+        if (role === 'dept-head') {
+            [...nav.querySelectorAll(':scope > a.so-nav-item')].filter(a => a.textContent.trim() === 'My Courses').forEach(a => a.remove());
+        }
+        nav.querySelectorAll('a[href]').forEach(link => {
+            const href = link.getAttribute('href');
+            if (!href || href.startsWith('#')) return;
+            const target = new URL(href, location.href);
+            const file = decodeURIComponent(target.pathname).split('/').pop().toLowerCase();
+            if (file === 'dashboard.html') target.searchParams.set('role', role);
+            else if (['courses.html', 'courses-faculty.html'].includes(file)) {
+                if (role === 'dept-head') return;
+                target.pathname = target.pathname.replace(/[^/]+$/, role === 'faculty' ? 'courses-faculty.html' : 'courses.html');
+            } else if (['platform.html', 'resources.html', 'about us.html'].includes(file)) {
+                target.pathname = target.pathname.replace(/\/webpage\//i, '/main/');
+                target.searchParams.set('role', role);
+            } else return;
+            link.href = target.href;
+        });
+        const activeFile = current.startsWith('hidden-courses') ? (role === 'faculty' ? 'courses-faculty.html' : 'courses.html') : current;
+        nav.querySelectorAll(':scope > a.so-nav-item').forEach(link => {
+            const file = decodeURIComponent(new URL(link.href, location.href).pathname).split('/').pop().toLowerCase();
+            const active = file === activeFile;
+            link.classList.toggle('active', active);
+            link.classList.toggle('sd-active', active);
+            if (active) link.setAttribute('aria-current', 'page');
+            else link.removeAttribute('aria-current');
+        });
+        // Workflow indicator is reserved for Department Head requirement pages.
+        nav.querySelectorAll('.so-nav-group summary.so-nav-item').forEach(summary => {
+            summary.classList.remove('active', 'sd-active');
+            summary.removeAttribute('aria-current');
+        });
     }
-    nav.querySelectorAll('a[href]').forEach(link => {
-      const href = link.getAttribute('href');
-      if (!href || href.startsWith('#')) return;
-      const target = new URL(href, location.href);
-      const file = decodeURIComponent(target.pathname).split('/').pop().toLowerCase();
-      if (file === 'dashboard.html') target.searchParams.set('role', role);
-      else if (['courses.html','courses-faculty.html'].includes(file)) {
-        if (role === 'dept-head') return;
-        target.pathname = target.pathname.replace(/[^/]+$/, role === 'faculty' ? 'courses-faculty.html' : 'courses.html');
-      } else if (['platform.html','resources.html','about us.html'].includes(file)) {
-        target.pathname = target.pathname.replace(/\/webpage\//i, '/main/');
-        target.searchParams.set('role', role);
-      } else return;
-      link.href = target.href;
-    });
-    const activeFile = current.startsWith('hidden-courses') ? (role === 'faculty' ? 'courses-faculty.html' : 'courses.html') : current;
-    nav.querySelectorAll(':scope > a.so-nav-item').forEach(link => {
-      const file = decodeURIComponent(new URL(link.href, location.href).pathname).split('/').pop().toLowerCase();
-      const active = file === activeFile;
-      link.classList.toggle('active', active);
-      link.classList.toggle('sd-active', active);
-      if (active) link.setAttribute('aria-current', 'page');
-      else link.removeAttribute('aria-current');
-    });
-    // Workflow indicator is reserved for Department Head requirement pages.
-    nav.querySelectorAll('.so-nav-group summary.so-nav-item').forEach(summary => {
-      summary.classList.remove('active', 'sd-active');
-      summary.removeAttribute('aria-current');
-    });
-  }
-  document.addEventListener('edumetrics:nav-ready', initRoleNavigation);
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initRoleNavigation);
-  else initRoleNavigation();
+    document.addEventListener('edumetrics:nav-ready', initRoleNavigation);
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initRoleNavigation);
+    else initRoleNavigation();
 })();
 
 /* Dashboard posts: one shared composer for Faculty and Department Head previews. */
 (function () {
-  const root = document.getElementById('dashboardRoleContent');
-  const role = document.body.dataset.dashboardRole;
-  const allowed = role === 'faculty' || role === 'dept-head';
-  if (!root || !allowed) return;
-  const feed = document.getElementById('sdPosts');
-  const empty = document.getElementById('sdEmpty');
-  const overlay = document.getElementById('sdComposeOverlay');
-  const form = document.getElementById('sdComposeForm');
-  const trigger = root.querySelector('[data-create-post]');
-  if (!feed || !overlay || !form || !trigger) return;
-  const key = 'edumetrics-dashboard-posts-v1-' + role;
-  let posts = [];
-  try { const saved = JSON.parse(localStorage.getItem(key) || '[]'); if (Array.isArray(saved)) posts = saved; } catch (_) {}
-  function render() {
-    feed.replaceChildren();
-    posts.forEach(function (post) {
-      const card = document.createElement('article'); card.className = 'sd-post sd-created-post';
-      const author = document.createElement('div'); author.className = 'sd-post-author';
-      const by = document.createElement('div');
-      const name = document.createElement('strong'); name.textContent = role === 'faculty' ? 'Faculty' : 'Department Head';
-      const date = document.createElement('small'); date.textContent = post.date || '';
-      by.append(name,date); author.append(by);
-      const body = document.createElement('div'); body.className = 'sd-post-body';
-      const title = document.createElement('strong'); title.textContent = post.title;
-      const message = document.createElement('p'); message.textContent = post.message;
-      body.append(title,message); card.append(author,body); feed.append(card);
+    const root = document.getElementById('dashboardRoleContent');
+    const role = document.body.dataset.dashboardRole;
+    const allowed = role === 'faculty' || role === 'dept-head';
+    if (!root || !allowed) return;
+    const feed = document.getElementById('sdPosts');
+    const empty = document.getElementById('sdEmpty');
+    const overlay = document.getElementById('sdComposeOverlay');
+    const form = document.getElementById('sdComposeForm');
+    const trigger = root.querySelector('[data-create-post]');
+    if (!feed || !overlay || !form || !trigger) return;
+    const key = 'edumetrics-dashboard-posts-v1-' + role;
+    let posts = [];
+    try { const saved = JSON.parse(localStorage.getItem(key) || '[]'); if (Array.isArray(saved)) posts = saved; } catch (_) { }
+    function render() {
+        feed.replaceChildren();
+        posts.forEach(function (post) {
+            const card = document.createElement('article'); card.className = 'sd-post sd-created-post';
+            const author = document.createElement('div'); author.className = 'sd-post-author';
+            const by = document.createElement('div');
+            const name = document.createElement('strong'); name.textContent = role === 'faculty' ? 'Faculty' : 'Department Head';
+            const date = document.createElement('small'); date.textContent = post.date || '';
+            by.append(name, date); author.append(by);
+            const body = document.createElement('div'); body.className = 'sd-post-body';
+            const title = document.createElement('strong'); title.textContent = post.title;
+            const message = document.createElement('p'); message.textContent = post.message;
+            body.append(title, message); card.append(author, body); feed.append(card);
+        });
+        empty.hidden = posts.length > 0;
+    }
+    function close() { overlay.hidden = true; document.body.classList.remove('sd-compose-open'); trigger.focus(); }
+    trigger.addEventListener('click', function () { overlay.hidden = false; document.body.classList.add('sd-compose-open'); document.getElementById('sdComposeSubject').focus(); });
+    document.getElementById('sdComposeClose').addEventListener('click', close);
+    document.getElementById('sdComposeCancel').addEventListener('click', close);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !overlay.hidden) close(); });
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const title = document.getElementById('sdComposeSubject').value.trim();
+        const message = document.getElementById('sdComposeMessage').value.trim();
+        if (!title || !message) return;
+        posts.unshift({ title: title, message: message, date: new Date().toLocaleString() });
+        try { localStorage.setItem(key, JSON.stringify(posts)); } catch (_) { }
+        form.reset(); render(); close();
     });
-    empty.hidden = posts.length > 0;
-  }
-  function close() { overlay.hidden = true; document.body.classList.remove('sd-compose-open'); trigger.focus(); }
-  trigger.addEventListener('click', function () { overlay.hidden = false; document.body.classList.add('sd-compose-open'); document.getElementById('sdComposeSubject').focus(); });
-  document.getElementById('sdComposeClose').addEventListener('click',close);
-  document.getElementById('sdComposeCancel').addEventListener('click',close);
-  overlay.addEventListener('click',function(e){ if(e.target === overlay) close(); });
-  document.addEventListener('keydown',function(e){ if(e.key === 'Escape' && !overlay.hidden) close(); });
-  form.addEventListener('submit',function(e){
-    e.preventDefault();
-    const title = document.getElementById('sdComposeSubject').value.trim();
-    const message = document.getElementById('sdComposeMessage').value.trim();
-    if (!title || !message) return;
-    posts.unshift({title:title,message:message,date:new Date().toLocaleString()});
-    try { localStorage.setItem(key,JSON.stringify(posts)); } catch (_) {}
-    form.reset(); render(); close();
-  });
-  render();
+    render();
 })();
 
 /* Dashboard interactions: filter, reactions, comments and reader */
@@ -6735,835 +6780,844 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Faculty Courses: create and restore demo courses in this browser only.
 (function () {
-  function init() {
-    if (!document.body.classList.contains('faculty-courses-page')) return;
-    const dialog = document.getElementById('fcCreateDialog');
-    const form = document.getElementById('fcCreateForm');
-    const grid = document.getElementById('facultyCourseGrid');
-    const open = document.getElementById('fcmOpenCreate');
-    if (!dialog || !form || !grid || !open) return;
-    const storageKey = 'edumetrics-faculty-demo-courses-v1';
-    let courses = [];
-    try {
-      const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
-      if (Array.isArray(stored)) courses = stored.filter(item => item && typeof item.code === 'string' && typeof item.title === 'string');
-    } catch (_) { /* Browser storage unavailable. */ }
-    function render() {
-      grid.querySelectorAll('[data-fc-demo-course]').forEach(node => node.remove());
-      const empty = document.getElementById('fcmEmpty');
-      if (empty) empty.hidden = courses.length > 0 || grid.querySelector('.sc-course-card') !== null;
-      courses.forEach(course => {
-        const card = document.createElement('article'); card.className = 'sc-course-card';
-        card.dataset.fcDemoCourse = 'true';
-        const top = document.createElement('div'); top.className = 'sc-card-top';
-        const symbol = document.createElement('span'); symbol.className = 'sc-course-icon'; symbol.textContent = course.code.slice(0, 2).toUpperCase();
-        const status = document.createElement('span'); status.className = 'sc-enrolled'; status.textContent = 'NEW COURSE';
-        top.append(symbol, status);
-        const body = document.createElement('div'); body.className = 'sc-course-body';
-        const code = document.createElement('span'); code.className = 'sc-course-code'; code.textContent = course.code;
-        const name = document.createElement('h2'); name.textContent = course.title;
-        const note = document.createElement('p'); note.className = 'sc-faculty'; note.textContent = 'Assigned faculty · You';
-        body.append(code, name, note);
-        const bottom = document.createElement('div'); bottom.className = 'sc-card-bottom';
-        const summary = document.createElement('div'); summary.className = 'sc-progress-top'; summary.textContent = '0 enrolled students · Demo';
-        bottom.append(summary); card.append(top, body, bottom); grid.append(card);
-      });
-      const count = document.getElementById('facultyCourseCount');
-      if (count) count.textContent = String(grid.querySelectorAll('.sc-course-card').length).padStart(2, '0');
+    function init() {
+        if (!document.body.classList.contains('faculty-courses-page')) return;
+        const dialog = document.getElementById('fcCreateDialog');
+        const form = document.getElementById('fcCreateForm');
+        const grid = document.getElementById('facultyCourseGrid');
+        const open = document.getElementById('fcmOpenCreate');
+        if (!dialog || !form || !grid || !open) return;
+        const storageKey = 'edumetrics-faculty-demo-courses-v1';
+        let courses = [];
+        try {
+            const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            if (Array.isArray(stored)) courses = stored.filter(item => item && typeof item.code === 'string' && typeof item.title === 'string');
+        } catch (_) { /* Browser storage unavailable. */ }
+        function render() {
+            grid.querySelectorAll('[data-fc-demo-course]').forEach(node => node.remove());
+            const empty = document.getElementById('fcmEmpty');
+            if (empty) empty.hidden = courses.length > 0 || grid.querySelector('.sc-course-card') !== null;
+            courses.forEach(course => {
+                const card = document.createElement('article'); card.className = 'sc-course-card';
+                card.dataset.fcDemoCourse = 'true';
+                const top = document.createElement('div'); top.className = 'sc-card-top';
+                const symbol = document.createElement('span'); symbol.className = 'sc-course-icon'; symbol.textContent = course.code.slice(0, 2).toUpperCase();
+                const status = document.createElement('span'); status.className = 'sc-enrolled'; status.textContent = 'NEW COURSE';
+                top.append(symbol, status);
+                const body = document.createElement('div'); body.className = 'sc-course-body';
+                const code = document.createElement('span'); code.className = 'sc-course-code'; code.textContent = course.code;
+                const name = document.createElement('h2'); name.textContent = course.title;
+                const note = document.createElement('p'); note.className = 'sc-faculty'; note.textContent = 'Assigned faculty · You';
+                body.append(code, name, note);
+                const bottom = document.createElement('div'); bottom.className = 'sc-card-bottom';
+                const summary = document.createElement('div'); summary.className = 'sc-progress-top'; summary.textContent = '0 enrolled students · Demo';
+                bottom.append(summary); card.append(top, body, bottom); grid.append(card);
+            });
+            const count = document.getElementById('facultyCourseCount');
+            if (count) count.textContent = String(grid.querySelectorAll('.sc-course-card').length).padStart(2, '0');
+        }
+        const close = () => { if (dialog.open) dialog.close(); };
+        open.addEventListener('click', () => { form.reset(); dialog.showModal(); form.elements.code.focus(); });
+        document.getElementById('fcCloseCreate')?.addEventListener('click', close);
+        document.getElementById('fcCancelCreate')?.addEventListener('click', close);
+        dialog.addEventListener('click', event => { if (event.target === dialog) close(); });
+        form.addEventListener('submit', event => {
+            event.preventDefault();
+            if (!form.reportValidity()) return;
+            const code = form.elements.code.value.trim();
+            const title = form.elements.title.value.trim();
+            if (!code || !title) return;
+            if (courses.some(course => course.code.toLowerCase() === code.toLowerCase())) {
+                form.elements.code.setCustomValidity('This course code already exists.');
+                form.elements.code.reportValidity(); return;
+            }
+            courses.push({ code, title });
+            try { localStorage.setItem(storageKey, JSON.stringify(courses)); } catch (_) { /* Session-only if storage unavailable. */ }
+            render(); close();
+        });
+        form.elements.code.addEventListener('input', () => form.elements.code.setCustomValidity(''));
+        render();
     }
-    const close = () => { if (dialog.open) dialog.close(); };
-    open.addEventListener('click', () => { form.reset(); dialog.showModal(); form.elements.code.focus(); });
-    document.getElementById('fcCloseCreate')?.addEventListener('click', close);
-    document.getElementById('fcCancelCreate')?.addEventListener('click', close);
-    dialog.addEventListener('click', event => { if (event.target === dialog) close(); });
-    form.addEventListener('submit', event => {
-      event.preventDefault();
-      if (!form.reportValidity()) return;
-      const code = form.elements.code.value.trim();
-      const title = form.elements.title.value.trim();
-      if (!code || !title) return;
-      if (courses.some(course => course.code.toLowerCase() === code.toLowerCase())) {
-        form.elements.code.setCustomValidity('This course code already exists.');
-        form.elements.code.reportValidity(); return;
-      }
-      courses.push({code, title});
-      try { localStorage.setItem(storageKey, JSON.stringify(courses)); } catch (_) { /* Session-only if storage unavailable. */ }
-      render(); close();
-    });
-    form.elements.code.addEventListener('input', () => form.elements.code.setCustomValidity(''));
-    render();
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, {once:true});
-  else init();
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
+    else init();
 })();
 
 /* Shared calendar: reuse the existing header popup on every role/page. */
 (function () {
-  'use strict';
-  let opened = null;
-  const pad = n => String(n).padStart(2, '0');
-  function close() {
-    if (!opened) return;
-    opened.popup.hidden = true;
-    opened.wrap.appendChild(opened.popup);
-    opened.button.setAttribute('aria-expanded', 'false');
-    opened = null;
-  }
-  function place() {
-    if (!opened) return;
-    const r = opened.button.getBoundingClientRect();
-    opened.popup.style.left = Math.max(8, Math.min(r.right - 224, innerWidth - 232)) + 'px';
-    const height = opened.popup.getBoundingClientRect().height || 260;
-    opened.popup.style.top = (r.bottom + 8 + height <= innerHeight ? r.bottom + 8 : Math.max(8, r.top - height - 8)) + 'px';
-  }
-  function draw(popup, year, month) {
-    const input = popup.querySelector('input[type="date"]');
-    const selected = input?.value || '';
-    const first = new Date(year, month, 1).getDay();
-    const days = new Date(year, month + 1, 0).getDate();
-    const head = document.createElement('div'); head.className = 'edu-calendar-head';
-    const title = document.createElement('strong');
-    title.textContent = new Date(year, month, 1).toLocaleDateString('en-US', {month:'long', year:'numeric'});
-    head.append(title);
-    [-1, 1].forEach(step => {
-      const arrow = document.createElement('button'); arrow.type = 'button';
-      arrow.className = 'edu-calendar-arrow'; arrow.textContent = step < 0 ? '‹' : '›';
-      arrow.setAttribute('aria-label', step < 0 ? 'Previous month' : 'Next month');
-      arrow.addEventListener('click', () => draw(popup, year + Math.floor((month + step) / 12), (month + step + 12) % 12));
-      head.append(arrow);
-    });
-    const grid = document.createElement('div'); grid.className = 'edu-calendar-grid';
-    ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(day => {
-      const label = document.createElement('span'); label.className = 'edu-calendar-weekday'; label.textContent = day; grid.append(label);
-    });
-    for (let i = 0; i < Math.ceil((first + days) / 7) * 7; i++) {
-      const date = new Date(year, month, i - first + 1);
-      const value = date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate());
-      const day = document.createElement('button'); day.type = 'button'; day.className = 'edu-calendar-day';
-      day.textContent = date.getDate();
-      if (date.getMonth() !== month) day.classList.add('outside');
-      if (value === selected) day.classList.add('selected');
-      day.addEventListener('click', () => { if (input) { input.value = value; input.dispatchEvent(new Event('change', {bubbles:true})); } close(); });
-      grid.append(day);
+    'use strict';
+    let opened = null;
+    const pad = n => String(n).padStart(2, '0');
+    function close() {
+        if (!opened) return;
+        opened.popup.hidden = true;
+        opened.wrap.appendChild(opened.popup);
+        opened.button.setAttribute('aria-expanded', 'false');
+        opened = null;
     }
-    popup.replaceChildren(input, head, grid);
-  }
-  document.addEventListener('click', event => {
-    const button = event.target.closest('.edu-header-calendar-btn');
-    if (!button) { if (opened && !opened.popup.contains(event.target)) close(); return; }
-    event.preventDefault();
-    if (opened?.button === button) { close(); return; }
-    close();
-    const popup = button.closest('.edu-header-calendar-wrap')?.querySelector('.edu-header-calendar-popup');
-    if (!popup) return;
-    const input = popup.querySelector('input[type="date"]');
-    const now = new Date();
-    if (input && !input.value) input.value = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate());
-    const date = input?.value ? new Date(input.value + 'T12:00:00') : now;
-    draw(popup, date.getFullYear(), date.getMonth());
-    const wrap = button.closest('.edu-header-calendar-wrap');
-    document.body.appendChild(popup);
-    popup.hidden = false; button.setAttribute('aria-expanded', 'true'); opened = {popup, button, wrap}; place();
-  });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
-  window.addEventListener('resize', place);
-  window.addEventListener('scroll', place, true);
+    function place() {
+        if (!opened) return;
+        const r = opened.button.getBoundingClientRect();
+        opened.popup.style.left = Math.max(8, Math.min(r.right - 224, innerWidth - 232)) + 'px';
+        const height = opened.popup.getBoundingClientRect().height || 260;
+        opened.popup.style.top = (r.bottom + 8 + height <= innerHeight ? r.bottom + 8 : Math.max(8, r.top - height - 8)) + 'px';
+    }
+    function draw(popup, year, month) {
+        const input = popup.querySelector('input[type="date"]');
+        const selected = input?.value || '';
+        const first = new Date(year, month, 1).getDay();
+        const days = new Date(year, month + 1, 0).getDate();
+        const head = document.createElement('div'); head.className = 'edu-calendar-head';
+        const title = document.createElement('strong');
+        title.textContent = new Date(year, month, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        head.append(title);
+        [-1, 1].forEach(step => {
+            const arrow = document.createElement('button'); arrow.type = 'button';
+            arrow.className = 'edu-calendar-arrow'; arrow.textContent = step < 0 ? '‹' : '›';
+            arrow.setAttribute('aria-label', step < 0 ? 'Previous month' : 'Next month');
+            arrow.addEventListener('click', () => draw(popup, year + Math.floor((month + step) / 12), (month + step + 12) % 12));
+            head.append(arrow);
+        });
+        const grid = document.createElement('div'); grid.className = 'edu-calendar-grid';
+        ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].forEach(day => {
+            const label = document.createElement('span'); label.className = 'edu-calendar-weekday'; label.textContent = day; grid.append(label);
+        });
+        for (let i = 0; i < Math.ceil((first + days) / 7) * 7; i++) {
+            const date = new Date(year, month, i - first + 1);
+            const value = date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate());
+            const day = document.createElement('button'); day.type = 'button'; day.className = 'edu-calendar-day';
+            day.textContent = date.getDate();
+            if (date.getMonth() !== month) day.classList.add('outside');
+            if (value === selected) day.classList.add('selected');
+            day.addEventListener('click', () => { if (input) { input.value = value; input.dispatchEvent(new Event('change', { bubbles: true })); } close(); });
+            grid.append(day);
+        }
+        popup.replaceChildren(input, head, grid);
+    }
+    document.addEventListener('click', event => {
+        const button = event.target.closest('.edu-header-calendar-btn');
+        if (!button) { if (opened && !opened.popup.contains(event.target)) close(); return; }
+        event.preventDefault();
+        if (opened?.button === button) { close(); return; }
+        close();
+        const popup = button.closest('.edu-header-calendar-wrap')?.querySelector('.edu-header-calendar-popup');
+        if (!popup) return;
+        const input = popup.querySelector('input[type="date"]');
+        const now = new Date();
+        if (input && !input.value) input.value = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+        const date = input?.value ? new Date(input.value + 'T12:00:00') : now;
+        draw(popup, date.getFullYear(), date.getMonth());
+        const wrap = button.closest('.edu-header-calendar-wrap');
+        document.body.appendChild(popup);
+        popup.hidden = false; button.setAttribute('aria-expanded', 'true'); opened = { popup, button, wrap }; place();
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+    window.addEventListener('resize', place);
+    window.addEventListener('scroll', place, true);
 })();
 
 /* Page-specific initialization moved from HTML: no inline JavaScript. */
 
 /* ra-faculty.html.txt */
 function initRawAssessmentFaculty() {
-/* Frontend demonstration only: saved scores are held in this browser session, not a backend. */
-(() => {
-  const students=[['2026-COE-001','Angel S. Villanueva'],['2026-COE-002','Bea M. Santos'],['2026-COE-003','Carl P. Reyes'],['2026-COE-004','Dana L. Cruz'],['2026-COE-005','Ella R. Garcia'],['2026-COE-006','Francis D. Lim'],['2026-COE-007','Gina A. Ramos'],['2026-COE-008','Hannah P. Tan']];
-  const assessments={quiz1:{max:20,co:'CO1',date:'Oct. 3, 2026',scores:[18,17,16,15,19,14,18,17]},quiz2:{max:20,co:'CO2',date:'Oct. 10, 2026',scores:[null,null,null,null,null,null,null,null]},lab1:{max:50,co:'CO1, CO2',date:'Sept. 19, 2026',scores:[42,45,40,38,47,41,44,46]},midterm:{max:100,co:'CO1–CO3',date:'Oct. 20, 2026',scores:[null,null,null,null,null,null,null,null]}};
-  const $=id=>document.getElementById(id), selector=$('rafAssessment'), body=$('rafRows');
-  if (!selector || !body) return;
-  let saved=false;
-  function render(){
-    const a=assessments[selector.value],q=$('rafSearch').value.trim().toLowerCase(),sort=$('rafSort').value;
-    $('rafMaxLabel').textContent=a.max;$('rafMaxInput').value=a.max;$('rafCO').textContent=a.co;$('rafDate').textContent=a.date;
-    const entered=a.scores.filter(v=>v!==null);
-    $('rafMaximum').textContent=entered.length?(entered.reduce((sum,v)=>sum+v,0)/entered.length/a.max*100).toFixed(1)+'%':'—';
-    $('rafEntered').textContent=a.scores.filter(v=>v!==null).length;$('rafStudents').textContent=students.length;
-    let indices=students.map((_,i)=>i).filter(i=>(students[i].join(' ')).toLowerCase().includes(q));
-    indices.sort((i,j)=>sort==='za'?students[j][1].localeCompare(students[i][1]):sort==='high'?(a.scores[j]??-1)-(a.scores[i]??-1):sort==='low'?(a.scores[i]??Infinity)-(a.scores[j]??Infinity):students[i][1].localeCompare(students[j][1]));
-    body.replaceChildren();
-    indices.forEach((i,n)=>{
-      const tr=document.createElement('tr'); const [id,name]=students[i],v=a.scores[i];
-      tr.innerHTML=`<td>${n+1}</td><td><span class="raf-id">${id}</span></td><td class="raf-student-name"></td><td><input class="raf-score-input" type="number" min="0" max="${a.max}" step="0.01" aria-label="Raw points for ${name}" value="${v??''}"></td><td class="raf-percentage">${v===null?'—':(v/a.max*100).toFixed(1)+'%'}</td><td><span class="sodh-status ${v===null?'in-progress':'complete'}">${v===null?'Pending':'Entered'}</span></td>`;
-      tr.querySelector('.raf-student-name').textContent=name;
-      tr.querySelector('input').addEventListener('input',e=>{
-        const value=e.target.value.trim(),num=Number(value);
-        if(value!==''&&(!Number.isFinite(num)||num<0||num>a.max)){e.target.setCustomValidity(`Enter a score from 0 to ${a.max}`);e.target.reportValidity();return;}
-        e.target.setCustomValidity('');a.scores[i]=value===''?null:num;
-        tr.querySelector('.raf-percentage').textContent=value===''?'—':(num/a.max*100).toFixed(1)+'%';
-        const status=tr.querySelector('.sodh-status');status.className='sodh-status '+(value===''?'in-progress':'complete');status.textContent=value===''?'Pending':'Entered';
-        $('rafEntered').textContent=a.scores.filter(v=>v!==null).length;
-        const entered=a.scores.filter(v=>v!==null);
-        $('rafMaximum').textContent=entered.length?(entered.reduce((sum,v)=>sum+v,0)/entered.length/a.max*100).toFixed(1)+'%':'—';
-        saved=false;$('rafMessage').textContent='Unsaved changes';
-      });body.append(tr);
-    });
-    $('rafEmpty').hidden=indices.length>0;
-  }
-  $('rafMaxInput').addEventListener('change', event => {
-    const assessment=assessments[selector.value];
-    const next=Number(event.target.value);
-    if (!Number.isFinite(next) || next <= 0 || next > 10000) {
-      event.target.setCustomValidity('Enter a total score greater than 0 and at most 10,000.');
-      event.target.reportValidity();
-      return;
-    }
-    if (assessment.scores.some(score => score !== null && score > next)) {
-      event.target.setCustomValidity('Total score cannot be less than an existing student score.');
-      event.target.reportValidity();
-      return;
-    }
-    event.target.setCustomValidity('');
-    assessment.max=next;
-    saved=false;
-    $('rafMessage').textContent='Total score updated for this assessment. Unsaved changes.';
-    render();
-  });
-  selector.addEventListener('change',()=>{saved=false;$('rafMessage').textContent='';render();});
-  $('rafSearch').addEventListener('input',render);$('rafSort').addEventListener('change',render);
-  $('rafSave').addEventListener('click',()=>{
-    if(body.querySelector('input:invalid')){body.querySelector('input:invalid').reportValidity();return;}
-    saved=true;$('rafMessage').textContent='Demo scores saved for this session only. Connect a backend to save permanently.';
-  });
-  render();
-})();
+    /* Frontend demonstration only: saved scores are held in this browser session, not a backend. */
+    (() => {
+        const students = [['2026-COE-001', 'Angel S. Villanueva'], ['2026-COE-002', 'Bea M. Santos'], ['2026-COE-003', 'Carl P. Reyes'], ['2026-COE-004', 'Dana L. Cruz'], ['2026-COE-005', 'Ella R. Garcia'], ['2026-COE-006', 'Francis D. Lim'], ['2026-COE-007', 'Gina A. Ramos'], ['2026-COE-008', 'Hannah P. Tan']];
+        const assessments = { quiz1: { max: 20, co: 'CO1', date: 'Oct. 3, 2026', scores: [18, 17, 16, 15, 19, 14, 18, 17] }, quiz2: { max: 20, co: 'CO2', date: 'Oct. 10, 2026', scores: [null, null, null, null, null, null, null, null] }, lab1: { max: 50, co: 'CO1, CO2', date: 'Sept. 19, 2026', scores: [42, 45, 40, 38, 47, 41, 44, 46] }, midterm: { max: 100, co: 'CO1–CO3', date: 'Oct. 20, 2026', scores: [null, null, null, null, null, null, null, null] } };
+        const $ = id => document.getElementById(id), selector = $('rafAssessment'), body = $('rafRows');
+        if (!selector || !body) return;
+        let saved = false;
+        function render() {
+            const a = assessments[selector.value], q = $('rafSearch').value.trim().toLowerCase(), sort = $('rafSort').value;
+            $('rafMaxLabel').textContent = a.max; $('rafMaxInput').value = a.max; $('rafCO').textContent = a.co; $('rafDate').textContent = a.date;
+            const entered = a.scores.filter(v => v !== null);
+            $('rafMaximum').textContent = entered.length ? (entered.reduce((sum, v) => sum + v, 0) / entered.length / a.max * 100).toFixed(1) + '%' : '—';
+            $('rafEntered').textContent = a.scores.filter(v => v !== null).length; $('rafStudents').textContent = students.length;
+            let indices = students.map((_, i) => i).filter(i => (students[i].join(' ')).toLowerCase().includes(q));
+            indices.sort((i, j) => sort === 'za' ? students[j][1].localeCompare(students[i][1]) : sort === 'high' ? (a.scores[j] ?? -1) - (a.scores[i] ?? -1) : sort === 'low' ? (a.scores[i] ?? Infinity) - (a.scores[j] ?? Infinity) : students[i][1].localeCompare(students[j][1]));
+            body.replaceChildren();
+            indices.forEach((i, n) => {
+                const tr = document.createElement('tr'); const [id, name] = students[i], v = a.scores[i];
+                tr.innerHTML = `<td>${n + 1}</td><td><span class="raf-id">${id}</span></td><td class="raf-student-name"></td><td><input class="raf-score-input" type="number" min="0" max="${a.max}" step="0.01" aria-label="Raw points for ${name}" value="${v ?? ''}"></td><td class="raf-percentage">${v === null ? '—' : (v / a.max * 100).toFixed(1) + '%'}</td><td><span class="sodh-status ${v === null ? 'in-progress' : 'complete'}">${v === null ? 'Pending' : 'Entered'}</span></td>`;
+                tr.querySelector('.raf-student-name').textContent = name;
+                tr.querySelector('input').addEventListener('input', e => {
+                    const value = e.target.value.trim(), num = Number(value);
+                    if (value !== '' && (!Number.isFinite(num) || num < 0 || num > a.max)) { e.target.setCustomValidity(`Enter a score from 0 to ${a.max}`); e.target.reportValidity(); return; }
+                    e.target.setCustomValidity(''); a.scores[i] = value === '' ? null : num;
+                    tr.querySelector('.raf-percentage').textContent = value === '' ? '—' : (num / a.max * 100).toFixed(1) + '%';
+                    const status = tr.querySelector('.sodh-status'); status.className = 'sodh-status ' + (value === '' ? 'in-progress' : 'complete'); status.textContent = value === '' ? 'Pending' : 'Entered';
+                    $('rafEntered').textContent = a.scores.filter(v => v !== null).length;
+                    const entered = a.scores.filter(v => v !== null);
+                    $('rafMaximum').textContent = entered.length ? (entered.reduce((sum, v) => sum + v, 0) / entered.length / a.max * 100).toFixed(1) + '%' : '—';
+                    saved = false; $('rafMessage').textContent = 'Unsaved changes';
+                }); body.append(tr);
+            });
+            $('rafEmpty').hidden = indices.length > 0;
+        }
+        $('rafMaxInput').addEventListener('change', event => {
+            const assessment = assessments[selector.value];
+            const next = Number(event.target.value);
+            if (!Number.isFinite(next) || next <= 0 || next > 10000) {
+                event.target.setCustomValidity('Enter a total score greater than 0 and at most 10,000.');
+                event.target.reportValidity();
+                return;
+            }
+            if (assessment.scores.some(score => score !== null && score > next)) {
+                event.target.setCustomValidity('Total score cannot be less than an existing student score.');
+                event.target.reportValidity();
+                return;
+            }
+            event.target.setCustomValidity('');
+            assessment.max = next;
+            saved = false;
+            $('rafMessage').textContent = 'Total score updated for this assessment. Unsaved changes.';
+            render();
+        });
+        selector.addEventListener('change', () => { saved = false; $('rafMessage').textContent = ''; render(); });
+        $('rafSearch').addEventListener('input', render); $('rafSort').addEventListener('change', render);
+        $('rafSave').addEventListener('click', () => {
+            if (body.querySelector('input:invalid')) { body.querySelector('input:invalid').reportValidity(); return; }
+            saved = true; $('rafMessage').textContent = 'Demo scores saved for this session only. Connect a backend to save permanently.';
+        });
+        render();
+    })();
 }
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initRawAssessmentFaculty, {once:true});
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initRawAssessmentFaculty, { once: true });
 else initRawAssessmentFaculty();
 
 /* so-faculty(20261012-150030).html.txt */
 document.addEventListener("DOMContentLoaded", function () {
-  const courseOutcomeBody = document.getElementById("courseOutcomesTableBody");
-  if (!courseOutcomeBody) return;
-  function styleAlignedSOs() {
-    courseOutcomeBody.querySelectorAll("tr:not(.sof-outcome-empty-row)").forEach(function (row) {
-      const cells = row.querySelectorAll("td");
-      if (cells.length < 3) return;
-      const alignedCell = cells[2];
-      if (alignedCell.querySelector(".sof-aligned-so")) return;
-      const values = alignedCell.textContent.split(",").map(value => value.trim()).filter(Boolean);
-      if (!values.length) return;
-      alignedCell.replaceChildren();
-      values.forEach(function (value) {
-        const pill = document.createElement("span");
-        pill.className = "sof-aligned-so";
-        pill.textContent = value;
-        alignedCell.appendChild(pill);
-      });
-    });
-  }
-  styleAlignedSOs();
-  new MutationObserver(styleAlignedSOs).observe(courseOutcomeBody, { childList: true, subtree: true });
+    const courseOutcomeBody = document.getElementById("courseOutcomesTableBody");
+    if (!courseOutcomeBody) return;
+    function styleAlignedSOs() {
+        courseOutcomeBody.querySelectorAll("tr:not(.sof-outcome-empty-row)").forEach(function (row) {
+            const cells = row.querySelectorAll("td");
+            if (cells.length < 3) return;
+            const alignedCell = cells[2];
+            if (alignedCell.querySelector(".sof-aligned-so")) return;
+            const values = alignedCell.textContent.split(",").map(value => value.trim()).filter(Boolean);
+            if (!values.length) return;
+            alignedCell.replaceChildren();
+            values.forEach(function (value) {
+                const pill = document.createElement("span");
+                pill.className = "sof-aligned-so";
+                pill.textContent = value;
+                alignedCell.appendChild(pill);
+            });
+        });
+    }
+    styleAlignedSOs();
+    new MutationObserver(styleAlignedSOs).observe(courseOutcomeBody, { childList: true, subtree: true });
 });
 
 /* ra-student(1).html.txt */
 document.addEventListener("DOMContentLoaded", function () {
-/* Demo-only filtering. Backend must provide authenticated student records and release flags. */
-(function () {
-  const tbody = document.getElementById('raRows');
-  const search = document.getElementById('raSearch');
-  const type = document.getElementById('raType');
-  const sort = document.getElementById('raSort');
-  if (!tbody || !search || !type || !sort) return;
-  const rows = Array.from(tbody.querySelectorAll('tr'));
-  function render() {
-    const query = search.value.trim().toLowerCase();
-    const filtered = rows.filter(row => row.textContent.toLowerCase().includes(query) && (type.value === 'all' || row.dataset.type === type.value));
-    filtered.sort((a,b) => sort.value === 'name' ? a.cells[0].textContent.localeCompare(b.cells[0].textContent) : sort.value === 'oldest' ? a.dataset.date.localeCompare(b.dataset.date) : b.dataset.date.localeCompare(a.dataset.date));
-    tbody.replaceChildren(...filtered);
-    document.getElementById('raEmpty').hidden = filtered.length !== 0;
-  }
-  [search,type,sort].forEach(el => el.addEventListener(el === search ? 'input' : 'change',render));
-  render();
-})();
+    /* Demo-only filtering. Backend must provide authenticated student records and release flags. */
+    (function () {
+        const tbody = document.getElementById('raRows');
+        const search = document.getElementById('raSearch');
+        const type = document.getElementById('raType');
+        const sort = document.getElementById('raSort');
+        if (!tbody || !search || !type || !sort) return;
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        function render() {
+            const query = search.value.trim().toLowerCase();
+            const filtered = rows.filter(row => row.textContent.toLowerCase().includes(query) && (type.value === 'all' || row.dataset.type === type.value));
+            filtered.sort((a, b) => sort.value === 'name' ? a.cells[0].textContent.localeCompare(b.cells[0].textContent) : sort.value === 'oldest' ? a.dataset.date.localeCompare(b.dataset.date) : b.dataset.date.localeCompare(a.dataset.date));
+            tbody.replaceChildren(...filtered);
+            document.getElementById('raEmpty').hidden = filtered.length !== 0;
+        }
+        [search, type, sort].forEach(el => el.addEventListener(el === search ? 'input' : 'change', render));
+        render();
+    })();
 });
 
 /* AC Student: attainment search, release filter and sort. */
 (function () {
-  function init() {
-    const body = document.getElementById('ac-attainment-rows');
-    const search = document.getElementById('ac-attainment-search');
-    const release = document.getElementById('ac-attainment-release');
-    const sort = document.getElementById('ac-attainment-sort');
-    if (!body || !search || !release || !sort) return;
-    const rows = Array.from(body.querySelectorAll('tr'));
-    function update() {
-      const term = search.value.trim().toLowerCase();
-      const filter = release.value;
-      const ordered = rows.slice().sort((a,b) => {
-        if (sort.value === 'course') return a.cells[0].textContent.localeCompare(b.cells[0].textContent);
-        if (sort.value === 'outcome') return a.cells[1].textContent.localeCompare(b.cells[1].textContent,undefined,{numeric:true});
-        return rows.indexOf(a)-rows.indexOf(b);
-      });
-      let count=0;
-      ordered.forEach(row => {
-        const status = row.cells[4].textContent.trim().toLowerCase();
-        const visible = row.textContent.toLowerCase().includes(term) && (filter === 'all' || status === filter);
-        row.hidden = !visible;
-        if (visible) count++;
-        body.appendChild(row);
-      });
-      const empty = document.getElementById('ac-attainment-empty');
-      if (empty) empty.hidden = count !== 0;
+    function init() {
+        const body = document.getElementById('ac-attainment-rows');
+        const search = document.getElementById('ac-attainment-search');
+        const release = document.getElementById('ac-attainment-release');
+        const sort = document.getElementById('ac-attainment-sort');
+        if (!body || !search || !release || !sort) return;
+        const rows = Array.from(body.querySelectorAll('tr'));
+        function update() {
+            const term = search.value.trim().toLowerCase();
+            const filter = release.value;
+            const ordered = rows.slice().sort((a, b) => {
+                if (sort.value === 'course') return a.cells[0].textContent.localeCompare(b.cells[0].textContent);
+                if (sort.value === 'outcome') return a.cells[1].textContent.localeCompare(b.cells[1].textContent, undefined, { numeric: true });
+                return rows.indexOf(a) - rows.indexOf(b);
+            });
+            let count = 0;
+            ordered.forEach(row => {
+                const status = row.cells[4].textContent.trim().toLowerCase();
+                const visible = row.textContent.toLowerCase().includes(term) && (filter === 'all' || status === filter);
+                row.hidden = !visible;
+                if (visible) count++;
+                body.appendChild(row);
+            });
+            const empty = document.getElementById('ac-attainment-empty');
+            if (empty) empty.hidden = count !== 0;
+        }
+        search.addEventListener('input', update);
+        release.addEventListener('change', update);
+        sort.addEventListener('change', update);
     }
-    search.addEventListener('input',update);
-    release.addEventListener('change',update);
-    sort.addEventListener('change',update);
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',init); else init();
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 
 /* AC DEPARTMENT HEAD — independent tab, filter and assessment controller */
 (function () {
-  "use strict";
-  function initAcDepartmentHead() {
-    const page = document.querySelector(".ac-dept-head-page");
-    if (!page || page.dataset.acDhInitialized === "true") return;
-    const byId = id => page.querySelector("#" + id);
-    const tabs = [byId("acDhTabAttainment"), byId("acDhTabApproval")];
-    const panels = [byId("acDhPanelAttainment"), byId("acDhPanelApproval")];
-    if (tabs.some(tab => !tab) || panels.some(panel => !panel)) return;
-    page.dataset.acDhInitialized = "true";
-    function activate(index) {
-      tabs.forEach((tab, i) => {
-        const selected = i === index;
-        tab.classList.toggle("active", selected);
-        tab.setAttribute("aria-selected", String(selected));
-        tab.tabIndex = selected ? 0 : -1;
-        panels[i].hidden = !selected;
-        panels[i].setAttribute("aria-hidden", String(!selected));
-        panels[i].style.setProperty("display", selected ? "block" : "none", "important");
-      });
-    }
-    tabs.forEach((tab, index) => {
-      tab.addEventListener("click", event => { event.preventDefault(); activate(index); });
-      tab.addEventListener("keydown", event => {
-        if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
-        event.preventDefault();
-        const next = (index + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
-        activate(next);
-        tabs[next].focus();
-      });
-    });
-    const search = byId("acDhSearch");
-    const course = byId("acDhCourse");
-    const section = byId("acDhSection");
-    const department = byId("acDhDepartment");
-    const program = byId("acDhProgram");
-    const year = byId("acDhYear");
-    const attainmentRows = [...byId("acDhAttainmentRows").rows];
-    const approvalRows = [...byId("acDhApprovalRows").rows];
-    function filterRows() {
-      const term = search.value.trim().toLowerCase();
-      const courseValue = course.value;
-      const sectionValue = section.value;
-      function apply(rows) {
-        let visible = 0;
-        rows.forEach(row => {
-          const matches = (!term || row.textContent.toLowerCase().includes(term)) &&
-            (!courseValue || row.dataset.course === courseValue) &&
-            (!sectionValue || row.dataset.section === sectionValue);
-          row.hidden = !matches;
-          if (matches) visible++;
+    "use strict";
+    function initAcDepartmentHead() {
+        const page = document.querySelector(".ac-dept-head-page");
+        if (!page || page.dataset.acDhInitialized === "true") return;
+        const byId = id => page.querySelector("#" + id);
+        const tabs = [byId("acDhTabAttainment"), byId("acDhTabApproval")];
+        const panels = [byId("acDhPanelAttainment"), byId("acDhPanelApproval")];
+        if (tabs.some(tab => !tab) || panels.some(panel => !panel)) return;
+        page.dataset.acDhInitialized = "true";
+        function activate(index) {
+            tabs.forEach((tab, i) => {
+                const selected = i === index;
+                tab.classList.toggle("active", selected);
+                tab.setAttribute("aria-selected", String(selected));
+                tab.tabIndex = selected ? 0 : -1;
+                panels[i].hidden = !selected;
+                panels[i].setAttribute("aria-hidden", String(!selected));
+                panels[i].style.setProperty("display", selected ? "block" : "none", "important");
+            });
+        }
+        tabs.forEach((tab, index) => {
+            tab.addEventListener("click", event => { event.preventDefault(); activate(index); });
+            tab.addEventListener("keydown", event => {
+                if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+                event.preventDefault();
+                const next = (index + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+                activate(next);
+                tabs[next].focus();
+            });
         });
-        return visible;
-      }
-      const visibleAttainment = apply(attainmentRows);
-      const visibleApproval = apply(approvalRows);
-      byId("acDhEmptyAttainment").hidden = visibleAttainment !== 0;
-      byId("acDhEmptyApproval").hidden = visibleApproval !== 0;
-      const filtered = attainmentRows.filter(row => !row.hidden);
-      byId("acDhTotal").textContent = String(filtered.length);
-      byId("acDhMet").textContent = String(filtered.filter(row => row.dataset.status === "met").length);
-      byId("acDhBelow").textContent = String(filtered.filter(row => row.dataset.status === "below").length);
+        const search = byId("acDhSearch");
+        const course = byId("acDhCourse");
+        const section = byId("acDhSection");
+        const department = byId("acDhDepartment");
+        const program = byId("acDhProgram");
+        const year = byId("acDhYear");
+        const attainmentRows = [...byId("acDhAttainmentRows").rows];
+        const approvalRows = [...byId("acDhApprovalRows").rows];
+        function filterRows() {
+            const term = search.value.trim().toLowerCase();
+            const courseValue = course.value;
+            const sectionValue = section.value;
+            function apply(rows) {
+                let visible = 0;
+                rows.forEach(row => {
+                    const matches = (!term || row.textContent.toLowerCase().includes(term)) &&
+                        (!courseValue || row.dataset.course === courseValue) &&
+                        (!sectionValue || row.dataset.section === sectionValue);
+                    row.hidden = !matches;
+                    if (matches) visible++;
+                });
+                return visible;
+            }
+            const visibleAttainment = apply(attainmentRows);
+            const visibleApproval = apply(approvalRows);
+            byId("acDhEmptyAttainment").hidden = visibleAttainment !== 0;
+            byId("acDhEmptyApproval").hidden = visibleApproval !== 0;
+            const filtered = attainmentRows.filter(row => !row.hidden);
+            byId("acDhTotal").textContent = String(filtered.length);
+            byId("acDhMet").textContent = String(filtered.filter(row => row.dataset.status === "met").length);
+            byId("acDhBelow").textContent = String(filtered.filter(row => row.dataset.status === "below").length);
+        }
+        [search, course, section].forEach(input => input.addEventListener(input === search ? "input" : "change", filterRows));
+        byId("acDhReset").addEventListener("click", () => {
+            search.value = "";
+            course.value = "";
+            section.value = "";
+            department.value = "";
+            program.value = "";
+            year.selectedIndex = 0;
+            filterRows();
+        });
+        const dialog = byId("acDhDialog");
+        page.addEventListener("click", event => {
+            const button = event.target.closest(".ac-dh-view");
+            if (!button || !button.closest("#acDhAttainmentRows")) return;
+            const row = button.closest("tr");
+            byId("acDhDialogTitle").textContent = row.dataset.co + " — Assessment Breakdown";
+            byId("acDhDialogDetails").textContent =
+                row.dataset.course + " · " + row.dataset.section + "\n" +
+                "Faculty: " + row.dataset.faculty + "\n\n" +
+                row.dataset.assessments + "\n\n" +
+                "These are illustrative assessment inputs, not verified gradebook records.";
+            if (typeof dialog.showModal === "function") dialog.showModal();
+        });
+        [byId("acDhDialogClose"), byId("acDhDialogDone")].forEach(button => button.addEventListener("click", () => dialog.close()));
+        dialog.addEventListener("click", event => { if (event.target === dialog) dialog.close(); });
+        activate(window.location.hash === "#gradebook-approval" ? 1 : 0);
+        filterRows();
     }
-    [search, course, section].forEach(input => input.addEventListener(input === search ? "input" : "change", filterRows));
-    byId("acDhReset").addEventListener("click", () => {
-      search.value = "";
-      course.value = "";
-      section.value = "";
-      department.value = "";
-      program.value = "";
-      year.selectedIndex = 0;
-      filterRows();
-    });
-    const dialog = byId("acDhDialog");
-    page.addEventListener("click", event => {
-      const button = event.target.closest(".ac-dh-view");
-      if (!button || !button.closest("#acDhAttainmentRows")) return;
-      const row = button.closest("tr");
-      byId("acDhDialogTitle").textContent = row.dataset.co + " — Assessment Breakdown";
-      byId("acDhDialogDetails").textContent =
-        row.dataset.course + " · " + row.dataset.section + "\n" +
-        "Faculty: " + row.dataset.faculty + "\n\n" +
-        row.dataset.assessments + "\n\n" +
-        "These are illustrative assessment inputs, not verified gradebook records.";
-      if (typeof dialog.showModal === "function") dialog.showModal();
-    });
-    [byId("acDhDialogClose"), byId("acDhDialogDone")].forEach(button => button.addEventListener("click", () => dialog.close()));
-    dialog.addEventListener("click", event => { if (event.target === dialog) dialog.close(); });
-    activate(window.location.hash === "#gradebook-approval" ? 1 : 0);
-    filterRows();
-  }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initAcDepartmentHead);
-  else initAcDepartmentHead();
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initAcDepartmentHead);
+    else initAcDepartmentHead();
 })();
 
 
 
 /* Requirement 08 — Department Head Compliance Reports (scoped; shared script.js) */
 (function () {
-  'use strict';
-  function init() {
-    const page=document.querySelector('.rp-dept-head-page');
-    if(!page)return;
-    const $=id=>document.getElementById(id);
-    const rows=Array.from(page.querySelectorAll('#rpDhRows tr'));
-    const dialog=$('rpDhDialog');
-    let selected=null;
-    const details={
-      'SYL-COE232-2026':['Approved syllabus and course-outcome / student-outcome mapping.','Includes approved syllabus structure, CO/SO alignment, and assessment mapping.'],
-      'GM-COE232-2026':['Approved and locked gradebook summary.','Includes authorized class master grading records; individual student grades are not exposed in this demo.'],
-      'CQI-COE232-2026':['Approved Continuous Quality Improvement action summary.','Includes unmet Course Outcome evidence, interventions, and expected improvements.']
-    };
-    const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    function get(row){const c=row.cells;return {id:row.dataset.id,type:row.dataset.type,course:c[1].querySelector('strong').textContent.trim(),section:c[1].querySelector('small').textContent.trim(),owner:c[2].textContent.trim(),updated:c[3].textContent.trim(),status:row.dataset.status,description:c[5].textContent.trim()};}
-    function apply(){const q=$('rpDhSearch').value.trim().toLowerCase(),type=$('rpDhType').value,status=$('rpDhStatus').value,year=$('rpDhYear').value,department=$('rpDhDepartment').value,program=$('rpDhProgram').value,course=$('rpDhCourse').value,section=$('rpDhSection').value;let count=0;rows.forEach(r=>{const ok=(!q||r.textContent.toLowerCase().includes(q))&&(type==='all'||r.dataset.type===type)&&(status==='all'||r.dataset.status===status)&&(year===r.dataset.year)&&(department==='all'||r.dataset.department===department)&&(program==='all'||r.dataset.program===program)&&(course==='all'||r.dataset.course===course)&&(section==='all'||r.dataset.section===section);r.hidden=!ok;if(ok)count++;});$('rpDhEmpty').hidden=count!==0;}
-    ['rpDhSearch','rpDhType','rpDhStatus','rpDhYear','rpDhDepartment','rpDhProgram','rpDhCourse','rpDhSection'].forEach(id=>$(id).addEventListener(id==='rpDhSearch'?'input':'change',apply));
-    function previewMarkup(row){const d=get(row),extra=details[d.id]||[d.description,''];return '<p>'+esc(extra[0])+'</p><dl>'+[['Report ID',d.id],['Report Type',d.type],['Course',d.course],['Section',d.section],['Faculty / Owner',d.owner],['Updated',d.updated],['Status',d.status],['Scope','Department Head · authorized records']].map(([k,v])=>'<div><dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd></div>').join('')+'</dl><h3>Report Details</h3><p>'+esc(extra[1])+'</p><p><em>Demonstration report only. Official records require backend authorization.</em></p>';}
-    function open(row){selected=row;$('rpDhDialogTitle').textContent=get(row).type;$('rpDhDialogBody').innerHTML=previewMarkup(row);dialog.showModal();}
-    function close(){if(dialog.open)dialog.close();}
-    function htmlReport(row){const d=get(row),extra=details[d.id]||[d.description,''];return '<!doctype html><html><head><meta charset="utf-8"><title>'+esc(d.type)+'</title><style>body{font-family:Arial,sans-serif;max-width:850px;margin:30px auto;padding:20px;color:#004179}h1{border-bottom:5px solid #f4c300;padding-bottom:14px}dt{font-weight:bold;margin-top:12px}dd{margin:3px 0 10px}</style></head><body><h1>EduMetrics · '+esc(d.type)+'</h1><p>'+esc(extra[0])+'</p><dl>'+[['Report ID',d.id],['Course',d.course],['Section',d.section],['Owner',d.owner],['Updated',d.updated],['Status',d.status]].map(([k,v])=>'<dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd>').join('')+'</dl><h2>Report Details</h2><p>'+esc(extra[1])+'</p><p>Demo only — not an official academic record.</p></body></html>';}
-    function downloadBlob(name,data,type){const url=URL.createObjectURL(new Blob([data],{type}));const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);}
-    function download(row){downloadBlob(get(row).id+'-demo-report.html',htmlReport(row),'text/html;charset=utf-8');}
-    function print(row){const w=window.open('','_blank');if(!w){alert('Please allow pop-ups to print the report.');return;}w.document.open();w.document.write(htmlReport(row));w.document.close();w.focus();w.print();}
-    page.addEventListener('click',e=>{const b=e.target.closest('[data-rpdh-action]');if(!b)return;const row=b.closest('tr');if(!row)return;e.preventDefault();if(b.dataset.rpdhAction==='view')open(row);if(b.dataset.rpdhAction==='download')download(row);if(b.dataset.rpdhAction==='print')print(row);});
-    $('rpDhClose').addEventListener('click',close);$('rpDhDone').addEventListener('click',close);
-    $('rpDhDialogDownload').addEventListener('click',()=>{if(selected)download(selected);});
-    $('rpDhDialogPrint').addEventListener('click',()=>{if(selected)print(selected);});
-    dialog.addEventListener('click',e=>{if(e.target===dialog)close();});
-    $('rpDhExport').addEventListener('click',()=>{const columns=[['Report ID','Report Type','Course','Section','Owner','Updated','Status','Description'],...rows.filter(r=>!r.hidden).map(r=>{const d=get(r);return [d.id,d.type,d.course,d.section,d.owner,d.updated,d.status,d.description];})];downloadBlob('department-head-compliance-index.csv',columns.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n'),'text/csv;charset=utf-8');});
-    apply();
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+    'use strict';
+    function init() {
+        const page = document.querySelector('.rp-dept-head-page');
+        if (!page) return;
+        const $ = id => document.getElementById(id);
+        const rows = Array.from(page.querySelectorAll('#rpDhRows tr'));
+        const dialog = $('rpDhDialog');
+        let selected = null;
+        const details = {
+            'SYL-COE232-2026': ['Approved syllabus and course-outcome / student-outcome mapping.', 'Includes approved syllabus structure, CO/SO alignment, and assessment mapping.'],
+            'GM-COE232-2026': ['Approved and locked gradebook summary.', 'Includes authorized class master grading records; individual student grades are not exposed in this demo.'],
+            'CQI-COE232-2026': ['Approved Continuous Quality Improvement action summary.', 'Includes unmet Course Outcome evidence, interventions, and expected improvements.']
+        };
+        const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        function get(row) { const c = row.cells; return { id: row.dataset.id, type: row.dataset.type, course: c[1].querySelector('strong').textContent.trim(), section: c[1].querySelector('small').textContent.trim(), owner: c[2].textContent.trim(), updated: c[3].textContent.trim(), status: row.dataset.status, description: c[5].textContent.trim() }; }
+        function apply() { const q = $('rpDhSearch').value.trim().toLowerCase(), type = $('rpDhType').value, status = $('rpDhStatus').value, year = $('rpDhYear').value, department = $('rpDhDepartment').value, program = $('rpDhProgram').value, course = $('rpDhCourse').value, section = $('rpDhSection').value; let count = 0; rows.forEach(r => { const ok = (!q || r.textContent.toLowerCase().includes(q)) && (type === 'all' || r.dataset.type === type) && (status === 'all' || r.dataset.status === status) && (year === r.dataset.year) && (department === 'all' || r.dataset.department === department) && (program === 'all' || r.dataset.program === program) && (course === 'all' || r.dataset.course === course) && (section === 'all' || r.dataset.section === section); r.hidden = !ok; if (ok) count++; }); $('rpDhEmpty').hidden = count !== 0; }
+        ['rpDhSearch', 'rpDhType', 'rpDhStatus', 'rpDhYear', 'rpDhDepartment', 'rpDhProgram', 'rpDhCourse', 'rpDhSection'].forEach(id => $(id).addEventListener(id === 'rpDhSearch' ? 'input' : 'change', apply));
+        function previewMarkup(row) { const d = get(row), extra = details[d.id] || [d.description, '']; return '<p>' + esc(extra[0]) + '</p><dl>' + [['Report ID', d.id], ['Report Type', d.type], ['Course', d.course], ['Section', d.section], ['Faculty / Owner', d.owner], ['Updated', d.updated], ['Status', d.status], ['Scope', 'Department Head · authorized records']].map(([k, v]) => '<div><dt>' + esc(k) + '</dt><dd>' + esc(v) + '</dd></div>').join('') + '</dl><h3>Report Details</h3><p>' + esc(extra[1]) + '</p><p><em>Demonstration report only. Official records require backend authorization.</em></p>'; }
+        function open(row) { selected = row; $('rpDhDialogTitle').textContent = get(row).type; $('rpDhDialogBody').innerHTML = previewMarkup(row); dialog.showModal(); }
+        function close() { if (dialog.open) dialog.close(); }
+        function htmlReport(row) { const d = get(row), extra = details[d.id] || [d.description, '']; return '<!doctype html><html><head><meta charset="utf-8"><title>' + esc(d.type) + '</title><style>body{font-family:Arial,sans-serif;max-width:850px;margin:30px auto;padding:20px;color:#004179}h1{border-bottom:5px solid #f4c300;padding-bottom:14px}dt{font-weight:bold;margin-top:12px}dd{margin:3px 0 10px}</style></head><body><h1>EduMetrics · ' + esc(d.type) + '</h1><p>' + esc(extra[0]) + '</p><dl>' + [['Report ID', d.id], ['Course', d.course], ['Section', d.section], ['Owner', d.owner], ['Updated', d.updated], ['Status', d.status]].map(([k, v]) => '<dt>' + esc(k) + '</dt><dd>' + esc(v) + '</dd>').join('') + '</dl><h2>Report Details</h2><p>' + esc(extra[1]) + '</p><p>Demo only — not an official academic record.</p></body></html>'; }
+        function downloadBlob(name, data, type) { const url = URL.createObjectURL(new Blob([data], { type })); const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1500); }
+        function download(row) { downloadBlob(get(row).id + '-demo-report.html', htmlReport(row), 'text/html;charset=utf-8'); }
+        function print(row) { const w = window.open('', '_blank'); if (!w) { alert('Please allow pop-ups to print the report.'); return; } w.document.open(); w.document.write(htmlReport(row)); w.document.close(); w.focus(); w.print(); }
+        page.addEventListener('click', e => { const b = e.target.closest('[data-rpdh-action]'); if (!b) return; const row = b.closest('tr'); if (!row) return; e.preventDefault(); if (b.dataset.rpdhAction === 'view') open(row); if (b.dataset.rpdhAction === 'download') download(row); if (b.dataset.rpdhAction === 'print') print(row); });
+        $('rpDhClose').addEventListener('click', close); $('rpDhDone').addEventListener('click', close);
+        $('rpDhDialogDownload').addEventListener('click', () => { if (selected) download(selected); });
+        $('rpDhDialogPrint').addEventListener('click', () => { if (selected) print(selected); });
+        dialog.addEventListener('click', e => { if (e.target === dialog) close(); });
+        $('rpDhExport').addEventListener('click', () => { const columns = [['Report ID', 'Report Type', 'Course', 'Section', 'Owner', 'Updated', 'Status', 'Description'], ...rows.filter(r => !r.hidden).map(r => { const d = get(r); return [d.id, d.type, d.course, d.section, d.owner, d.updated, d.status, d.description]; })]; downloadBlob('department-head-compliance-index.csv', columns.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\r\n'), 'text/csv;charset=utf-8'); });
+        apply();
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true }); else init();
 })();
 
 
 /* Requirement 7 — GL Department Head: scoped interactive prototype. */
-(function(){'use strict';
-function init(){const page=document.querySelector('.gl-dept-head-page');if(!page)return;
-const $=id=>document.getElementById(id),rows=[...$('glRows').rows],dialog=$('glDialog');let active=null,mode='review';
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function state(row){return {id:row.dataset.id,course:row.cells[0].querySelector('small').textContent.split('2026')[0].trim(),section:row.dataset.course,faculty:row.dataset.faculty,students:row.dataset.students,assessments:row.dataset.assessments,check:row.dataset.check,grades:row.dataset.grades,mapping:row.dataset.mapping,attainment:row.dataset.attainment,status:row.dataset.status};}
-function counts(){$('glPending').textContent=rows.filter(r=>['For Verification','Draft'].includes(r.dataset.status)).length;$('glLocked').textContent=rows.filter(r=>r.dataset.status==='Locked').length;$('glIssues').textContent=rows.filter(r=>r.dataset.check!=='clean').length;}
-function filter(){const q=$('glSearch').value.toLowerCase().trim(),course=$('glCourse').value,section=$('glSection').value,department=$('glDepartment').value,program=$('glProgram').value;let n=0;rows.forEach(r=>{const ok=(!q||r.textContent.toLowerCase().includes(q))&&(!course||r.dataset.course===course)&&(!section||r.dataset.course===section)&&(!department||department==='Engineering')&&(!program||program==='BS CpE');r.hidden=!ok;if(ok)n++;});$('glCount').textContent=n+' gradebook(s)';$('glEmpty').hidden=n>0;}
-function details(items){return '<div class="gl-detail-grid">'+items.map(([k,v])=>'<div class="gl-detail"><span>'+esc(k)+'</span><strong>'+esc(v)+'</strong></div>').join('')+'</div>';}
-function btn(text,kind,action){return '<button type="button" class="gl-btn '+kind+'" data-gl-dialog="'+action+'">'+text+'</button>';}
-function show(row,action){active=row;mode=action;const d=state(row);let title='',content='',actions=btn('Close','gl-outline','close');if(action==='review'){title='Gradebook Review Details';content=details([['Gradebook / Course',d.id+' · '+d.course],['Section / Faculty',d.section+' · '+d.faculty],['Academic Year / Students','2026–2027 · '+d.students+' students'],['Assessments',d.assessments+' assessments'],['Raw Scores',d.grades],['Calculated Grades',d.grades==='Complete'?'Verified':'Pending'],['CO/SO Mappings',d.mapping],['Attainment',d.attainment]])+'<div class="gl-notice">Data validation: '+(d.check==='clean'?'0 missing scores, 0 incomplete assessments, 0 invalid entries, 0 unmapped CO/SO records.':'2 missing scores, 1 incomplete assessment, 0 invalid entries, 1 unmapped CO/SO record.')+'</div><h3>Audit history</h3><div class="gl-notice">Submitted for verification · '+esc(d.faculty)+' · Oct 12, 2026</div>';}
-if(action==='verify'){title='Verify Gradebook';content=details([['Gradebook',d.id+' · '+d.course],['Section / Faculty',d.section+' · '+d.faculty],['Raw Scores / Grades',d.grades],['CO/SO / Attainment',d.mapping+' / '+d.attainment]])+'<div class="gl-notice">Confirm student records, raw scores, grade calculations, assessment weights, CO/SO mappings and attainment. Any unresolved issues block verification.</div><label for="glReason">Verification remarks</label><textarea id="glReason" placeholder="Record checks performed and verification notes…"></textarea><p id="glDialogError" class="gl-error" hidden></p>';actions=btn('Cancel','gl-outline','close')+btn('Mark Verified','gl-gold','confirm');}
-if(action==='reopen'){title='Reopen Locked Gradebook';content=details([['Locked Gradebook',d.id+' · '+d.course]])+'<div class="gl-notice">Reopening allows corrections and changes the status to Reopened. The gradebook must be re-verified before it can be locked again.</div><label for="glReason">Required reason for reopening</label><textarea id="glReason" placeholder="Explain why reopening is necessary…"></textarea><p id="glDialogError" class="gl-error" hidden></p>';actions=btn('Cancel','gl-outline','close')+btn('Reopen Gradebook','gl-red-outline','confirm');}
-if(action==='lock'){title='Confirm Gradebook Lock';content='<p>Lock <strong>'+esc(d.id)+'</strong>? The gradebook will be marked read-only in this prototype. Only a verified record without unresolved issues can be locked.</p><div class="gl-notice">This action will be recorded in the locking history. Corrections require an authorized reopening reason.</div>';actions=btn('Cancel','gl-outline','close')+btn('Confirm Lock','gl-gold','confirm');}
-$('glDialogTitle').textContent=title;$('glDialogContent').innerHTML=content;$('glDialogActions').innerHTML=actions;if(!dialog.open)dialog.showModal();}
-function close(){if(dialog.open)dialog.close();}
-function updateRow(row,status){row.dataset.status=status;const badge=row.querySelector('.gl-row-status');badge.textContent=status;badge.className='gl-pill gl-row-status '+(['Verified','Locked'].includes(status)?'gl-green':status==='For Verification'?'gl-yellow':'gl-muted');const action=row.querySelector('.gl-actions');const type=status==='Locked'?'reopen':status==='Verified'?'lock':'verify';action.querySelector('[data-gl-action]:last-child').outerHTML=btn(status==='Locked'?'Reopen':status==='Verified'?'Lock':'Verify',type==='reopen'?'gl-red-outline':type==='lock'?'gl-outline':'gl-gold',type).replace('data-gl-dialog','data-gl-action');}
-function history(row,action,remark){const d=state(row),tr=document.createElement('tr');[d.id,action,'Department Head',new Date().toLocaleString(),remark||'—'].forEach(value=>{const td=document.createElement('td');td.textContent=value;tr.append(td)});$('glHistory').prepend(tr);}
-function approved(){const list=rows.filter(r=>['Locked','Verified'].includes(r.dataset.status));$('glApprovedList').innerHTML=list.length?list.map(r=>'<p><strong>'+esc(r.dataset.id)+'</strong> — '+esc(r.dataset.status)+'</p>').join(''):'<p>No approved gradebooks yet.</p>';}
-$('glRows').addEventListener('click',e=>{const button=e.target.closest('button[data-gl-action]');if(button)show(button.closest('tr'),button.dataset.glAction);});
-dialog.addEventListener('click',e=>{const button=e.target.closest('button[data-gl-dialog]');if(!button)return;if(button.dataset.glDialog==='close'){close();return;}if(!active)return;const d=state(active),remark=$('glReason')?.value.trim()||'';let next='';if(mode==='verify'){if(d.check!=='clean'||d.grades!=='Complete'||d.mapping!=='Verified'||d.attainment!=='Verified'){const el=$('glDialogError');el.hidden=false;el.textContent='Verification blocked: resolve missing or incomplete data, grades, mappings and attainment first.';return;}next='Verified';}else if(mode==='lock'){if(d.status!=='Verified'||d.check!=='clean')return;next='Locked';}else if(mode==='reopen'){if(!remark){const el=$('glDialogError');el.hidden=false;el.textContent='Please provide a reason for reopening.';return;}next='Reopened';}if(next){updateRow(active,next);history(active,next,remark);counts();filter();approved();close();}});
-$('glDialogX').addEventListener('click',close);dialog.addEventListener('click',e=>{if(e.target===dialog)close();});
-page.querySelectorAll('[data-gl-tab]').forEach(tab=>tab.addEventListener('click',()=>{page.querySelectorAll('[data-gl-tab]').forEach(t=>{const yes=t===tab;t.classList.toggle('active',yes);t.setAttribute('aria-selected',String(yes));});page.querySelectorAll('[data-gl-panel]').forEach(p=>p.hidden=p.dataset.glPanel!==tab.dataset.glTab);approved();}));
-$('glSearch').addEventListener('input',filter);['glCourse','glSection','glDepartment','glProgram','glYear'].forEach(id=>$(id).addEventListener('change',filter));$('glReset').addEventListener('click',()=>{$('glSearch').value='';['glCourse','glSection','glDepartment','glProgram'].forEach(id=>$(id).value='');filter();});
-$('glExport')?.addEventListener('click',()=>{const data=[['Gradebook','Course','Faculty','Students','Assessments','Status'],...rows.map(r=>{const d=state(r);return[d.id,d.section,d.faculty,d.students,d.assessments,d.status]})];const csv=data.map(a=>a.map(s=>'"'+String(s).replace(/"/g,'""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='gradebook-locking-index.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);});
-counts();filter();approved();}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+(function () {
+    'use strict';
+    function init() {
+        const page = document.querySelector('.gl-dept-head-page'); if (!page) return;
+        const $ = id => document.getElementById(id), rows = [...$('glRows').rows], dialog = $('glDialog'); let active = null, mode = 'review';
+        const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        function state(row) { return { id: row.dataset.id, course: row.cells[0].querySelector('small').textContent.split('2026')[0].trim(), section: row.dataset.course, faculty: row.dataset.faculty, students: row.dataset.students, assessments: row.dataset.assessments, check: row.dataset.check, grades: row.dataset.grades, mapping: row.dataset.mapping, attainment: row.dataset.attainment, status: row.dataset.status }; }
+        function counts() { $('glPending').textContent = rows.filter(r => ['For Verification', 'Draft'].includes(r.dataset.status)).length; $('glLocked').textContent = rows.filter(r => r.dataset.status === 'Locked').length; $('glIssues').textContent = rows.filter(r => r.dataset.check !== 'clean').length; }
+        function filter() { const q = $('glSearch').value.toLowerCase().trim(), course = $('glCourse').value, section = $('glSection').value, department = $('glDepartment').value, program = $('glProgram').value; let n = 0; rows.forEach(r => { const ok = (!q || r.textContent.toLowerCase().includes(q)) && (!course || r.dataset.course === course) && (!section || r.dataset.course === section) && (!department || department === 'Engineering') && (!program || program === 'BS CpE'); r.hidden = !ok; if (ok) n++; }); $('glCount').textContent = n + ' gradebook(s)'; $('glEmpty').hidden = n > 0; }
+        function details(items) { return '<div class="gl-detail-grid">' + items.map(([k, v]) => '<div class="gl-detail"><span>' + esc(k) + '</span><strong>' + esc(v) + '</strong></div>').join('') + '</div>'; }
+        function btn(text, kind, action) { return '<button type="button" class="gl-btn ' + kind + '" data-gl-dialog="' + action + '">' + text + '</button>'; }
+        function show(row, action) {
+            active = row; mode = action; const d = state(row); let title = '', content = '', actions = btn('Close', 'gl-outline', 'close'); if (action === 'review') { title = 'Gradebook Review Details'; content = details([['Gradebook / Course', d.id + ' · ' + d.course], ['Section / Faculty', d.section + ' · ' + d.faculty], ['Academic Year / Students', '2026–2027 · ' + d.students + ' students'], ['Assessments', d.assessments + ' assessments'], ['Raw Scores', d.grades], ['Calculated Grades', d.grades === 'Complete' ? 'Verified' : 'Pending'], ['CO/SO Mappings', d.mapping], ['Attainment', d.attainment]]) + '<div class="gl-notice">Data validation: ' + (d.check === 'clean' ? '0 missing scores, 0 incomplete assessments, 0 invalid entries, 0 unmapped CO/SO records.' : '2 missing scores, 1 incomplete assessment, 0 invalid entries, 1 unmapped CO/SO record.') + '</div><h3>Audit history</h3><div class="gl-notice">Submitted for verification · ' + esc(d.faculty) + ' · Oct 12, 2026</div>'; }
+            if (action === 'verify') { title = 'Verify Gradebook'; content = details([['Gradebook', d.id + ' · ' + d.course], ['Section / Faculty', d.section + ' · ' + d.faculty], ['Raw Scores / Grades', d.grades], ['CO/SO / Attainment', d.mapping + ' / ' + d.attainment]]) + '<div class="gl-notice">Confirm student records, raw scores, grade calculations, assessment weights, CO/SO mappings and attainment. Any unresolved issues block verification.</div><label for="glReason">Verification remarks</label><textarea id="glReason" placeholder="Record checks performed and verification notes…"></textarea><p id="glDialogError" class="gl-error" hidden></p>'; actions = btn('Cancel', 'gl-outline', 'close') + btn('Mark Verified', 'gl-gold', 'confirm'); }
+            if (action === 'reopen') { title = 'Reopen Locked Gradebook'; content = details([['Locked Gradebook', d.id + ' · ' + d.course]]) + '<div class="gl-notice">Reopening allows corrections and changes the status to Reopened. The gradebook must be re-verified before it can be locked again.</div><label for="glReason">Required reason for reopening</label><textarea id="glReason" placeholder="Explain why reopening is necessary…"></textarea><p id="glDialogError" class="gl-error" hidden></p>'; actions = btn('Cancel', 'gl-outline', 'close') + btn('Reopen Gradebook', 'gl-red-outline', 'confirm'); }
+            if (action === 'lock') { title = 'Confirm Gradebook Lock'; content = '<p>Lock <strong>' + esc(d.id) + '</strong>? The gradebook will be marked read-only in this prototype. Only a verified record without unresolved issues can be locked.</p><div class="gl-notice">This action will be recorded in the locking history. Corrections require an authorized reopening reason.</div>'; actions = btn('Cancel', 'gl-outline', 'close') + btn('Confirm Lock', 'gl-gold', 'confirm'); }
+            $('glDialogTitle').textContent = title; $('glDialogContent').innerHTML = content; $('glDialogActions').innerHTML = actions; if (!dialog.open) dialog.showModal();
+        }
+        function close() { if (dialog.open) dialog.close(); }
+        function updateRow(row, status) { row.dataset.status = status; const badge = row.querySelector('.gl-row-status'); badge.textContent = status; badge.className = 'gl-pill gl-row-status ' + (['Verified', 'Locked'].includes(status) ? 'gl-green' : status === 'For Verification' ? 'gl-yellow' : 'gl-muted'); const action = row.querySelector('.gl-actions'); const type = status === 'Locked' ? 'reopen' : status === 'Verified' ? 'lock' : 'verify'; action.querySelector('[data-gl-action]:last-child').outerHTML = btn(status === 'Locked' ? 'Reopen' : status === 'Verified' ? 'Lock' : 'Verify', type === 'reopen' ? 'gl-red-outline' : type === 'lock' ? 'gl-outline' : 'gl-gold', type).replace('data-gl-dialog', 'data-gl-action'); }
+        function history(row, action, remark) { const d = state(row), tr = document.createElement('tr');[d.id, action, 'Department Head', new Date().toLocaleString(), remark || '—'].forEach(value => { const td = document.createElement('td'); td.textContent = value; tr.append(td) }); $('glHistory').prepend(tr); }
+        function approved() { const list = rows.filter(r => ['Locked', 'Verified'].includes(r.dataset.status)); $('glApprovedList').innerHTML = list.length ? list.map(r => '<p><strong>' + esc(r.dataset.id) + '</strong> — ' + esc(r.dataset.status) + '</p>').join('') : '<p>No approved gradebooks yet.</p>'; }
+        $('glRows').addEventListener('click', e => { const button = e.target.closest('button[data-gl-action]'); if (button) show(button.closest('tr'), button.dataset.glAction); });
+        dialog.addEventListener('click', e => { const button = e.target.closest('button[data-gl-dialog]'); if (!button) return; if (button.dataset.glDialog === 'close') { close(); return; } if (!active) return; const d = state(active), remark = $('glReason')?.value.trim() || ''; let next = ''; if (mode === 'verify') { if (d.check !== 'clean' || d.grades !== 'Complete' || d.mapping !== 'Verified' || d.attainment !== 'Verified') { const el = $('glDialogError'); el.hidden = false; el.textContent = 'Verification blocked: resolve missing or incomplete data, grades, mappings and attainment first.'; return; } next = 'Verified'; } else if (mode === 'lock') { if (d.status !== 'Verified' || d.check !== 'clean') return; next = 'Locked'; } else if (mode === 'reopen') { if (!remark) { const el = $('glDialogError'); el.hidden = false; el.textContent = 'Please provide a reason for reopening.'; return; } next = 'Reopened'; } if (next) { updateRow(active, next); history(active, next, remark); counts(); filter(); approved(); close(); } });
+        $('glDialogX').addEventListener('click', close); dialog.addEventListener('click', e => { if (e.target === dialog) close(); });
+        page.querySelectorAll('[data-gl-tab]').forEach(tab => tab.addEventListener('click', () => { page.querySelectorAll('[data-gl-tab]').forEach(t => { const yes = t === tab; t.classList.toggle('active', yes); t.setAttribute('aria-selected', String(yes)); }); page.querySelectorAll('[data-gl-panel]').forEach(p => p.hidden = p.dataset.glPanel !== tab.dataset.glTab); approved(); }));
+        $('glSearch').addEventListener('input', filter);['glCourse', 'glSection', 'glDepartment', 'glProgram', 'glYear'].forEach(id => $(id).addEventListener('change', filter)); $('glReset').addEventListener('click', () => { $('glSearch').value = '';['glCourse', 'glSection', 'glDepartment', 'glProgram'].forEach(id => $(id).value = ''); filter(); });
+        $('glExport')?.addEventListener('click', () => { const data = [['Gradebook', 'Course', 'Faculty', 'Students', 'Assessments', 'Status'], ...rows.map(r => { const d = state(r); return [d.id, d.section, d.faculty, d.students, d.assessments, d.status] })]; const csv = data.map(a => a.map(s => '"' + String(s).replace(/"/g, '""') + '"').join(',')).join('\r\n'); const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = 'gradebook-locking-index.csv'; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000); });
+        counts(); filter(); approved();
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true }); else init();
 })();
 
 
 /* Shared Department Head navigation and calendar. */
-(function(){'use strict';function init(){if(!document.body.classList.contains('dept-head-unified'))return;
-const page=decodeURIComponent(location.pathname).split('/').pop().toLowerCase();
-document.querySelectorAll('.so-subnav a[href]').forEach(a=>{let u;try{u=new URL(a.getAttribute('href'),location.href)}catch{return}const yes=decodeURIComponent(u.pathname).split('/').pop().toLowerCase()===page;a.classList.toggle('active',yes);if(yes)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
-document.querySelectorAll('.so-nav-group details').forEach(d=>{const s=d.querySelector('summary');if(!s)return;const sync=()=>s.setAttribute('aria-expanded',String(d.open));sync();d.addEventListener('toggle',sync)});
-}
+(function () {
+    'use strict'; function init() {
+        if (!document.body.classList.contains('dept-head-unified')) return;
+        const page = decodeURIComponent(location.pathname).split('/').pop().toLowerCase();
+        document.querySelectorAll('.so-subnav a[href]').forEach(a => { let u; try { u = new URL(a.getAttribute('href'), location.href) } catch { return } const yes = decodeURIComponent(u.pathname).split('/').pop().toLowerCase() === page; a.classList.toggle('active', yes); if (yes) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current') });
+        document.querySelectorAll('.so-nav-group details').forEach(d => { const s = d.querySelector('summary'); if (!s) return; const sync = () => s.setAttribute('aria-expanded', String(d.open)); sync(); d.addEventListener('toggle', sync) });
+    }
 
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();})();
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true }); else init();
+})();
 
 /* Logged-in main information pages: reuse role-specific navigation and header. */
 (function () {
-  function initLoggedInInfoPage() {
-    const page = document.querySelector('.ed-platform-page, .ed-resources-inside-page, .ed-about-inside-page');
-    if (!page) return;
-    // Select the signed-in role before changing any shared page shell.
-    const normalize = value => ({ 'department-head': 'dept-head', 'department_head': 'dept-head', 'depthead': 'dept-head' }[value] || value);
-    const requested = new URLSearchParams(location.search).get('role');
-    const stored = sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || sessionStorage.getItem('verifiedRole');
-    const role = normalize((requested || stored || 'student').toLowerCase());
-    if (role === 'admin') {
-      page.querySelectorAll('a[href]').forEach(function (link) {
-        const target = new URL(link.getAttribute('href'), location.href);
-        const filename = decodeURIComponent(target.pathname).split('/').pop().toLowerCase();
-        if (/^blog[1-6]\.html$|^brochure[1-6]\.html$/.test(filename) ||
-            ['platform.html', 'resources.html', 'about us.html'].includes(filename)) {
-          target.searchParams.set('role', 'admin');
-          link.href = target.href;
+    function initLoggedInInfoPage() {
+        const page = document.querySelector('.ed-platform-page, .ed-resources-inside-page, .ed-about-inside-page');
+        if (!page) return;
+        // Select the signed-in role before changing any shared page shell.
+        const normalize = value => ({ 'department-head': 'dept-head', 'department_head': 'dept-head', 'depthead': 'dept-head' }[value] || value);
+        const requested = new URLSearchParams(location.search).get('role');
+        const stored = sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || sessionStorage.getItem('verifiedRole');
+        const role = normalize((requested || stored || 'student').toLowerCase());
+        if (role === 'admin') {
+            page.querySelectorAll('a[href]').forEach(function (link) {
+                const target = new URL(link.getAttribute('href'), location.href);
+                const filename = decodeURIComponent(target.pathname).split('/').pop().toLowerCase();
+                if (/^blog[1-6]\.html$|^brochure[1-6]\.html$/.test(filename) ||
+                    ['platform.html', 'resources.html', 'about us.html'].includes(filename)) {
+                    target.searchParams.set('role', 'admin');
+                    link.href = target.href;
+                }
+            });
         }
-      });
+        if (role === 'admin') { sessionStorage.setItem('edumetricsRole', 'admin'); sessionStorage.setItem('userRole', 'admin'); const shell = document.getElementById('ed-admin-shell'); if (shell) { const nodes = shell.content.cloneNode(true);['.so-topbar', '.so-header-lines', '.so-sidebar'].forEach(selector => { const current = page.querySelector(selector), replacement = nodes.querySelector(selector); if (current && replacement) current.replaceWith(replacement); }); page.querySelectorAll('.so-sidebar a[href]').forEach(link => { const target = new URL(link.getAttribute('href'), location.href); if (['platform.html', 'resources.html', 'about us.html'].includes(decodeURIComponent(target.pathname).split('/').pop().toLowerCase())) { target.searchParams.set('role', 'admin'); link.href = target.href; } }); } document.dispatchEvent(new Event('edumetrics:profile-shell-ready')); return; }
+        const selected = ['student', 'faculty', 'dept-head'].includes(role) ? role : 'student';
+        sessionStorage.setItem('edumetricsRole', selected);
+        sessionStorage.setItem('userRole', selected);
+        // Carry the selected role into resource detail URLs instead of relying on stale session state.
+        page.querySelectorAll('a[href]').forEach(function (link) {
+            const target = new URL(link.getAttribute('href'), location.href);
+            const filename = decodeURIComponent(target.pathname).split('/').pop().toLowerCase();
+            if (/^blog[1-6]\.html$|^brochure[1-6]\.html$/.test(filename) ||
+                ['platform.html', 'resources.html', 'about us.html', 'dashboard.html'].includes(filename)) {
+                target.searchParams.set('role', selected);
+                link.href = target.href;
+            }
+        });
+        const template = document.getElementById('nav-template-' + selected);
+        const current = page.querySelector('.so-sidebar .so-nav');
+        if (template && current) current.replaceWith(template.content.cloneNode(true));
+        const pathname = decodeURIComponent(location.pathname).split('/').pop().toLowerCase();
+        page.querySelectorAll('.so-sidebar .so-nav > a[href]').forEach(link => {
+            const target = new URL(link.getAttribute('href'), location.href);
+            const active = decodeURIComponent(target.pathname).split('/').pop().toLowerCase() === pathname;
+            link.classList.toggle('sd-active', active);
+            link.classList.toggle('active', active);
+            if (active) link.setAttribute('aria-current', 'page');
+            else link.removeAttribute('aria-current');
+        });
+        const label = selected === 'dept-head' ? 'Department Head' : selected === 'faculty' ? 'Faculty' : 'Student';
+        const info = page.querySelector('.so-user-info');
+        if (info) {
+            const name = info.querySelector('strong');
+            const subtitle = info.querySelector('span');
+            if (name) name.textContent = label;
+            if (subtitle) subtitle.textContent = label;
+        }
+        page.dataset.dashboardRole = selected;
+        document.dispatchEvent(new Event('edumetrics:nav-ready'));
+        document.dispatchEvent(new Event('edumetrics:profile-shell-ready'));
     }
-    if (role === 'admin') { sessionStorage.setItem('edumetricsRole', 'admin'); sessionStorage.setItem('userRole', 'admin'); const shell = document.getElementById('ed-admin-shell'); if (shell) { const nodes = shell.content.cloneNode(true); ['.so-topbar','.so-header-lines','.so-sidebar'].forEach(selector => { const current = page.querySelector(selector), replacement = nodes.querySelector(selector); if (current && replacement) current.replaceWith(replacement); }); page.querySelectorAll('.so-sidebar a[href]').forEach(link => { const target = new URL(link.getAttribute('href'), location.href); if (['platform.html','resources.html','about us.html'].includes(decodeURIComponent(target.pathname).split('/').pop().toLowerCase())) { target.searchParams.set('role','admin'); link.href = target.href; } }); } document.dispatchEvent(new Event('edumetrics:profile-shell-ready')); return; }
-    const selected = ['student', 'faculty', 'dept-head'].includes(role) ? role : 'student';
-    sessionStorage.setItem('edumetricsRole', selected);
-    sessionStorage.setItem('userRole', selected);
-    // Carry the selected role into resource detail URLs instead of relying on stale session state.
-    page.querySelectorAll('a[href]').forEach(function (link) {
-      const target = new URL(link.getAttribute('href'), location.href);
-      const filename = decodeURIComponent(target.pathname).split('/').pop().toLowerCase();
-      if (/^blog[1-6]\.html$|^brochure[1-6]\.html$/.test(filename) ||
-          ['platform.html', 'resources.html', 'about us.html', 'dashboard.html'].includes(filename)) {
-        target.searchParams.set('role', selected);
-        link.href = target.href;
-      }
-    });
-    const template = document.getElementById('nav-template-' + selected);
-    const current = page.querySelector('.so-sidebar .so-nav');
-    if (template && current) current.replaceWith(template.content.cloneNode(true));
-    const pathname = decodeURIComponent(location.pathname).split('/').pop().toLowerCase();
-    page.querySelectorAll('.so-sidebar .so-nav > a[href]').forEach(link => {
-      const target = new URL(link.getAttribute('href'), location.href);
-      const active = decodeURIComponent(target.pathname).split('/').pop().toLowerCase() === pathname;
-      link.classList.toggle('sd-active', active);
-      link.classList.toggle('active', active);
-      if (active) link.setAttribute('aria-current', 'page');
-      else link.removeAttribute('aria-current');
-    });
-    const label = selected === 'dept-head' ? 'Department Head' : selected === 'faculty' ? 'Faculty' : 'Student';
-    const info = page.querySelector('.so-user-info');
-    if (info) {
-      const name = info.querySelector('strong');
-      const subtitle = info.querySelector('span');
-      if (name) name.textContent = label;
-      if (subtitle) subtitle.textContent = label;
-    }
-    page.dataset.dashboardRole = selected;
-    document.dispatchEvent(new Event('edumetrics:nav-ready'));
-    document.dispatchEvent(new Event('edumetrics:profile-shell-ready'));
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initLoggedInInfoPage);
-  else initLoggedInInfoPage();
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initLoggedInInfoPage);
+    else initLoggedInInfoPage();
 })();
 
 
 /* Shared logged-in article and brochure shell; reuse the existing Resources header/sidebar. */
 (function () {
-  async function initSharedResourceDetail() {
-    const body = document.body;
-    if ((!body.classList.contains('blog-page') && !body.classList.contains('brochure-page')) || body.dataset.blogLayoutReady) return;
-    const normalize = value => ({'department-head':'dept-head','department_head':'dept-head','depthead':'dept-head'}[value] || value);
-    const params = new URLSearchParams(location.search);
-    const stored = sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || sessionStorage.getItem('verifiedRole') || '';
-    const role = normalize((params.get('role') || stored).toLowerCase());
-    if (!['student','faculty','dept-head','admin'].includes(role)) return;
-    sessionStorage.setItem('edumetricsRole', role);
-    sessionStorage.setItem('userRole', role);
-    const originalMain = body.querySelector('main.blog-main, main.brochure-main');
-    const originalHeader = body.querySelector('header.site-header');
-    if (!originalMain || !originalHeader) return;
-    const resourcesUrl = new URL('../../main/resources.html', location.href);
-    resourcesUrl.searchParams.set('role', role);
-    let source;
-    try {
-      const response = await fetch(resourcesUrl.href, {credentials:'same-origin'});
-      if (!response.ok) return;
-      source = new DOMParser().parseFromString(await response.text(), 'text/html');
-    } catch (_) { return; }
-    const sourceBody = source.body;
-    const topbar = sourceBody.querySelector('.so-topbar');
-    const lines = sourceBody.querySelector('.so-header-lines');
-    const sidebar = sourceBody.querySelector('.so-sidebar');
-    if (!topbar || !lines || !sidebar) return;
-    // Resolve existing Resources assets and links before moving its shell into this page.
-    [topbar, sidebar].forEach(root => root.querySelectorAll('[src],[href]').forEach(node => {
-      ['src','href'].forEach(attr => {
-        const value = node.getAttribute(attr);
-        if (value && !value.startsWith('#') && !/^(?:[a-z]+:|\/\/)/i.test(value)) node.setAttribute(attr, new URL(value, resourcesUrl).href);
-      });
-    }));
-    if (role === 'admin') {
-      const template = source.getElementById('ed-admin-shell');
-      if (template) {
-        const fragment = template.content.cloneNode(true);
-        ['.so-topbar','.so-header-lines','.so-sidebar'].forEach(selector => {
-          const old = sourceBody.querySelector(selector);
-          const fresh = fragment.querySelector(selector);
-          if (old && fresh) old.replaceWith(fresh);
+    async function initSharedResourceDetail() {
+        const body = document.body;
+        if ((!body.classList.contains('blog-page') && !body.classList.contains('brochure-page')) || body.dataset.blogLayoutReady) return;
+        const normalize = value => ({ 'department-head': 'dept-head', 'department_head': 'dept-head', 'depthead': 'dept-head' }[value] || value);
+        const params = new URLSearchParams(location.search);
+        const stored = sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || sessionStorage.getItem('verifiedRole') || '';
+        const role = normalize((params.get('role') || stored).toLowerCase());
+        if (!['student', 'faculty', 'dept-head', 'admin'].includes(role)) return;
+        sessionStorage.setItem('edumetricsRole', role);
+        sessionStorage.setItem('userRole', role);
+        const originalMain = body.querySelector('main.blog-main, main.brochure-main');
+        const originalHeader = body.querySelector('header.site-header');
+        if (!originalMain || !originalHeader) return;
+        const resourcesUrl = new URL('../../main/resources.html', location.href);
+        resourcesUrl.searchParams.set('role', role);
+        let source;
+        try {
+            const response = await fetch(resourcesUrl.href, { credentials: 'same-origin' });
+            if (!response.ok) return;
+            source = new DOMParser().parseFromString(await response.text(), 'text/html');
+        } catch (_) { return; }
+        const sourceBody = source.body;
+        const topbar = sourceBody.querySelector('.so-topbar');
+        const lines = sourceBody.querySelector('.so-header-lines');
+        const sidebar = sourceBody.querySelector('.so-sidebar');
+        if (!topbar || !lines || !sidebar) return;
+        // Resolve existing Resources assets and links before moving its shell into this page.
+        [topbar, sidebar].forEach(root => root.querySelectorAll('[src],[href]').forEach(node => {
+            ['src', 'href'].forEach(attr => {
+                const value = node.getAttribute(attr);
+                if (value && !value.startsWith('#') && !/^(?:[a-z]+:|\/\/)/i.test(value)) node.setAttribute(attr, new URL(value, resourcesUrl).href);
+            });
+        }));
+        if (role === 'admin') {
+            const template = source.getElementById('ed-admin-shell');
+            if (template) {
+                const fragment = template.content.cloneNode(true);
+                ['.so-topbar', '.so-header-lines', '.so-sidebar'].forEach(selector => {
+                    const old = sourceBody.querySelector(selector);
+                    const fresh = fragment.querySelector(selector);
+                    if (old && fresh) old.replaceWith(fresh);
+                });
+            }
+        } else {
+            const template = source.getElementById('nav-template-' + role);
+            const nav = sidebar.querySelector('.so-nav');
+            if (template && nav) nav.replaceWith(template.content.cloneNode(true));
+        }
+        const finalTopbar = sourceBody.querySelector('.so-topbar');
+        const finalLines = sourceBody.querySelector('.so-header-lines');
+        const finalSidebar = sourceBody.querySelector('.so-sidebar');
+        if (!finalTopbar || !finalLines || !finalSidebar) return;
+        [finalTopbar, finalSidebar].forEach(root => root.querySelectorAll('[src],[href]').forEach(node => {
+            ['src', 'href'].forEach(attr => {
+                const value = node.getAttribute(attr);
+                if (value && !value.startsWith('#') && !/^(?:[a-z]+:|\/\/)/i.test(value)) node.setAttribute(attr, new URL(value, resourcesUrl).href);
+            });
+        }));
+        const dashboard = new URL(role === 'admin' ? '../requirement 2/cm-admin.html' : 'dashboard.html', resourcesUrl);
+        if (role !== 'admin') dashboard.searchParams.set('role', role);
+        finalSidebar.querySelectorAll('a[href]').forEach(link => {
+            const file = decodeURIComponent(new URL(link.href, location.href).pathname).split('/').pop().toLowerCase();
+            if (file === 'dashboard.html' || (role === 'admin' && /^(dashboard|cm-admin)\.html$/.test(file))) link.href = dashboard.href;
+            if (['platform.html', 'resources.html', 'about us.html'].includes(file)) {
+                const target = new URL(link.href, location.href);
+                target.searchParams.set('role', role);
+                link.href = target.href;
+            }
+            const active = file === 'resources.html';
+            link.classList.toggle('active', active);
+            link.classList.toggle('sd-active', active);
+            if (active) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current');
         });
-      }
-    } else {
-      const template = source.getElementById('nav-template-' + role);
-      const nav = sidebar.querySelector('.so-nav');
-      if (template && nav) nav.replaceWith(template.content.cloneNode(true));
+        const roleName = { 'student': 'Student', 'faculty': 'Faculty', 'dept-head': 'Department Head', 'admin': 'Admin' }[role];
+        const info = finalTopbar.querySelector('.so-user-info');
+        if (info) {
+            const name = info.querySelector('strong');
+            const label = info.querySelector('span');
+            if (name) name.textContent = roleName;
+            if (label) label.textContent = roleName;
+        }
+        const breadcrumb = body.querySelector('.workflow-breadcrumb-wrap');
+        if (breadcrumb) {
+            const links = breadcrumb.querySelectorAll('a');
+            if (links.length === 1) links[0].href = resourcesUrl.href;
+            else {
+                if (links[0]) links[0].href = dashboard.href;
+                if (links[1]) links[1].href = resourcesUrl.href;
+            }
+            originalMain.prepend(breadcrumb);
+        }
+        originalMain.querySelectorAll('a[href]').forEach(link => {
+            const target = new URL(link.getAttribute('href'), location.href);
+            const file = decodeURIComponent(target.pathname).split('/').pop().toLowerCase();
+            if (file === 'resources.html' || /^blog[1-6]\.html$|^brochure[1-6]\.html$/.test(file)) {
+                target.searchParams.set('role', role);
+                link.href = target.href;
+            }
+        });
+        const shell = document.createElement('div');
+        shell.className = 'so-shell';
+        const main = document.createElement('main');
+        main.className = 'so-main ed-platform-main ed-inside-main ed-blog-main';
+        while (originalMain.firstChild) main.appendChild(originalMain.firstChild);
+        shell.append(finalSidebar, main);
+        originalMain.replaceWith(shell);
+        originalHeader.remove();
+        body.querySelector('footer.workflow-footer')?.remove();
+        body.prepend(finalTopbar, finalLines);
+        body.classList.add('so-student-page', 'ed-dashboard-page', 'ed-inside-page', 'ed-blog-inside');
+        body.dataset.dashboardRole = role;
+        body.dataset.blogLayoutReady = 'true';
+        document.dispatchEvent(new Event('edumetrics:profile-shell-ready'));
     }
-    const finalTopbar = sourceBody.querySelector('.so-topbar');
-    const finalLines = sourceBody.querySelector('.so-header-lines');
-    const finalSidebar = sourceBody.querySelector('.so-sidebar');
-    if (!finalTopbar || !finalLines || !finalSidebar) return;
-    [finalTopbar, finalSidebar].forEach(root => root.querySelectorAll('[src],[href]').forEach(node => {
-      ['src','href'].forEach(attr => {
-        const value = node.getAttribute(attr);
-        if (value && !value.startsWith('#') && !/^(?:[a-z]+:|\/\/)/i.test(value)) node.setAttribute(attr, new URL(value, resourcesUrl).href);
-      });
-    }));
-    const dashboard = new URL(role === 'admin' ? '../requirement 2/cm-admin.html' : 'dashboard.html', resourcesUrl);
-    if (role !== 'admin') dashboard.searchParams.set('role', role);
-    finalSidebar.querySelectorAll('a[href]').forEach(link => {
-      const file = decodeURIComponent(new URL(link.href, location.href).pathname).split('/').pop().toLowerCase();
-      if (file === 'dashboard.html' || (role === 'admin' && /^(dashboard|cm-admin)\.html$/.test(file))) link.href = dashboard.href;
-      if (['platform.html','resources.html','about us.html'].includes(file)) {
-        const target = new URL(link.href, location.href);
-        target.searchParams.set('role', role);
-        link.href = target.href;
-      }
-      const active = file === 'resources.html';
-      link.classList.toggle('active', active);
-      link.classList.toggle('sd-active', active);
-      if (active) link.setAttribute('aria-current','page'); else link.removeAttribute('aria-current');
-    });
-    const roleName = {'student':'Student','faculty':'Faculty','dept-head':'Department Head','admin':'Admin'}[role];
-    const info = finalTopbar.querySelector('.so-user-info');
-    if (info) {
-      const name = info.querySelector('strong');
-      const label = info.querySelector('span');
-      if (name) name.textContent = roleName;
-      if (label) label.textContent = roleName;
-    }
-    const breadcrumb = body.querySelector('.workflow-breadcrumb-wrap');
-    if (breadcrumb) {
-      const links = breadcrumb.querySelectorAll('a');
-      if (links.length === 1) links[0].href = resourcesUrl.href;
-      else {
-        if (links[0]) links[0].href = dashboard.href;
-        if (links[1]) links[1].href = resourcesUrl.href;
-      }
-      originalMain.prepend(breadcrumb);
-    }
-    originalMain.querySelectorAll('a[href]').forEach(link => {
-      const target = new URL(link.getAttribute('href'), location.href);
-      const file = decodeURIComponent(target.pathname).split('/').pop().toLowerCase();
-      if (file === 'resources.html' || /^blog[1-6]\.html$|^brochure[1-6]\.html$/.test(file)) {
-        target.searchParams.set('role', role);
-        link.href = target.href;
-      }
-    });
-    const shell = document.createElement('div');
-    shell.className = 'so-shell';
-    const main = document.createElement('main');
-    main.className = 'so-main ed-platform-main ed-inside-main ed-blog-main';
-    while (originalMain.firstChild) main.appendChild(originalMain.firstChild);
-    shell.append(finalSidebar, main);
-    originalMain.replaceWith(shell);
-    originalHeader.remove();
-    body.querySelector('footer.workflow-footer')?.remove();
-    body.prepend(finalTopbar, finalLines);
-    body.classList.add('so-student-page','ed-dashboard-page','ed-inside-page','ed-blog-inside');
-    body.dataset.dashboardRole = role;
-    body.dataset.blogLayoutReady = 'true';
-    document.dispatchEvent(new Event('edumetrics:profile-shell-ready'));
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initSharedResourceDetail, {once:true});
-  else initSharedResourceDetail();
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initSharedResourceDetail, { once: true });
+    else initSharedResourceDetail();
 })();
 
 /* Admin module behavior — shared script, one controller per page. */
 /* CM Admin — frontend page controller */
 (function () {
-  function init() {
-    if (!document.body.classList.contains("cm-admin-page")) return;
+    function init() {
+        if (!document.body.classList.contains("cm-admin-page")) return;
 
-(()=>{'use strict';
-const users=[{name:'System Administrator',email:'admin@edumetrics.edu',role:'Admin',department:'System',scope:'System-wide',status:'Active',login:'Sep. 30, 2026 01:32'},{name:'Dr. Maria L. Santos',email:'maria.santos@edumetrics.edu',role:'Department Head',department:'Engineering',scope:'Department-wide',status:'Active',login:'Sep. 30, 2026 01:20'},{name:'Jeffrey T. Leonen',email:'jeffrey.leonen@edumetrics.edu',role:'Faculty',department:'Engineering',scope:'Assigned Courses',status:'Active',login:'Sep. 29, 2026 16:44'},{name:'Angel S. Villanueva',email:'angel.villanueva@edumetrics.edu',role:'Student',department:'Engineering',scope:'Own Student Records',status:'Active',login:'Sep. 29, 2026 15:12'},{name:'Former Faculty Account',email:'former.faculty@edumetrics.edu',role:'Faculty',department:'Engineering',scope:'Assigned Courses',status:'Suspended',login:'Sep. 12, 2026 09:21'}];
-const logs=[['Sep. 30, 2026 01:34:44','SECURITY','System Administrator','Access Control','Updated role permissions','SEC-00421'],['Sep. 30, 2026 01:20:17','INFO','Dr. Maria L. Santos','Curriculum Mapping','Verified CO-SO mapping','MAP-COE232-003'],['Sep. 29, 2026 16:44:03','INFO','Jeffrey T. Leonen','Assessment Entry','Updated raw assessment scores','ASM-COE232-014'],['Sep. 29, 2026 14:26:28','WARNING','System','Attainment','CO below target','CO-COE232-003'],['Sep. 29, 2026 14:17:10','ERROR','System','CQI Planning','CQI record creation failed','CQI-COE232-003'],['Sep. 29, 2026 16:50:19','SECURITY','System Administrator','User Management','Suspended account','U-118']];
-const sessions=[{name:'System Administrator',role:'Admin',device:'Chrome · Windows',ip:'10.20.1.12',login:'01:32',activity:'01:44'},{name:'Dr. Maria L. Santos',role:'Department Head',device:'Edge · Windows',ip:'10.20.2.41',login:'01:20',activity:'01:43'},{name:'Jeffrey T. Leonen',role:'Faculty',device:'Chrome · Windows',ip:'10.20.3.18',login:'16:44',activity:'16:59'}];
-const $=id=>document.getElementById(id);const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function notice(title,msg){$('dialogTitle').textContent=title;$('dialogText').textContent=msg;$('detailDialog').showModal()}
-function tab(name){document.querySelectorAll('.cm-admin-page [data-tab]').forEach(b=>{const active=b.dataset.tab===name;b.setAttribute('aria-selected',String(active));b.classList.toggle('active',active)});document.querySelectorAll('.cm-admin-page [data-panel]').forEach(p=>{const active=p.dataset.panel===name;p.hidden=!active;p.classList.toggle('active',active)})}
-function renderUsers(){const dept=$('department').value,role=$('role').value,status=$('status').value;const filtered=users.filter(u=>(!dept||u.department===dept)&&(!role||u.role===role)&&(!status||u.status===status));$('usersBody').innerHTML=filtered.map((u)=>`<tr><td><strong>${esc(u.name)}</strong><small>${esc(u.email)}</small></td><td><span class="cm-pill blue">${esc(u.role)}</span></td><td>${esc(u.department)}</td><td>${esc(u.scope)}</td><td><span class="cm-pill ${u.status==='Active'?'':'red'}">${u.status}</span></td><td>${esc(u.login)}</td><td><div class="sodh-toolbar-actions"><button type="button" class="sodh-export-btn" data-manage="${users.indexOf(u)}">Manage Access</button>${u.role==='Admin'?'':`<button type="button" class="sodh-export-btn" data-toggle="${users.indexOf(u)}">${u.status==='Active'?'Suspend':'Reactivate'}</button>`}</div></td></tr>`).join('')||'<tr><td colspan="7" class="cm-empty">No matching users.</td></tr>';$('activeCount').textContent=users.filter(u=>u.status==='Active').length}
-function renderLogs(){const query=$('logSearch').value.toLowerCase(),level=$('logLevel').value,module=$('module').value;const rows=logs.filter(r=>(!level||r[1]===level)&&(!module||r[3]===module)&&(!query||r.join(' ').toLowerCase().includes(query)));$('logsBody').innerHTML=rows.map(r=>`<tr><td>${esc(r[0])}</td><td><span class="cm-pill ${r[1]==='ERROR'?'red':r[1]==='WARNING'?'warn':r[1]==='SECURITY'?'blue':''}">${esc(r[1])}</span></td><td>${esc(r[2])}</td><td>${esc(r[3])}</td><td>${esc(r[4])}</td><td><span class="cm-pill blue">${esc(r[5])}</span></td><td><button class="cm-btn sodh-export-btn cm-record-action" data-log="${logs.indexOf(r)}">View Details</button></td></tr>`).join('')||'<tr><td colspan="7" class="cm-empty">No matching audit records.</td></tr>'}
-function renderSessions(){$('sessionsBody').innerHTML=sessions.map((s,i)=>`<tr><td><strong>${esc(s.name)}</strong></td><td>${esc(s.role)}</td><td>${esc(s.device)}</td><td>${esc(s.ip)}</td><td>${esc(s.login)}</td><td>${esc(s.activity)}</td><td><button class="cm-btn sodh-export-btn cm-record-action cm-record-danger" data-terminate="${i}">Terminate</button></td></tr>`).join('')||'<tr><td colspan="7" class="cm-empty">No active sessions.</td></tr>';$('sessionCount').textContent=sessions.length+' Active'}
-function exportCsv(){const rows=[['Timestamp','Level','User','Module','Action','Record ID'],...logs];const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='edumetrics-audit-records.csv';a.click();URL.revokeObjectURL(url)}
-document.addEventListener('click',e=>{const b=e.target.closest('button,a[data-tab-link]');if(!b)return;if(b.matches('[data-tab],[data-tab-go],[data-tab-link]')){if(b.tagName==='A')e.preventDefault();tab(b.dataset.tab||b.dataset.tabGo||b.dataset.tabLink)}if(b.dataset.info){const [title,...rest]=b.dataset.info.split('|');notice(title,rest.join('|'))}if(b.dataset.manage!==undefined){const u=users[+b.dataset.manage];notice('Manage Access — '+u.name,'Role: '+u.role+'\nAccess scope: '+u.scope+'\n\nThis prototype is read-only for permission editing.')}if(b.dataset.toggle!==undefined){const u=users[+b.dataset.toggle];u.status=u.status==='Active'?'Suspended':'Active';renderUsers();notice('Account Status Updated',u.name+' is now '+u.status+'. Frontend demonstration only.')}if(b.dataset.log!==undefined){const r=logs[+b.dataset.log];notice('Audit Record '+r[5],r.join('\n'))}if(b.dataset.terminate!==undefined){const s=sessions.splice(+b.dataset.terminate,1)[0];renderSessions();notice('Session Terminated',s.name+' session removed from the prototype view.')} });
-$('closeDialog').addEventListener('click',()=>$('detailDialog').close());$('addUser').addEventListener('click',()=>notice('Add User','User creation will be connected to the backend. This frontend prototype does not create real accounts.'));$('exportLogs').addEventListener('click',exportCsv);$('refreshLogs').addEventListener('click',renderLogs);['department','role','status'].forEach(id=>$(id).addEventListener('change',renderUsers));$('module').addEventListener('change',renderLogs);$('logSearch').addEventListener('input',renderLogs);$('logLevel').addEventListener('change',renderLogs);renderUsers();renderLogs();renderSessions();tab('security');
-})();
+        (() => {
+            'use strict';
+            const users = [{ name: 'System Administrator', email: 'admin@edumetrics.edu', role: 'Admin', department: 'System', scope: 'System-wide', status: 'Active', login: 'Sep. 30, 2026 01:32' }, { name: 'Dr. Maria L. Santos', email: 'maria.santos@edumetrics.edu', role: 'Department Head', department: 'Engineering', scope: 'Department-wide', status: 'Active', login: 'Sep. 30, 2026 01:20' }, { name: 'Jeffrey T. Leonen', email: 'jeffrey.leonen@edumetrics.edu', role: 'Faculty', department: 'Engineering', scope: 'Assigned Courses', status: 'Active', login: 'Sep. 29, 2026 16:44' }, { name: 'Angel S. Villanueva', email: 'angel.villanueva@edumetrics.edu', role: 'Student', department: 'Engineering', scope: 'Own Student Records', status: 'Active', login: 'Sep. 29, 2026 15:12' }, { name: 'Former Faculty Account', email: 'former.faculty@edumetrics.edu', role: 'Faculty', department: 'Engineering', scope: 'Assigned Courses', status: 'Suspended', login: 'Sep. 12, 2026 09:21' }];
+            const logs = [['Sep. 30, 2026 01:34:44', 'SECURITY', 'System Administrator', 'Access Control', 'Updated role permissions', 'SEC-00421'], ['Sep. 30, 2026 01:20:17', 'INFO', 'Dr. Maria L. Santos', 'Curriculum Mapping', 'Verified CO-SO mapping', 'MAP-COE232-003'], ['Sep. 29, 2026 16:44:03', 'INFO', 'Jeffrey T. Leonen', 'Assessment Entry', 'Updated raw assessment scores', 'ASM-COE232-014'], ['Sep. 29, 2026 14:26:28', 'WARNING', 'System', 'Attainment', 'CO below target', 'CO-COE232-003'], ['Sep. 29, 2026 14:17:10', 'ERROR', 'System', 'CQI Planning', 'CQI record creation failed', 'CQI-COE232-003'], ['Sep. 29, 2026 16:50:19', 'SECURITY', 'System Administrator', 'User Management', 'Suspended account', 'U-118']];
+            const sessions = [{ name: 'System Administrator', role: 'Admin', device: 'Chrome · Windows', ip: '10.20.1.12', login: '01:32', activity: '01:44' }, { name: 'Dr. Maria L. Santos', role: 'Department Head', device: 'Edge · Windows', ip: '10.20.2.41', login: '01:20', activity: '01:43' }, { name: 'Jeffrey T. Leonen', role: 'Faculty', device: 'Chrome · Windows', ip: '10.20.3.18', login: '16:44', activity: '16:59' }];
+            const $ = id => document.getElementById(id); const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            function notice(title, msg) { $('dialogTitle').textContent = title; $('dialogText').textContent = msg; $('detailDialog').showModal() }
+            function tab(name) { document.querySelectorAll('.cm-admin-page [data-tab]').forEach(b => { const active = b.dataset.tab === name; b.setAttribute('aria-selected', String(active)); b.classList.toggle('active', active) }); document.querySelectorAll('.cm-admin-page [data-panel]').forEach(p => { const active = p.dataset.panel === name; p.hidden = !active; p.classList.toggle('active', active) }) }
+            function renderUsers() { const dept = $('department').value, role = $('role').value, status = $('status').value; const filtered = users.filter(u => (!dept || u.department === dept) && (!role || u.role === role) && (!status || u.status === status)); $('usersBody').innerHTML = filtered.map((u) => `<tr><td><strong>${esc(u.name)}</strong><small>${esc(u.email)}</small></td><td><span class="cm-pill blue">${esc(u.role)}</span></td><td>${esc(u.department)}</td><td>${esc(u.scope)}</td><td><span class="cm-pill ${u.status === 'Active' ? '' : 'red'}">${u.status}</span></td><td>${esc(u.login)}</td><td><div class="sodh-toolbar-actions"><button type="button" class="sodh-export-btn" data-manage="${users.indexOf(u)}">Manage Access</button>${u.role === 'Admin' ? '' : `<button type="button" class="sodh-export-btn" data-toggle="${users.indexOf(u)}">${u.status === 'Active' ? 'Suspend' : 'Reactivate'}</button>`}</div></td></tr>`).join('') || '<tr><td colspan="7" class="cm-empty">No matching users.</td></tr>'; $('activeCount').textContent = users.filter(u => u.status === 'Active').length }
+            function renderLogs() { const query = $('logSearch').value.toLowerCase(), level = $('logLevel').value, module = $('module').value; const rows = logs.filter(r => (!level || r[1] === level) && (!module || r[3] === module) && (!query || r.join(' ').toLowerCase().includes(query))); $('logsBody').innerHTML = rows.map(r => `<tr><td>${esc(r[0])}</td><td><span class="cm-pill ${r[1] === 'ERROR' ? 'red' : r[1] === 'WARNING' ? 'warn' : r[1] === 'SECURITY' ? 'blue' : ''}">${esc(r[1])}</span></td><td>${esc(r[2])}</td><td>${esc(r[3])}</td><td>${esc(r[4])}</td><td><span class="cm-pill blue">${esc(r[5])}</span></td><td><button class="cm-btn sodh-export-btn cm-record-action" data-log="${logs.indexOf(r)}">View Details</button></td></tr>`).join('') || '<tr><td colspan="7" class="cm-empty">No matching audit records.</td></tr>' }
+            function renderSessions() { $('sessionsBody').innerHTML = sessions.map((s, i) => `<tr><td><strong>${esc(s.name)}</strong></td><td>${esc(s.role)}</td><td>${esc(s.device)}</td><td>${esc(s.ip)}</td><td>${esc(s.login)}</td><td>${esc(s.activity)}</td><td><button class="cm-btn sodh-export-btn cm-record-action cm-record-danger" data-terminate="${i}">Terminate</button></td></tr>`).join('') || '<tr><td colspan="7" class="cm-empty">No active sessions.</td></tr>'; $('sessionCount').textContent = sessions.length + ' Active' }
+            function exportCsv() { const rows = [['Timestamp', 'Level', 'User', 'Module', 'Action', 'Record ID'], ...logs]; const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\r\n'); const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = 'edumetrics-audit-records.csv'; a.click(); URL.revokeObjectURL(url) }
+            document.addEventListener('click', e => { const b = e.target.closest('button,a[data-tab-link]'); if (!b) return; if (b.matches('[data-tab],[data-tab-go],[data-tab-link]')) { if (b.tagName === 'A') e.preventDefault(); tab(b.dataset.tab || b.dataset.tabGo || b.dataset.tabLink) } if (b.dataset.info) { const [title, ...rest] = b.dataset.info.split('|'); notice(title, rest.join('|')) } if (b.dataset.manage !== undefined) { const u = users[+b.dataset.manage]; notice('Manage Access — ' + u.name, 'Role: ' + u.role + '\nAccess scope: ' + u.scope + '\n\nThis prototype is read-only for permission editing.') } if (b.dataset.toggle !== undefined) { const u = users[+b.dataset.toggle]; u.status = u.status === 'Active' ? 'Suspended' : 'Active'; renderUsers(); notice('Account Status Updated', u.name + ' is now ' + u.status + '. Frontend demonstration only.') } if (b.dataset.log !== undefined) { const r = logs[+b.dataset.log]; notice('Audit Record ' + r[5], r.join('\n')) } if (b.dataset.terminate !== undefined) { const s = sessions.splice(+b.dataset.terminate, 1)[0]; renderSessions(); notice('Session Terminated', s.name + ' session removed from the prototype view.') } });
+            $('closeDialog').addEventListener('click', () => $('detailDialog').close()); $('addUser').addEventListener('click', () => notice('Add User', 'User creation will be connected to the backend. This frontend prototype does not create real accounts.')); $('exportLogs').addEventListener('click', exportCsv); $('refreshLogs').addEventListener('click', renderLogs);['department', 'role', 'status'].forEach(id => $(id).addEventListener('change', renderUsers)); $('module').addEventListener('change', renderLogs); $('logSearch').addEventListener('input', renderLogs); $('logLevel').addEventListener('change', renderLogs); renderUsers(); renderLogs(); renderSessions(); tab('security');
+        })();
 
-  }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, {once:true});
-  else init();
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
+    else init();
 })();
 
 /* AC Admin — frontend page controller */
 (function () {
-  function init() {
-    if (!document.body.classList.contains("ac-admin-page")) return;
+    function init() {
+        if (!document.body.classList.contains("ac-admin-page")) return;
 
-  (() => {
-    const tabs = [...document.querySelectorAll('.ac-tab')];
-    const panels = [...document.querySelectorAll('.ac-panel')];
-    const dept = document.getElementById('acDepartment');
-    const status = document.getElementById('acStatus');
-    const search = document.getElementById('acSearch');
-    const courseRows = [...document.querySelectorAll('#acCourseTable tbody tr')];
-    const deptRows = [...document.querySelectorAll('#acDepartmentTable tbody tr')];
-    const input = document.getElementById('acThresholdInput');
-    const current = document.getElementById('acCurrentThreshold');
-    const bar = document.getElementById('acThresholdBar');
-    let threshold = 70;
-    function showTab(id) {
-      tabs.forEach(tab => {const selected = tab.dataset.tab === id;tab.setAttribute('aria-selected', String(selected));tab.classList.toggle('active', selected);tab.tabIndex = selected ? 0 : -1;});
-      panels.forEach(panel => panel.hidden = panel.id !== 'panel-' + id);
+        (() => {
+            const tabs = [...document.querySelectorAll('.ac-tab')];
+            const panels = [...document.querySelectorAll('.ac-panel')];
+            const dept = document.getElementById('acDepartment');
+            const status = document.getElementById('acStatus');
+            const search = document.getElementById('acSearch');
+            const courseRows = [...document.querySelectorAll('#acCourseTable tbody tr')];
+            const deptRows = [...document.querySelectorAll('#acDepartmentTable tbody tr')];
+            const input = document.getElementById('acThresholdInput');
+            const current = document.getElementById('acCurrentThreshold');
+            const bar = document.getElementById('acThresholdBar');
+            let threshold = 70;
+            function showTab(id) {
+                tabs.forEach(tab => { const selected = tab.dataset.tab === id; tab.setAttribute('aria-selected', String(selected)); tab.classList.toggle('active', selected); tab.tabIndex = selected ? 0 : -1; });
+                panels.forEach(panel => panel.hidden = panel.id !== 'panel-' + id);
+            }
+            tabs.forEach(tab => tab.addEventListener('click', () => showTab(tab.dataset.tab)));
+            function applyFilters() {
+                const selected = dept.value;
+                const selectedStatus = status.value;
+                const q = search.value.toLowerCase().trim();
+                let visible = 0;
+                courseRows.forEach(row => {
+                    const score = Number(row.dataset.attain);
+                    const match = (!selected || row.dataset.dept === selected) && (!selectedStatus || (selectedStatus === 'on' ? score >= threshold : score < threshold)) && row.textContent.toLowerCase().includes(q);
+                    row.hidden = !match; if (match) visible++;
+                    const badge = row.querySelector('.ac-pill:not(.source)');
+                    badge.className = 'ac-pill ' + (score >= threshold ? 'good' : 'bad');
+                    badge.textContent = score >= threshold ? 'On Target' : 'Below Target';
+                    row.cells[5].textContent = threshold + '%';
+                });
+                deptRows.forEach(row => { row.hidden = !!selected && row.dataset.dept !== selected; });
+                document.getElementById('acResultCount').textContent = visible + ' result(s)';
+                document.getElementById('acCourseEmpty').hidden = visible !== 0;
+                document.getElementById('acDeptEmpty').hidden = deptRows.some(row => !row.hidden);
+            }
+            [dept, status, search].forEach(el => el.addEventListener(el === search ? 'input' : 'change', applyFilters));
+            const deptDialog = document.getElementById('acDeptDialog');
+            const deptDialogTitle = document.getElementById('acDeptDialogTitle');
+            const deptDialogSummary = document.getElementById('acDeptDialogSummary');
+            const deptDialogCourses = document.getElementById('acDeptDialogCourses');
+            let detailDepartment = '';
+            document.querySelectorAll('#acDepartmentTable [data-department]').forEach(button => button.addEventListener('click', () => {
+                const row = button.closest('tr');
+                if (!row || !deptDialog) return;
+                detailDepartment = button.dataset.department;
+                deptDialogTitle.textContent = detailDepartment + ' — Attainment Details';
+                deptDialogSummary.replaceChildren();
+                [['Programs', row.cells[1].textContent.trim()], ['Total COs', row.cells[3].textContent.trim()], ['Average Attainment', row.cells[6].querySelector('strong')?.textContent.trim() || '—']].forEach(([label, value]) => {
+                    const card = document.createElement('div');
+                    const caption = document.createElement('small'); caption.textContent = label;
+                    const number = document.createElement('strong'); number.textContent = value;
+                    card.append(caption, number); deptDialogSummary.append(card);
+                });
+                deptDialogCourses.replaceChildren();
+                const matches = courseRows.filter(course => course.dataset.dept === detailDepartment);
+                matches.forEach(course => {
+                    const item = document.createElement('div'); item.className = 'ac-dialog-course';
+                    const name = document.createElement('strong'); name.textContent = course.cells[1].textContent.trim().replace(/\s+/g, ' ');
+                    const detail = document.createElement('small'); detail.textContent = course.cells[3].textContent.trim().replace(/\s+/g, ' ') + ' · ' + course.cells[4].textContent.trim() + ' attainment';
+                    item.append(name, detail); deptDialogCourses.append(item);
+                });
+                if (!matches.length) { const empty = document.createElement('p'); empty.textContent = 'No individual course records are available in this demo for this department.'; deptDialogCourses.append(empty); }
+                deptDialog.showModal();
+            }));
+            ['acDeptDialogClose', 'acDeptDialogDismiss'].forEach(id => document.getElementById(id)?.addEventListener('click', () => deptDialog.close()));
+            deptDialog?.addEventListener('click', event => { if (event.target === deptDialog) deptDialog.close(); });
+            document.getElementById('acDeptDialogViewCourses')?.addEventListener('click', () => {
+                dept.value = detailDepartment; showTab('courses'); applyFilters(); deptDialog.close();
+            });
+            document.getElementById('acCancel').addEventListener('click', () => { input.value = threshold; document.getElementById('acSaveMessage').textContent = ''; });
+            document.getElementById('acThresholdForm').addEventListener('submit', e => { e.preventDefault(); const value = Number(input.value); if (!Number.isInteger(value) || value < 1 || value > 100) { document.getElementById('acSaveMessage').textContent = 'Enter a whole number from 1 to 100.'; return; } threshold = value; current.textContent = value + '%'; bar.style.width = value + '%'; document.getElementById('acSaveMessage').textContent = 'Threshold updated for this page preview only.'; applyFilters(); });
+            document.querySelectorAll('[data-export]').forEach(button => button.addEventListener('click', () => { const table = document.getElementById(button.dataset.export === 'departments' ? 'acDepartmentTable' : 'acCourseTable'); const lines = [...table.rows].filter(row => !row.hidden).map(row => [...row.cells].slice(0, button.dataset.export === 'departments' ? -1 : undefined).map(cell => '"' + cell.innerText.replaceAll('"', '""').replaceAll('\n', ' ').trim() + '"').join(',')); const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'edumetrics-' + button.dataset.export + '-attainment.csv'; a.click(); URL.revokeObjectURL(url); }));
+            applyFilters();
+        })();
+
     }
-    tabs.forEach(tab => tab.addEventListener('click', () => showTab(tab.dataset.tab)));
-    function applyFilters() {
-      const selected = dept.value;
-      const selectedStatus = status.value;
-      const q = search.value.toLowerCase().trim();
-      let visible = 0;
-      courseRows.forEach(row => {
-        const score = Number(row.dataset.attain);
-        const match = (!selected || row.dataset.dept === selected) && (!selectedStatus || (selectedStatus === 'on' ? score >= threshold : score < threshold)) && row.textContent.toLowerCase().includes(q);
-        row.hidden = !match;if(match)visible++;
-        const badge = row.querySelector('.ac-pill:not(.source)');
-        badge.className = 'ac-pill ' + (score >= threshold ? 'good' : 'bad');
-        badge.textContent = score >= threshold ? 'On Target' : 'Below Target';
-        row.cells[5].textContent = threshold + '%';
-      });
-      deptRows.forEach(row => {row.hidden = !!selected && row.dataset.dept !== selected;});
-      document.getElementById('acResultCount').textContent = visible + ' result(s)';
-      document.getElementById('acCourseEmpty').hidden = visible !== 0;
-      document.getElementById('acDeptEmpty').hidden = deptRows.some(row => !row.hidden);
-    }
-    [dept,status,search].forEach(el => el.addEventListener(el === search ? 'input' : 'change',applyFilters));
-    const deptDialog = document.getElementById('acDeptDialog');
-    const deptDialogTitle = document.getElementById('acDeptDialogTitle');
-    const deptDialogSummary = document.getElementById('acDeptDialogSummary');
-    const deptDialogCourses = document.getElementById('acDeptDialogCourses');
-    let detailDepartment = '';
-    document.querySelectorAll('#acDepartmentTable [data-department]').forEach(button => button.addEventListener('click', () => {
-      const row = button.closest('tr');
-      if (!row || !deptDialog) return;
-      detailDepartment = button.dataset.department;
-      deptDialogTitle.textContent = detailDepartment + ' — Attainment Details';
-      deptDialogSummary.replaceChildren();
-      [['Programs', row.cells[1].textContent.trim()], ['Total COs', row.cells[3].textContent.trim()], ['Average Attainment', row.cells[6].querySelector('strong')?.textContent.trim() || '—']].forEach(([label, value]) => {
-        const card = document.createElement('div');
-        const caption = document.createElement('small'); caption.textContent = label;
-        const number = document.createElement('strong'); number.textContent = value;
-        card.append(caption, number); deptDialogSummary.append(card);
-      });
-      deptDialogCourses.replaceChildren();
-      const matches = courseRows.filter(course => course.dataset.dept === detailDepartment);
-      matches.forEach(course => {
-        const item = document.createElement('div'); item.className = 'ac-dialog-course';
-        const name = document.createElement('strong'); name.textContent = course.cells[1].textContent.trim().replace(/\s+/g, ' ');
-        const detail = document.createElement('small'); detail.textContent = course.cells[3].textContent.trim().replace(/\s+/g, ' ') + ' · ' + course.cells[4].textContent.trim() + ' attainment';
-        item.append(name, detail); deptDialogCourses.append(item);
-      });
-      if (!matches.length) { const empty = document.createElement('p'); empty.textContent = 'No individual course records are available in this demo for this department.'; deptDialogCourses.append(empty); }
-      deptDialog.showModal();
-    }));
-    ['acDeptDialogClose', 'acDeptDialogDismiss'].forEach(id => document.getElementById(id)?.addEventListener('click', () => deptDialog.close()));
-    deptDialog?.addEventListener('click', event => { if (event.target === deptDialog) deptDialog.close(); });
-    document.getElementById('acDeptDialogViewCourses')?.addEventListener('click', () => {
-      dept.value = detailDepartment; showTab('courses'); applyFilters(); deptDialog.close();
-    });
-    document.getElementById('acCancel').addEventListener('click',() => {input.value=threshold;document.getElementById('acSaveMessage').textContent='';});
-    document.getElementById('acThresholdForm').addEventListener('submit',e => {e.preventDefault();const value=Number(input.value);if(!Number.isInteger(value)||value<1||value>100){document.getElementById('acSaveMessage').textContent='Enter a whole number from 1 to 100.';return;}threshold=value;current.textContent=value+'%';bar.style.width=value+'%';document.getElementById('acSaveMessage').textContent='Threshold updated for this page preview only.';applyFilters();});
-    document.querySelectorAll('[data-export]').forEach(button => button.addEventListener('click',() => {const table=document.getElementById(button.dataset.export==='departments'?'acDepartmentTable':'acCourseTable');const lines=[...table.rows].filter(row=>!row.hidden).map(row=>[...row.cells].slice(0,button.dataset.export==='departments'?-1:undefined).map(cell=>'"'+cell.innerText.replaceAll('"','""').replaceAll('\n',' ').trim()+'"').join(','));const blob=new Blob([lines.join('\r\n')],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='edumetrics-'+button.dataset.export+'-attainment.csv';a.click();URL.revokeObjectURL(url);}));
-    applyFilters();
-  })();
-  
-  }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, {once:true});
-  else init();
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
+    else init();
 })();
 
 /* CQI Admin — frontend page controller */
 (function () {
-  function init() {
-    if (!document.body.classList.contains("cqi-admin-page")) return;
+    function init() {
+        if (!document.body.classList.contains("cqi-admin-page")) return;
 
-(()=>{const records=[["CQI-COE232-003", "Computer Engineering", "Software Design \u2013 Lab", "Jeffrey T. Leonen", "CO3 \u2022 66%", "Supplemental lab sessions and quiz revisions", "In Progress", "Oct 12, 2026"], ["CQI-COE233-001", "Computer Engineering", "Computer Networks", "Maria L. Santos", "CO2 \u2022 62%", "Guided routing practice and formative checks", "Pending Approval", "Oct 13, 2026"], ["CQI-IT234-001", "Information Technology", "Database Systems", "Ryan P. Cruz", "CO2 \u2022 68%", "Additional SQL practice modules", "Completed", "Oct 10, 2026"], ["CQI-ECE234-004", "Electronics Engineering", "Signals and Systems", "Roxanne D. Cruz", "CO4 \u2022 65%", "Worked examples and weekly feedback", "Returned", "Oct 11, 2026"], ["CQI-ME231-003", "Mechanical Engineering", "Engineering Mechanics", "Daniel R. Tan", "CO2 \u2022 61%", "Concept review and additional problem sets", "Approved", "Oct 9, 2026"]];const tabs=[...document.querySelectorAll('.cqi-tab')];tabs.forEach(tab=>tab.addEventListener('click',()=>{tabs.forEach(t=>{const active=t===tab;t.setAttribute('aria-selected',String(active));t.classList.toggle('active',active);document.getElementById('panel-'+t.dataset.tab).hidden=!active;});}));const rows=[...document.querySelectorAll('#registerTable tbody tr')];const filters=['deptFilter','programFilter','statusFilter','registerSearch'].map(id=>document.getElementById(id));function filter(){let count=0,progress=0,pending=0;rows.forEach(row=>{const [dept,program,status,search]=filters.map(x=>x.value.trim().toLowerCase());const ok=(!dept||row.dataset.dept.toLowerCase()===dept)&&(!program||row.dataset.dept.toLowerCase()===program)&&(!status||row.dataset.status.toLowerCase()===status)&&(!search||row.textContent.toLowerCase().includes(search));row.hidden=!ok;if(ok){count++;if(['In Progress','Completed'].includes(row.dataset.status))progress++;if(row.dataset.status==='Pending Approval')pending++;}});document.getElementById('resultCount').textContent=count+' record(s)';document.getElementById('totalPlans').textContent=count;document.getElementById('progressPlans').textContent=progress;document.getElementById('pendingPlans').textContent=pending;}filters.forEach(el=>el.addEventListener(el.tagName==='INPUT'?'input':'change',filter));document.querySelectorAll('[data-record]').forEach(b=>b.addEventListener('click',()=>{const r=records[+b.dataset.record];document.getElementById('recordDetails').textContent='CQI ID: '+r[0]+'\nDepartment / Course: '+r[1]+' – '+r[2]+'\nFaculty Owner: '+r[3]+'\nCO Attainment: '+r[4]+' (Target 70%)\nIntervention: '+r[5]+'\nStatus: '+r[6]+'\nLast updated: '+r[7];document.getElementById('recordDialog').showModal();}));document.getElementById('addCategory').addEventListener('click',()=>document.getElementById('categoryDialog').showModal());document.querySelectorAll('[data-close-dialog]').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));document.getElementById('categoryForm').addEventListener('submit',e=>{e.preventDefault();const name=document.getElementById('categoryName').value.trim();if(!name)return;const tr=document.createElement('tr');const a=document.createElement('td'),d=document.createElement('td'),n=document.createElement('td'),s=document.createElement('td'),act=document.createElement('td');a.textContent=name;d.textContent='Custom intervention category';n.textContent='0';s.innerHTML='<span class="cqi-pill" data-cat-status>Active</span>';act.innerHTML='<button class="cqi-btn" data-toggle-category>Toggle Status</button>';tr.append(a,d,n,s,act);document.querySelector('#categoryTable tbody').append(tr);document.getElementById('categoryDialog').close();e.target.reset();});document.getElementById('categoryTable').addEventListener('click',e=>{if(!e.target.matches('[data-toggle-category]'))return;const pill=e.target.closest('tr').querySelector('[data-cat-status]');const inactive=pill.textContent==='Active';pill.textContent=inactive?'Inactive':'Active';pill.classList.toggle('red',inactive);});document.getElementById('savePermissions').addEventListener('click',()=>alert('Permissions saved for this frontend prototype only.'));document.getElementById('exportRegister').addEventListener('click',()=>{const csv=[['CQI ID','Department','Course','Faculty','CO / Attainment','Intervention','Status','Last Updated'],...records].map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='cqi-admin-register.csv';a.click();URL.revokeObjectURL(url);});})();
+        (() => { const records = [["CQI-COE232-003", "Computer Engineering", "Software Design \u2013 Lab", "Jeffrey T. Leonen", "CO3 \u2022 66%", "Supplemental lab sessions and quiz revisions", "In Progress", "Oct 12, 2026"], ["CQI-COE233-001", "Computer Engineering", "Computer Networks", "Maria L. Santos", "CO2 \u2022 62%", "Guided routing practice and formative checks", "Pending Approval", "Oct 13, 2026"], ["CQI-IT234-001", "Information Technology", "Database Systems", "Ryan P. Cruz", "CO2 \u2022 68%", "Additional SQL practice modules", "Completed", "Oct 10, 2026"], ["CQI-ECE234-004", "Electronics Engineering", "Signals and Systems", "Roxanne D. Cruz", "CO4 \u2022 65%", "Worked examples and weekly feedback", "Returned", "Oct 11, 2026"], ["CQI-ME231-003", "Mechanical Engineering", "Engineering Mechanics", "Daniel R. Tan", "CO2 \u2022 61%", "Concept review and additional problem sets", "Approved", "Oct 9, 2026"]]; const tabs = [...document.querySelectorAll('.cqi-tab')]; tabs.forEach(tab => tab.addEventListener('click', () => { tabs.forEach(t => { const active = t === tab; t.setAttribute('aria-selected', String(active)); t.classList.toggle('active', active); document.getElementById('panel-' + t.dataset.tab).hidden = !active; }); })); const rows = [...document.querySelectorAll('#registerTable tbody tr')]; const filters = ['deptFilter', 'programFilter', 'statusFilter', 'registerSearch'].map(id => document.getElementById(id)); function filter() { let count = 0, progress = 0, pending = 0; rows.forEach(row => { const [dept, program, status, search] = filters.map(x => x.value.trim().toLowerCase()); const ok = (!dept || row.dataset.dept.toLowerCase() === dept) && (!program || row.dataset.dept.toLowerCase() === program) && (!status || row.dataset.status.toLowerCase() === status) && (!search || row.textContent.toLowerCase().includes(search)); row.hidden = !ok; if (ok) { count++; if (['In Progress', 'Completed'].includes(row.dataset.status)) progress++; if (row.dataset.status === 'Pending Approval') pending++; } }); document.getElementById('resultCount').textContent = count + ' record(s)'; document.getElementById('totalPlans').textContent = count; document.getElementById('progressPlans').textContent = progress; document.getElementById('pendingPlans').textContent = pending; } filters.forEach(el => el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', filter)); document.querySelectorAll('[data-record]').forEach(b => b.addEventListener('click', () => { const r = records[+b.dataset.record]; document.getElementById('recordDetails').textContent = 'CQI ID: ' + r[0] + '\nDepartment / Course: ' + r[1] + ' – ' + r[2] + '\nFaculty Owner: ' + r[3] + '\nCO Attainment: ' + r[4] + ' (Target 70%)\nIntervention: ' + r[5] + '\nStatus: ' + r[6] + '\nLast updated: ' + r[7]; document.getElementById('recordDialog').showModal(); })); document.getElementById('addCategory').addEventListener('click', () => document.getElementById('categoryDialog').showModal()); document.querySelectorAll('[data-close-dialog]').forEach(b => b.addEventListener('click', () => b.closest('dialog').close())); document.getElementById('categoryForm').addEventListener('submit', e => { e.preventDefault(); const name = document.getElementById('categoryName').value.trim(); if (!name) return; const tr = document.createElement('tr'); const a = document.createElement('td'), d = document.createElement('td'), n = document.createElement('td'), s = document.createElement('td'), act = document.createElement('td'); a.textContent = name; d.textContent = 'Custom intervention category'; n.textContent = '0'; s.innerHTML = '<span class="cqi-pill" data-cat-status>Active</span>'; act.innerHTML = '<button class="cqi-btn" data-toggle-category>Toggle Status</button>'; tr.append(a, d, n, s, act); document.querySelector('#categoryTable tbody').append(tr); document.getElementById('categoryDialog').close(); e.target.reset(); }); document.getElementById('categoryTable').addEventListener('click', e => { if (!e.target.matches('[data-toggle-category]')) return; const pill = e.target.closest('tr').querySelector('[data-cat-status]'); const inactive = pill.textContent === 'Active'; pill.textContent = inactive ? 'Inactive' : 'Active'; pill.classList.toggle('red', inactive); }); document.getElementById('savePermissions').addEventListener('click', () => alert('Permissions saved for this frontend prototype only.')); document.getElementById('exportRegister').addEventListener('click', () => { const csv = [['CQI ID', 'Department', 'Course', 'Faculty', 'CO / Attainment', 'Intervention', 'Status', 'Last Updated'], ...records].map(r => r.map(v => '"' + String(v).replaceAll('"', '""') + '"').join(',')).join('\r\n'); const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = 'cqi-admin-register.csv'; a.click(); URL.revokeObjectURL(url); }); })();
 
-  }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, {once:true});
-  else init();
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
+    else init();
 })();
 
 /* GL Admin — frontend page controller */
 (function () {
-  function init() {
-    if (!document.body.classList.contains("gl-admin-page")) return;
+    function init() {
+        if (!document.body.classList.contains("gl-admin-page")) return;
 
-const sections=[...document.querySelectorAll('[data-panel]')];document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-tab]').forEach(b=>{b.setAttribute('aria-selected',String(b===button));b.classList.toggle('active',b===button)});sections.forEach(s=>s.hidden=s.dataset.panel!==button.dataset.tab)}));document.querySelectorAll('.gl-admin-query,.gl-admin-level').forEach(input=>input.addEventListener('input',()=>{const panel=input.closest('[data-panel]');const q=(panel.querySelector('.gl-admin-query')?.value||'').toLowerCase();const level=(panel.querySelector('.gl-admin-level')?.value||'').toLowerCase();panel.querySelectorAll('tbody tr').forEach(row=>{const t=row.innerText.toLowerCase();row.hidden=!(t.includes(q)&&t.includes(level))})}));document.querySelectorAll('[data-export]').forEach(button=>button.addEventListener('click',()=>{const panel=button.closest('[data-panel]');const lines=[...panel.querySelectorAll('tr')].filter(r=>!r.hidden).map(r=>[...r.querySelectorAll('th,td')].map(c=>'"'+c.innerText.replaceAll('"','""').replaceAll('\n',' ')+'"').join(','));const blob=new Blob([lines.join('\r\n')],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='edumetrics-'+panel.dataset.panel+'-sample.csv';a.click();URL.revokeObjectURL(url)}));const modal=document.getElementById('glDialog');document.querySelectorAll('[data-detail]').forEach(button=>button.addEventListener('click',()=>{const cells=[...button.closest('tr').cells];document.getElementById('glDialogTitle').textContent=button.dataset.detail.startsWith('reset')?'Password Reset Request':'Operation Details';const labels=button.dataset.detail.startsWith('reset')?['Request ID','User','Requested At','Verification','Status','Reviewed By']:['Timestamp','Actor','Operation','Module','Record ID','Result'];document.getElementById('glDialogBody').replaceChildren(...cells.slice(0,labels.length).map((cell,i)=>{const box=document.createElement('div');const small=document.createElement('small');small.textContent=labels[i];const strong=document.createElement('strong');strong.textContent=cell.innerText;box.append(small,strong);return box}));modal.hidden=false}));document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>modal.hidden=true));modal.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true});document.addEventListener('keydown',e=>{if(e.key==='Escape')modal.hidden=true});
-  }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, {once:true});
-  else init();
+        const sections = [...document.querySelectorAll('[data-panel]')]; document.querySelectorAll('[data-tab]').forEach(button => button.addEventListener('click', () => { document.querySelectorAll('[data-tab]').forEach(b => { b.setAttribute('aria-selected', String(b === button)); b.classList.toggle('active', b === button) }); sections.forEach(s => s.hidden = s.dataset.panel !== button.dataset.tab) })); document.querySelectorAll('.gl-admin-query,.gl-admin-level').forEach(input => input.addEventListener('input', () => { const panel = input.closest('[data-panel]'); const q = (panel.querySelector('.gl-admin-query')?.value || '').toLowerCase(); const level = (panel.querySelector('.gl-admin-level')?.value || '').toLowerCase(); panel.querySelectorAll('tbody tr').forEach(row => { const t = row.innerText.toLowerCase(); row.hidden = !(t.includes(q) && t.includes(level)) }) })); document.querySelectorAll('[data-export]').forEach(button => button.addEventListener('click', () => { const panel = button.closest('[data-panel]'); const lines = [...panel.querySelectorAll('tr')].filter(r => !r.hidden).map(r => [...r.querySelectorAll('th,td')].map(c => '"' + c.innerText.replaceAll('"', '""').replaceAll('\n', ' ') + '"').join(',')); const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'edumetrics-' + panel.dataset.panel + '-sample.csv'; a.click(); URL.revokeObjectURL(url) })); const modal = document.getElementById('glDialog'); document.querySelectorAll('[data-detail]').forEach(button => button.addEventListener('click', () => { const cells = [...button.closest('tr').cells]; document.getElementById('glDialogTitle').textContent = button.dataset.detail.startsWith('reset') ? 'Password Reset Request' : 'Operation Details'; const labels = button.dataset.detail.startsWith('reset') ? ['Request ID', 'User', 'Requested At', 'Verification', 'Status', 'Reviewed By'] : ['Timestamp', 'Actor', 'Operation', 'Module', 'Record ID', 'Result']; document.getElementById('glDialogBody').replaceChildren(...cells.slice(0, labels.length).map((cell, i) => { const box = document.createElement('div'); const small = document.createElement('small'); small.textContent = labels[i]; const strong = document.createElement('strong'); strong.textContent = cell.innerText; box.append(small, strong); return box })); modal.hidden = false })); document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => modal.hidden = true)); modal.addEventListener('click', e => { if (e.target === modal) modal.hidden = true }); document.addEventListener('keydown', e => { if (e.key === 'Escape') modal.hidden = true });
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
+    else init();
 })();
 
 /* RP Admin — frontend page controller */
 (function () {
-  function init() {
-    if (!document.body.classList.contains("rp-admin-page")) return;
+    function init() {
+        if (!document.body.classList.contains("rp-admin-page")) return;
 
-(()=>{'use strict';const tabs=document.querySelectorAll('.rp-admin-tab'),panels={library:document.getElementById('panel-library'),permissions:document.getElementById('panel-permissions'),settings:document.getElementById('panel-settings')};tabs.forEach(b=>b.addEventListener('click',()=>{tabs.forEach(t=>{t.setAttribute('aria-selected',String(t===b));t.classList.toggle('active',t===b)});Object.entries(panels).forEach(([name,p])=>p.hidden=name!==b.dataset.tab)}));const rows=[...document.querySelectorAll('#reportRows tr')],search=document.getElementById('search'),type=document.getElementById('typeFilter'),status=document.getElementById('statusFilter');function filter(){const q=search.value.trim().toLowerCase();rows.forEach(r=>{r.hidden=!(r.textContent.toLowerCase().includes(q)&&(!type.value||r.dataset.type===type.value)&&(!status.value||r.dataset.status===status.value))})}search.addEventListener('input',filter);type.addEventListener('change',filter);status.addEventListener('change',filter);const modal=document.getElementById('modal'),content=document.getElementById('modalContent'),title=document.getElementById('modalTitle'),confirm=document.getElementById('modalConfirm'),toast=document.getElementById('toast');function notice(s){toast.textContent=s;toast.hidden=false;setTimeout(()=>toast.hidden=true,3000)}function close(){modal.hidden=true}document.getElementById('modalClose').onclick=close;modal.addEventListener('click',e=>{if(e.target===modal)close()});document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});function getRow(id){return rows.find(r=>r.cells[0].innerText.includes(id))}document.querySelector('#reportRows').addEventListener('click',e=>{const b=e.target.closest('button[data-action]');if(!b)return;const id=b.dataset.id,row=getRow(id);if(!row)return;if(b.dataset.action==='download'){const data=['Report ID,Course,Owner,Updated,Status,Description',[id,row.cells[1].innerText.replace(/\n/g,' '),row.cells[2].innerText,row.cells[3].innerText,row.dataset.status,row.cells[5].innerText].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')].join('\n');download(id+'.csv',data);return}title.textContent=b.dataset.action==='review'?'Review / Verification':'Compliance Report Details';content.innerHTML='<dl><dt>Report ID</dt><dd></dd><dt>Course</dt><dd></dd><dt>Owner</dt><dd></dd><dt>Status</dt><dd></dd></dl>'+(b.dataset.action==='review'?'<label style="font-size:12px">Review notes<textarea id="reviewNotes" placeholder="Record notes for review or verification..."></textarea></label>':'');const dd=content.querySelectorAll('dd');[id,row.cells[1].innerText,row.cells[2].innerText,row.dataset.status].forEach((v,i)=>dd[i].textContent=v);confirm.hidden=b.dataset.action!=='review';confirm.onclick=()=>{notice('Review recorded for '+id+' (frontend only).');close()};modal.hidden=false});function download(name,data){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([data],{type:'text/csv;charset=utf-8'}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}document.getElementById('exportList').onclick=()=>{const data=['Report ID,Course,Owner,Updated,Status,Description',...rows.filter(r=>!r.hidden).map(r=>[r.cells[0].innerText,r.cells[1].innerText,r.cells[2].innerText,r.cells[3].innerText,r.dataset.status,r.cells[5].innerText].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','))].join('\n');download('compliance-report-index.csv',data)};document.getElementById('settingsForm').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;sessionStorage.setItem('rpAdminSettings',JSON.stringify({header:f.elements.namedItem("header").checked,date:f.elements.namedItem("date").checked,students:f.elements.namedItem("students").checked,footer:f.elements.namedItem("footer").value}));notice('Document settings saved in this browser.')});})();
+        (() => { 'use strict'; const tabs = document.querySelectorAll('.rp-admin-tab'), panels = { library: document.getElementById('panel-library'), permissions: document.getElementById('panel-permissions'), settings: document.getElementById('panel-settings') }; tabs.forEach(b => b.addEventListener('click', () => { tabs.forEach(t => { t.setAttribute('aria-selected', String(t === b)); t.classList.toggle('active', t === b) }); Object.entries(panels).forEach(([name, p]) => p.hidden = name !== b.dataset.tab) })); const rows = [...document.querySelectorAll('#reportRows tr')], search = document.getElementById('search'), type = document.getElementById('typeFilter'), status = document.getElementById('statusFilter'); function filter() { const q = search.value.trim().toLowerCase(); rows.forEach(r => { r.hidden = !(r.textContent.toLowerCase().includes(q) && (!type.value || r.dataset.type === type.value) && (!status.value || r.dataset.status === status.value)) }) } search.addEventListener('input', filter); type.addEventListener('change', filter); status.addEventListener('change', filter); const modal = document.getElementById('modal'), content = document.getElementById('modalContent'), title = document.getElementById('modalTitle'), confirm = document.getElementById('modalConfirm'), toast = document.getElementById('toast'); function notice(s) { toast.textContent = s; toast.hidden = false; setTimeout(() => toast.hidden = true, 3000) } function close() { modal.hidden = true } document.getElementById('modalClose').onclick = close; modal.addEventListener('click', e => { if (e.target === modal) close() }); document.addEventListener('keydown', e => { if (e.key === 'Escape') close() }); function getRow(id) { return rows.find(r => r.cells[0].innerText.includes(id)) } document.querySelector('#reportRows').addEventListener('click', e => { const b = e.target.closest('button[data-action]'); if (!b) return; const id = b.dataset.id, row = getRow(id); if (!row) return; if (b.dataset.action === 'download') { const data = ['Report ID,Course,Owner,Updated,Status,Description', [id, row.cells[1].innerText.replace(/\n/g, ' '), row.cells[2].innerText, row.cells[3].innerText, row.dataset.status, row.cells[5].innerText].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')].join('\n'); download(id + '.csv', data); return } title.textContent = b.dataset.action === 'review' ? 'Review / Verification' : 'Compliance Report Details'; content.innerHTML = '<dl><dt>Report ID</dt><dd></dd><dt>Course</dt><dd></dd><dt>Owner</dt><dd></dd><dt>Status</dt><dd></dd></dl>' + (b.dataset.action === 'review' ? '<label style="font-size:12px">Review notes<textarea id="reviewNotes" placeholder="Record notes for review or verification..."></textarea></label>' : ''); const dd = content.querySelectorAll('dd');[id, row.cells[1].innerText, row.cells[2].innerText, row.dataset.status].forEach((v, i) => dd[i].textContent = v); confirm.hidden = b.dataset.action !== 'review'; confirm.onclick = () => { notice('Review recorded for ' + id + ' (frontend only).'); close() }; modal.hidden = false }); function download(name, data) { const a = document.createElement('a'), url = URL.createObjectURL(new Blob([data], { type: 'text/csv;charset=utf-8' })); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000) } document.getElementById('exportList').onclick = () => { const data = ['Report ID,Course,Owner,Updated,Status,Description', ...rows.filter(r => !r.hidden).map(r => [r.cells[0].innerText, r.cells[1].innerText, r.cells[2].innerText, r.cells[3].innerText, r.dataset.status, r.cells[5].innerText].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','))].join('\n'); download('compliance-report-index.csv', data) }; document.getElementById('settingsForm').addEventListener('submit', e => { e.preventDefault(); const f = e.currentTarget; sessionStorage.setItem('rpAdminSettings', JSON.stringify({ header: f.elements.namedItem("header").checked, date: f.elements.namedItem("date").checked, students: f.elements.namedItem("students").checked, footer: f.elements.namedItem("footer").value })); notice('Document settings saved in this browser.') }); })();
 
-  }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, {once:true});
-  else init();
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
+    else init();
 })();
 
 /* Password recovery pages: one scoped controller, no duplicate auth handlers. */
 (function () {
-  function initPasswordRecovery() {
-    if (!document.body.classList.contains('auth-reset-page')) return;
-    const role = new URLSearchParams(location.search).get('role') || sessionStorage.getItem('verificationRole') || 'student';
-    const label = document.getElementById('loginRoleLabel');
-    if (label) label.textContent = ({student:'Student',faculty:'Faculty','dept-head':'Department Head','department-head':'Department Head','admin-security':'Admin & Security'})[role] || 'Student';
-    const back = document.getElementById('resetBackLink');
-    if (back) back.href += '?role=' + encodeURIComponent(role);
-    document.querySelectorAll('[data-toggle-password]').forEach(button => button.addEventListener('click', function () {
-      const field = document.getElementById(button.dataset.togglePassword);
-      if (!field) return;
-      field.type = field.type === 'password' ? 'text' : 'password';
-      button.setAttribute('aria-label', field.type === 'password' ? 'Show password' : 'Hide password');
-    }));
-    const message = document.getElementById('resetFormMessage');
-    function feedback(value, success) { if (message) { message.textContent = value; message.classList.toggle('is-success', !!success); } }
-    const forgot = document.getElementById('forgotPasswordForm');
-    if (forgot) forgot.addEventListener('submit', async function (event) {
-      event.preventDefault();
-      const email = document.getElementById('resetEmail').value.trim();
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return feedback('Enter a valid email address.');
-      sessionStorage.setItem('verificationEmail', email);
-      sessionStorage.setItem('verificationRole', role);
-      sessionStorage.setItem('verificationPurpose', 'password_reset');
-      feedback('Email saved. Verification delivery requires the connected backend.', true);
-    });
-    const reset = document.getElementById('resetPasswordForm');
-    if (reset) reset.addEventListener('submit', function (event) {
-      event.preventDefault();
-      const password = document.getElementById('newPassword').value;
-      const confirm = document.getElementById('confirmPassword').value;
-      if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(password)) return feedback('Password must have 8+ characters, a letter, number, and special character.');
-      if (password !== confirm) return feedback('Passwords do not match.');
-      feedback('Password validated. Saving requires a verified reset token and backend.', true);
-    });
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initPasswordRecovery);
-  else initPasswordRecovery();
+    function initPasswordRecovery() {
+        if (!document.body.classList.contains('auth-reset-page')) return;
+        const role = new URLSearchParams(location.search).get('role') || sessionStorage.getItem('verificationRole') || 'student';
+        const label = document.getElementById('loginRoleLabel');
+        if (label) label.textContent = ({ student: 'Student', faculty: 'Faculty', 'dept-head': 'Department Head', 'department-head': 'Department Head', 'admin-security': 'Admin & Security' })[role] || 'Student';
+        const back = document.getElementById('resetBackLink');
+        if (back) back.href += '?role=' + encodeURIComponent(role);
+        document.querySelectorAll('[data-toggle-password]').forEach(button => button.addEventListener('click', function () {
+            const field = document.getElementById(button.dataset.togglePassword);
+            if (!field) return;
+            field.type = field.type === 'password' ? 'text' : 'password';
+            button.setAttribute('aria-label', field.type === 'password' ? 'Show password' : 'Hide password');
+        }));
+        const message = document.getElementById('resetFormMessage');
+        function feedback(value, success) { if (message) { message.textContent = value; message.classList.toggle('is-success', !!success); } }
+        const forgot = document.getElementById('forgotPasswordForm');
+        if (forgot) forgot.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const email = document.getElementById('resetEmail').value.trim();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return feedback('Enter a valid email address.');
+            sessionStorage.setItem('verificationEmail', email);
+            sessionStorage.setItem('verificationRole', role);
+            sessionStorage.setItem('verificationPurpose', 'password_reset');
+            feedback('Email saved. Verification delivery requires the connected backend.', true);
+        });
+        const reset = document.getElementById('resetPasswordForm');
+        if (reset) reset.addEventListener('submit', function (event) {
+            event.preventDefault();
+            const password = document.getElementById('newPassword').value;
+            const confirm = document.getElementById('confirmPassword').value;
+            if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(password)) return feedback('Password must have 8+ characters, a letter, number, and special character.');
+            if (password !== confirm) return feedback('Passwords do not match.');
+            feedback('Password validated. Saving requires a verified reset token and backend.', true);
+        });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initPasswordRecovery);
+    else initPasswordRecovery();
 })();

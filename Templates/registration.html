@@ -811,11 +811,11 @@
             }
         );
 
-        department.addEventListener(
-            "input",
+        document.getElementById("department").addEventListener(
+            "change",
             function () {
                 clearRegistrationError(
-                    department,
+                    document.getElementById("department"),
                     "departmentError"
                 );
             }
@@ -880,8 +880,14 @@
                     lastName.value.trim();
                 const accountId =
                     idNumber.value.trim();
+                const currentDepartmentField =
+                    document.getElementById("department");
+
                 const selectedDepartment =
-                    department.value.trim();
+                    currentDepartmentField
+                        ? currentDepartmentField.value.trim()
+                        : "";
+
                 const email =
                     signupEmail.value.trim();
                 const password =
@@ -957,7 +963,7 @@
                     }
 
                     setRegistrationError(
-                        department,
+                        currentDepartmentField,
                         "departmentError",
                         secondaryFieldLabel + " is required."
                     );

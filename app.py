@@ -1,3 +1,5 @@
+from threading import Lock
+import time
 from functools import wraps
 import os
 from uuid import uuid4
@@ -63,6 +65,14 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 SYLLABI_BUCKET = "course-syllabi"
+
+# Password login lockout: 3 failed attempts, then 30 seconds.
+
+LOGIN_MAX_FAILED_ATTEMPTS = 3
+LOGIN_LOCKOUT_SECONDS = 30
+
+_login_attempts = {}
+_login_attempts_lock = Lock()
 
 
 def require_role(required_role):
@@ -667,10 +677,10 @@ def faculty_dashboard():
     return render_template("requirement 1/so-faculty.html")
 
 
-@app.get("/requirement 1/so-dept-head.html")
-@require_role("department-head")
-def department_head_dashboard():
-    return render_template("requirement 1/so-dept-head.html")
+@app.get("/requirement 2/cm-admin.html")
+@require_role("admin-security")
+def admin_dashboard():
+    return render_template("requirement 2/cm-admin.html")
 
 
 @app.get("/register")
@@ -888,7 +898,8 @@ def auth_callback():
             return redirect(
                 url_for(
                     "login_page",
-                    oauth_error="account_exists"
+                    oauth_error="account_exists",
+                    role=requested_role
                 )
             )
 
@@ -904,6 +915,8 @@ def auth_callback():
             return redirect("/requirement%201/so-faculty.html")
         elif actual_role == "department-head":
             return redirect("/requirement%201/so-dept-head.html")
+        elif actual_role == "admin-security":
+            return redirect("/requirement%202/cm-admin.html")
         else:
             return redirect("/")
 
@@ -1027,6 +1040,25 @@ def login():
             "error": "Please select a valid login role."
         }), 400
 
+    # Check whether this email is temporarily locked.
+    now = time.time()
+
+    with _login_attempts_lock:
+        attempt_data = _login_attempts.get(email, {})
+        locked_until = attempt_data.get("locked_until", 0)
+
+        if locked_until > now:
+            remaining = int(locked_until - now + 0.999)
+
+            return jsonify({
+                "error": (
+                    f"Too many failed password attempts. "
+                    f"Try again in {remaining} seconds."
+                ),
+                "locked": True,
+                "retry_after": remaining,
+            }), 429
+
     try:
         # Use a separate Supabase client for this authentication attempt.
         auth_client = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -1037,9 +1069,17 @@ def login():
         })
 
         if not result.user:
+            app.logger.warning(
+                "Login returned no user for email: %s",
+                email
+            )
+
             return jsonify({
-                "error": "Login could not be completed."
+                "error": "Invalid email or password."
             }), 401
+
+        with _login_attempts_lock:
+            _login_attempts.pop(email, None)
 
         actual_role = get_user_role(result.user)
 
@@ -1048,6 +1088,8 @@ def login():
             return jsonify({
                 "error": "The selected role does not match this account."
             }), 403
+
+        session["user_role"] = actual_role
 
         if not result.user.email_confirmed_at:
             auth_client.auth.sign_out()
@@ -1063,7 +1105,6 @@ def login():
             }), 200
 
         # Check remembered accounts for this browser.
-        import time
 
         remembered_accounts = session.get("remembered_accounts", {})
         now = int(time.time())
@@ -1090,6 +1131,7 @@ def login():
             session["access_token"] = result.session.access_token
             session["refresh_token"] = result.session.refresh_token
             session["user_id"] = result.user.id
+            session["user_role"] = actual_role
             session["remembered_accounts"] = remembered_accounts
 
             return jsonify({
@@ -1112,7 +1154,46 @@ def login():
             "message": "A login verification code has been requested."
         }), 200
 
-    except Exception:
+    except Exception as exc:
+        error_text = str(exc).lower()
+
+        # Count only password or credential failures.
+        if any(term in error_text for term in (
+            "invalid login credentials",
+            "invalid credentials",
+            "invalid password",
+            "incorrect password",
+        )):
+            now = time.time()
+
+            with _login_attempts_lock:
+                attempt_data = _login_attempts.get(email, {})
+                failed_attempts = attempt_data.get("failed_attempts", 0) + 1
+
+                if failed_attempts >= LOGIN_MAX_FAILED_ATTEMPTS:
+                    _login_attempts[email] = {
+                        "failed_attempts": 0,
+                        "locked_until": now + LOGIN_LOCKOUT_SECONDS,
+                    }
+
+                    return jsonify({
+                        "error": (
+                            "Too many failed password attempts. "
+                            "Try again in 30 seconds."
+                        ),
+                        "locked": True,
+                        "retry_after": LOGIN_LOCKOUT_SECONDS,
+                    }), 429
+
+                _login_attempts[email] = {
+                    "failed_attempts": failed_attempts,
+                    "locked_until": 0,
+                }
+
+            return jsonify({
+                "error": "Login could not be completed."
+            }), 401
+
         app.logger.exception("Login request failed")
         return jsonify({
             "error": "Login failed. Check your credentials and try again."
@@ -1453,6 +1534,27 @@ def resend_login_otp():
 @app.get("/forgot-password.html")
 def forgot_password_page():
     return render_template("forgot-password.html")
+
+
+@app.get("/logout")
+def logout_redirect():
+    role = session.get("user_role") or session.get("role") or "student"
+
+    allowed_roles = {
+        "student",
+        "faculty",
+        "department-head",
+        "admin-security",
+    }
+
+    if role not in allowed_roles:
+        role = "student"
+
+    session.clear()
+
+    return redirect(
+        url_for("login_page", role=role)
+    )
 
 
 @app.post("/api/auth/logout")

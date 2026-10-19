@@ -246,7 +246,7 @@
                             Don't have an account?
                         </span>
 
-                        <a href="registration.html" id="createAccountLink">
+                        <a href="/register" id="createAccountLink">
                             Create one
                         </a>
                     </div>
@@ -302,8 +302,15 @@
         }
 
         /* ACCOUNT ROLE */
+
         const params = new URLSearchParams(window.location.search);
-        const role = params.get("role") || "student";
+        let role = params.get("role") || "student";
+
+        if (role === "dept-head" || role === "department_head") {
+            role = "department-head";
+        }
+
+
         const roleNames = {
             "student": "Student",
             "faculty": "Faculty",
@@ -323,9 +330,12 @@
             document.getElementById("createAccountLink");
 
         if (createAccountLink) {
-            createAccountLink.href =
-                "registration.html?role=" +
-                encodeURIComponent(role);
+            const params = new URLSearchParams(window.location.search);
+            const role = params.get("role");
+
+            createAccountLink.href = role
+                ? `/register?role=${encodeURIComponent(role)}`
+                : "/register";
         }
 
         /*ELEMENTS */
@@ -501,14 +511,24 @@
 
                     const result = await response.json();
 
+
                     if (!response.ok) {
-                        showLoginModal(
-                            "Login failed",
-                            result.error || "Unable to log in.",
-                            "!"
-                        );
+                        if (result.locked) {
+                            showLoginModal(
+                                "Login temporarily locked",
+                                `Too many failed password attempts. Please try again in ${result.retry_after || 30} seconds.`,
+                                "!"
+                            );
+                        } else {
+                            showLoginModal(
+                                "Login failed",
+                                result.error || "Unable to log in.",
+                                "!"
+                            );
+                        }
                         return;
                     }
+
 
                     if (result.status === "verification_required") {
                         sessionStorage.setItem("verificationEmail", email);
