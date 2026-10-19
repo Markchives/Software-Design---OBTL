@@ -137,7 +137,19 @@
 
                         <!-- DEPARTMENT/PROGRAM -->
                         <div class="form-group">
-                            <div class="input-wrapper">
+                            <div class="input-wrapper" id="studentDepartmentGroup" hidden>
+                                <span class="input-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M3 9l9-5 9 5-9 5-9-5z"></path>
+                                        <path d="M6 11.5V16c3.5 2.4 8.5 2.4 12 0v-4.5"></path>
+                                    </svg>
+                                </span>
+                                <select id="studentDepartment" name="studentDepartment" aria-label="College" disabled>
+                                    <option value="" selected>Select College</option>
+                                </select>
+                            </div>
+                            <small id="studentDepartmentError" class="form-error"></small>
+                            <div class="input-wrapper" id="departmentSelectGroup">
                                 <span class="input-icon" aria-hidden="true">
                                     <svg viewBox="0 0 24 24" aria-hidden="true">
                                         <path d="M3 9l9-5 9 5-9 5-9-5z"></path>
@@ -398,28 +410,39 @@
 
         let registrationOptionsRequest = 0;
 
-        async function loadRegistrationOptions(role) {
-            const select = document.getElementById("department");
-            const error = document.getElementById("departmentError");
+        function resetSelect(select, placeholderText) {
             if (!select) return;
-
-            const requestId = ++registrationOptionsRequest;
             const placeholder = document.createElement("option");
             placeholder.value = "";
             placeholder.disabled = true;
             placeholder.selected = true;
-            placeholder.textContent = role === "student"
-                ? "Select Program"
-                : "Select College";
+            placeholder.textContent = placeholderText;
             select.replaceChildren(placeholder);
+        }
+
+        async function loadRegistrationOptions(role) {
+            const select = document.getElementById("department");
+            const error = document.getElementById("departmentError");
+            const studentDepartment = document.getElementById("studentDepartment");
+            const studentDepartmentError = document.getElementById("studentDepartmentError");
+            if (!select) return;
+
+            const requestId = ++registrationOptionsRequest;
+            resetSelect(select, role === "student" ? "Select College First" : "Select College");
+            select.disabled = role === "student";
             if (error) error.textContent = "";
+            if (studentDepartmentError) studentDepartmentError.textContent = "";
 
             if (role === "admin-security") return;
 
             try {
+                if (role === "student") {
+                    resetSelect(studentDepartment, "Select College");
+                    studentDepartment.disabled = true;
+                }
                 const response = await fetch(
                     "/api/registration-options/" + encodeURIComponent(role),
-                    { headers: { Accept: "application/json" } }
+                    { headers: { Accept: "application/json" }, credentials: "same-origin" }
                 );
                 const result = await response.json();
                 if (!response.ok) {
@@ -427,16 +450,55 @@
                 }
                 if (requestId !== registrationOptionsRequest) return;
 
-                (result.options || []).forEach((item) => {
-                    const option = document.createElement("option");
-                    option.value = item.value;
-                    option.textContent = item.label;
-                    select.appendChild(option);
+                const optionsSelect = role === "student" ? studentDepartment : select;
+                (result.options || []).forEach(item => {
+                    optionsSelect.add(new Option(item.label, role === "student" ? item.id : item.value));
                 });
 
                 if (!result.options || !result.options.length) {
                     throw new Error("No options are configured for this role yet.");
                 }
+                if (role === "student") studentDepartment.disabled = false;
+                else select.disabled = false;
+            } catch (requestError) {
+                if (requestId === registrationOptionsRequest && error) {
+                    if (role === "student" && studentDepartmentError) {
+                        studentDepartmentError.textContent = requestError.message;
+                    } else {
+                        error.textContent = requestError.message;
+                    }
+                }
+            }
+        }
+
+        async function loadStudentPrograms(departmentId) {
+            const select = document.getElementById("department");
+            const error = document.getElementById("departmentError");
+            const requestId = ++registrationOptionsRequest;
+            resetSelect(select, departmentId ? "Loading programs..." : "Select College First");
+            select.disabled = true;
+            if (error) error.textContent = "";
+            if (!departmentId) return;
+
+            try {
+                const response = await fetch(
+                    "/api/registration-options/student/" +
+                    encodeURIComponent(departmentId) + "/programs",
+                    { headers: { Accept: "application/json" }, credentials: "same-origin" }
+                );
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.error || "Programs could not be loaded.");
+                }
+                if (requestId !== registrationOptionsRequest) return;
+                resetSelect(select, "Select Program");
+                (result.options || []).forEach(item => {
+                    select.add(new Option(item.label, item.id));
+                });
+                if (!result.options || !result.options.length) {
+                    throw new Error("No programs are configured for this college yet.");
+                }
+                select.disabled = false;
             } catch (requestError) {
                 if (requestId === registrationOptionsRequest && error) {
                     error.textContent = requestError.message;
@@ -468,6 +530,9 @@
                 document.getElementById(
                     "department"
                 );
+            const studentDepartmentGroup = document.getElementById("studentDepartmentGroup");
+            const departmentSelectGroup = document.getElementById("departmentSelectGroup");
+            const studentDepartment = document.getElementById("studentDepartment");
             const roleDepartmentGroup = roleDepartment
                 ? roleDepartment.closest(".form-group")
                 : null;
@@ -479,6 +544,22 @@
             }
             if (roleDepartment) {
                 roleDepartment.required = departmentRequired;
+            }
+            if (studentDepartmentGroup) {
+                studentDepartmentGroup.hidden = currentRegistrationRole !== "student";
+            }
+            if (studentDepartment) {
+                studentDepartment.required = currentRegistrationRole === "student";
+            }
+            if (departmentSelectGroup) {
+                departmentSelectGroup.hidden =
+                    currentRegistrationRole === "admin-security";
+            }
+            if (roleDepartment) {
+                roleDepartment.setAttribute(
+                    "aria-label",
+                    currentRegistrationRole === "student" ? "Program" : "Department"
+                );
             }
 
 
@@ -569,6 +650,20 @@
             document.getElementById(
                 "department"
             );
+        const studentDepartment =
+            document.getElementById("studentDepartment");
+
+        if (studentDepartment) {
+            studentDepartment.addEventListener("change", () => {
+                clearRegistrationError(studentDepartment, "studentDepartmentError");
+                loadStudentPrograms(studentDepartment.value);
+            });
+        }
+        if (department) {
+            department.addEventListener("change", () => {
+                clearRegistrationError(department, "departmentError");
+            });
+        }
 
         const signupEmail =
             document.getElementById(
@@ -815,6 +910,10 @@
                 department,
                 "departmentError"
             );
+            clearRegistrationError(
+                studentDepartment,
+                "studentDepartmentError"
+            );
 
             clearRegistrationError(
                 signupEmail,
@@ -946,9 +1045,19 @@
                 const currentDepartmentField =
                     document.getElementById("department");
 
-                const selectedDepartment =
-                    currentDepartmentField
+                const selectedProgramId =
+                    currentRegistrationRole === "student" && currentDepartmentField
                         ? currentDepartmentField.value.trim()
+                        : "";
+                const selectedDepartment =
+                    currentRegistrationRole === "student" && currentDepartmentField && selectedProgramId
+                        ? currentDepartmentField.selectedOptions[0]?.textContent.trim() || ""
+                        : currentDepartmentField
+                        ? currentDepartmentField.value.trim()
+                        : "";
+                const selectedDepartmentId =
+                    currentRegistrationRole === "student" && studentDepartment
+                        ? studentDepartment.value.trim()
                         : "";
 
                 const email =
@@ -1007,6 +1116,15 @@
                 }
 
                 /* DEPARTMENT / PROGRAM */
+                if (currentRegistrationRole === "student" && !selectedDepartmentId) {
+                    setRegistrationError(
+                        studentDepartment,
+                        "studentDepartmentError",
+                        "Select your college."
+                    );
+                    formIsValid = false;
+                }
+
                 if (
                     currentRegistrationRole !== "admin-security" &&
                     !selectedDepartment
@@ -1140,6 +1258,8 @@
                 sessionStorage.setItem("signupLastName", last);
                 sessionStorage.setItem("signupIdNumber", accountId);
                 sessionStorage.setItem("signupDepartment", selectedDepartment);
+                sessionStorage.setItem("signupDepartmentId", selectedDepartmentId);
+                sessionStorage.setItem("signupProgramId", selectedProgramId);
                 sessionStorage.setItem("verificationEmail", email);
                 sessionStorage.setItem("verificationRole", currentRegistrationRole);
                 sessionStorage.setItem("verificationPurpose", "signup");
@@ -1166,6 +1286,8 @@
                                 lastName: last,
                                 idNumber: accountId,
                                 department: selectedDepartment,
+                                departmentId: selectedDepartmentId,
+                                programId: selectedProgramId,
                                 email: email,
                                 password: password,
                                 role: currentRegistrationRole

@@ -4,7 +4,7 @@ from functools import wraps
 import logging
 from logging.handlers import RotatingFileHandler
 import os
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from dotenv import load_dotenv
 
@@ -654,7 +654,7 @@ def health():
 def registration_options(role):
     role = normalize_role_name(role)
     if role == "student":
-        table_name = "programs"
+        table_name = "departments"
     elif role in {"faculty", "department-head"}:
         table_name = "departments"
     elif role == "admin-security":
@@ -666,19 +666,93 @@ def registration_options(role):
         return jsonify({"error": "Registration options are unavailable."}), 503
 
     try:
-        query = admin_supabase.table(table_name).select("name, code")
-        if table_name == "departments":
-            query = query.eq("is_college", True)
+        query = admin_supabase.table(table_name).select("id, name, code")
+        query = query.eq("is_college", True)
         rows = query.order("name").execute().data or []
         return jsonify({
             "options": [
-                {"label": row["name"], "value": row["name"]}
+                {"label": row["name"], "value": row["name"], "id": row["id"]}
                 for row in rows
             ]
         }), 200
     except Exception:
         app.logger.exception("Unable to load registration options")
         return jsonify({"error": "Registration options could not be loaded."}), 500
+
+
+@app.get("/api/registration-options/student/<department_id>/programs")
+def student_program_options(department_id):
+    if not admin_supabase:
+        return jsonify({"error": "Registration options are unavailable."}), 503
+
+    try:
+        department_uuid = str(UUID(department_id))
+        department_rows = (
+            admin_supabase.table("departments")
+            .select("id")
+            .eq("id", department_uuid)
+            .eq("is_college", True)
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if not department_rows:
+            return jsonify({"error": "Select a college that exists in the system."}), 400
+
+        rows = (
+            admin_supabase.table("programs")
+            .select("id, name, code")
+            .eq("department_id", department_uuid)
+            .order("name")
+            .execute()
+            .data
+            or []
+        )
+        return jsonify({
+            "options": [
+                {"label": row["name"], "value": row["name"], "id": row["id"]}
+                for row in rows
+            ]
+        }), 200
+    except ValueError:
+        return jsonify({"error": "Select a valid college."}), 400
+    except Exception:
+        app.logger.exception("Unable to load programs for college")
+        return jsonify({"error": "Programs could not be loaded."}), 500
+
+
+def find_student_program(program_id, department_id):
+    try:
+        program_uuid = str(UUID(str(program_id)))
+        department_uuid = str(UUID(str(department_id)))
+    except (TypeError, ValueError, AttributeError):
+        return None
+
+    department_rows = (
+        admin_supabase.table("departments")
+        .select("id")
+        .eq("id", department_uuid)
+        .eq("is_college", True)
+        .limit(1)
+        .execute()
+        .data
+        or []
+    )
+    if not department_rows:
+        return None
+
+    rows = (
+        admin_supabase.table("programs")
+        .select("id, name, department_id")
+        .eq("id", program_uuid)
+        .eq("department_id", department_uuid)
+        .limit(1)
+        .execute()
+        .data
+        or []
+    )
+    return rows[0] if rows else None
 
 
 @app.get("/auth/google")
@@ -951,6 +1025,8 @@ def complete_profile():
     full_name = str(data.get("fullName", "")).strip()
     id_number = str(data.get("idNumber", "")).strip()
     department_name = str(data.get("department", "")).strip()
+    department_id = str(data.get("departmentId", "")).strip()
+    program_id = str(data.get("programId", "")).strip()
 
     if not full_name or not id_number:
         return jsonify({"error": "Name and student or employee ID are required."}), 400
@@ -963,16 +1039,16 @@ def complete_profile():
 
     try:
         if role == "student":
-            program_name = department_name
-            program_id = find_reference_id("programs", program_name)
-            if not program_id:
-                return jsonify({"error": "Select a program that exists in the system."}), 400
-            profile_data["program_name"] = program_name
+            program = find_student_program(program_id, department_id)
+            if not program:
+                return jsonify({
+                    "error": "Select a program offered by the selected college."
+                }), 400
             provision_student_profile(
                 g.authenticated_user,
                 full_name,
                 id_number,
-                program_id,
+                program["id"],
             )
             session.pop("profile_completion_role", None)
             session.pop("profile_completion_mode", None)
@@ -1058,6 +1134,8 @@ def register():
     last_name = str(data.get("lastName", "")).strip()
     id_number = str(data.get("idNumber", "")).strip()
     department_name = str(data.get("department", "")).strip()
+    requested_department_id = str(data.get("departmentId", "")).strip()
+    requested_program_id = str(data.get("programId", "")).strip()
     role = normalize_role_name(data.get("role", "student"))
 
     allowed_roles = {
@@ -1108,11 +1186,15 @@ def register():
                     "error": "Select a department that exists in the system."
                 }), 400
         elif role == "student":
-            program_id = find_reference_id("programs", department_name)
-            if not program_id:
+            program = find_student_program(
+                requested_program_id,
+                requested_department_id,
+            )
+            if not program:
                 return jsonify({
-                    "error": "Select a program that exists in the system."
+                    "error": "Select a program offered by the selected college."
                 }), 400
+            program_id = program["id"]
 
             existing_student = (
                 admin_supabase.table("student_profiles")

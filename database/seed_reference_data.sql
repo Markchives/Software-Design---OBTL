@@ -28,16 +28,57 @@ SET name = EXCLUDED.name,
     is_college = TRUE,
     description = EXCLUDED.description;
 
-INSERT INTO programs (id, department_id, name, code, description)
-VALUES
-    ('66666666-6666-4666-8666-666666666666', '44444444-4444-4444-8444-444444444444', 'BS Computer Science', 'BSCS', 'Bachelor of Science in Computer Science'),
-    ('77777777-7777-4777-8777-777777777777', '55555555-5555-4555-8555-555555555555', 'BS Information Technology', 'BSIT', 'Bachelor of Science in Information Technology')
-ON CONFLICT (code) DO NOTHING;
+INSERT INTO programs (department_id, name, code, description)
+SELECT departments.id, programs.name, programs.code, programs.name
+FROM (
+    VALUES
+        ('COE', 'Bachelor of Science in Civil Engineering', 'BSCE'),
+        ('COE', 'Bachelor of Science in Electrical Engineering', 'BSEE'),
+        ('COE', 'Bachelor of Science in Electronics Engineering', 'BSECE'),
+        ('COE', 'Bachelor of Science in Mechanical Engineering', 'BSME'),
+        ('COE', 'Bachelor of Science in Computer Engineering', 'BSCPE'),
+        ('CCS', 'Bachelor of Science in Computer Science', 'BSCS'),
+        ('CCS', 'Bachelor of Science in Information Technology', 'BSIT'),
+        ('CCS', 'Bachelor of Science in Information Systems', 'BSIS'),
+        ('CCS', 'Bachelor of Science in Entertainment and Multimedia Computing', 'BSEMC'),
+        ('CCS', 'Bachelor of Science in Data Science', 'BSDS'),
+        ('CBA', 'Bachelor of Science in Accountancy', 'BSA'),
+        ('CBA', 'Bachelor of Science in Management Accounting', 'BSMA'),
+        ('CBA', 'Bachelor of Science in Business Administration major in Marketing Management', 'BSBA-MM'),
+        ('CBA', 'Bachelor of Science in Business Administration major in Financial Management', 'BSBA-FM'),
+        ('CBA', 'Bachelor of Science in Entrepreneurship', 'BSE'),
+        ('CAS', 'Bachelor of Arts in Communication', 'BACOMM'),
+        ('CAS', 'Bachelor of Science in Psychology', 'BSP'),
+        ('CAS', 'Bachelor of Science in Biology', 'BSBIOL'),
+        ('CAS', 'Bachelor of Science in Mathematics', 'BSMATH'),
+        ('CAS', 'Bachelor of Science in Economics', 'BSECON'),
+        ('CED', 'Bachelor of Elementary Education', 'BEED'),
+        ('CED', 'Bachelor of Secondary Education major in English', 'BSED-ENG'),
+        ('CED', 'Bachelor of Secondary Education major in Mathematics', 'BSED-MATH'),
+        ('CED', 'Bachelor of Secondary Education major in Science', 'BSED-SCI'),
+        ('CED', 'Bachelor of Physical Education', 'BPE'),
+        ('COA', 'Bachelor of Science in Architecture', 'BSARCH'),
+        ('COA', 'Bachelor of Science in Interior Design', 'BSID'),
+        ('COA', 'Bachelor of Science in Environmental Planning', 'BSEPLAN'),
+        ('COA', 'Bachelor of Landscape Architecture', 'BLA'),
+        ('COA', 'Bachelor of Science in Urban Planning', 'BSUP'),
+        ('CTHM', 'Bachelor of Science in Tourism Management', 'BSTM'),
+        ('CTHM', 'Bachelor of Science in Hospitality Management', 'BSHM'),
+        ('CTHM', 'Bachelor of Science in Travel Management', 'BSTRM'),
+        ('CTHM', 'Bachelor of Science in Culinary Management', 'BSCM'),
+        ('CTHM', 'Bachelor of Science in Events Management', 'BSEVM')
+) AS programs(department_code, name, code)
+JOIN departments ON departments.code = programs.department_code
+ON CONFLICT (code) DO UPDATE
+SET department_id = EXCLUDED.department_id,
+    name = EXCLUDED.name,
+    description = EXCLUDED.description;
 
 INSERT INTO academic_years (id, name, start_date, end_date, is_active)
 VALUES
     ('88888888-8888-4888-8888-888888888888', '2024-2025', '2024-06-01', '2025-05-31', TRUE),
-    ('99999999-9999-4999-8999-999999999999', '2025-2026', '2025-06-01', '2026-05-31', FALSE);
+    ('99999999-9999-4999-8999-999999999999', '2025-2026', '2025-06-01', '2026-05-31', FALSE)
+ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO student_outcomes (id, code, description)
 VALUES
