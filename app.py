@@ -767,6 +767,12 @@ def admin_dashboard():
     return render_template("requirement 2/cm-admin.html")
 
 
+@app.get("/requirement 7/gl-admin.html")
+@require_role("admin-security")
+def admin_system_records():
+    return render_template("requirement 7/gl-admin.html")
+
+
 @app.get("/register")
 def register_page():
     return render_template("registration.html")
