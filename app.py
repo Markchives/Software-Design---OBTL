@@ -1,6 +1,8 @@
 from threading import Lock
 import time
 from functools import wraps
+import logging
+from logging.handlers import RotatingFileHandler
 import os
 from uuid import uuid4
 
@@ -38,6 +40,22 @@ app = Flask(
     template_folder="Templates",
     static_folder="Static"
 )
+
+account_approval_logger = logging.getLogger("edumetrics.account_approvals")
+account_approval_logger.setLevel(logging.ERROR)
+account_approval_logger.propagate = False
+if not account_approval_logger.handlers:
+    os.makedirs(app.instance_path, exist_ok=True)
+    approval_log_handler = RotatingFileHandler(
+        os.path.join(app.instance_path, "account-approval.log"),
+        maxBytes=1_000_000,
+        backupCount=3,
+        encoding="utf-8",
+    )
+    approval_log_handler.setFormatter(logging.Formatter(
+        "%(asctime)s %(levelname)s %(message)s"
+    ))
+    account_approval_logger.addHandler(approval_log_handler)
 
 
 app.permanent_session_lifetime = timedelta(days=30)
@@ -1480,6 +1498,31 @@ def decide_account_role_request(request_id):
                 return jsonify({"error": "The requester must confirm their email before approval."}), 409
 
             profile_data = role_request.get("profile_data") or {}
+            existing_app_users = (
+                admin_supabase.table("users")
+                .select("id, role, is_active")
+                .eq("email", str(target_user.email or "").strip().lower())
+                .limit(2)
+                .execute()
+                .data
+                or []
+            )
+            conflicting_user = next(
+                (
+                    app_user for app_user in existing_app_users
+                    if str(app_user["id"]) != str(target_user.id)
+                ),
+                None,
+            )
+            if conflicting_user:
+                return jsonify({
+                    "error": (
+                        "This email is already linked to a different application "
+                        "user ID. An administrator must reconcile the existing "
+                        "account before this request can be approved."
+                    )
+                }), 409
+
             save_trusted_role_profile(
                 target_user,
                 requested_role,
@@ -1517,6 +1560,7 @@ def decide_account_role_request(request_id):
         return jsonify({"status": decision}), 200
     except Exception:
         app.logger.exception("Unable to decide account role request")
+        account_approval_logger.exception("Unable to decide account role request")
         return jsonify({"error": "The account request could not be processed."}), 500
 
 
