@@ -17,6 +17,23 @@ CREATE TABLE IF NOT EXISTS public.admin_security_profiles (
 ALTER TABLE public.dept_head_profiles
     ADD COLUMN IF NOT EXISTS employee_number TEXT;
 
+ALTER TABLE public.departments
+    ADD COLUMN IF NOT EXISTS is_college BOOLEAN NOT NULL DEFAULT FALSE;
+
+INSERT INTO public.departments (name, code, is_college, description)
+VALUES
+    ('College of Engineering', 'COE', TRUE, 'College of Engineering'),
+    ('College of Computer Studies', 'CCS', TRUE, 'College of Computer Studies'),
+    ('College of Business and Accountancy', 'CBA', TRUE, 'College of Business and Accountancy'),
+    ('College of Arts and Sciences', 'CAS', TRUE, 'College of Arts and Sciences'),
+    ('College of Education', 'CED', TRUE, 'College of Education'),
+    ('College of Architecture', 'COA', TRUE, 'College of Architecture'),
+    ('College of Tourism and Hospitality Management', 'CTHM', TRUE, 'College of Tourism and Hospitality Management')
+ON CONFLICT (code) DO UPDATE
+SET name = EXCLUDED.name,
+    is_college = TRUE,
+    description = EXCLUDED.description;
+
 CREATE TABLE IF NOT EXISTS public.account_role_requests (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     auth_user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,

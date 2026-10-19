@@ -632,6 +632,37 @@ def health():
     })
 
 
+@app.get("/api/registration-options/<role>")
+def registration_options(role):
+    role = normalize_role_name(role)
+    if role == "student":
+        table_name = "programs"
+    elif role in {"faculty", "department-head"}:
+        table_name = "departments"
+    elif role == "admin-security":
+        return jsonify({"options": []}), 200
+    else:
+        return jsonify({"error": "Invalid account role."}), 400
+
+    if not admin_supabase:
+        return jsonify({"error": "Registration options are unavailable."}), 503
+
+    try:
+        query = admin_supabase.table(table_name).select("name, code")
+        if table_name == "departments":
+            query = query.eq("is_college", True)
+        rows = query.order("name").execute().data or []
+        return jsonify({
+            "options": [
+                {"label": row["name"], "value": row["name"]}
+                for row in rows
+            ]
+        }), 200
+    except Exception:
+        app.logger.exception("Unable to load registration options")
+        return jsonify({"error": "Registration options could not be loaded."}), 500
+
+
 @app.get("/auth/google")
 def google_login():
     role = request.args.get("role", "student").strip().lower()

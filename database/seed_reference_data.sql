@@ -14,6 +14,20 @@ VALUES
     ('55555555-5555-4555-8555-555555555555', 'Information Technology', 'IT', 'Information Technology Department')
 ON CONFLICT (code) DO NOTHING;
 
+INSERT INTO departments (name, code, is_college, description)
+VALUES
+    ('College of Engineering', 'COE', TRUE, 'College of Engineering'),
+    ('College of Computer Studies', 'CCS', TRUE, 'College of Computer Studies'),
+    ('College of Business and Accountancy', 'CBA', TRUE, 'College of Business and Accountancy'),
+    ('College of Arts and Sciences', 'CAS', TRUE, 'College of Arts and Sciences'),
+    ('College of Education', 'CED', TRUE, 'College of Education'),
+    ('College of Architecture', 'COA', TRUE, 'College of Architecture'),
+    ('College of Tourism and Hospitality Management', 'CTHM', TRUE, 'College of Tourism and Hospitality Management')
+ON CONFLICT (code) DO UPDATE
+SET name = EXCLUDED.name,
+    is_college = TRUE,
+    description = EXCLUDED.description;
+
 INSERT INTO programs (id, department_id, name, code, description)
 VALUES
     ('66666666-6666-4666-8666-666666666666', '44444444-4444-4444-8444-444444444444', 'BS Computer Science', 'BSCS', 'Bachelor of Science in Computer Science'),

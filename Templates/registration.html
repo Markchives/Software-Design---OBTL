@@ -146,8 +146,9 @@
                                     </svg>
                                 </span>
 
-                                <input type="text" id="department" name="department" placeholder="Program"
-                                    autocomplete="organization">
+                                <select id="department" name="department" required>
+                                    <option value="" selected>Select Program</option>
+                                </select>
                             </div>
                             <small id="departmentError" class="form-error"></small>
                         </div>
@@ -395,6 +396,54 @@
                 "registrationHeaderRole"
             );
 
+        let registrationOptionsRequest = 0;
+
+        async function loadRegistrationOptions(role) {
+            const select = document.getElementById("department");
+            const error = document.getElementById("departmentError");
+            if (!select) return;
+
+            const requestId = ++registrationOptionsRequest;
+            const placeholder = document.createElement("option");
+            placeholder.value = "";
+            placeholder.disabled = true;
+            placeholder.selected = true;
+            placeholder.textContent = role === "student"
+                ? "Select Program"
+                : "Select College";
+            select.replaceChildren(placeholder);
+            if (error) error.textContent = "";
+
+            if (role === "admin-security") return;
+
+            try {
+                const response = await fetch(
+                    "/api/registration-options/" + encodeURIComponent(role),
+                    { headers: { Accept: "application/json" } }
+                );
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.error || "Registration options could not be loaded.");
+                }
+                if (requestId !== registrationOptionsRequest) return;
+
+                (result.options || []).forEach((item) => {
+                    const option = document.createElement("option");
+                    option.value = item.value;
+                    option.textContent = item.label;
+                    select.appendChild(option);
+                });
+
+                if (!result.options || !result.options.length) {
+                    throw new Error("No options are configured for this role yet.");
+                }
+            } catch (requestError) {
+                if (requestId === registrationOptionsRequest && error) {
+                    error.textContent = requestError.message;
+                }
+            }
+        }
+
         function updateRegistrationRole(role) {
             currentRegistrationRole =
                 validRegistrationRoles.includes(role)
@@ -486,6 +535,8 @@
                 currentRegistrationRole
                 ] +
                 " Registration";
+
+            loadRegistrationOptions(currentRegistrationRole);
 
         }
 
