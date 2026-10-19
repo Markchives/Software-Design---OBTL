@@ -748,6 +748,12 @@ def faculty_courses_page():
     return render_template("main/courses-faculty.html")
 
 
+@app.get("/main/courses.html")
+@require_role("student")
+def student_courses_page():
+    return render_template("main/courses.html")
+
+
 @app.get("/main/platform.html")
 @app.get("/main/resources.html")
 @app.get("/main/about us.html")
