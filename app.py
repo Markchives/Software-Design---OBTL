@@ -114,6 +114,23 @@ def require_role(required_role):
     return decorator
 
 
+def require_authenticated(view_function):
+    @wraps(view_function)
+    def wrapped(*args, **kwargs):
+        user = get_authenticated_user()
+
+        if not user:
+            session.pop("access_token", None)
+            session.pop("refresh_token", None)
+            session.pop("user_id", None)
+            return redirect("/login page.html")
+
+        g.authenticated_user = user
+        return view_function(*args, **kwargs)
+
+    return wrapped
+
+
 @app.get("/api/faculty/sections")
 @require_role("faculty")
 def faculty_sections():
@@ -712,10 +729,22 @@ def dept_head_workflow_page():
 
 
 @app.get("/main/dashboard.html")
+@require_authenticated
+def main_dashboard_page():
+    role = normalize_role_name(get_user_role(g.authenticated_user))
+
+    if role == "admin-security":
+        return redirect("/requirement%202/cm-admin.html")
+
+    if role not in {"student", "faculty", "department-head"}:
+        return "You are not authorized to view this page.", 403
+
+    return render_template("main/dashboard.html", dashboard_role=role)
+
+
 @app.get("/main/platform.html")
 @app.get("/main/resources.html")
 @app.get("/main/about us.html")
-@require_role("department-head")
 def dept_head_main_page():
     return render_template(request.path.lstrip("/"))
 

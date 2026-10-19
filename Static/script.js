@@ -6204,7 +6204,8 @@ document.addEventListener("DOMContentLoaded", function () {
         'admin-security': 'admin-security',
         'admin_security': 'admin-security'
     }[v] || v);
-    const role = normalize((query || sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('verifiedRole') || 'student').toString().trim().toLowerCase());
+    const serverRole = document.body.dataset.dashboardRole;
+    const role = normalize((serverRole || query || sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('verifiedRole') || 'student').toString().trim().toLowerCase());
     const selected = allowed.includes(role) ? role : 'student';
     if (!sessionStorage.getItem('edumetricsRole') && sessionStorage.getItem('verificationCompleted') === 'true') sessionStorage.setItem('edumetricsRole', selected);
     const dashboardContent = document.getElementById('dashboardRoleContent');
