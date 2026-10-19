@@ -773,6 +773,15 @@ def admin_system_records():
     return render_template("requirement 7/gl-admin.html")
 
 
+@app.get("/requirement 4/ra-admin.html")
+@app.get("/requirement 5/ac-admin.html")
+@app.get("/requirement 6/cqi-admin.html")
+@app.get("/requirement 8/rp-admin.html")
+@require_role("admin-security")
+def admin_workflow_page():
+    return render_template(request.path.lstrip("/"))
+
+
 @app.get("/register")
 def register_page():
     return render_template("registration.html")
