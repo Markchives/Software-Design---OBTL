@@ -6210,11 +6210,12 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!sessionStorage.getItem('edumetricsRole') && sessionStorage.getItem('verificationCompleted') === 'true') sessionStorage.setItem('edumetricsRole', selected);
     const dashboardContent = document.getElementById('dashboardRoleContent');
     if (!dashboardContent) return;
-    const tpl = document.getElementById('dashboard-template-' + selected);
+    const templateRole = selected === 'department-head' ? 'dept-head' : selected;
+    const tpl = document.getElementById('dashboard-template-' + templateRole);
     if (!tpl) return;
     dashboardContent.appendChild(tpl.content.cloneNode(true));
     if (selected !== 'student') {
-        const nav = document.getElementById('nav-template-' + selected);
+        const nav = document.getElementById('nav-template-' + templateRole);
         document.querySelector('.so-nav').replaceWith(nav.content.cloneNode(true));
     }
     const names = { student: ['Student', 'Student'], faculty: ['Faculty', 'Faculty'], 'department-head': ['Department Head', 'Department Head'] };
