@@ -1007,17 +1007,7 @@ def auth_callback():
         session["access_token"] = result.session.access_token
         session["refresh_token"] = result.session.refresh_token
         session["user_id"] = result.user.id
-
-        if actual_role == "student":
-            return redirect("/requirement%201/so-student.html")
-        elif actual_role == "faculty":
-            return redirect("/requirement%201/so-faculty.html")
-        elif actual_role == "department-head":
-            return redirect("/requirement%201/so-dept-head.html")
-        elif actual_role == "admin-security":
-            return redirect("/requirement%202/cm-admin.html")
-        else:
-            return redirect("/")
+        return redirect("/main/dashboard.html")
 
     except Exception:
         app.logger.exception("%s OAuth callback failed", provider_name)

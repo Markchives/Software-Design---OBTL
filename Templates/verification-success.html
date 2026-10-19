@@ -454,26 +454,7 @@
 
         function continueToLogin() {
             if (verificationType === "login") {
-
-                const rolePages = {
-                    "student": "/requirement%201/so-student.html",
-                    "faculty": "/requirement%201/so-faculty.html",
-                    "department-head": "/requirement%201/so-dept-head.html",
-                    "admin-security": "/requirement%202/cm-admin.html"
-                };
-
-
-                const destination = rolePages[verifiedRole];
-
-                if (!destination) {
-                    alert(
-                        "No landing page is configured for this role yet. " +
-                        "Please contact the administrator."
-                    );
-                    return;
-                }
-
-                window.location.href = destination;
+                window.location.href = "/main/dashboard.html";
                 return;
             }
 
