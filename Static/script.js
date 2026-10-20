@@ -6426,24 +6426,54 @@ document.addEventListener("DOMContentLoaded", function () {
                 a.removeAttribute('aria-current');
             });
         }
-        const name = page.querySelector('#accountName');
-        const stored = (keys) => keys.map(k => sessionStorage.getItem(k)).find(v => v && v.trim()) || '';
-        const prefix = selected === 'student' ? 'student' : selected === 'faculty' ? 'faculty' : selected === 'dept-head' ? 'deptHead' : 'admin';
-        const accountFields = {
-            accountFullName: stored([prefix + 'Name', 'userName', 'fullName']),
-            accountStudentId: stored(selected === 'student' ? ['studentId', 'userId'] : selected === 'faculty' ? ['facultyId', 'employeeId'] : selected === 'dept-head' ? ['deptHeadId', 'employeeId'] : ['adminId', 'employeeId']),
-            accountProgram: stored(selected === 'student' ? ['studentProgram', 'program'] : selected === 'faculty' ? ['facultyDepartment', 'department'] : selected === 'dept-head' ? ['deptHeadDepartment', 'department'] : ['adminDepartment', 'department']),
-            accountDetailEmail: stored([prefix + 'Email', 'userEmail', 'email'])
-        };
         const idLabel = page.querySelector('#accountIdLabel');
         if (idLabel) idLabel.textContent = selected === 'student' ? 'Student ID' : selected === 'admin' ? 'Admin ID' : 'Employee ID';
         const programLabel = page.querySelector('#accountProgramLabel');
-        if (programLabel) programLabel.textContent = selected === 'student' ? 'Program' : selected === 'admin' ? 'Department' : 'Department';
-        Object.entries(accountFields).forEach(([id, value]) => {
-            const el = page.querySelector('#' + id);
-            if (el) el.textContent = value || 'Not available';
-        });
-        if (name) name.textContent = accountFields.accountFullName || (selected === 'admin' ? 'Administrator Account' : label + ' Account');
+        if (programLabel) programLabel.textContent = selected === 'student' ? 'Program' : selected === 'admin' ? 'Account Type' : 'Department';
+        const accountDataMessage = page.querySelector('#accountDataMessage');
+        const accountFields = {
+            accountFullName: page.querySelector('#accountFullName'),
+            accountStudentId: page.querySelector('#accountStudentId'),
+            accountProgram: page.querySelector('#accountProgram'),
+            accountDetailEmail: page.querySelector('#accountDetailEmail')
+        };
+        async function loadAccountProfile() {
+            try {
+                const response = await fetch('/api/account/profile', {
+                    headers: { Accept: 'application/json' },
+                    credentials: 'same-origin'
+                });
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.error || 'Account details could not be loaded.');
+                }
+                const profile = result.profile;
+                const values = {
+                    accountFullName: profile.full_name,
+                    accountStudentId: profile.id_number,
+                    accountProgram: profile.affiliation,
+                    accountDetailEmail: profile.email
+                };
+                Object.entries(values).forEach(([id, value]) => {
+                    if (accountFields[id]) accountFields[id].textContent = value || 'Not available';
+                });
+                const accountName = page.querySelector('#accountName');
+                if (accountName) {
+                    accountName.textContent = profile.full_name || label + ' Account';
+                }
+                const userHeading = page.querySelector('.so-user-info strong');
+                if (userHeading && profile.full_name) userHeading.textContent = profile.full_name;
+                if (accountDataMessage) accountDataMessage.textContent = '';
+            } catch (error) {
+                Object.values(accountFields).forEach(field => {
+                    if (field) field.textContent = 'Not available';
+                });
+                if (accountDataMessage) {
+                    accountDataMessage.textContent = error.message || 'Account details could not be loaded.';
+                }
+            }
+        }
+        loadAccountProfile();
         page.querySelectorAll('[data-account-role-label]').forEach(el => { el.textContent = label; });
         document.dispatchEvent(new Event('edumetrics:nav-ready'));
         const photoInput = page.querySelector('#accountPhotoInput');

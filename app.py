@@ -997,6 +997,100 @@ def account_settings_page():
     return render_template("main/account-settings.html", account_role=role)
 
 
+@app.get("/api/account/profile")
+@require_authenticated
+def account_profile():
+    if not admin_supabase:
+        return jsonify({"error": "Account details are unavailable."}), 503
+
+    role = normalize_role_name(get_user_role(g.authenticated_user))
+    profile_tables = {
+        "student": "student_profiles",
+        "faculty": "faculty_profiles",
+        "department-head": "dept_head_profiles",
+        "admin-security": "admin_security_profiles",
+    }
+    profile_fields = {
+        "student": "student_number, program_id",
+        "faculty": "employee_number, department_id",
+        "department-head": "employee_number, department_id",
+        "admin-security": "employee_number",
+    }
+    if role not in profile_tables:
+        return jsonify({"error": "Your account role could not be verified."}), 403
+
+    try:
+        user_rows = (
+            admin_supabase.table("users")
+            .select("full_name, email")
+            .eq("id", str(g.authenticated_user.id))
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if not user_rows:
+            return jsonify({"error": "Account details could not be found."}), 404
+
+        profile_rows = (
+            admin_supabase.table(profile_tables[role])
+            .select(profile_fields[role])
+            .eq("user_id", str(g.authenticated_user.id))
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if not profile_rows:
+            return jsonify({"error": "Your account profile is incomplete."}), 404
+
+        profile = profile_rows[0]
+        id_number = (
+            profile.get("student_number")
+            if role == "student"
+            else profile.get("employee_number")
+        )
+        affiliation = ""
+        if role == "student" and profile.get("program_id"):
+            program_rows = (
+                admin_supabase.table("programs")
+                .select("name")
+                .eq("id", profile["program_id"])
+                .limit(1)
+                .execute()
+                .data
+                or []
+            )
+            affiliation = program_rows[0]["name"] if program_rows else ""
+        elif role in {"faculty", "department-head"} and profile.get("department_id"):
+            department_rows = (
+                admin_supabase.table("departments")
+                .select("name")
+                .eq("id", profile["department_id"])
+                .limit(1)
+                .execute()
+                .data
+                or []
+            )
+            affiliation = department_rows[0]["name"] if department_rows else ""
+        elif role == "admin-security":
+            affiliation = "Admin & Security"
+
+        user = user_rows[0]
+        return jsonify({
+            "profile": {
+                "role": role,
+                "full_name": user.get("full_name") or "",
+                "id_number": id_number or "",
+                "affiliation": affiliation,
+                "email": user.get("email") or g.authenticated_user.email or "",
+            }
+        }), 200
+    except Exception:
+        app.logger.exception("Unable to load authenticated account profile")
+        return jsonify({"error": "Account details could not be loaded."}), 500
+
+
 @app.get("/main/courses-faculty.html")
 @require_role("faculty")
 def faculty_courses_page():
