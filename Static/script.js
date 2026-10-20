@@ -5678,6 +5678,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function showEmptyState(title, message) {
+        if (!list) return;
         list.replaceChildren();
 
         if (empty) {
@@ -5736,7 +5737,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 empty.hidden = true;
             }
             list.hidden = false;
-            list.replaceChildren();
+            if (!list) return;
+        list.replaceChildren();
             courses.forEach(function (course) {
                 const card = document.createElement("article");
                 card.className = "sc-course-card";
@@ -7322,7 +7324,32 @@ document.addEventListener("DOMContentLoaded", function () {
                 audience.textContent = post.course_label || 'Department announcement';
                 body.appendChild(audience);
             }
-            card.append(author, body); feed.append(card);
+            // Dashboard post actions use the existing delegated interaction controller.
+            card.dataset.postId = String(post.id || post.post_id || [post.created_at, post.author, post.title, post.message].join('|'));
+            card.dataset.course = String(post.section_id || 'department');
+            const actions = document.createElement('div');
+            actions.className = 'sd-post-actions';
+            const like = document.createElement('button');
+            like.type = 'button'; like.className = 'sd-post-action'; like.dataset.action = 'react';
+            like.setAttribute('aria-pressed', 'false');
+            like.innerHTML = '<span>Like</span>';
+            const comment = document.createElement('button');
+            comment.type = 'button'; comment.className = 'sd-post-action'; comment.dataset.action = 'comments';
+            comment.innerHTML = '<span>Comment</span>';
+            const read = document.createElement('button');
+            read.type = 'button'; read.className = 'sd-post-action'; read.dataset.action = 'reader';
+            read.textContent = 'Read post';
+            actions.append(like, comment, read);
+            const comments = document.createElement('div');
+            comments.className = 'sd-comments'; comments.hidden = true;
+            const list = document.createElement('div'); list.className = 'sd-comment-list';
+            const commentForm = document.createElement('form'); commentForm.className = 'sd-comment-form';
+            const input = document.createElement('input'); input.className = 'sd-comment-input';
+            input.type = 'text'; input.maxLength = 500; input.required = true;
+            input.placeholder = 'Write a comment...'; input.setAttribute('aria-label', 'Write a comment');
+            const submit = document.createElement('button'); submit.type = 'submit'; submit.className = 'sd-comment-submit'; submit.textContent = 'Post';
+            commentForm.append(input, submit); comments.append(list, commentForm);
+            card.append(author, body, actions, comments); feed.append(card);
         });
         empty.hidden = visiblePosts.length > 0;
         if (!posts.length && status && canCreate) {
@@ -7453,7 +7480,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const filter = document.getElementById('sdCourseFilter');
     const feed = document.getElementById('sdPosts');
     if (!feed) return;
-    const posts = Array.from(feed.querySelectorAll('.sd-post'));
     const empty = document.getElementById('sdEmpty');
     const reader = document.getElementById('sdReader');
     const readerContent = document.getElementById('sdReaderContent');
@@ -7473,11 +7499,13 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateReaction(post) {
         const data = dataFor(post.dataset.postId);
         const button = post.querySelector('[data-action="react"]');
+        if (!button) return;
         button.setAttribute('aria-pressed', String(Boolean(data.liked)));
         button.querySelector('span').textContent = data.liked ? 'Liked' : 'Like';
     }
     function renderComments(post) {
         const list = post.querySelector('.sd-comment-list');
+        if (!list) return;
         list.replaceChildren();
         const comments = dataFor(post.dataset.postId).comments;
         if (!comments.length) {
@@ -7497,18 +7525,20 @@ document.addEventListener("DOMContentLoaded", function () {
             list.append(item);
         });
         const count = post.querySelector('[data-action="comments"]');
-        count.querySelector('span').textContent = 'Comment' + (comments.length ? ' (' + comments.length + ')' : '');
+        if (count) count.querySelector('span').textContent = 'Comment' + (comments.length ? ' (' + comments.length + ')' : '');
     }
-    posts.forEach(function (post) { updateReaction(post); renderComments(post); });
-    filter.addEventListener('change', function () {
-        let visible = 0;
-        posts.forEach(function (post) {
-            const show = filter.value === 'all' || post.dataset.course === filter.value;
-            post.hidden = !show;
-            if (show) visible++;
+    // Posts arrive asynchronously from /api/posts and are replaced when filtered.
+    // Initialize new cards as they are inserted, without adding duplicate listeners.
+    const observer = new MutationObserver(function () {
+        feed.querySelectorAll('.sd-post[data-post-id]:not([data-interactions-ready])').forEach(function (post) {
+            post.dataset.interactionsReady = 'true';
+            updateReaction(post);
+            renderComments(post);
         });
-        empty.hidden = visible !== 0;
-        feed.scrollTop = 0;
+    });
+    observer.observe(feed, { childList: true });
+    feed.querySelectorAll('.sd-post[data-post-id]').forEach(function (post) {
+        post.dataset.interactionsReady = 'true'; updateReaction(post); renderComments(post);
     });
     function stopSpeech() {
         if ('speechSynthesis' in window) window.speechSynthesis.cancel();
@@ -7548,6 +7578,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const button = event.target.closest('[data-action]');
         if (!button) return;
         const post = button.closest('.sd-post');
+        if (!post || !post.dataset.postId) return;
         const action = button.dataset.action;
         if (action === 'react') {
             const data = dataFor(post.dataset.postId);
