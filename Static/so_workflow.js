@@ -18,6 +18,7 @@
         const root = document.getElementById("soWorkflowManager");
         if (!root) return;
         const sectionContext = document.getElementById("soSelectedSection");
+        const sectionSelect = document.getElementById("soFacultySection");
         const coRows = document.getElementById("soCoRows");
         const assessmentRows = document.getElementById("soAssessmentRows");
         const outcomeSelect = document.getElementById("soAssessmentOutcome");
@@ -29,12 +30,15 @@
         const button = (text, action, id) => `<button class="so-workflow-action" type="button" data-action="${action}" data-id="${esc(id)}">${text}</button>`;
         async function loadSection(sectionId) {
             section = sections.find(row => row.section_id === sectionId) || null;
+            if (sectionSelect) sectionSelect.value = section?.section_id || "";
             window.syncEduMetricsWorkspaceSection?.(section?.section_id || "", section || undefined);
             if (sectionContext) {
                 sectionContext.textContent = section
                     ? `${section.course_code} · ${section.course_title} · ${section.section_name} · ${section.academic_year_name || ""}`
                     : "Open this workspace from your assigned course.";
             }
+            document.getElementById("soSaveCo").disabled = !section;
+            document.getElementById("soSaveAssessment").disabled = !section;
             document.getElementById("soCoCode").value = "";
             document.getElementById("soCoDescription").value = "";
             if (!section) return;
@@ -57,7 +61,7 @@
                 const alignSelect = document.getElementById("soCoAlignment");
                 if (alignSelect) alignSelect.innerHTML = `<option value="">Choose an SO (optional)</option>` + studentOutcomes.map(row => `<option value="${esc(row.id)}">${esc(row.code)} — ${esc(row.description)}</option>`).join("");
                 const data = await api(`/api/faculty/sections/${encodeURIComponent(section.section_id)}/so-assessments`);
-                assessmentRows.innerHTML = (data.assessments || []).length ? data.assessments.map(row => `<tr><td><strong>${esc(row.student_outcome?.code)} · ${esc(row.title)}</strong><small class="so-co-links">${esc(row.student_outcome?.description)}</small></td><td>${esc(row.due_date || "No due date")}</td><td><span class="so-status-pill ${esc(row.status)}">${esc(row.status)}</span></td><td>${row.response_count || 0} / ${row.student_count || 0}</td><td>${row.completion_rate || 0}%</td><td>${button("Responses", "responses", row.id)} ${button("Edit", "edit-assessment", row.id)} ${button("Delete", "delete-assessment", row.id)}</td></tr>`).join("") : `<tr><td colspan="6">No SO assessments for this section yet.</td></tr>`;
+                assessmentRows.innerHTML = (data.assessments || []).length ? data.assessments.map(row => `<tr><td><strong>${esc(row.student_outcome?.code)} · ${esc(row.title)}</strong><small class="so-co-links">${esc(row.student_outcome?.description)}</small></td><td>${esc(row.due_date || "No due date")}</td><td><span class="so-status-pill ${esc(row.status)}">${esc(row.status)}</span></td><td>${row.response_count || 0} / ${row.student_count || 0}</td><td>${row.completion_rate === null ? "—" : `${row.completion_rate}%`}</td><td>${button("Responses", "responses", row.id)} ${button("Edit", "edit-assessment", row.id)} ${button("Delete", "delete-assessment", row.id)}</td></tr>`).join("") : `<tr><td colspan="6">No SO assessments for this section yet.</td></tr>`;
             } catch (error) { notify(error.message); }
         }
         document.getElementById("soSaveCo").addEventListener("click", async () => {
@@ -127,10 +131,36 @@
             } catch (error) { notify(error.message); }
         });
         api("/api/faculty/sections").then(data => {
-            sections = data.sections || [];
+            sections = Array.isArray(data.sections) ? data.sections : [];
+            if (sectionSelect) {
+                sectionSelect.replaceChildren(new Option(
+                    sections.length ? "Select course section" : "No assigned sections",
+                    ""
+                ));
+                sections.forEach(row => sectionSelect.add(new Option(
+                    [row.course_code, row.section_name, row.academic_year_name, row.term_name]
+                        .filter(Boolean).join(" · "),
+                    row.section_id
+                )));
+            }
             const requested = new URLSearchParams(window.location.search).get("section_id");
-            if (requested) loadSection(requested);
-        }).catch(error => notify(error.message));
+            const selected = sections.some(row => row.section_id === requested)
+                ? requested
+                : sections.length === 1 ? sections[0].section_id : "";
+            if (sectionSelect) {
+                sectionSelect.value = selected;
+                sectionSelect.disabled = sections.length === 0;
+                sectionSelect.addEventListener("change", () => loadSection(sectionSelect.value));
+            }
+            if (selected) loadSection(selected);
+            else loadSection("");
+        }).catch(error => {
+            if (sectionSelect) {
+                sectionSelect.replaceChildren(new Option("Unable to load sections", ""));
+                sectionSelect.disabled = true;
+            }
+            notify(error.message);
+        });
     }
 
     function initStudent() {
@@ -138,7 +168,22 @@
         if (!list) return;
         const count = document.getElementById("pendingSOCount");
         const dueCount = document.getElementById("dueThisWeekCount");
+        const availableSyllabusCount = document.getElementById("availableSyllabusCount");
+        const courseFilter = document.getElementById("studentCourseSort");
         const escape = esc;
+        let syllabusRows = [];
+        function renderSyllabi() {
+            const syllabusList = document.getElementById("studentSyllabusList");
+            const emptySyllabus = document.getElementById("studentSyllabusEmpty");
+            const visible = syllabusRows.filter(item =>
+                !courseFilter?.value || item.course_id === courseFilter.value
+            );
+            if (syllabusList) {
+                syllabusList.innerHTML = visible.map(item => `<div class="so-student-file-row"><div class="so-student-file-info"><div class="so-student-file-copy"><strong>${escape(item.course_code)} · ${escape(item.course_title)} · ${escape(item.section_name)}</strong><div>${escape(item.file_name)}</div><small>${escape(item.term_name)} ${escape(item.academic_year_name)}</small></div></div><div class="so-student-file-actions"><a class="so-student-view-btn" target="_blank" rel="noopener" href="${escape(item.signed_url)}">View syllabus</a><a class="so-student-download-btn" href="${escape(item.download_url || item.signed_url)}" target="_blank" rel="noopener">Download</a></div></div>`).join("");
+                syllabusList.hidden = !visible.length;
+            }
+            if (emptySyllabus) emptySyllabus.hidden = visible.length > 0;
+        }
         async function load() {
             try {
                 const data = await api("/api/student/so-assessments");
@@ -148,16 +193,29 @@
                 list.innerHTML = rows.map(row => `<article class="so-pending-item"><div class="so-pending-information"><h3 class="so-pending-title">${escape(row.student_outcome?.code)} · ${escape(row.title)}</h3><div class="so-pending-meta"><span>Due: ${escape(row.due_date || "No due date")}</span><span class="so-pending-status">${escape(row.course_code)} · ${escape(row.section_name)}</span></div><p>${escape(row.course_title)} · ${escape(row.academic_term)} ${escape(row.academic_year)}</p></div><div class="so-pending-course">${row.syllabus_url ? `<a href="${escape(row.syllabus_url)}" target="_blank" rel="noopener">View syllabus</a> · <a href="${escape(row.syllabus_download_url)}" target="_blank" rel="noopener">Download</a>` : "Syllabus unavailable"}</div><button type="button" class="so-start-assessment-btn" data-assessment="${escape(row.id)}">Complete self-assessment</button></article>`).join("");
                 list.hidden = !rows.length;
                 const empty = document.getElementById("pendingSOEmpty"); if (empty) empty.hidden = !!rows.length;
+            } catch (error) {
+                notify(error.message);
+            }
+            try {
                 const syllabusData = await api("/api/student/syllabi");
-                const syllabusList = document.getElementById("studentSyllabusList");
-                const emptySyllabus = document.getElementById("studentSyllabusEmpty");
-                const syllabi = syllabusData.syllabi || [];
-                if (syllabusList) {
-                    syllabusList.innerHTML = syllabi.map(item => `<div class="so-student-file-row"><div class="so-student-file-info"><div class="so-student-file-copy"><strong>${escape(item.course_code)} · ${escape(item.course_title)} · ${escape(item.section_name)}</strong><div>${escape(item.file_name)}</div></div></div><div class="so-student-file-actions"><a class="so-student-view-btn" target="_blank" rel="noopener" href="${escape(item.signed_url)}">View syllabus</a><a class="so-student-download-btn" href="${escape(item.download_url || item.signed_url)}" target="_blank" rel="noopener">Download PDF</a></div></div>`).join("");
-                    syllabusList.hidden = !syllabi.length; if (emptySyllabus) emptySyllabus.hidden = !!syllabi.length;
+                syllabusRows = Array.isArray(syllabusData.syllabi) ? syllabusData.syllabi : [];
+                if (availableSyllabusCount) availableSyllabusCount.textContent = String(syllabusRows.length);
+                if (courseFilter) {
+                    const previous = courseFilter.value;
+                    const courses = [...new Map(syllabusRows.map(item => [
+                        item.course_id,
+                        `${item.course_code} · ${item.course_title}`
+                    ])).entries()];
+                    courseFilter.replaceChildren(new Option("All Courses", ""));
+                    courses.forEach(([id, label]) => courseFilter.add(new Option(label, id)));
+                    if (courses.some(([id]) => id === previous)) courseFilter.value = previous;
                 }
-            } catch (error) { notify(error.message); }
+                renderSyllabi();
+            } catch (error) {
+                notify(error.message);
+            }
         }
+        courseFilter?.addEventListener("change", renderSyllabi);
         list.addEventListener("click", async event => {
             const button = event.target.closest("[data-assessment]"); if (!button) return;
             try {

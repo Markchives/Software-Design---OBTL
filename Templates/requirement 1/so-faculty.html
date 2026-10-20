@@ -151,10 +151,10 @@
 <button class="sodh-tab sof-tab active" data-tab="syllabus" type="button">
                         Course Syllabus
                     </button>
-<button class="sodh-tab sof-tab" data-tab="course-outcomes" type="button">
+<button class="sodh-tab sof-tab" data-tab="course-outcomes" type="button" hidden="">
                         Course Outcomes
                     </button>
-<button class="sodh-tab sof-tab" data-tab="student-outcomes" type="button">
+<button class="sodh-tab sof-tab" data-tab="student-outcomes" type="button" hidden="">
                         Student Outcomes
                     </button>
 </div>
@@ -173,6 +173,7 @@
 </label>
 </div>
 </div>
+<p aria-live="polite" class="so-workflow-status" id="facultySyllabusStatus" role="status">Select a course workspace to load its syllabus.</p>
 <div class="sof-syllabus-empty" id="facultySyllabusEmpty">
 <h3>
                             No syllabus uploaded
@@ -229,7 +230,7 @@
 </div>
 </div>
 </div>
-<div class="sodh-tab-panel sof-tab-panel" id="course-outcomes">
+<div class="sodh-tab-panel sof-tab-panel" hidden="" id="course-outcomes">
 <div class="sodh-toolbar sof-outcome-toolbar sof-course-outcome-toolbar">
 <p>
                             Add, edit, delete course outcomes
@@ -267,7 +268,7 @@
 </table>
 </div>
 </div>
-<div class="sodh-tab-panel sof-tab-panel" id="student-outcomes">
+<div class="sodh-tab-panel sof-tab-panel" hidden="" id="student-outcomes">
 <div class="sodh-toolbar sof-outcome-toolbar sof-student-outcome-toolbar">
 <p>
                             Upload and manage student outcome assessments
@@ -308,10 +309,10 @@
 </div>
 </section>
 <section class="so-content-card so-workflow-manager" id="soWorkflowManager">
-<div class="so-section-header"><div><h2>Outcome &amp; SO Assessment Workspace</h2><p>Manage this section’s Course Outcomes and Student Outcome self-assessment.</p></div></div>
+<div class="so-section-header"><div><h2>Course Outcomes &amp; SO Self-Assessments</h2><p>Manage this section’s Course Outcomes, align them to Student Outcomes, configure self-assessments, and review completion.</p></div></div>
 <div class="so-section-rule"></div>
 <div class="so-workflow-grid">
-<div class="so-section-context"><span>Selected teaching section</span><strong id="soSelectedSection">Open this workspace from your assigned course.</strong></div>
+<label class="so-section-context"><span>Teaching section</span><select aria-label="Select assigned course section" id="soFacultySection"><option value="">Loading assigned sections...</option></select><small id="soSelectedSection">Select an assigned section to manage its syllabus and outcomes.</small></label>
 <label>Course Outcome code<input id="soCoCode" maxlength="20" placeholder="CO1"></label>
 <label class="so-workflow-wide">Course Outcome description<input id="soCoDescription" maxlength="2000" placeholder="Describe the expected course outcome"></label>
 <label>Target attainment (%)<input id="soCoTarget" type="number" min="0" max="100" value="70"></label>

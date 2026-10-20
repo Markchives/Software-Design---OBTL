@@ -2856,7 +2856,10 @@ def outcomes_overview():
         student_names = {row["id"]: row.get("full_name", "") for row in (users or [])}
         academic_years = admin_supabase.table("academic_years").select("id, name").order("name", desc=True).execute().data or []
         outcome_assessments = admin_supabase.table("so_self_assessments").select("id, section_id, student_outcome_id, title, performance_indicators, rating_scale, status").in_("section_id", section_ids).execute().data if section_ids else []
-        outcome_assessments = outcome_assessments or []
+        outcome_assessments = [
+            row for row in (outcome_assessments or [])
+            if row.get("status") in {"open", "closed"}
+        ]
         assessment_section_by_id = {row["id"]: row["section_id"] for row in outcome_assessments}
         assessment_ids = [row["id"] for row in outcome_assessments]
         response_rows = admin_supabase.table("so_self_assessment_responses").select("assessment_id, student_profile_id, answers, submitted_at").in_("assessment_id", assessment_ids).execute().data if assessment_ids else []
@@ -4179,7 +4182,11 @@ def faculty_so_assessments(section_id):
             {**_so_assessment_payload(row, so_by_id),
              "response_count": counts.get(row["id"], 0),
              "student_count": student_count,
-             "completion_rate": round(counts.get(row["id"], 0) / student_count * 100, 1) if student_count else 0}
+             "completion_rate": (
+                 round(counts.get(row["id"], 0) / student_count * 100, 1)
+                 if student_count and row.get("status") != "draft"
+                 else None if row.get("status") == "draft" else 0
+             )}
             for row in rows
         ]}), 200
     except ValueError:
@@ -4768,7 +4775,8 @@ def student_syllabi():
                 "term_name": term.get("name", ""),
                 "file_name": record["file_name"],
                 "uploaded_at": record["uploaded_at"],
-                "signed_url": signed_syllabus_url(record),
+                "signed_url": signed_syllabus_url(record, download=False),
+                "download_url": signed_syllabus_url(record),
             })
 
         return jsonify({"profile_complete": True, "syllabi": syllabi}), 200

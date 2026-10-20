@@ -3377,6 +3377,174 @@ function initializeFacultySyllabus() {
     });
 }
 
+async function initializePersistentFacultySyllabus(sectionSelect) {
+    const status = document.getElementById("facultySyllabusStatus");
+    const fileInput = document.getElementById("syllabusFile");
+    const empty = document.getElementById("facultySyllabusEmpty");
+    const fileRow = document.getElementById("facultySyllabusFileRow");
+    const fileName = document.getElementById("syllabusFileName");
+    const fileSize = document.getElementById("syllabusFileSize");
+    const lastUpdated = document.getElementById("syllabusLastUpdated");
+    const viewButton = document.getElementById("viewSyllabusButton");
+    const downloadButton = document.getElementById("downloadSyllabusButton");
+    const moreButton = document.getElementById("syllabusMoreButton");
+    const menu = document.getElementById("syllabusFileMenu");
+    const deleteButton = document.getElementById("deleteSyllabusOption");
+    if (!status || !fileInput || !empty || !fileRow || !sectionSelect) return;
+
+    let syllabus = null;
+    let sections = [];
+
+    async function request(url, options) {
+        const response = await fetch(url, Object.assign({
+            credentials: "same-origin",
+            headers: { Accept: "application/json" }
+        }, options || {}));
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || "Syllabus request failed.");
+        return data;
+    }
+
+    function render() {
+        const selected = Boolean(sectionSelect.value);
+        fileInput.disabled = !selected;
+        const hasSyllabus = Boolean(syllabus);
+        empty.hidden = hasSyllabus;
+        fileRow.hidden = !hasSyllabus;
+        if (syllabus) {
+            fileName.textContent = syllabus.file_name;
+            fileSize.textContent = "PDF";
+            lastUpdated.textContent = syllabus.uploaded_at
+                ? "Last Updated: " + new Date(syllabus.uploaded_at).toLocaleDateString()
+                : "Syllabus available";
+        } else {
+            fileName.textContent = "Course_Syllabus.pdf";
+            fileSize.textContent = "0 MB";
+            lastUpdated.textContent = selected ? "No syllabus uploaded" : "Select a course section";
+        }
+    }
+
+    async function load() {
+        syllabus = null;
+        render();
+        if (!sectionSelect.value) {
+            status.textContent = "Select an assigned section to manage its syllabus.";
+            return;
+        }
+        status.textContent = "Loading syllabus...";
+        try {
+            const result = await request("/api/faculty/syllabi/" +
+                encodeURIComponent(sectionSelect.value));
+            syllabus = result.syllabus;
+            status.textContent = syllabus
+                ? "Syllabus is saved for this section."
+                : "No syllabus is saved for this section yet.";
+            render();
+        } catch (error) {
+            status.textContent = error.message;
+        }
+    }
+
+    fileInput.addEventListener("change", async () => {
+        const file = fileInput.files?.[0];
+        if (!file) return;
+        if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+            status.textContent = "Choose a PDF syllabus.";
+            fileInput.value = "";
+            return;
+        }
+        const formData = new FormData();
+        formData.append("syllabus", file);
+        fileInput.disabled = true;
+        status.textContent = "Uploading syllabus...";
+        try {
+            await request("/api/faculty/syllabi/" +
+                encodeURIComponent(sectionSelect.value), {
+                    method: "POST",
+                    body: formData
+                });
+            fileInput.value = "";
+            await load();
+            status.textContent = "Syllabus uploaded and saved.";
+        } catch (error) {
+            status.textContent = error.message;
+            fileInput.disabled = false;
+        }
+    });
+
+    viewButton?.addEventListener("click", () => {
+        if (syllabus?.signed_url) window.open(syllabus.signed_url, "_blank", "noopener");
+    });
+    downloadButton?.addEventListener("click", () => {
+        const url = syllabus?.download_url || syllabus?.signed_url;
+        if (!url) return;
+        const link = document.createElement("a");
+        link.href = url;
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.click();
+    });
+    moreButton?.addEventListener("click", event => {
+        event.stopPropagation();
+        if (!menu) return;
+        menu.hidden = !menu.hidden;
+        moreButton.setAttribute("aria-expanded", String(!menu.hidden));
+    });
+    deleteButton?.addEventListener("click", async () => {
+        if (!syllabus || !sectionSelect.value ||
+            !window.confirm("Delete the saved syllabus for this section?")) return;
+        menu.hidden = true;
+        moreButton?.setAttribute("aria-expanded", "false");
+        status.textContent = "Deleting syllabus...";
+        try {
+            await request("/api/faculty/syllabi/" +
+                encodeURIComponent(sectionSelect.value), { method: "DELETE" });
+            syllabus = null;
+            render();
+            status.textContent = "Syllabus deleted.";
+        } catch (error) {
+            status.textContent = error.message;
+        }
+    });
+    document.addEventListener("click", event => {
+        if (menu && !menu.contains(event.target) && !moreButton?.contains(event.target)) {
+            menu.hidden = true;
+            moreButton?.setAttribute("aria-expanded", "false");
+        }
+    });
+    sectionSelect.addEventListener("change", load);
+    try {
+        const result = await request("/api/faculty/sections");
+        sections = Array.isArray(result.sections) ? result.sections : [];
+        sectionSelect.replaceChildren(new Option(
+            sections.length ? "Select course section" : "No assigned sections",
+            ""
+        ));
+        sections.forEach(section => {
+            const label = [section.course_code, section.section_name,
+                section.academic_year_name, section.term_name].filter(Boolean).join(" · ");
+            sectionSelect.add(new Option(label, section.section_id));
+        });
+        const requested = new URLSearchParams(location.search).get("section_id");
+        if (sections.some(section => section.section_id === requested)) {
+            sectionSelect.value = requested;
+        } else if (sections.length === 1) {
+            sectionSelect.value = sections[0].section_id;
+        }
+        sectionSelect.disabled = sections.length === 0;
+        render();
+        if (sectionSelect.value) await load();
+        else status.textContent = sections.length
+            ? "Select an assigned section to manage its syllabus."
+            : "No course sections are assigned to your Faculty account.";
+    } catch (error) {
+        sectionSelect.replaceChildren(new Option("Unable to load sections", ""));
+        sectionSelect.disabled = true;
+        fileInput.disabled = true;
+        status.textContent = error.message;
+    }
+}
+
 /* FACULTY — SYLLABUS & OUTCOMES */
 document.addEventListener("DOMContentLoaded", function () {
     initFacultySyllabusOutcomes();
@@ -3385,6 +3553,13 @@ document.addEventListener("DOMContentLoaded", function () {
 function initFacultySyllabusOutcomes() {
     const page = document.querySelector(".so-faculty-page");
     if (!page) {
+        return;
+    }
+    const workflowManager = document.getElementById("soWorkflowManager");
+    if (workflowManager) {
+        initializePersistentFacultySyllabus(
+            document.getElementById("soFacultySection")
+        );
         return;
     }
 
