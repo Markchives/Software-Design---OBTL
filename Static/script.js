@@ -6298,6 +6298,68 @@ document.addEventListener("DOMContentLoaded", function () {
         logout.textContent = 'Log Out';
         menu.append(profile, logout);
         area.appendChild(menu);
+        const roleDisplayNames = {
+            student: 'Student',
+            faculty: 'Faculty',
+            'department-head': 'Department Head',
+            'admin-security': 'Admin'
+        };
+        const photoRoleNames = {
+            student: 'student',
+            faculty: 'faculty',
+            'department-head': 'dept-head',
+            'admin-security': 'admin'
+        };
+        async function loadHeaderProfile() {
+            try {
+                const response = await fetch('/api/account/profile', {
+                    headers: { Accept: 'application/json' },
+                    credentials: 'same-origin'
+                });
+                if (response.redirected) return;
+                if (!response.ok) {
+                    throw new Error('Authenticated profile data is unavailable.');
+                }
+                if (!response.headers.get('content-type')?.includes('application/json')) {
+                    throw new Error('The account profile response is not valid JSON.');
+                }
+                const result = await response.json();
+                const account = result.profile;
+                if (!account || !roleDisplayNames[account.role]) {
+                    throw new Error('The account profile response is invalid.');
+                }
+                const info = area.querySelector('.so-user-info');
+                const name = info?.querySelector('strong');
+                const roleLabel = info?.querySelector('span');
+                if (name && account.full_name) name.textContent = account.full_name;
+                if (roleLabel) roleLabel.textContent = roleDisplayNames[account.role];
+
+                const photoKey = 'edumetrics-' + photoRoleNames[account.role] + '-profile-photo';
+                let photoData = '';
+                try {
+                    photoData = localStorage.getItem(photoKey) || '';
+                } catch (storageError) {
+                    console.warn('Unable to read the saved profile photo.', storageError);
+                }
+                if (photoData) {
+                    let avatarPhoto = avatar.querySelector('.account-avatar-photo');
+                    if (!avatarPhoto) {
+                        avatarPhoto = document.createElement('img');
+                        avatarPhoto.className = 'account-avatar-photo';
+                        avatarPhoto.alt = '';
+                        avatarPhoto.setAttribute('aria-hidden', 'true');
+                        avatar.appendChild(avatarPhoto);
+                    }
+                    avatarPhoto.src = photoData;
+                    avatar.querySelectorAll(':scope > :not(.account-avatar-photo)').forEach(child => {
+                        child.hidden = true;
+                    });
+                }
+            } catch (error) {
+                console.error('Unable to load the signed-in user header profile:', error);
+            }
+        }
+        loadHeaderProfile();
         let menuAnimation;
         function close() {
             if (menu.hidden) return;
