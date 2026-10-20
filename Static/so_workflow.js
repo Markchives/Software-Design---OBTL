@@ -143,12 +143,16 @@
                 mappings = mapData.mappings || [];
                 studentOutcomes = mapData.student_outcomes || [];
                 coRows.innerHTML = outcomes.length ? outcomes.map(row => {
-                    const links = mappings.filter(link => link.course_outcome_id === row.id)
-                        .map(link => (mapData.student_outcomes || []).find(so => so.id === link.student_outcome_id))
-                        .filter(Boolean).map(so => `${so.code}: ${so.description}`).join("; ");
                     const currentSoIds = new Set(mappings.filter(link => link.course_outcome_id === row.id).map(link => link.student_outcome_id));
+                    const linkedOutcomes = studentOutcomes.filter(so => currentSoIds.has(so.id));
                     const alignOptions = studentOutcomes.filter(so => !currentSoIds.has(so.id));
-                    return `<tr><td>${esc(row.code)}</td><td>${esc(row.description)}</td><td>${esc(row.target_percentage ?? 70)}%</td><td>${links ? esc(links) : "—"}<div class="so-inline-map"><select aria-label="Select SO to align with ${esc(row.code)}" data-map-select="${esc(row.id)}"><option value="">Align an SO</option>${alignOptions.map(so => `<option value="${esc(so.id)}">${esc(so.code)} — ${esc(so.description)}</option>`).join("")}</select>${button("Add alignment", "map-co", row.id)}</div></td><td>${button("Edit", "edit-co", row.id)} ${button("Delete", "delete-co", row.id)}</td></tr>`;
+                    const links = linkedOutcomes.map(so => `${so.code}: ${so.description}`).join("; ");
+                    const alignmentEditor = alignOptions.length
+                        ? `<details class="so-inline-map"><summary>+ Align another SO</summary><div class="so-inline-map-controls"><select aria-label="Choose an additional Student Outcome for ${esc(row.code)}" data-map-select="${esc(row.id)}"><option value="">Choose Student Outcome</option>${alignOptions.map(so => `<option value="${esc(so.id)}">${esc(so.code)} — ${esc(so.description)}</option>`).join("")}</select>${button("Add", "map-co", row.id)}</div></details>`
+                        : studentOutcomes.length
+                            ? `<span class="so-all-outcomes-aligned">All available SOs are aligned</span>`
+                            : `<span class="so-no-outcomes">No Student Outcomes are available</span>`;
+                    return `<tr><td>${esc(row.code)}</td><td>${esc(row.description)}</td><td>${esc(row.target_percentage ?? 70)}%</td><td><div class="so-aligned-outcomes">${links ? esc(links) : `<span class="so-no-outcomes">No SO aligned yet</span>`}</div>${alignmentEditor}</td><td>${button("Edit", "edit-co", row.id)} ${button("Delete", "delete-co", row.id)}</td></tr>`;
                 }).join("") : `<tr><td colspan="5">No Course Outcomes. Add one above.</td></tr>`;
                 const mappedSoIds = new Set(mappings.map(row => row.student_outcome_id));
                 const soOptions = studentOutcomes.filter(row => mappedSoIds.has(row.id));

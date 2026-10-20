@@ -5846,8 +5846,14 @@ body.cr-student-page:not(.cr-faculty-page) .cr-table-wrap{box-sizing:border-box;
 .so-workflow-manager .sodh-table { min-width: 660px; }
 .so-workflow-action { border: 0; background: #eaf2f9; color: #064879; border-radius: 7px; padding: 7px 10px; margin: 2px; font: inherit; font-weight: 700; cursor: pointer; }
 .so-workflow-action:hover { background: #ffcf00; }
-.so-inline-map { display: flex; gap: 5px; align-items: center; margin-top: 7px; }
-.so-inline-map select { max-width: 120px; border: 1px solid #c7d5e2; border-radius: 6px; padding: 6px; color: #16456d; }
+.so-inline-map { margin-top: 9px; }
+.so-inline-map summary { width: fit-content; color: #075b92; font-size: .88rem; font-weight: 700; cursor: pointer; }
+.so-inline-map summary:hover { text-decoration: underline; }
+.so-inline-map-controls { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; margin-top: 7px; }
+.so-inline-map select { width: min(100%, 260px); min-height: 36px; border: 1px solid #c7d5e2; border-radius: 7px; padding: 6px 9px; color: #16456d; background: #fff; }
+.so-aligned-outcomes { color: #173f63; line-height: 1.5; overflow-wrap: anywhere; }
+.so-all-outcomes-aligned, .so-no-outcomes { display: inline-block; margin-top: 8px; color: #627b91; font-size: .84rem; }
+.so-all-outcomes-aligned { color: #28714a; font-weight: 700; }
 .so-co-links { display: block; color: #647c94; margin-top: 4px; font-size: .88em; }
 .so-workflow-manager .so-assessment-editor { min-width: 0; margin: 0; padding: 16px; border: 1px solid #d6e2ee; border-radius: 12px; background: #f8fbfe; }
 .so-assessment-editor legend { padding: 0 7px; color: #123e66; font-weight: 700; }
