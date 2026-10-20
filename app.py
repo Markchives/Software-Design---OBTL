@@ -5372,21 +5372,6 @@ def student_syllabi():
         if not section_ids:
             return jsonify({"profile_complete": True, "syllabi": []}), 200
 
-        review_rows = (
-            admin_supabase.table("course_mapping_reviews")
-            .select("section_id, status")
-            .in_("section_id", section_ids)
-            .execute()
-            .data
-            or []
-        )
-        section_ids = [
-            row["section_id"] for row in review_rows
-            if row.get("status") == "verified"
-        ]
-        if not section_ids:
-            return jsonify({"profile_complete": True, "syllabi": []}), 200
-
         sections_result = (
             admin_supabase.table("course_sections")
             .select("id, course_id, academic_year_id, academic_term_id, section_name")
