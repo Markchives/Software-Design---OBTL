@@ -47,22 +47,35 @@ Do not confuse this project with the separate Portfolio repository that may be t
 - Student profile provisioning stores the selected program's ID as `program_id`; the college is derivable from that program's `department_id`.
 - Fixed a CSS visibility issue so hidden role-specific registration selectors do not appear in the form.
 
+### Profile menu routing and account details
+
+- Added an authenticated `/account-settings` route and pointed the shared avatar menu's Profile link to it, rather than linking directly to a static template. The route checks the signed-in user's role and account/profile readiness before rendering the page.
+- Fixed Profile-page sidebar links to use absolute, role-correct Flask routes. Previously, relative links resolved from `/account-settings` and sent users to nonexistent top-level paths. Dashboard, course, main information, workflow, and Account Requests links now resolve to registered routes.
+- Added authenticated `/api/account/profile` data loading. It returns the signed-in user's full name, email, role-specific student/employee number, and student program or employee department from Supabase.
+- Updated the shared Profile page script and template to load and display those fields rather than relying on unrelated browser session-storage keys.
+- Verified the profile endpoint's role-specific response with focused tests for Student, Faculty, Department Head, and Admin, and verified unauthenticated requests are redirected to login.
+- Verified all 17 destinations represented in the four role sidebars are registered Flask routes.
+- The user confirmed the Profile page now displays account information successfully.
+- The user confirmed Google student profile completion with a college/program selection is also done and the selected program is saved.
+
 ## Latest verified state
 
 - Python syntax compilation and `git diff --check` passed for the recent code changes.
 - Focused mocked tests confirmed 35 unique seeded programs across seven colleges, college-specific program filtering, request validation, and the student-registration data flow.
+- Focused tests confirmed `/api/account/profile` returns the expected name, ID, role affiliation, and email for all four roles; unauthenticated requests cannot read profile data.
+- Confirmed the role sidebar target paths exist in the Flask route map; `git diff --check` passes.
+- The user confirmed the account Profile page now displays data after the API integration.
 - Browser checks confirmed the college-to-program selection interaction. Live API checks subsequently confirmed seven colleges and exactly five programs for each college.
 - The running app passed `/health`.
 - During the latest student signup attempt, Flask logged `POST /api/auth/register` as `409`, followed by a retry returning `200` and a request to `/verification-signup.html`. No traceback accompanied the successful retry. The first conflict's exact cause was not established.
-- Email verification, successful student sign-in, and persistence of the selected program have not yet been confirmed by the user.
+- The user confirmed the successful password-based student signup was email-verified, the student can sign in, and the selected program is saved and visible in the Profile page.
+- The user also confirmed the Google student profile-completion flow with a selected college/program is done and the selected program is saved.
 
 ## Remaining work / recommended next steps
 
-1. Complete email verification for the successful student signup, sign in, and verify the account is usable.
-2. Check the student's saved profile in the app/database to confirm its `program_id` matches the selected program. Do not ask the user to share passwords or verification codes.
-3. Test Google student profile completion with a college/program selection and verify persistence.
-4. Smoke-test Faculty and Department Head registration options and account-request approval flows to ensure the student changes did not affect them.
-5. Revisit the separate Department Head identity mismatch only if it remains an issue. Review the prepared reconciliation SQL and confirm the intended account/department before any live execution.
+1. Smoke-test Faculty and Department Head registration, then test their profile details and role-specific account approvals.
+2. Test the Profile menu and account details for each role in the browser, not just through the focused API checks.
+3. Revisit the separate Department Head identity mismatch only if it remains an issue. Review the prepared reconciliation SQL and confirm the intended account/department before any live execution.
 
 ## Important files
 

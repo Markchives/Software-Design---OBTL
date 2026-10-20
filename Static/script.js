@@ -6411,15 +6411,34 @@ document.addEventListener("DOMContentLoaded", function () {
         if (nav) {
             nav.querySelectorAll('a[href]').forEach(a => {
                 const url = new URL(a.getAttribute('href'), location.href);
-                const file = decodeURIComponent(url.pathname).split('/').pop().toLowerCase();
-                if (file === 'dashboard.html' || ['platform.html', 'resources.html', 'about us.html'].includes(file)) {
+                const path = decodeURIComponent(url.pathname).toLowerCase();
+                const file = path.split('/').pop();
+                if (file === 'dashboard.html') {
+                    url.pathname = selected === 'admin'
+                        ? '/requirement 2/cm-admin.html'
+                        : '/main/dashboard.html';
+                    if (selected !== 'admin') url.searchParams.set('role', selected);
+                    else url.search = '';
+                    a.href = url.href;
+                } else if (file === 'courses.html' || file === 'courses-faculty.html') {
+                    if (selected !== 'admin' && selected !== 'dept-head') {
+                        url.pathname = selected === 'faculty'
+                            ? '/main/courses-faculty.html'
+                            : '/main/courses.html';
+                        url.search = '';
+                        a.href = url.href;
+                    }
+                } else if (['platform.html', 'resources.html', 'about us.html'].includes(file)) {
+                    url.pathname = '/main/' + file;
                     url.searchParams.set('role', selected);
                     a.href = url.href;
-                } else if (file === 'courses.html' && selected === 'faculty') {
-                    url.pathname = url.pathname.replace(/courses\.html$/i, 'courses-faculty.html');
+                } else if (path.includes('/requirement ')) {
+                    url.pathname = path;
+                    url.search = '';
                     a.href = url.href;
-                } else if (file === 'platform-admin.html' || file === 'resources-admin.html' || file === 'about-us-admin.html') {
-                    url.searchParams.set('role', 'admin');
+                } else if (file === 'account-approvals.html') {
+                    url.pathname = '/account-approvals.html';
+                    url.search = '';
                     a.href = url.href;
                 }
                 a.classList.remove('active', 'sd-active');
