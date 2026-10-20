@@ -1143,6 +1143,161 @@ CREATE TABLE IF NOT EXISTS cqi_reviews (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+ALTER TABLE cqi_categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cqi_action_plans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cqi_action_targets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cqi_reviews ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE cqi_categories, cqi_action_plans,
+    cqi_action_targets, cqi_reviews FROM anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE cqi_categories,
+    cqi_action_plans, cqi_action_targets, cqi_reviews TO service_role;
+
+CREATE INDEX IF NOT EXISTS idx_cqi_action_plans_section_status
+    ON cqi_action_plans (section_id, status);
+CREATE INDEX IF NOT EXISTS idx_cqi_action_plans_faculty
+    ON cqi_action_plans (faculty_id, updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_cqi_action_targets_outcome
+    ON cqi_action_targets (course_outcome_id);
+CREATE INDEX IF NOT EXISTS idx_cqi_reviews_plan_latest
+    ON cqi_reviews (cqi_action_plan_id, reviewed_at DESC);
+
+CREATE OR REPLACE FUNCTION public.review_cqi_action_plan(
+    p_plan_id UUID,
+    p_reviewed_by UUID,
+    p_decision TEXT,
+    p_comments TEXT
+)
+RETURNS public.cqi_action_plans
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_plan public.cqi_action_plans;
+BEGIN
+    IF p_decision IS NULL OR p_decision NOT IN ('approved', 'returned') THEN
+        RAISE EXCEPTION 'Choose Approve or Return for Revision.';
+    END IF;
+    IF p_decision = 'returned' AND NULLIF(BTRIM(p_comments), '') IS NULL THEN
+        RAISE EXCEPTION 'Feedback is required when returning a plan.';
+    END IF;
+
+    SELECT * INTO v_plan
+    FROM public.cqi_action_plans
+    WHERE id = p_plan_id
+    FOR UPDATE;
+    IF NOT FOUND OR v_plan.status <> 'submitted' THEN
+        RAISE EXCEPTION 'Only submitted CQI plans can be reviewed.';
+    END IF;
+
+    INSERT INTO public.cqi_reviews (
+        cqi_action_plan_id, reviewed_by, decision, comments
+    )
+    VALUES (
+        p_plan_id, p_reviewed_by, p_decision, NULLIF(BTRIM(p_comments), '')
+    );
+
+    UPDATE public.cqi_action_plans
+    SET status = p_decision, updated_at = NOW()
+    WHERE id = p_plan_id
+    RETURNING * INTO v_plan;
+    RETURN v_plan;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.review_cqi_action_plan(UUID, UUID, TEXT, TEXT)
+    FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.review_cqi_action_plan(UUID, UUID, TEXT, TEXT)
+    TO service_role;
+
+CREATE OR REPLACE FUNCTION public.update_cqi_action_plan_with_target(
+    p_plan_id UUID,
+    p_faculty_id UUID,
+    p_section_id UUID,
+    p_title TEXT,
+    p_problem_statement TEXT,
+    p_proposed_intervention TEXT,
+    p_expected_improvement TEXT,
+    p_target_date DATE,
+    p_status TEXT,
+    p_submitted_at TIMESTAMPTZ,
+    p_course_outcome_id UUID,
+    p_category_id UUID
+)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_plan_id UUID;
+BEGIN
+    IF p_status IS NULL OR p_status NOT IN ('draft', 'submitted') THEN
+        RAISE EXCEPTION 'CQI plan status must be Draft or Submitted.';
+    END IF;
+
+    UPDATE public.cqi_action_plans
+    SET section_id = p_section_id,
+        title = p_title,
+        problem_statement = p_problem_statement,
+        proposed_intervention = p_proposed_intervention,
+        expected_improvement = p_expected_improvement,
+        target_date = p_target_date,
+        status = p_status,
+        submitted_at = p_submitted_at,
+        updated_at = NOW()
+    WHERE id = p_plan_id
+      AND faculty_id = p_faculty_id
+      AND status IN ('draft', 'returned')
+      AND EXISTS (
+          SELECT 1 FROM public.course_sections section
+          WHERE section.id = p_section_id
+            AND section.faculty_id = p_faculty_id
+      )
+      AND EXISTS (
+          SELECT 1 FROM public.course_mapping_reviews mapping
+          WHERE mapping.section_id = p_section_id
+            AND mapping.status = 'verified'
+      )
+      AND EXISTS (
+          SELECT 1
+          FROM public.course_sections section
+          JOIN public.course_outcomes outcome
+            ON outcome.course_id = section.course_id
+          WHERE section.id = p_section_id
+            AND outcome.id = p_course_outcome_id
+      )
+      AND (
+          p_category_id IS NULL
+          OR EXISTS (
+              SELECT 1 FROM public.cqi_categories category
+              WHERE category.id = p_category_id
+                AND category.is_active = TRUE
+          )
+      )
+    RETURNING id INTO v_plan_id;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'CQI plan is no longer editable or its section, mapping, outcome, or category is invalid.';
+    END IF;
+
+    DELETE FROM public.cqi_action_targets
+    WHERE cqi_action_plan_id = v_plan_id;
+
+    INSERT INTO public.cqi_action_targets (
+        cqi_action_plan_id, course_outcome_id, category_id
+    )
+    VALUES (v_plan_id, p_course_outcome_id, p_category_id);
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.update_cqi_action_plan_with_target(
+    UUID, UUID, UUID, TEXT, TEXT, TEXT, TEXT, DATE, TEXT, TIMESTAMPTZ, UUID, UUID
+) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.update_cqi_action_plan_with_target(
+    UUID, UUID, UUID, TEXT, TEXT, TEXT, TEXT, DATE, TEXT, TIMESTAMPTZ, UUID, UUID
+) TO service_role;
+
 CREATE TABLE IF NOT EXISTS gradebooks (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     section_id UUID NOT NULL UNIQUE REFERENCES course_sections(id) ON DELETE CASCADE,

@@ -2378,6 +2378,668 @@ def _calculate_section_attainment(section_id):
     return output
 
 
+def _cqi_enrich_plans(plans):
+    if not plans:
+        return []
+    plan_ids = [row["id"] for row in plans]
+    section_ids = list({row["section_id"] for row in plans})
+    sections = admin_supabase.table("course_sections").select(
+        "id, course_id, section_name, faculty_id"
+    ).in_("id", section_ids).execute().data or []
+    section_by_id = {row["id"]: row for row in sections}
+    course_ids = list({row["course_id"] for row in sections})
+    courses = admin_supabase.table("courses").select(
+        "id, code, title, department_id"
+    ).in_("id", course_ids).execute().data if course_ids else []
+    course_by_id = {row["id"]: row for row in (courses or [])}
+    department_ids = list({
+        row["department_id"] for row in (courses or []) if row.get("department_id")
+    })
+    departments = admin_supabase.table("departments").select(
+        "id, name"
+    ).in_("id", department_ids).execute().data if department_ids else []
+    department_names = {
+        row["id"]: row.get("name", "") for row in (departments or [])
+    }
+    faculty_profile_ids = list({
+        row["faculty_id"] for row in sections if row.get("faculty_id")
+    })
+    faculty_profiles = admin_supabase.table("faculty_profiles").select(
+        "id, user_id"
+    ).in_("id", faculty_profile_ids).execute().data if faculty_profile_ids else []
+    faculty_user_ids = list({
+        row["user_id"] for row in (faculty_profiles or []) if row.get("user_id")
+    })
+    faculty_users = admin_supabase.table("users").select(
+        "id, full_name"
+    ).in_("id", faculty_user_ids).execute().data if faculty_user_ids else []
+    faculty_names = {
+        row["id"]: row.get("full_name", "") for row in (faculty_users or [])
+    }
+    faculty_name_by_profile = {
+        row["id"]: faculty_names.get(row["user_id"], "")
+        for row in (faculty_profiles or [])
+    }
+    targets = admin_supabase.table("cqi_action_targets").select(
+        "id, cqi_action_plan_id, course_outcome_id, category_id"
+    ).in_("cqi_action_plan_id", plan_ids).execute().data or []
+    outcome_ids = list({row["course_outcome_id"] for row in targets})
+    outcomes = admin_supabase.table("course_outcomes").select(
+        "id, course_id, code, description, target_percentage"
+    ).in_("id", outcome_ids).execute().data if outcome_ids else []
+    outcome_by_id = {row["id"]: row for row in (outcomes or [])}
+    category_ids = list({
+        row["category_id"] for row in targets if row.get("category_id")
+    })
+    categories = admin_supabase.table("cqi_categories").select(
+        "id, name"
+    ).in_("id", category_ids).execute().data if category_ids else []
+    category_by_id = {row["id"]: row for row in (categories or [])}
+    attainment_rows = admin_supabase.table("co_attainment").select(
+        "section_id, course_outcome_id, attainment_percentage, target_percentage"
+    ).in_("section_id", section_ids).execute().data or []
+    attainment_by_key = {
+        (row["section_id"], row["course_outcome_id"]): row
+        for row in attainment_rows
+    }
+    reviews = admin_supabase.table("cqi_reviews").select(
+        "cqi_action_plan_id, decision, comments, reviewed_at"
+    ).in_("cqi_action_plan_id", plan_ids).order(
+        "reviewed_at", desc=True
+    ).execute().data or []
+    latest_review = {}
+    for review in reviews:
+        latest_review.setdefault(review["cqi_action_plan_id"], review)
+    targets_by_plan = {}
+    for target in targets:
+        outcome = outcome_by_id.get(target["course_outcome_id"], {})
+        plan_section = next(
+            (
+                plan["section_id"] for plan in plans
+                if plan["id"] == target["cqi_action_plan_id"]
+            ),
+            None,
+        )
+        attainment = attainment_by_key.get(
+            (plan_section, target["course_outcome_id"]), {}
+        )
+        targets_by_plan.setdefault(target["cqi_action_plan_id"], []).append({
+            "id": target["id"],
+            "course_outcome_id": target["course_outcome_id"],
+            "code": outcome.get("code", ""),
+            "description": outcome.get("description", ""),
+            "attainment_percentage": attainment.get("attainment_percentage"),
+            "target_percentage": attainment.get(
+                "target_percentage", outcome.get("target_percentage")
+            ),
+            "category_id": target.get("category_id"),
+            "category_name": category_by_id.get(
+                target.get("category_id"), {}
+            ).get("name"),
+        })
+    enriched = []
+    for plan in plans:
+        section = section_by_id.get(plan["section_id"], {})
+        course = course_by_id.get(section.get("course_id"), {})
+        review = latest_review.get(plan["id"], {})
+        enriched.append({
+            **plan,
+            "course_id": course.get("id"),
+            "course_code": course.get("code", ""),
+            "course_title": course.get("title", ""),
+            "department_id": course.get("department_id"),
+            "department_name": department_names.get(course.get("department_id"), ""),
+            "section_name": section.get("section_name", ""),
+            "faculty_name": faculty_name_by_profile.get(
+                plan.get("faculty_id"), ""
+            ),
+            "targets": targets_by_plan.get(plan["id"], []),
+            "review_comments": review.get("comments", ""),
+            "review_decision": review.get("decision"),
+            "reviewed_at": review.get("reviewed_at"),
+        })
+    return enriched
+
+
+def _cqi_validate_plan_data(data, section_id=None):
+    if not isinstance(data, dict):
+        raise ValueError("CQI plan data must be a JSON object.")
+    try:
+        section_id = str(UUID(str(data.get("section_id") or section_id or "")))
+        course_outcome_id = str(UUID(str(data.get("course_outcome_id") or "")))
+        category_id = (
+            str(UUID(str(data["category_id"]))) if data.get("category_id") else None
+        )
+    except (TypeError, ValueError):
+        raise ValueError("Choose a valid course section and Course Outcome.")
+    title = data.get("title", "")
+    problem = data.get("problem_statement", "")
+    intervention = data.get("proposed_intervention", "")
+    expected = data.get("expected_improvement", "")
+    target_date = data.get("target_date") or None
+    status = data.get("status", "draft")
+    if not isinstance(status, str):
+        raise ValueError("CQI plan status must be Draft or Submitted.")
+    for value, label, maximum, required in (
+        (title, "Plan title", 160, True),
+        (problem, "Outcome concern", 2000, True),
+        (intervention, "Proposed intervention", 3000, True),
+        (expected, "Expected improvement", 2000, False),
+    ):
+        if not isinstance(value, str) or (required and not value.strip()) or len(value.strip()) > maximum:
+            qualifier = "1 to " if required else "at most "
+            raise ValueError(f"{label} must contain {qualifier}{maximum} characters.")
+    if status not in {"draft", "submitted"}:
+        raise ValueError("CQI plan status must be Draft or Submitted.")
+    if target_date:
+        if not isinstance(target_date, str):
+            raise ValueError("Target date must use YYYY-MM-DD format.")
+        try:
+            datetime.strptime(target_date, "%Y-%m-%d")
+        except ValueError:
+            raise ValueError("Target date must use YYYY-MM-DD format.")
+    return {
+        "section_id": section_id,
+        "course_outcome_id": course_outcome_id,
+        "category_id": category_id,
+        "title": title.strip(),
+        "problem_statement": problem.strip(),
+        "proposed_intervention": intervention.strip(),
+        "expected_improvement": expected.strip() or None,
+        "target_date": target_date,
+        "status": status,
+    }
+
+
+def _cqi_validate_target(section_id, course_outcome_id, category_id):
+    section = admin_supabase.table("course_sections").select(
+        "id, course_id"
+    ).eq("id", section_id).limit(1).execute().data or []
+    if not section:
+        raise LookupError("Section not found.")
+    mapping_reviews = admin_supabase.table("course_mapping_reviews").select(
+        "status"
+    ).eq("section_id", section_id).limit(1).execute().data or []
+    if not mapping_reviews or mapping_reviews[0].get("status") != "verified":
+        raise ValueError(
+            "CQI planning requires Department Head verification of the section's CO–SO mappings."
+        )
+    outcomes = admin_supabase.table("course_outcomes").select(
+        "id, code, target_percentage"
+    ).eq("id", course_outcome_id).eq(
+        "course_id", section[0]["course_id"]
+    ).limit(1).execute().data or []
+    if not outcomes:
+        raise ValueError("Choose a Course Outcome from this section's course.")
+    if category_id:
+        categories = admin_supabase.table("cqi_categories").select(
+            "id"
+        ).eq("id", category_id).eq("is_active", True).limit(1).execute().data or []
+        if not categories:
+            raise ValueError("Choose an active CQI intervention category.")
+    attainment = {
+        row["course_outcome_id"]: row
+        for row in _calculate_section_attainment(section_id)
+    }.get(course_outcome_id)
+    if not attainment or attainment.get("attainment_percentage") is None:
+        raise ValueError("Attainment is not available for this Course Outcome yet.")
+    if attainment["attainment_percentage"] >= attainment["target_percentage"]:
+        raise ValueError("CQI plans can only target Course Outcomes below their attainment target.")
+    return section[0], outcomes[0], attainment
+
+
+@app.get("/api/faculty/cqi")
+@require_role("faculty")
+def get_faculty_cqi_workspace():
+    if not admin_supabase:
+        return jsonify({"error": "CQI planning is unavailable."}), 503
+    try:
+        profile = _account_profile("faculty", g.authenticated_user.id, "id")
+        if not profile:
+            return jsonify({"error": "Your Faculty profile is incomplete."}), 409
+        plans = admin_supabase.table("cqi_action_plans").select(
+            "*"
+        ).eq("faculty_id", profile["id"]).order("updated_at", desc=True).execute().data or []
+        section_rows = admin_supabase.table("course_sections").select(
+            "id, course_id, section_name, academic_year_id"
+        ).eq("faculty_id", profile["id"]).execute().data or []
+        course_ids = list({row["course_id"] for row in section_rows})
+        courses = admin_supabase.table("courses").select(
+            "id, code, title"
+        ).in_("id", course_ids).execute().data if course_ids else []
+        course_by_id = {row["id"]: row for row in (courses or [])}
+        sections = [
+            {
+                **row,
+                "course_code": course_by_id.get(row["course_id"], {}).get("code", ""),
+                "course_title": course_by_id.get(row["course_id"], {}).get("title", ""),
+            }
+            for row in section_rows
+        ]
+        categories = admin_supabase.table("cqi_categories").select(
+            "id, name, description"
+        ).eq("is_active", True).order("name").execute().data or []
+        return jsonify({
+            "sections": sections,
+            "categories": categories,
+            "plans": _cqi_enrich_plans(plans),
+        }), 200
+    except Exception:
+        app.logger.exception("Unable to load Faculty CQI workspace")
+        return jsonify({"error": "CQI plans could not be loaded."}), 500
+
+
+@app.get("/api/faculty/cqi/sections/<section_id>/outcomes")
+@require_role("faculty")
+def get_faculty_cqi_outcomes(section_id):
+    if not admin_supabase:
+        return jsonify({"error": "CQI outcome options are unavailable."}), 503
+    try:
+        section_id = str(UUID(section_id))
+        if not get_faculty_section(section_id):
+            return jsonify({"error": "Section not found or not assigned to you."}), 404
+        mapping_reviews = admin_supabase.table("course_mapping_reviews").select(
+            "status"
+        ).eq("section_id", section_id).limit(1).execute().data or []
+        if not mapping_reviews or mapping_reviews[0].get("status") != "verified":
+            return jsonify({
+                "outcomes": [],
+                "readiness": {
+                    "can_plan": False,
+                    "mapping_status": "pending_review",
+                    "message": (
+                        "CQI planning is available after the Department Head verifies "
+                        "this section's CO–SO mappings."
+                    ),
+                },
+            }), 200
+        outcomes = _calculate_section_attainment(section_id)
+        eligible_outcomes = [
+            row for row in outcomes
+            if row.get("attainment_percentage") is not None
+            and row["attainment_percentage"] < row["target_percentage"]
+        ]
+        return jsonify({
+            "outcomes": eligible_outcomes,
+            "readiness": {
+                "can_plan": bool(eligible_outcomes),
+                "mapping_status": "verified",
+                "message": (
+                    "Attainment uses released assessment results. Results may change until the gradebook is locked."
+                    if eligible_outcomes
+                    else "No below-target Course Outcomes with released assessment results are available for this section."
+                ),
+            },
+        }), 200
+    except ValueError:
+        return jsonify({"error": "Invalid section ID."}), 400
+    except Exception:
+        app.logger.exception("Unable to load Faculty CQI outcome options")
+        return jsonify({"error": "Course Outcome attainment could not be loaded."}), 500
+
+
+@app.post("/api/faculty/cqi")
+@require_role("faculty")
+def create_faculty_cqi_plan():
+    if not admin_supabase:
+        return jsonify({"error": "CQI planning is unavailable."}), 503
+    plan_id = None
+    try:
+        profile = _account_profile("faculty", g.authenticated_user.id, "id")
+        if not profile:
+            return jsonify({"error": "Your Faculty profile is incomplete."}), 409
+        data = _cqi_validate_plan_data(request.get_json(silent=True))
+        if not get_faculty_section(data["section_id"]):
+            return jsonify({"error": "Section is not assigned to you."}), 403
+        _, _, _ = _cqi_validate_target(
+            data["section_id"], data["course_outcome_id"], data["category_id"]
+        )
+        plan_fields = {key: value for key, value in data.items() if key not in {
+            "course_outcome_id", "category_id",
+        }}
+        if plan_fields["status"] == "submitted":
+            plan_fields["submitted_at"] = datetime.now(timezone.utc).isoformat()
+        result = admin_supabase.table("cqi_action_plans").insert({
+            **plan_fields, "faculty_id": profile["id"],
+        }).execute()
+        plans = result.data or []
+        if not plans:
+            raise RuntimeError("CQI plan insert returned no record.")
+        plan_id = plans[0]["id"]
+        admin_supabase.table("cqi_action_targets").insert({
+            "cqi_action_plan_id": plan_id,
+            "course_outcome_id": data["course_outcome_id"],
+            "category_id": data["category_id"],
+        }).execute()
+        return jsonify({"plan": _cqi_enrich_plans(plans)[0]}), 201
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+    except LookupError as error:
+        return jsonify({"error": str(error)}), 404
+    except Exception:
+        if plan_id:
+            try:
+                admin_supabase.table("cqi_action_plans").delete().eq(
+                    "id", plan_id
+                ).execute()
+            except Exception:
+                app.logger.exception("Unable to roll back incomplete CQI plan")
+        app.logger.exception("Unable to create Faculty CQI plan")
+        return jsonify({"error": "CQI plan could not be saved."}), 500
+
+
+@app.put("/api/faculty/cqi/<plan_id>")
+@require_role("faculty")
+def update_faculty_cqi_plan(plan_id):
+    if not admin_supabase:
+        return jsonify({"error": "CQI planning is unavailable."}), 503
+    try:
+        plan_id = str(UUID(plan_id))
+        profile = _account_profile("faculty", g.authenticated_user.id, "id")
+        existing = admin_supabase.table("cqi_action_plans").select(
+            "id, faculty_id, status"
+        ).eq("id", plan_id).limit(1).execute().data or []
+        if not existing or not profile or existing[0]["faculty_id"] != profile["id"]:
+            return jsonify({"error": "CQI plan not found."}), 404
+        if existing[0]["status"] not in {"draft", "returned"}:
+            return jsonify({"error": "Only draft or returned CQI plans can be edited."}), 409
+        data = _cqi_validate_plan_data(request.get_json(silent=True))
+        if not get_faculty_section(data["section_id"]):
+            return jsonify({"error": "Section is not assigned to you."}), 403
+        _cqi_validate_target(
+            data["section_id"], data["course_outcome_id"], data["category_id"]
+        )
+        admin_supabase.rpc("update_cqi_action_plan_with_target", {
+            "p_plan_id": plan_id,
+            "p_faculty_id": profile["id"],
+            "p_section_id": data["section_id"],
+            "p_title": data["title"],
+            "p_problem_statement": data["problem_statement"],
+            "p_proposed_intervention": data["proposed_intervention"],
+            "p_expected_improvement": data["expected_improvement"],
+            "p_target_date": data["target_date"],
+            "p_status": data["status"],
+            "p_submitted_at": (
+                datetime.now(timezone.utc).isoformat()
+                if data["status"] == "submitted" else None
+            ),
+            "p_course_outcome_id": data["course_outcome_id"],
+            "p_category_id": data["category_id"],
+        }).execute()
+        updated = admin_supabase.table("cqi_action_plans").select(
+            "*"
+        ).eq("id", plan_id).limit(1).execute().data or []
+        if not updated:
+            raise RuntimeError("Updated CQI plan could not be reloaded.")
+        return jsonify({"plan": _cqi_enrich_plans(updated)[0]}), 200
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+    except Exception:
+        app.logger.exception("Unable to update Faculty CQI plan")
+        return jsonify({"error": "CQI plan could not be updated."}), 500
+
+
+@app.delete("/api/faculty/cqi/<plan_id>")
+@require_role("faculty")
+def delete_faculty_cqi_plan(plan_id):
+    if not admin_supabase:
+        return jsonify({"error": "CQI planning is unavailable."}), 503
+    try:
+        plan_id = str(UUID(plan_id))
+        profile = _account_profile("faculty", g.authenticated_user.id, "id")
+        plans = admin_supabase.table("cqi_action_plans").select(
+            "id, faculty_id, status"
+        ).eq("id", plan_id).limit(1).execute().data or []
+        if not plans or not profile or plans[0]["faculty_id"] != profile["id"]:
+            return jsonify({"error": "CQI plan not found."}), 404
+        if plans[0]["status"] not in {"draft", "returned"}:
+            return jsonify({"error": "Only draft or returned CQI plans can be deleted."}), 409
+        admin_supabase.table("cqi_action_plans").delete().eq(
+            "id", plan_id
+        ).execute()
+        return jsonify({"status": "deleted"}), 200
+    except ValueError:
+        return jsonify({"error": "Invalid CQI plan ID."}), 400
+    except Exception:
+        app.logger.exception("Unable to delete Faculty CQI plan")
+        return jsonify({"error": "CQI plan could not be deleted."}), 500
+
+
+@app.post("/api/faculty/cqi/<plan_id>/progress")
+@require_role("faculty")
+def update_faculty_cqi_progress(plan_id):
+    if not admin_supabase:
+        return jsonify({"error": "CQI progress tracking is unavailable."}), 503
+    try:
+        plan_id = str(UUID(plan_id))
+        profile = _account_profile("faculty", g.authenticated_user.id, "id")
+        plans = admin_supabase.table("cqi_action_plans").select(
+            "id, faculty_id, status"
+        ).eq("id", plan_id).limit(1).execute().data or []
+        if not plans or not profile or plans[0]["faculty_id"] != profile["id"]:
+            return jsonify({"error": "CQI plan not found."}), 404
+        data = request.get_json(silent=True)
+        if not isinstance(data, dict):
+            return jsonify({"error": "Progress status must be a JSON object."}), 400
+        next_status = data.get("status")
+        allowed = {
+            "approved": {"ongoing"},
+            "ongoing": {"completed"},
+        }
+        current_status = plans[0]["status"]
+        if next_status not in allowed.get(current_status, set()):
+            return jsonify({"error": "CQI progress can only move from Approved to Ongoing to Completed."}), 409
+        updated = admin_supabase.table("cqi_action_plans").update({
+            "status": next_status,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }).eq("id", plan_id).execute().data or []
+        return jsonify({"plan": updated[0] if updated else None}), 200
+    except ValueError:
+        return jsonify({"error": "Invalid CQI plan ID."}), 400
+    except Exception:
+        app.logger.exception("Unable to update CQI progress")
+        return jsonify({"error": "CQI progress could not be updated."}), 500
+
+
+@app.get("/api/department-head/cqi")
+@require_role("department-head")
+def get_department_head_cqi_register():
+    if not admin_supabase:
+        return jsonify({"error": "Department CQI register is unavailable."}), 503
+    try:
+        department_id = _department_head_department_id(g.authenticated_user.id)
+        if not department_id:
+            return jsonify({"error": "Your department profile is incomplete."}), 409
+        courses = admin_supabase.table("courses").select(
+            "id"
+        ).eq("department_id", department_id).execute().data or []
+        course_ids = [row["id"] for row in courses]
+        sections = admin_supabase.table("course_sections").select(
+            "id"
+        ).in_("course_id", course_ids).execute().data if course_ids else []
+        section_ids = [row["id"] for row in (sections or [])]
+        plans = admin_supabase.table("cqi_action_plans").select(
+            "*"
+        ).in_("section_id", section_ids).order(
+            "updated_at", desc=True
+        ).execute().data if section_ids else []
+        return jsonify({"plans": _cqi_enrich_plans(plans or [])}), 200
+    except Exception:
+        app.logger.exception("Unable to load Department Head CQI register")
+        return jsonify({"error": "Department CQI records could not be loaded."}), 500
+
+
+@app.post("/api/department-head/cqi/<plan_id>/review")
+@require_role("department-head")
+def review_department_head_cqi_plan(plan_id):
+    if not admin_supabase:
+        return jsonify({"error": "CQI review is unavailable."}), 503
+    try:
+        plan_id = str(UUID(plan_id))
+        department_id = _department_head_department_id(g.authenticated_user.id)
+        if not department_id:
+            return jsonify({"error": "Your department profile is incomplete."}), 409
+        plans = admin_supabase.table("cqi_action_plans").select(
+            "id, section_id, status"
+        ).eq("id", plan_id).limit(1).execute().data or []
+        if not plans:
+            return jsonify({"error": "CQI plan not found."}), 404
+        section = admin_supabase.table("course_sections").select(
+            "id, course_id"
+        ).eq("id", plans[0]["section_id"]).limit(1).execute().data or []
+        course = admin_supabase.table("courses").select(
+            "id"
+        ).eq("id", section[0]["course_id"]).eq(
+            "department_id", department_id
+        ).limit(1).execute().data if section else []
+        if not course:
+            return jsonify({"error": "CQI plan is outside your department."}), 403
+        if plans[0]["status"] != "submitted":
+            return jsonify({"error": "Only submitted CQI plans can be reviewed."}), 409
+        data = request.get_json(silent=True)
+        if not isinstance(data, dict) or data.get("decision") not in {"approved", "returned"}:
+            return jsonify({"error": "Choose Approve or Return for Revision."}), 400
+        comments = data.get("comments", "")
+        if not isinstance(comments, str) or len(comments.strip()) > 2000:
+            return jsonify({"error": "Review comments must be at most 2,000 characters."}), 400
+        decision = data["decision"]
+        if decision == "returned" and not comments.strip():
+            return jsonify({"error": "Feedback is required when returning a plan."}), 400
+        result = admin_supabase.rpc("review_cqi_action_plan", {
+            "p_plan_id": plan_id,
+            "p_reviewed_by": str(g.authenticated_user.id),
+            "p_decision": decision,
+            "p_comments": comments.strip() or None,
+        }).execute()
+        updated = result.data
+        if isinstance(updated, list):
+            updated = updated[0] if updated else None
+        if not updated:
+            raise RuntimeError("CQI review returned no updated plan.")
+        return jsonify({"plan": _cqi_enrich_plans([updated])[0]}), 200
+    except ValueError:
+        return jsonify({"error": "Invalid CQI plan ID."}), 400
+    except Exception as error:
+        if "Only submitted CQI plans" in str(error):
+            return jsonify({"error": "Only submitted CQI plans can be reviewed."}), 409
+        app.logger.exception("Unable to review Department Head CQI plan")
+        return jsonify({"error": "CQI review could not be saved."}), 500
+
+
+@app.get("/api/student/cqi")
+@require_role("student")
+def get_student_cqi_actions():
+    if not admin_supabase:
+        return jsonify({"error": "CQI actions are unavailable."}), 503
+    try:
+        profile = _account_profile("student", g.authenticated_user.id, "id")
+        if not profile:
+            return jsonify({"plans": []}), 200
+        enrollments = admin_supabase.table("enrollments").select(
+            "section_id"
+        ).eq("student_profile_id", profile["id"]).eq(
+            "enrollment_status", "active"
+        ).execute().data or []
+        section_ids = list({row["section_id"] for row in enrollments})
+        plans = admin_supabase.table("cqi_action_plans").select(
+            "*"
+        ).in_("section_id", section_ids).in_(
+            "status", ["approved", "ongoing", "completed"]
+        ).order("updated_at", desc=True).execute().data if section_ids else []
+        return jsonify({"plans": _cqi_enrich_plans(plans or [])}), 200
+    except Exception:
+        app.logger.exception("Unable to load student CQI actions")
+        return jsonify({"error": "Approved CQI actions could not be loaded."}), 500
+
+
+@app.get("/api/admin/cqi")
+@require_role("admin-security")
+def get_admin_cqi_register():
+    if not admin_supabase:
+        return jsonify({"error": "System CQI register is unavailable."}), 503
+    try:
+        plans = admin_supabase.table("cqi_action_plans").select(
+            "*"
+        ).order("updated_at", desc=True).limit(1000).execute().data or []
+        categories = admin_supabase.table("cqi_categories").select(
+            "id, name, description, is_active"
+        ).order("name").execute().data or []
+        target_rows = admin_supabase.table("cqi_action_targets").select(
+            "category_id"
+        ).execute().data or []
+        category_plan_counts = {}
+        for row in target_rows:
+            if not row.get("category_id"):
+                continue
+            category_plan_counts[row["category_id"]] = (
+                category_plan_counts.get(row["category_id"], 0) + 1
+            )
+        categories = [
+            {**category, "plan_count": category_plan_counts.get(category["id"], 0)}
+            for category in categories
+        ]
+        return jsonify({
+            "plans": _cqi_enrich_plans(plans),
+            "categories": categories,
+        }), 200
+    except Exception:
+        app.logger.exception("Unable to load Admin CQI register")
+        return jsonify({"error": "System CQI records could not be loaded."}), 500
+
+
+@app.post("/api/admin/cqi/categories")
+@require_role("admin-security")
+def create_admin_cqi_category():
+    if not admin_supabase:
+        return jsonify({"error": "CQI category management is unavailable."}), 503
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "Category data must be a JSON object."}), 400
+    name, description = data.get("name"), data.get("description", "")
+    if not isinstance(name, str) or not 1 <= len(name.strip()) <= 80:
+        return jsonify({"error": "Category name must contain 1 to 80 characters."}), 400
+    if not isinstance(description, str) or len(description.strip()) > 500:
+        return jsonify({"error": "Category description must be at most 500 characters."}), 400
+    try:
+        rows = admin_supabase.table("cqi_categories").insert({
+            "name": name.strip(),
+            "description": description.strip() or None,
+            "is_active": True,
+        }).execute().data or []
+        if not rows:
+            raise RuntimeError("CQI category insert returned no record.")
+        return jsonify({"category": rows[0]}), 201
+    except Exception as error:
+        if "duplicate key" in str(error).lower() or "unique" in str(error).lower():
+            return jsonify({"error": "A CQI category with that name already exists."}), 409
+        app.logger.exception("Unable to create Admin CQI category")
+        return jsonify({"error": "CQI category could not be saved."}), 500
+
+
+@app.patch("/api/admin/cqi/categories/<category_id>")
+@require_role("admin-security")
+def update_admin_cqi_category(category_id):
+    if not admin_supabase:
+        return jsonify({"error": "CQI category management is unavailable."}), 503
+    try:
+        category_id = str(UUID(category_id))
+        data = request.get_json(silent=True)
+        if not isinstance(data, dict) or not isinstance(data.get("is_active"), bool):
+            return jsonify({"error": "Provide a valid category status."}), 400
+        rows = admin_supabase.table("cqi_categories").update({
+            "is_active": data["is_active"],
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }).eq("id", category_id).execute().data or []
+        if not rows:
+            return jsonify({"error": "CQI category not found."}), 404
+        return jsonify({"category": rows[0]}), 200
+    except ValueError:
+        return jsonify({"error": "Invalid CQI category ID."}), 400
+    except Exception:
+        app.logger.exception("Unable to update Admin CQI category")
+        return jsonify({"error": "CQI category could not be updated."}), 500
+
+
 @app.get("/api/faculty/sections/<section_id>/assessments")
 @require_role("faculty")
 def get_faculty_assessment_workspace(section_id):

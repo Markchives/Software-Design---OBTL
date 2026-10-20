@@ -32,13 +32,6 @@
 </aside>
 <main class="sodh-main so-main dh-main">
 <section class="so-page-heading dh-heading"><h1>CQI Planning</h1><p>Monitor continuous quality improvement actions across courses, faculty, and departments.</p></section>
-<section aria-label="Department CQI filters" class="sodh-filter-card dh-filters">
-<div class="sodh-filter-group"><label for="cqiDhYear">School Year</label><select id="cqiDhYear"><option>Select School Year</option></select></div>
-<div class="sodh-filter-group"><label for="cqiDhDepartment">Department</label><select id="cqiDhDepartment"><option value="">All Departments</option><option>Engineering</option><option>Computing</option></select></div>
-<div class="sodh-filter-group"><label for="cqiDhProgram">Program</label><select id="cqiDhProgram"><option value="">All Programs</option><option>BS Computer Engineering</option><option>BS Information Technology</option></select></div>
-<div class="sodh-filter-group"><label for="cqiDhCourseTop">Course</label><select id="cqiDhCourseTop"><option value="">All Courses</option><option>Software Design – Lab</option><option>Computer Networks</option><option>Signals and Systems</option></select></div>
-<div class="sodh-filter-group"><label for="cqiDhSection">Section</label><select id="cqiDhSection"><option value="">All Sections</option><option>COE232</option><option>COE233</option><option>ECE234</option></select></div>
-</section>
 <section aria-label="CQI summary" class="dh-summary">
 <article class="dh-stat"><span class="dh-stat-label">Total CQI Records</span><strong class="dh-stat-value" id="cqiDhTotal">—</strong></article>
 <article class="dh-stat"><span class="dh-stat-label">Submitted / For Review</span><strong class="dh-stat-value" id="cqiDhReview">—</strong></article>
@@ -46,8 +39,8 @@
 <article class="dh-stat"><span class="dh-stat-label">Ongoing</span><strong class="dh-stat-value" id="cqiDhOngoing">—</strong></article>
 </section>
 <section aria-label="Department CQI Register" class="sodh-content-card dh-panel cqi-dh-panel">
-<div class="cqi-dh-heading"><div><h2>Department CQI Register</h2><p>All CQI records within the Engineering department, including status and faculty ownership.</p></div></div>
-<div class="sodh-toolbar cqi-dh-toolbar"><label class="sodh-search"><input aria-label="Search CQI records" id="cqiDhSearch" placeholder="Search CQI ID, course, CO, or faculty..." type="search"/></label><div class="sodh-filter-group"><select aria-label="Course" id="cqiDhCourse"><option value="">All Courses</option><option>Software Design – Lab</option><option>Computer Networks</option><option>Signals and Systems</option></select></div><div class="sodh-filter-group"><select aria-label="Status" id="cqiDhStatus"><option value="">All Statuses</option><option>Submitted</option><option>Draft</option><option>Approved</option><option>Ongoing</option><option>Reviewed</option><option>For Revision</option></select></div></div>
+<div class="cqi-dh-heading"><div><h2>Department CQI Register</h2><p>Records for your department, including plan status and Faculty ownership.</p></div></div>
+<div class="sodh-toolbar cqi-dh-toolbar"><label class="sodh-search"><input aria-label="Search CQI records" id="cqiDhSearch" placeholder="Search CQI ID, course, CO, or faculty..." type="search"/></label><div class="sodh-filter-group"><select aria-label="Course" id="cqiDhCourse"><option value="">All Courses</option></select></div><div class="sodh-filter-group"><select aria-label="Status" id="cqiDhStatus"><option value="">All Statuses</option></select></div></div>
 <div class="cqi-dh-table-scroll"><table class="sodh-table cqi-dh-table" id="cqiDhTable"><colgroup><col style="width:12%"/><col style="width:13%"/><col style="width:11%"/><col style="width:10%"/><col style="width:18%"/><col style="width:18%"/><col style="width:9%"/><col style="width:9%"/></colgroup><thead><tr><th>CQI ID</th><th>Course / Section</th><th>Faculty</th><th>CO Attainment</th><th>Outcome Concern</th><th>Proposed Action</th><th>Status</th><th>Action</th></tr></thead><tbody>
 </tbody></table><p class="cqi-dh-empty" hidden="" id="cqiDhEmpty">No CQI records match the selected filters.</p></div>
 </section>

@@ -707,75 +707,94 @@ function studentSectionScopedUrl(path) {
     }
 })();
 
-/* CQI Department Head — single evidence/review controller */
+/* CQI Department Head — department-scoped review workflow */
 (function () {
     function initCQIDepartmentHead() {
         var page = document.querySelector('.cqi-dept-head-page');
         if (!page) return;
         var table = page.querySelector('#cqiDhTable');
         if (!table || !table.tBodies.length) return;
-        var rows = Array.from(table.tBodies[0].rows);
+        var tbody = table.tBodies[0];
         var search = page.querySelector('#cqiDhSearch');
         var course = page.querySelector('#cqiDhCourse');
         var status = page.querySelector('#cqiDhStatus');
-        var topCourse = page.querySelector('#cqiDhCourseTop');
-        var topSection = page.querySelector('#cqiDhSection');
         var dialog = page.querySelector('#cqiDhDialog');
         var details = page.querySelector('#cqiDhDialogDetails');
         var feedbackPanel = page.querySelector('#cqiDhFeedbackPanel');
         var mainActions = page.querySelector('#cqiDhMainActions');
         var notes = page.querySelector('#cqiDhReviewNotes');
         var validation = page.querySelector('#cqiDhValidation');
-        var selected = null;
+        var plans = [], selected = null;
+        function esc(value) {
+            return String(value ?? '').replace(/[&<>"']/g, function (char) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char];
+            });
+        }
+        async function api(url, options) {
+            var response = await fetch(url, {
+                credentials: 'same-origin',
+                headers: { Accept: 'application/json', ...(options && options.body ? { 'Content-Type': 'application/json' } : {}) },
+                ...(options || {})
+            });
+            var data = await response.json().catch(function () { return {}; });
+            if (!response.ok) throw new Error(data.error || 'CQI request failed.');
+            return data;
+        }
+        function label(value) {
+            return { draft: 'Draft', submitted: 'Submitted', approved: 'Approved', returned: 'For Revision', rejected: 'Rejected', ongoing: 'Ongoing', completed: 'Completed' }[value] || value;
+        }
+        function targetOf(plan) { return (plan.targets || [])[0] || {}; }
+        function render() {
+            tbody.innerHTML = plans.map(function (plan) {
+                var target = targetOf(plan);
+                var attainment = target.attainment_percentage == null ? '—' : target.attainment_percentage + '%';
+                var targetValue = target.target_percentage == null ? '—' : target.target_percentage + '%';
+                return '<tr data-id="' + esc(plan.id) + '">' +
+                    '<td><strong>CQI-' + esc(plan.id.slice(0, 8)) + '</strong></td>' +
+                    '<td>' + esc(plan.course_code) + ' · ' + esc(plan.section_name) + '</td>' +
+                    '<td>' + esc(plan.faculty_name) + '</td>' +
+                    '<td><strong>' + esc(target.code || '—') + '</strong><small>' + esc(attainment) + ' / target ' + esc(targetValue) + '</small></td>' +
+                    '<td>' + esc(plan.problem_statement) + '</td><td>' + esc(plan.proposed_intervention) + '</td>' +
+                    '<td><span class="cqi-dh-status ' + esc(plan.status) + '">' + esc(label(plan.status)) + '</span></td>' +
+                    '<td><button type="button" data-action="evidence" data-id="' + esc(plan.id) + '">Review details</button></td></tr>';
+            }).join('');
+            apply();
+            updateCounts();
+        }
         function apply() {
-            var term = search.value.trim().toLowerCase();
+            var term = search.value.trim().toLowerCase(), courseId = course.value, statusValue = status.value;
             var visible = 0;
-            rows.forEach(function (row) {
-                var match = (!term || (row.textContent + ' ' + row.dataset.id + ' ' + row.dataset.faculty).toLowerCase().includes(term)) &&
-                    (!course.value || row.dataset.course === course.value) &&
-                    (!status.value || row.dataset.status === status.value) &&
-                    (!topCourse || !topCourse.value || row.dataset.course === topCourse.value) &&
-                    (!topSection || !topSection.value || row.dataset.section === topSection.value);
+            Array.from(tbody.rows).forEach(function (row) {
+                var plan = plans.find(function (item) { return item.id === row.dataset.id; });
+                var match = plan && (!term || (row.textContent + ' ' + plan.faculty_name).toLowerCase().includes(term)) &&
+                    (!courseId || plan.course_id === courseId) &&
+                    (!statusValue || plan.status === statusValue);
                 row.hidden = !match;
                 if (match) visible++;
             });
             var empty = page.querySelector('#cqiDhEmpty');
             if (empty) empty.hidden = visible !== 0;
         }
-        [search, course, status, topCourse, topSection].filter(Boolean).forEach(function (el) {
+        [search, course, status].filter(Boolean).forEach(function (el) {
             el.addEventListener(el === search ? 'input' : 'change', apply);
         });
-        var reviewStorageKey = 'edumetrics-cqi-dept-reviews-v1';
-        function loadReviews() {
-            try {
-                var saved = JSON.parse(localStorage.getItem(reviewStorageKey) || '{}');
-                rows.forEach(function (row) {
-                    var state = saved[row.dataset.id];
-                    if (!state) return;
-                    if (state.status) row.dataset.status = state.status;
-                    if (state.feedback) row.dataset.reviewNotes = state.feedback;
-                    var badge = row.querySelector('.cqi-dh-status');
-                    if (badge && state.status) {
-                        badge.textContent = state.status;
-                        badge.className = 'cqi-dh-status ' + state.status.toLowerCase().replace(/\s+/g, '-');
-                    }
-                });
-            } catch (error) { /* Ignore disabled storage. */ }
-        }
-        function saveReview(row) {
-            try {
-                var saved = JSON.parse(localStorage.getItem(reviewStorageKey) || '{}');
-                saved[row.dataset.id] = { status: row.dataset.status, feedback: row.dataset.reviewNotes || '' };
-                localStorage.setItem(reviewStorageKey, JSON.stringify(saved));
-            } catch (error) { /* Demo still works for this page load. */ }
-        }
         function updateCounts() {
-            [['cqiDhTotal', rows.length], ['cqiDhReview', rows.filter(function (r) { return r.dataset.status === 'Submitted'; }).length],
-            ['cqiDhApproved', rows.filter(function (r) { return r.dataset.status === 'Approved'; }).length],
-            ['cqiDhOngoing', rows.filter(function (r) { return r.dataset.status === 'Ongoing'; }).length]].forEach(function (item) {
+            [['cqiDhTotal', plans.length], ['cqiDhReview', plans.filter(function (r) { return r.status === 'submitted'; }).length],
+            ['cqiDhApproved', plans.filter(function (r) { return r.status === 'approved'; }).length],
+            ['cqiDhOngoing', plans.filter(function (r) { return r.status === 'ongoing'; }).length]].forEach(function (item) {
                 var el = page.querySelector('#' + item[0]);
                 if (el) el.textContent = item[1];
             });
+        }
+        function populateFilters() {
+            var courses = new Map(plans.map(function (plan) { return [plan.course_id, plan.course_code + ' · ' + plan.course_title]; }));
+            course.innerHTML = '<option value="">All Courses</option>' + Array.from(courses, function (entry) {
+                return '<option value="' + esc(entry[0]) + '">' + esc(entry[1]) + '</option>';
+            }).join('');
+            status.innerHTML = '<option value="">All Statuses</option>' +
+                ['submitted', 'draft', 'approved', 'returned', 'ongoing', 'completed'].map(function (value) {
+                    return '<option value="' + value + '">' + esc(label(value)) + '</option>';
+                }).join('');
         }
         function closeDialog() {
             if (dialog.open && typeof dialog.close === 'function') dialog.close();
@@ -803,36 +822,42 @@ function studentSectionScopedUrl(path) {
         table.addEventListener('click', function (event) {
             var button = event.target.closest('button[data-action="evidence"]');
             if (!button) return;
-            selected = button.closest('tr');
+            selected = plans.find(function (plan) { return plan.id === button.dataset.id; });
             if (!selected) return;
-            var data = selected.dataset;
+            var target = targetOf(selected);
             details.replaceChildren();
-            addDetail('CQI ID', data.id);
-            addDetail('Course / Section', data.course + ' · ' + data.section);
-            addDetail('Faculty', data.faculty);
-            addDetail('CO Attainment', data.co + ' · ' + data.attainment + ' (Target ≥ ' + data.target + ')');
-            addDetail('Outcome Concern', data.note);
-            addDetail('Expected Improvement', data.goal);
-            addDetail('Current Status', data.status);
-            if (data.reviewNotes) addDetail('Previous Review Feedback', data.reviewNotes);
-            addDetail('Supporting Evidence', 'No evidence files are connected in this demo.');
-            notes.value = data.reviewNotes || '';
+            addDetail('CQI ID', 'CQI-' + selected.id.slice(0, 8));
+            addDetail('Course / Section', selected.course_code + ' · ' + selected.course_title + ' · ' + selected.section_name);
+            addDetail('Faculty', selected.faculty_name);
+            addDetail('CO Attainment', target.code + ' · ' + (target.attainment_percentage ?? '—') + '% (Target ≥ ' + (target.target_percentage ?? '—') + '%)');
+            addDetail('Intervention Category', target.category_name || 'Not categorized');
+            addDetail('Outcome Concern', selected.problem_statement);
+            addDetail('Proposed Intervention', selected.proposed_intervention);
+            addDetail('Expected Improvement', selected.expected_improvement);
+            addDetail('Target Date', selected.target_date || 'Not specified');
+            addDetail('Current Status', label(selected.status));
+            if (selected.review_comments) addDetail('Previous Review Feedback', selected.review_comments);
+            notes.value = '';
             setReviewMode(false);
-            var editable = data.status === 'Submitted';
+            var editable = selected.status === 'submitted';
             page.querySelector('#cqiDhReviewAction').disabled = !editable;
             page.querySelector('#cqiDhApprove').disabled = !editable;
             if (typeof dialog.showModal === 'function') dialog.showModal();
             else dialog.setAttribute('open', '');
         });
-        function setStatus(next) {
+        async function submitReview(decision, comments) {
             if (!selected) return;
-            selected.dataset.status = next;
-            var badge = selected.querySelector('.cqi-dh-status');
-            if (badge) { badge.textContent = next; badge.className = 'cqi-dh-status ' + next.toLowerCase().replace(/\s+/g, '-'); }
-            saveReview(selected);
-            updateCounts();
-            apply();
-            closeDialog();
+            try {
+                await api('/api/department-head/cqi/' + encodeURIComponent(selected.id) + '/review', {
+                    method: 'POST',
+                    body: JSON.stringify({ decision: decision, comments: comments })
+                });
+                await load();
+                closeDialog();
+            } catch (error) {
+                validation.textContent = error.message;
+                validation.hidden = false;
+            }
         }
         page.querySelector('#cqiDhReviewAction').addEventListener('click', function () { setReviewMode(true); });
         page.querySelector('#cqiDhBack').addEventListener('click', function () { setReviewMode(false); });
@@ -840,21 +865,29 @@ function studentSectionScopedUrl(path) {
             if (!selected) return;
             var feedback = notes.value.trim();
             if (!feedback) { validation.hidden = false; notes.focus(); return; }
-            selected.dataset.reviewNotes = feedback;
-            setStatus('For Revision');
+            submitReview('returned', feedback);
         });
-        page.querySelector('#cqiDhApprove').addEventListener('click', function () { setStatus('Approved'); });
+        page.querySelector('#cqiDhApprove').addEventListener('click', function () { submitReview('approved', ''); });
         ['cqiDhClose', 'cqiDhX'].forEach(function (id) { page.querySelector('#' + id).addEventListener('click', closeDialog); });
         dialog.addEventListener('click', function (event) { if (event.target === dialog) closeDialog(); });
-        loadReviews();
-        updateCounts();
-        apply();
+        async function load() {
+            try {
+                var data = await api('/api/department-head/cqi');
+                plans = data.plans || [];
+                populateFilters();
+                render();
+            } catch (error) {
+                tbody.innerHTML = '<tr><td colspan="8">' + esc(error.message) + '</td></tr>';
+                page.querySelector('#cqiDhEmpty').hidden = true;
+            }
+        }
+        load();
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initCQIDepartmentHead);
     else initCQIDepartmentHead();
 })();
 
-/* CQI FACULTY — scoped CRUD demo controller (one initializer) */
+/* CQI FACULTY — persisted action-plan workflow */
 (function () {
     'use strict';
     const page = document.querySelector('.cqi-faculty-page');
@@ -862,61 +895,255 @@ function studentSectionScopedUrl(path) {
     const $ = id => document.getElementById(id);
     const body = $('cqiFacultyRows'), modal = $('cqiFacultyModal'), deleteModal = $('cqiFacultyDeleteModal');
     const search = $('cqiFacultySearch'), status = $('cqiFacultyStatus'), feedback = $('cqiFacultyFeedback');
-    let current = null, pendingDelete = null, returnFocus = null;
-    const fields = { id: 'cqifId', course: 'cqifCourse', section: 'cqifSection', co: 'cqifCo', attainment: 'cqifAttainment', target: 'cqifTarget', note: 'cqifNote', goal: 'cqifGoal', status: 'cqifStatus' };
-    const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    function show(which) { returnFocus = document.activeElement; which.hidden = false; document.body.style.overflow = 'hidden'; (which.querySelector('input,button'))?.focus(); }
-    function close() { modal.hidden = true; deleteModal.hidden = true; document.body.style.overflow = ''; returnFocus?.focus(); }
-    function updateSummary() {
-        const rows = Array.from(body.rows);
-        const below = new Set(rows.filter(row => {
-            const value = parseFloat(row.dataset.attainment), target = parseFloat(row.dataset.target);
-            return Number.isFinite(value) && Number.isFinite(target) && value < target;
-        }).map(row => row.dataset.co));
-        $('cqifDraftCount').textContent = String(rows.filter(row => row.dataset.status === 'draft').length);
-        $('cqifBelowCount').textContent = String(below.size);
-        $('cqifReviewCount').textContent = String(rows.filter(row => row.dataset.status === 'submitted').length);
+    let plans = [], sections = [], categories = [], currentPlan = null, pendingDelete = null, returnFocus = null;
+    const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+    async function api(url, options = {}) {
+        const response = await fetch(url, {
+            credentials: 'same-origin',
+            headers: { Accept: 'application/json', ...(options.body ? { 'Content-Type': 'application/json' } : {}) },
+            ...options
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || 'CQI request failed.');
+        return data;
     }
-    function filter() { updateSummary(); const q = search.value.trim().toLowerCase(), s = status.value; let count = 0; Array.from(body.rows).forEach(row => { const ok = (!q || (row.textContent + ' ' + row.dataset.course + ' ' + row.dataset.section + ' ' + row.dataset.note).toLowerCase().includes(q)) && (s === 'all' || row.dataset.status === s); row.hidden = !ok; if (ok) count++; }); $('cqiFacultyEmpty').hidden = count > 0; }
-    function edit(row) { current = row; Object.entries(fields).forEach(([key, id]) => { $(id).value = row ? row.dataset[key] || '' : key === 'status' ? 'draft' : ''; }); $('cqiFacultyModalTitle').textContent = row ? 'Edit CQI Plan' : 'Create CQI Plan'; show(modal); }
-    function rowMarkup(d) { const state = d.status === 'submitted' ? 'Submitted' : 'Draft'; return '<td><strong>' + esc(d.id) + '</strong></td><td><strong>' + esc(d.co) + '</strong></td><td><strong>' + esc(d.attainment) + '</strong><small>Target ≥ ' + esc(d.target) + '</small></td><td>' + esc(d.note) + '</td><td>' + esc(d.goal) + '</td><td><span class="cqi-faculty-status is-' + esc(d.status) + '">' + state + '</span></td><td><div class="cqi-faculty-row-actions"><button type="button" data-cqif-edit><span aria-hidden="true">✎</span> Edit</button><button type="button" class="cqi-faculty-delete" data-cqif-delete><span aria-hidden="true">🗑</span> Delete</button></div></td>'; }
-    $('cqiFacultyCreate').addEventListener('click', () => edit(null));
-    body.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const row = b.closest('tr'); if (b.matches('[data-cqif-edit]')) edit(row); else if (b.matches('[data-cqif-delete]')) { pendingDelete = row; $('cqifDeleteName').textContent = row.dataset.id; show(deleteModal); } });
-    $('cqiFacultyForm').addEventListener('submit', e => {
-        e.preventDefault(); const d = {}; Object.entries(fields).forEach(([key, id]) => d[key] = $(id).value.trim()); if (!d.id || !d.course || !d.section || !d.co || !d.goal || !d.note || !d.attainment || !d.target) return;
-        const collision = Array.from(body.rows).some(r => r !== current && r.dataset.id.toLowerCase() === d.id.toLowerCase()); if (collision) { $('cqifId').setCustomValidity('CQI ID already exists'); $('cqifId').reportValidity(); return; } $('cqifId').setCustomValidity('');
-        const row = current || body.insertRow(); Object.entries(d).forEach(([key, value]) => row.dataset[key] = value); row.innerHTML = rowMarkup(d); feedback.textContent = current ? 'CQI plan updated in this demo.' : 'CQI plan created in this demo.'; close(); filter();
+    function show(which) { returnFocus = document.activeElement; which.hidden = false; document.body.style.overflow = 'hidden'; (which.querySelector('input,select,textarea,button'))?.focus(); }
+    function close() { modal.hidden = true; deleteModal.hidden = true; document.body.style.overflow = ''; returnFocus?.focus(); }
+    const targetOf = plan => (plan.targets || [])[0] || {};
+    const statusLabel = value => ({ draft: 'Draft', submitted: 'Submitted', approved: 'Approved', returned: 'For Revision', rejected: 'Rejected', ongoing: 'Ongoing', completed: 'Completed' }[value] || value);
+    function updateSummary() {
+        $('cqifDraftCount').textContent = String(plans.filter(plan => ['draft', 'returned'].includes(plan.status)).length);
+        $('cqifBelowCount').textContent = String(new Set(plans.map(plan => targetOf(plan).course_outcome_id).filter(Boolean)).size);
+        $('cqifReviewCount').textContent = String(plans.filter(plan => plan.status === 'submitted').length);
+    }
+    function filter() {
+        updateSummary();
+        const query = search.value.trim().toLowerCase(), selectedStatus = status.value;
+        const filtered = plans.filter(plan =>
+            (!query || `${plan.id} ${plan.course_code} ${plan.course_title} ${plan.section_name} ${targetOf(plan).code} ${plan.problem_statement}`.toLowerCase().includes(query)) &&
+            (selectedStatus === 'all' || selectedStatus === plan.status)
+        );
+        body.innerHTML = filtered.map(plan => {
+            const outcome = targetOf(plan);
+            const attained = outcome.attainment_percentage == null ? '—' : `${outcome.attainment_percentage}%`;
+            const target = outcome.target_percentage == null ? '—' : `${outcome.target_percentage}%`;
+            let actions = '';
+            if (['draft', 'returned'].includes(plan.status)) {
+                actions = `<button type="button" data-cqif-edit="${esc(plan.id)}">Edit</button><button type="button" class="cqi-faculty-delete" data-cqif-delete="${esc(plan.id)}">Delete</button>`;
+            } else if (plan.status === 'approved') {
+                actions = `<button type="button" data-cqif-progress="ongoing" data-id="${esc(plan.id)}">Start</button>`;
+            } else if (plan.status === 'ongoing') {
+                actions = `<button type="button" data-cqif-progress="completed" data-id="${esc(plan.id)}">Mark Complete</button>`;
+            }
+            return `<tr><td><strong>CQI-${esc(plan.id.slice(0, 8))}</strong>${plan.review_comments ? `<small>Feedback: ${esc(plan.review_comments)}</small>` : ''}</td><td><strong>${esc(outcome.code)}</strong></td><td><strong>${esc(attained)}</strong><small>Target ≥ ${esc(target)}</small></td><td>${esc(plan.problem_statement)}</td><td>${esc(plan.proposed_intervention)}</td><td><span class="cqi-faculty-status is-${esc(plan.status)}">${esc(statusLabel(plan.status))}</span></td><td><div class="cqi-faculty-row-actions">${actions || '—'}</div></td></tr>`;
+        }).join('');
+        $('cqiFacultyEmpty').hidden = filtered.length > 0;
+    }
+    function setSectionOptions(selected = '') {
+        $('cqifSection').innerHTML = '<option value="">Select an assigned section</option>' + sections.map(section =>
+            `<option value="${esc(section.id)}">${esc(section.course_code)} · ${esc(section.course_title)} · ${esc(section.section_name)}</option>`
+        ).join('');
+        $('cqifSection').value = selected;
+    }
+    async function loadOutcomes(sectionId, selectedOutcomeId = '') {
+        const select = $('cqifCo'), summary = $('cqifAttainment');
+        select.disabled = true;
+        select.innerHTML = '<option value="">Loading attainment...</option>';
+        summary.textContent = 'Loading current attainment and target...';
+        if (!sectionId) {
+            select.innerHTML = '<option value="">Select a section first</option>';
+            summary.textContent = 'CQI planning requires verified CO–SO mappings and released assessment results. Gradebook locking is not required.';
+            return;
+        }
+        const data = await api(`/api/faculty/cqi/sections/${encodeURIComponent(sectionId)}/outcomes`);
+        const outcomes = data.outcomes || [];
+        select.innerHTML = '<option value="">Select a below-target Course Outcome</option>' + outcomes.map(outcome =>
+            `<option value="${esc(outcome.course_outcome_id)}">${esc(outcome.code)} · ${esc(outcome.attainment_percentage)}% attained / ${esc(outcome.target_percentage)}% target</option>`
+        ).join('');
+        select.disabled = outcomes.length === 0;
+        if (selectedOutcomeId && outcomes.some(outcome => outcome.course_outcome_id === selectedOutcomeId)) select.value = selectedOutcomeId;
+        summary.textContent = data.readiness?.message || (outcomes.length
+            ? 'Only Course Outcomes below their attainment target are eligible for a CQI plan.'
+            : 'No below-target Course Outcomes with released assessment results are available for this section.');
+    }
+    function selectedTargetText() {
+        const option = $('cqifCo').selectedOptions[0];
+        $('cqifAttainment').textContent = option?.value
+            ? `Selected: ${option.textContent}. Attainment is read-only and comes from saved assessment results.`
+            : 'Select a below-target Course Outcome with recorded attainment.';
+    }
+    function resetForm() {
+        currentPlan = null;
+        $('cqiFacultyForm').reset();
+        $('cqifStatus').value = 'draft';
+        $('cqifReviewFeedback').hidden = true;
+        $('cqifReviewFeedback').textContent = '';
+        $('cqiFacultyModalTitle').textContent = 'Create CQI Plan';
+        $('cqifSaveButton').textContent = 'Save Plan';
+        $('cqifCo').innerHTML = '<option value="">Select a section first</option>';
+        $('cqifCo').disabled = true;
+        $('cqifAttainment').textContent = 'CQI planning requires verified CO–SO mappings and released assessment results. Gradebook locking is not required.';
+    }
+    async function editPlan(plan = null) {
+        resetForm();
+        currentPlan = plan;
+        $('cqiFacultyModalTitle').textContent = plan ? 'Edit CQI Plan' : 'Create CQI Plan';
+        $('cqifSaveButton').textContent = plan?.status === 'returned' ? 'Save and Resubmit' : 'Save Plan';
+        $('cqifReviewFeedback').hidden = !plan?.review_comments;
+        $('cqifReviewFeedback').textContent = plan?.review_comments ? `Department Head feedback: ${plan.review_comments}` : '';
+        $('cqifTitle').value = plan?.title || '';
+        $('cqifNote').value = plan?.problem_statement || '';
+        $('cqifGoal').value = plan?.proposed_intervention || '';
+        $('cqifExpected').value = plan?.expected_improvement || '';
+        $('cqifTargetDate').value = plan?.target_date || '';
+        $('cqifStatus').value = plan?.status === 'returned' ? 'submitted' : (plan?.status || 'draft');
+        setSectionOptions(plan?.section_id || '');
+        const categoryId = targetOf(plan).category_id || '';
+        $('cqifCategory').value = categoryId;
+        if (plan?.section_id) {
+            try {
+                await loadOutcomes(plan.section_id, targetOf(plan).course_outcome_id);
+                selectedTargetText();
+            } catch (error) {
+                feedback.textContent = error.message;
+            }
+        }
+        show(modal);
+    }
+    function renderCategories() {
+        $('cqifCategory').innerHTML = '<option value="">No category</option>' + categories.map(category =>
+            `<option value="${esc(category.id)}">${esc(category.name)}</option>`
+        ).join('');
+    }
+    async function loadWorkspace() {
+        feedback.textContent = 'Loading CQI plans...';
+        try {
+            const data = await api('/api/faculty/cqi');
+            sections = data.sections || [];
+            categories = data.categories || [];
+            plans = data.plans || [];
+            renderCategories();
+            filter();
+            feedback.textContent = '';
+        } catch (error) {
+            feedback.textContent = error.message;
+            body.innerHTML = `<tr><td colspan="7">${esc(error.message)}</td></tr>`;
+        }
+    }
+    $('cqiFacultyCreate').addEventListener('click', () => editPlan());
+    $('cqifSection').addEventListener('change', async () => {
+        try { await loadOutcomes($('cqifSection').value); }
+        catch (error) { feedback.textContent = error.message; }
     });
-    $('cqifId').addEventListener('input', () => { $('cqifId').setCustomValidity(''); });
-    $('cqifDeleteConfirm').addEventListener('click', () => { if (pendingDelete) { pendingDelete.remove(); pendingDelete = null; feedback.textContent = 'CQI plan deleted from this demo.'; } close(); filter(); });
-    document.querySelectorAll('[data-cqif-close]').forEach(b => b.addEventListener('click', close));
-    [modal, deleteModal].forEach(m => m.addEventListener('click', e => { if (e.target === m) close(); }));
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && (!modal.hidden || !deleteModal.hidden)) close(); });
-    search.addEventListener('input', filter); status.addEventListener('change', filter); filter();
+    $('cqifCo').addEventListener('change', selectedTargetText);
+    body.addEventListener('click', async event => {
+        const control = event.target.closest('[data-cqif-edit],[data-cqif-delete],[data-cqif-progress]');
+        if (!control) return;
+        const plan = plans.find(item => item.id === (control.dataset.cqifEdit || control.dataset.cqifDelete || control.dataset.id));
+        if (!plan) return;
+        if (control.hasAttribute('data-cqif-edit')) {
+            await editPlan(plan);
+        } else if (control.hasAttribute('data-cqif-delete')) {
+            pendingDelete = plan;
+            $('cqifDeleteName').textContent = `CQI-${plan.id.slice(0, 8)}`;
+            show(deleteModal);
+        } else {
+            try {
+                await api(`/api/faculty/cqi/${encodeURIComponent(plan.id)}/progress`, {
+                    method: 'POST', body: JSON.stringify({ status: control.dataset.cqifProgress })
+                });
+                await loadWorkspace();
+            } catch (error) { feedback.textContent = error.message; }
+        }
+    });
+    $('cqiFacultyForm').addEventListener('submit', async event => {
+        event.preventDefault();
+        const payload = {
+            section_id: $('cqifSection').value,
+            course_outcome_id: $('cqifCo').value,
+            category_id: $('cqifCategory').value || null,
+            title: $('cqifTitle').value.trim(),
+            problem_statement: $('cqifNote').value.trim(),
+            proposed_intervention: $('cqifGoal').value.trim(),
+            expected_improvement: $('cqifExpected').value.trim(),
+            target_date: $('cqifTargetDate').value || null,
+            status: $('cqifStatus').value
+        };
+        const saveButton = $('cqifSaveButton');
+        saveButton.disabled = true;
+        try {
+            await api(currentPlan
+                ? `/api/faculty/cqi/${encodeURIComponent(currentPlan.id)}`
+                : '/api/faculty/cqi', {
+                method: currentPlan ? 'PUT' : 'POST',
+                body: JSON.stringify(payload)
+            });
+            close();
+            await loadWorkspace();
+            feedback.textContent = payload.status === 'submitted' ? 'CQI plan submitted for Department Head review.' : 'CQI draft saved.';
+        } catch (error) { feedback.textContent = error.message; }
+        finally { saveButton.disabled = false; }
+    });
+    $('cqifDeleteConfirm').addEventListener('click', async () => {
+        if (!pendingDelete) return;
+        try {
+            await api(`/api/faculty/cqi/${encodeURIComponent(pendingDelete.id)}`, { method: 'DELETE' });
+            pendingDelete = null;
+            close();
+            await loadWorkspace();
+            feedback.textContent = 'CQI plan deleted.';
+        } catch (error) { feedback.textContent = error.message; }
+    });
+    document.querySelectorAll('[data-cqif-close]').forEach(button => button.addEventListener('click', close));
+    [modal, deleteModal].forEach(element => element.addEventListener('click', event => { if (event.target === element) close(); }));
+    document.addEventListener('keydown', event => { if (event.key === 'Escape' && (!modal.hidden || !deleteModal.hidden)) close(); });
+    search.addEventListener('input', filter);
+    status.addEventListener('change', filter);
+    loadWorkspace();
 })();
 
-/* CQI STUDENT — one scoped controller for search, status filter and read-only action modal. */
+/* CQI STUDENT — enrolled-section, approved-action view. */
 (function () {
     "use strict";
     const page = document.querySelector(".cqi-student-page");
     if (!page) return;
     const search = page.querySelector("#cqiStudentSearch");
     const status = page.querySelector("#cqiStudentStatus");
-    const rows = Array.from(page.querySelectorAll("#cqiStudentRows tr"));
+    const tbody = page.querySelector("#cqiStudentRows");
     const empty = page.querySelector("#cqiStudentEmpty");
     const modal = page.querySelector("#cqiStudentModal");
-    let previousFocus = null;
+    let plans = [], previousFocus = null;
+    const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+    const targetOf = plan => (plan.targets || [])[0] || {};
+    const stateLabel = value => ({ approved: "Approved", ongoing: "Ongoing", completed: "Completed" }[value] || value);
+    async function api(url) {
+        const response = await fetch(url, { credentials: "same-origin", headers: { Accept: "application/json" } });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || "CQI actions could not be loaded.");
+        return data;
+    }
     function filterRows() {
         const query = search.value.trim().toLowerCase();
         const selected = status.value;
         let visible = 0;
+        const rows = Array.from(tbody.rows);
         rows.forEach(row => {
-            const matches = row.textContent.toLowerCase().includes(query) &&
-                (selected === "all" || row.dataset.status === selected);
+            const plan = plans.find(item => item.id === row.dataset.id);
+            const matches = plan && row.textContent.toLowerCase().includes(query) &&
+                (selected === "all" || plan.status === selected);
             row.hidden = !matches;
             if (matches) visible++;
         });
         empty.hidden = visible > 0;
+    }
+    function render() {
+        tbody.innerHTML = plans.map(plan => {
+            const target = targetOf(plan);
+            return `<tr data-id="${esc(plan.id)}"><td><strong>${esc(plan.title)}</strong></td><td>${esc(plan.course_code)} · ${esc(plan.section_name)}</td><td>${esc(target.code || "—")}</td><td>${esc(plan.problem_statement)}</td><td><span class="cqi-faculty-status is-${esc(plan.status)}">${esc(stateLabel(plan.status))}</span></td><td><button type="button" data-cqi-view>View Action</button></td></tr>`;
+        }).join("");
+        page.querySelector("#cqiStudentVisibleCount").textContent = String(plans.length);
+        page.querySelector("#cqiStudentCourseCount").textContent = String(new Set(plans.map(plan => plan.course_id)).size);
+        filterRows();
     }
     function closeModal() {
         if (modal.hidden) return;
@@ -924,18 +1151,21 @@ function studentSectionScopedUrl(path) {
         document.body.style.overflow = "";
         if (previousFocus) previousFocus.focus();
     }
-    function openModal(row) {
+    function openModal(plan) {
+        const target = targetOf(plan);
         const fields = {
-            cqiDetailId: row.dataset.id,
-            cqiDetailCourse: row.dataset.course + " · " + row.dataset.section,
-            cqiDetailCo: row.dataset.co,
-            cqiDetailGoal: row.dataset.goal,
-            cqiDetailBasis: row.dataset.basis,
-            cqiDetailPlan: row.dataset.plan
+            cqiDetailId: `CQI-${plan.id.slice(0, 8)}`,
+            cqiDetailCourse: `${plan.course_code} · ${plan.course_title} · ${plan.section_name}`,
+            cqiDetailCo: target.code || "—",
+            cqiDetailStatus: stateLabel(plan.status),
+            cqiDetailGoal: plan.problem_statement,
+            cqiDetailBasis: target.category_name || "Not categorized",
+            cqiDetailPlan: plan.proposed_intervention,
+            cqiDetailExpected: plan.expected_improvement || "Not specified"
         };
         Object.entries(fields).forEach(([id, value]) => {
-            const target = page.querySelector("#" + id);
-            if (target) target.textContent = value || "—";
+            const element = page.querySelector("#" + id);
+            if (element) element.textContent = value || "—";
         });
         previousFocus = document.activeElement;
         modal.hidden = false;
@@ -948,7 +1178,8 @@ function studentSectionScopedUrl(path) {
         const view = event.target.closest("[data-cqi-view]");
         if (view) {
             const row = view.closest("tr");
-            if (row) openModal(row);
+            const plan = plans.find(item => item.id === row?.dataset.id);
+            if (plan) openModal(plan);
             return;
         }
         if (event.target.closest("[data-cqi-close]") || event.target === modal) closeModal();
@@ -956,7 +1187,13 @@ function studentSectionScopedUrl(path) {
     document.addEventListener("keydown", event => {
         if (event.key === "Escape" && !modal.hidden) closeModal();
     });
-    filterRows();
+    api("/api/student/cqi").then(data => {
+        plans = data.plans || [];
+        render();
+    }).catch(error => {
+        tbody.innerHTML = `<tr><td colspan="6">${esc(error.message)}</td></tr>`;
+        empty.hidden = true;
+    });
 })();
 
 
@@ -10664,6 +10901,169 @@ document.addEventListener("DOMContentLoaded", function () {
     else init();
 })();
 
+/* CQI Admin — live oversight and category controller */
+(function () {
+    "use strict";
+    const page = document.querySelector(".cqi-admin-page");
+    if (!page) return;
+    const $ = id => document.getElementById(id);
+    const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+    const stateLabel = value => ({ draft: "Draft", submitted: "Pending Approval", approved: "Approved", returned: "Returned", rejected: "Rejected", ongoing: "In Progress", completed: "Completed" }[value] || value);
+    let plans = [], categories = [];
+    async function api(url, options = {}) {
+        const response = await fetch(url, {
+            credentials: "same-origin",
+            headers: { Accept: "application/json", ...(options.body ? { "Content-Type": "application/json" } : {}) },
+            ...options
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || "CQI request failed.");
+        return data;
+    }
+    function targetOf(plan) { return (plan.targets || [])[0] || {}; }
+    function currentFilterResults() {
+        const department = $("deptFilter").value;
+        const status = $("statusFilter").value;
+        const query = $("registerSearch").value.trim().toLowerCase();
+        return plans.filter(plan =>
+            (!department || plan.department_id === department) &&
+            (!status || plan.status === status) &&
+            (!query || `${plan.id} ${plan.department_name} ${plan.course_code} ${plan.course_title} ${plan.faculty_name} ${targetOf(plan).code} ${plan.proposed_intervention}`.toLowerCase().includes(query))
+        );
+    }
+    function renderRegister() {
+        const filtered = currentFilterResults();
+        $("registerTable").tBodies[0].innerHTML = filtered.map(plan => {
+            const target = targetOf(plan);
+            const attainment = target.attainment_percentage == null ? "—" : `${target.attainment_percentage}%`;
+            return `<tr data-cqi-id="${esc(plan.id)}"><td><strong>CQI-${esc(plan.id.slice(0, 8))}</strong></td><td>${esc(plan.department_name)} / ${esc(plan.course_code)} · ${esc(plan.course_title)}</td><td>${esc(plan.faculty_name)}</td><td>${esc(target.code || "—")} · ${esc(attainment)}</td><td>${esc(plan.proposed_intervention)}</td><td>${esc(stateLabel(plan.status))}</td><td>${esc(plan.updated_at ? new Date(plan.updated_at).toLocaleDateString() : "—")}</td><td><button class="cqi-btn" type="button" data-cqi-admin-view="${esc(plan.id)}">View</button></td></tr>`;
+        }).join("") || '<tr><td colspan="8">No CQI plans match these filters.</td></tr>';
+        $("resultCount").textContent = `${filtered.length} record(s)`;
+        $("totalPlans").textContent = String(filtered.length);
+        $("progressPlans").textContent = String(filtered.filter(plan => ["ongoing", "completed"].includes(plan.status)).length);
+        $("pendingPlans").textContent = String(filtered.filter(plan => plan.status === "submitted").length);
+    }
+    function renderCategories() {
+        $("categoryTable").tBodies[0].innerHTML = categories.map(category =>
+            `<tr data-category-id="${esc(category.id)}"><td>${esc(category.name)}</td><td>${esc(category.description || "—")}</td><td>${esc(category.plan_count || 0)}</td><td><span class="cqi-pill ${category.is_active ? "" : "red"}" data-cat-status>${category.is_active ? "Active" : "Inactive"}</span></td><td><button class="cqi-btn" type="button" data-toggle-category="${esc(category.id)}">${category.is_active ? "Deactivate" : "Activate"}</button></td></tr>`
+        ).join("") || '<tr><td colspan="5">No intervention categories configured.</td></tr>';
+    }
+    function renderFilters() {
+        const previous = $("deptFilter").value;
+        const departments = new Map(plans.filter(plan => plan.department_id).map(plan => [plan.department_id, plan.department_name]));
+        $("deptFilter").innerHTML = '<option value="">All Departments</option>' + Array.from(departments, ([id, name]) =>
+            `<option value="${esc(id)}">${esc(name)}</option>`
+        ).join("");
+        if (departments.has(previous)) $("deptFilter").value = previous;
+        const selectedStatus = $("statusFilter").value;
+        const statuses = [...new Set(plans.map(plan => plan.status))];
+        $("statusFilter").innerHTML = '<option value="">All Statuses</option>' + statuses.map(value =>
+            `<option value="${esc(value)}">${esc(stateLabel(value))}</option>`
+        ).join("");
+        if (statuses.includes(selectedStatus)) $("statusFilter").value = selectedStatus;
+    }
+    async function load() {
+        try {
+            const data = await api("/api/admin/cqi");
+            plans = data.plans || [];
+            categories = data.categories || [];
+            renderFilters();
+            renderRegister();
+            renderCategories();
+        } catch (error) {
+            $("registerTable").tBodies[0].innerHTML = `<tr><td colspan="8">${esc(error.message)}</td></tr>`;
+            $("categoryTable").tBodies[0].innerHTML = `<tr><td colspan="5">${esc(error.message)}</td></tr>`;
+            $("resultCount").textContent = "Unavailable";
+        }
+    }
+    page.querySelectorAll(".cqi-tab").forEach(tab => tab.addEventListener("click", () => {
+        page.querySelectorAll(".cqi-tab").forEach(item => {
+            const active = item === tab;
+            item.setAttribute("aria-selected", String(active));
+            item.classList.toggle("active", active);
+            const panel = $("panel-" + item.dataset.tab);
+            if (panel) panel.hidden = !active;
+        });
+    }));
+    ["deptFilter", "statusFilter"].forEach(id => $(id).addEventListener("change", renderRegister));
+    $("registerSearch").addEventListener("input", renderRegister);
+    $("registerTable").addEventListener("click", event => {
+        const button = event.target.closest("[data-cqi-admin-view]");
+        if (!button) return;
+        const plan = plans.find(item => item.id === button.dataset.cqiAdminView);
+        if (!plan) return;
+        const target = targetOf(plan);
+        $("recordDetails").textContent = [
+            `CQI: CQI-${plan.id.slice(0, 8)}`,
+            `Department / Course: ${plan.department_name} · ${plan.course_code} · ${plan.course_title}`,
+            `Section: ${plan.section_name}`,
+            `Faculty: ${plan.faculty_name}`,
+            `Course Outcome: ${target.code || "—"} · ${target.attainment_percentage ?? "—"}% (target ${target.target_percentage ?? "—"}%)`,
+            `Concern: ${plan.problem_statement}`,
+            `Intervention: ${plan.proposed_intervention}`,
+            `Expected improvement: ${plan.expected_improvement || "Not specified"}`,
+            `Status: ${stateLabel(plan.status)}`,
+            `Review feedback: ${plan.review_comments || "None"}`
+        ].join("\n");
+        $("recordDialog").showModal();
+    });
+    $("addCategory").addEventListener("click", () => $("categoryDialog").showModal());
+    page.querySelectorAll("[data-close-dialog]").forEach(button => button.addEventListener("click", () => button.closest("dialog").close()));
+    $("categoryForm").addEventListener("submit", async event => {
+        event.preventDefault();
+        const button = event.submitter;
+        if (button) button.disabled = true;
+        try {
+            await api("/api/admin/cqi/categories", {
+                method: "POST",
+                body: JSON.stringify({
+                    name: $("categoryName").value.trim(),
+                    description: $("categoryDescription").value.trim()
+                })
+            });
+            $("categoryDialog").close();
+            event.target.reset();
+            await load();
+        } catch (error) {
+            $("categoryName").setCustomValidity(error.message);
+            $("categoryName").reportValidity();
+        } finally { if (button) button.disabled = false; }
+    });
+    $("categoryName").addEventListener("input", event => event.target.setCustomValidity(""));
+    $("categoryDescription").addEventListener("input", event => event.target.setCustomValidity(""));
+    $("categoryTable").addEventListener("click", async event => {
+        const button = event.target.closest("[data-toggle-category]");
+        if (!button) return;
+        const category = categories.find(item => item.id === button.dataset.toggleCategory);
+        if (!category) return;
+        button.disabled = true;
+        try {
+            await api(`/api/admin/cqi/categories/${encodeURIComponent(category.id)}`, {
+                method: "PATCH",
+                body: JSON.stringify({ is_active: !category.is_active })
+            });
+            await load();
+        } catch (error) { window.alert(error.message); }
+        finally { button.disabled = false; }
+    });
+    $("exportRegister").addEventListener("click", () => {
+        const rows = [["CQI ID", "Department", "Course", "Section", "Faculty", "CO", "Attainment", "Intervention", "Status"],
+            ...currentFilterResults().map(plan => {
+                const target = targetOf(plan);
+                return [`CQI-${plan.id.slice(0, 8)}`, plan.department_name, plan.course_code, plan.section_name,
+                    plan.faculty_name, target.code, target.attainment_percentage, plan.proposed_intervention, stateLabel(plan.status)];
+            })];
+        const csv = rows.map(row => row.map(value => `"${String(value ?? "").replace(/"/g, '""')}"`).join(",")).join("\r\n");
+        const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = "cqi-register.csv";
+        anchor.click();
+        URL.revokeObjectURL(url);
+    });
+    load();
+})();
+
 /* AC Admin — frontend page controller */
 (function () {
     function init() {
@@ -10893,7 +11293,7 @@ document.addEventListener("DOMContentLoaded", function () {
 /* CQI Admin — frontend page controller */
 (function () {
     function init() {
-        if (!document.body.classList.contains("cqi-admin-page")) return;
+        if (!document.body.classList.contains("cqi-admin-demo-page")) return;
 
         (() => { const records = [["CQI-COE232-003", "Computer Engineering", "Software Design \u2013 Lab", "Jeffrey T. Leonen", "CO3 \u2022 66%", "Supplemental lab sessions and quiz revisions", "In Progress", "Oct 12, 2026"], ["CQI-COE233-001", "Computer Engineering", "Computer Networks", "Maria L. Santos", "CO2 \u2022 62%", "Guided routing practice and formative checks", "Pending Approval", "Oct 13, 2026"], ["CQI-IT234-001", "Information Technology", "Database Systems", "Ryan P. Cruz", "CO2 \u2022 68%", "Additional SQL practice modules", "Completed", "Oct 10, 2026"], ["CQI-ECE234-004", "Electronics Engineering", "Signals and Systems", "Roxanne D. Cruz", "CO4 \u2022 65%", "Worked examples and weekly feedback", "Returned", "Oct 11, 2026"], ["CQI-ME231-003", "Mechanical Engineering", "Engineering Mechanics", "Daniel R. Tan", "CO2 \u2022 61%", "Concept review and additional problem sets", "Approved", "Oct 9, 2026"]]; const tabs = [...document.querySelectorAll('.cqi-tab')]; tabs.forEach(tab => tab.addEventListener('click', () => { tabs.forEach(t => { const active = t === tab; t.setAttribute('aria-selected', String(active)); t.classList.toggle('active', active); document.getElementById('panel-' + t.dataset.tab).hidden = !active; }); })); const rows = [...document.querySelectorAll('#registerTable tbody tr')]; const filters = ['deptFilter', 'programFilter', 'statusFilter', 'registerSearch'].map(id => document.getElementById(id)); function filter() { let count = 0, progress = 0, pending = 0; rows.forEach(row => { const [dept, program, status, search] = filters.map(x => x.value.trim().toLowerCase()); const ok = (!dept || row.dataset.dept.toLowerCase() === dept) && (!program || row.dataset.dept.toLowerCase() === program) && (!status || row.dataset.status.toLowerCase() === status) && (!search || row.textContent.toLowerCase().includes(search)); row.hidden = !ok; if (ok) { count++; if (['In Progress', 'Completed'].includes(row.dataset.status)) progress++; if (row.dataset.status === 'Pending Approval') pending++; } }); document.getElementById('resultCount').textContent = count + ' record(s)'; document.getElementById('totalPlans').textContent = count; document.getElementById('progressPlans').textContent = progress; document.getElementById('pendingPlans').textContent = pending; } filters.forEach(el => el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', filter)); document.querySelectorAll('[data-record]').forEach(b => b.addEventListener('click', () => { const r = records[+b.dataset.record]; document.getElementById('recordDetails').textContent = 'CQI ID: ' + r[0] + '\nDepartment / Course: ' + r[1] + ' – ' + r[2] + '\nFaculty Owner: ' + r[3] + '\nCO Attainment: ' + r[4] + ' (Target 70%)\nIntervention: ' + r[5] + '\nStatus: ' + r[6] + '\nLast updated: ' + r[7]; document.getElementById('recordDialog').showModal(); })); document.getElementById('addCategory').addEventListener('click', () => document.getElementById('categoryDialog').showModal()); document.querySelectorAll('[data-close-dialog]').forEach(b => b.addEventListener('click', () => b.closest('dialog').close())); document.getElementById('categoryForm').addEventListener('submit', e => { e.preventDefault(); const name = document.getElementById('categoryName').value.trim(); if (!name) return; const tr = document.createElement('tr'); const a = document.createElement('td'), d = document.createElement('td'), n = document.createElement('td'), s = document.createElement('td'), act = document.createElement('td'); a.textContent = name; d.textContent = 'Custom intervention category'; n.textContent = '0'; s.innerHTML = '<span class="cqi-pill" data-cat-status>Active</span>'; act.innerHTML = '<button class="cqi-btn" data-toggle-category>Toggle Status</button>'; tr.append(a, d, n, s, act); document.querySelector('#categoryTable tbody').append(tr); document.getElementById('categoryDialog').close(); e.target.reset(); }); document.getElementById('categoryTable').addEventListener('click', e => { if (!e.target.matches('[data-toggle-category]')) return; const pill = e.target.closest('tr').querySelector('[data-cat-status]'); const inactive = pill.textContent === 'Active'; pill.textContent = inactive ? 'Inactive' : 'Active'; pill.classList.toggle('red', inactive); }); document.getElementById('savePermissions').addEventListener('click', () => alert('Permissions saved for this frontend prototype only.')); document.getElementById('exportRegister').addEventListener('click', () => { const csv = [['CQI ID', 'Department', 'Course', 'Faculty', 'CO / Attainment', 'Intervention', 'Status', 'Last Updated'], ...records].map(r => r.map(v => '"' + String(v).replaceAll('"', '""') + '"').join(',')).join('\r\n'); const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = 'cqi-admin-register.csv'; a.click(); URL.revokeObjectURL(url); }); })();
 
