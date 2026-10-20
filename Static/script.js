@@ -3007,9 +3007,11 @@ function initFacultySyllabusOutcomes() {
                     option.value;
             }
             if (courseOutcomeDescription) {
-                courseOutcomeDescription.value =
-                    option.dataset.description ||
-                    "";
+                courseOutcomeDescription.value = option.dataset.description || option.textContent.trim();
+            }
+            if (courseOutcomeDescriptionPreview && courseOutcomeDescriptionPreviewText) {
+                courseOutcomeDescriptionPreviewText.textContent = courseOutcomeDescription.value;
+                courseOutcomeDescriptionPreview.hidden = false;
             }
         });
     }
@@ -6216,6 +6218,21 @@ document.addEventListener("DOMContentLoaded", function () {
     function initAccountMenu() {
         const area = document.querySelector('.so-topbar .so-user-area');
         if (!area || area.querySelector('.so-account-menu')) return;
+        // Keep the header visible. Restore only the profile previously verified in this tab.
+        const headerInfo = area.querySelector('.so-user-info');
+        const verifiedEmail = sessionStorage.getItem('edumetrics-current-profile-email');
+        let verifiedProfile = null;
+        if (verifiedEmail) {
+            try {
+                verifiedProfile = JSON.parse(sessionStorage.getItem('edumetrics-profile-cache:' + verifiedEmail) || 'null');
+            } catch (_) { verifiedProfile = null; }
+        }
+        if (headerInfo) {
+            const headerName = headerInfo.querySelector('strong');
+            const headerRole = headerInfo.querySelector('span');
+            if (headerName) headerName.textContent = verifiedProfile?.full_name || headerName.textContent || 'Account';
+            if (headerRole) headerRole.textContent = ({student:'Student',faculty:'Faculty','department-head':'Department Head','admin-security':'Admin'})[verifiedProfile?.role] || headerRole.textContent || '';
+        }
         const avatar = area.querySelector('.so-avatar');
         if (!avatar) return;
         avatar.setAttribute('role', 'button');
@@ -6272,6 +6289,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const roleLabel = info?.querySelector('span');
             if (name && account.full_name) name.textContent = account.full_name;
             if (roleLabel) roleLabel.textContent = roleDisplayNames[account.role];
+            info?.classList.add('ed-header-identity-ready');
 
             const photoKey = 'edumetrics-' + photoRoleNames[account.role] + '-profile-photo';
             let photoData = '';
@@ -6327,6 +6345,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     );
                 }
             } catch (error) {
+                // Avoid showing a hardcoded Student/Faculty/Department Head identity on failure.
+                const info = area.querySelector('.so-user-info');
+                if (info) {
+                    const name = info.querySelector('strong');
+                    const role = info.querySelector('span');
+                    if (name && !name.textContent.trim()) name.textContent = verifiedProfile?.full_name || 'Account';
+                    if (role && !role.textContent.trim() && verifiedProfile) role.textContent = ({student:'Student',faculty:'Faculty','department-head':'Department Head','admin-security':'Admin'})[verifiedProfile.role] || '';
+                    info.classList.add('ed-header-identity-ready');
+                }
                 console.error('Unable to load the signed-in user header profile:', error);
             }
         }
@@ -8354,8 +8381,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (info) {
             const name = info.querySelector('strong');
             const subtitle = info.querySelector('span');
-            if (name) name.textContent = label;
-            if (subtitle) subtitle.textContent = label;
+            // Preserve the current identity; the shared account menu refreshes it.
         }
         page.dataset.dashboardRole = selected;
         document.dispatchEvent(new Event('edumetrics:nav-ready'));
@@ -8446,8 +8472,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (info) {
             const name = info.querySelector('strong');
             const label = info.querySelector('span');
-            if (name) name.textContent = roleName;
-            if (label) label.textContent = roleName;
+            // Keep the shell identity intact until the account profile is refreshed.
         }
         const breadcrumb = body.querySelector('.workflow-breadcrumb-wrap');
         if (breadcrumb) {
