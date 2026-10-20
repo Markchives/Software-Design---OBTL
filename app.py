@@ -3167,11 +3167,13 @@ def get_attainment_overview():
             if profile_ids else []
         ) or []
         profile_by_id = {row["id"]: row for row in profiles}
+        selected_program_profile_ids = None
         if filters["program_id"]:
             eligible_profiles = {
                 row["id"] for row in profiles
                 if row.get("program_id") == filters["program_id"]
             }
+            selected_program_profile_ids = eligible_profiles
             eligible_sections = {
                 row["section_id"] for row in enrollments
                 if row["student_profile_id"] in eligible_profiles
@@ -3249,6 +3251,53 @@ def get_attainment_overview():
             (row["section_id"], row["course_outcome_id"]): row
             for row in attainment_rows
         }
+        if selected_program_profile_ids is not None:
+            student_attainment_rows = (
+                admin_supabase.table("student_co_attainment")
+                .select(
+                    "section_id, student_profile_id, course_outcome_id, "
+                    "attainment_percentage"
+                )
+                .in_("section_id", section_ids)
+                .in_("student_profile_id", list(selected_program_profile_ids))
+                .execute()
+                .data
+                if section_ids and selected_program_profile_ids else []
+            ) or []
+            values_by_key = {}
+            for record in student_attainment_rows:
+                attainment = record.get("attainment_percentage")
+                if attainment is None:
+                    continue
+                values_by_key.setdefault(
+                    (record["section_id"], record["course_outcome_id"]), []
+                ).append(float(attainment))
+
+            attainment_by_key = {}
+            for section in sections:
+                for outcome in outcomes_by_course.get(section["course_id"], []):
+                    key = (section["id"], outcome["id"])
+                    target = float(outcome.get("target_percentage") or 70)
+                    values = values_by_key.get(key, [])
+                    met_student_count = sum(value >= target for value in values)
+                    class_attainment = (
+                        round(met_student_count / len(values) * 100, 2)
+                        if values else None
+                    )
+                    status = "awaiting_results" if class_attainment is None else (
+                        "met" if class_attainment >= target else (
+                            "needs_improvement"
+                            if class_attainment < target * 0.85 else "below_target"
+                        )
+                    )
+                    attainment_by_key[key] = {
+                        "attainment_percentage": class_attainment,
+                        "target_percentage": target,
+                        "status": status,
+                        "flagged": bool(
+                            values and class_attainment < target
+                        ),
+                    }
         activities = (
             admin_supabase.table("assessment_activities")
             .select(
