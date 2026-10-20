@@ -39,19 +39,19 @@
 <div class="sodh-filter-group"><label for="ra-section">Section</label><select id="ra-section"><option selected="selected" value="">All Sections</option></select></div>
 </section>
 <section aria-label="Department assessment summary" class="dh-summary">
-<div class="dh-stat"><span class="dh-stat-label">Students Reviewed</span><strong class="dh-stat-value">—</strong></div>
-<div class="dh-stat"><span class="dh-stat-label">Faculty</span><strong class="dh-stat-value">—</strong></div>
-<div class="dh-stat"><span class="dh-stat-label">Assessments</span><strong class="dh-stat-value">—</strong></div>
-<div class="dh-stat"><span class="dh-stat-label">Needs Review</span><strong class="dh-stat-value">—</strong></div>
+<div class="dh-stat"><span class="dh-stat-label">Students Reviewed</span><strong class="dh-stat-value" id="ra-stat-students">—</strong></div>
+<div class="dh-stat"><span class="dh-stat-label">Faculty</span><strong class="dh-stat-value" id="ra-stat-faculty">—</strong></div>
+<div class="dh-stat"><span class="dh-stat-label">Assessments</span><strong class="dh-stat-value" id="ra-stat-assessments">—</strong></div>
+<div class="dh-stat"><span class="dh-stat-label">Needs Review</span><strong class="dh-stat-value" id="ra-stat-review">—</strong></div>
 </section>
 <section aria-label="Raw score review workspace" class="sodh-content-card dh-panel">
-<div aria-label="Review views" class="sodh-tabs dh-tabs" role="tablist"><button aria-controls="ra-review-panel" aria-selected="true" class="sodh-tab active dh-tab" data-tab="ra-review-panel" id="ra-review-tab" role="tab" type="button">Raw Score Review</button><button aria-controls="ra-flags-panel" aria-selected="false" class="sodh-tab dh-tab" data-tab="ra-flags-panel" id="ra-flags-tab" role="tab" type="button">Flags &amp; Queries (3)</button></div>
+<div aria-label="Review views" class="sodh-tabs dh-tabs" role="tablist"><button aria-controls="ra-review-panel" aria-selected="true" class="sodh-tab active dh-tab" data-tab="ra-review-panel" id="ra-review-tab" role="tab" type="button">Raw Score Review</button><button aria-controls="ra-flags-panel" aria-selected="false" class="sodh-tab dh-tab" data-tab="ra-flags-panel" id="ra-flags-tab" role="tab" type="button">Flags &amp; Queries (<span id="ra-open-flag-count">0</span>)</button></div>
 <div aria-labelledby="ra-review-tab" class="sodh-tab-panel active" id="ra-review-panel" role="tabpanel">
-<div class="sodh-toolbar"><div class="sodh-filter-group"><label for="ra-faculty">Faculty</label><select id="ra-faculty"><option value="">All Faculty</option></select></div><label class="sodh-search"><input aria-label="Search assessments" id="ra-search" placeholder="Search assessment, faculty, course, or section..." type="search"/></label><select aria-label="Filter review status" id="ra-status-filter"><option value="">All Statuses</option><option>No Issues</option><option>Missing Scores</option><option>Unusual Entry</option></select></div>
-<div class="ra-fixed-table-head"><table aria-hidden="true" class="sodh-table ra-header-table"><colgroup><col style="width:17%"/><col style="width:11%"/><col style="width:15%"/><col style="width:18%"/><col style="width:9%"/><col style="width:11%"/><col style="width:12%"/><col style="width:7%"/></colgroup><thead><tr><th>Assessment</th><th>Type</th><th>Faculty</th><th>Course / Section</th><th>Students</th><th>Completion</th><th>Review Status</th><th>Action</th></tr></thead></table></div><div class="sodh-table-wrap"><table class="sodh-table" id="ra-review-table"><colgroup><col style="width:17%"/><col style="width:11%"/><col style="width:15%"/><col style="width:18%"/><col style="width:9%"/><col style="width:11%"/><col style="width:12%"/><col style="width:7%"/></colgroup><tbody>
+<div class="sodh-toolbar"><div class="sodh-filter-group"><label for="ra-faculty">Faculty</label><select id="ra-faculty"><option value="">All Faculty</option></select></div><label class="sodh-search"><input aria-label="Search assessments" id="ra-search" placeholder="Search assessment, faculty, course, or section..." type="search"/></label><select aria-label="Filter review status" id="ra-status-filter"><option value="">All Statuses</option><option>No Issues</option><option>Missing Scores</option><option>Query Pending</option></select></div>
+<div class="ra-fixed-table-head"><table aria-hidden="true" class="sodh-table ra-header-table"><colgroup><col style="width:16%"/><col style="width:9%"/><col style="width:13%"/><col style="width:17%"/><col style="width:8%"/><col style="width:10%"/><col style="width:13%"/><col style="width:14%"/></colgroup><thead><tr><th>Assessment</th><th>Type</th><th>Faculty</th><th>Course / Section</th><th>Students</th><th>Completion</th><th>Review Status</th><th>Action</th></tr></thead></table></div><div class="sodh-table-wrap"><table class="sodh-table" id="ra-review-table"><colgroup><col style="width:16%"/><col style="width:9%"/><col style="width:13%"/><col style="width:17%"/><col style="width:8%"/><col style="width:10%"/><col style="width:13%"/><col style="width:14%"/></colgroup><tbody id="ra-review-rows">
 </tbody></table></div></div>
 <div aria-labelledby="ra-flags-tab" class="sodh-tab-panel" id="ra-flags-panel" role="tabpanel">
-<div class="ra-fixed-table-head"><table aria-hidden="true" class="sodh-table ra-header-table"><colgroup><col style="width:12%"/><col style="width:15%"/><col style="width:13%"/><col style="width:17%"/><col style="width:17%"/><col style="width:9%"/><col style="width:17%"/></colgroup><thead><tr><th>Flag</th><th>Assessment</th><th>Faculty</th><th>Issue</th><th>Details</th><th>Status</th><th>Action</th></tr></thead></table></div><div class="sodh-table-wrap"><table class="sodh-table"><colgroup><col style="width:12%"/><col style="width:15%"/><col style="width:13%"/><col style="width:17%"/><col style="width:17%"/><col style="width:9%"/><col style="width:17%"/></colgroup><tbody>
+<div class="ra-fixed-table-head"><table aria-hidden="true" class="sodh-table ra-header-table"><colgroup><col style="width:12%"/><col style="width:15%"/><col style="width:13%"/><col style="width:17%"/><col style="width:17%"/><col style="width:9%"/><col style="width:17%"/></colgroup><thead><tr><th>Flag</th><th>Assessment</th><th>Faculty</th><th>Issue</th><th>Details</th><th>Status</th><th>Action</th></tr></thead></table></div><div class="sodh-table-wrap"><table class="sodh-table"><colgroup><col style="width:12%"/><col style="width:15%"/><col style="width:13%"/><col style="width:17%"/><col style="width:17%"/><col style="width:9%"/><col style="width:17%"/></colgroup><tbody id="ra-flag-rows">
 </tbody></table></div></div></section>
 <dialog aria-describedby="ra-dialog-body" aria-labelledby="ra-dialog-title" id="ra-dialog">
 <form class="ra-dialog-content" method="dialog">
@@ -59,7 +59,7 @@
 <div><span class="ra-dialog-eyebrow">Assessment Entry · Department Head</span><h2 id="ra-dialog-title">Assessment Review</h2></div>
 <button aria-label="Close assessment review" class="ra-dialog-x" type="submit">×</button>
 </div>
-<div class="ra-dialog-detail"><p id="ra-dialog-body"></p></div>
+<div class="ra-dialog-detail" id="ra-dialog-body"></div>
 <div class="ra-dialog-footer"><button class="sodh-export-btn" type="submit">Close</button></div>
 </form>
 </dialog>

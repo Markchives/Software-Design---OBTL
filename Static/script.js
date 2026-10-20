@@ -734,9 +734,9 @@
 (function () {
     "use strict";
     const page = document.querySelector(".cr-faculty-page");
-    if (!page || page.classList.contains("cr-dept-head-page"))
-        return;
     const body = document.getElementById("crfRosterBody");
+    if (!page || page.classList.contains("cr-dept-head-page") || !body)
+        return;
     const search = document.getElementById("crfSearch");
     const sort = document.getElementById("crfSort");
     const category = document.getElementById("crfCategory");
@@ -8280,6 +8280,7 @@ function initRawAssessmentFaculty() {
     let editedScores = new Map();
     const status = $('rafMessage');
     const saveButton = $('rafSave');
+    const releaseButton = $('rafRelease');
 
     async function api(url, options) {
         const response = await fetch(url, Object.assign({
@@ -8301,6 +8302,65 @@ function initRawAssessmentFaculty() {
         return saved && saved.score !== null ? Number(saved.score) : null;
     }
 
+    function renderQueries() {
+        const container = $('rafQueryRows');
+        const flags = workspace?.review_flags || [];
+        container.replaceChildren();
+        $('rafQueries').hidden = flags.length === 0;
+        flags.forEach(flag => {
+            const article = document.createElement('article');
+            article.className = 'raf-review-query';
+            const title = document.createElement('strong');
+            title.textContent = flag.issue + (flag.status === 'responded' ? ' · Response sent' : '');
+            const details = document.createElement('p');
+            const queriedStudent = workspace?.students.find(
+                student => student.student_profile_id === flag.student_profile_id
+            );
+            details.textContent = (queriedStudent
+                ? (queriedStudent.full_name || queriedStudent.student_number) + ': '
+                : '') + flag.description;
+            article.append(title, details);
+            if (flag.response) {
+                const previous = document.createElement('p');
+                previous.className = 'raf-review-response';
+                previous.textContent = 'Your response: ' + flag.response;
+                article.appendChild(previous);
+            }
+            const form = document.createElement('form');
+            const label = document.createElement('label');
+            label.textContent = 'Reply to Department Head';
+            const textarea = document.createElement('textarea');
+            textarea.required = true;
+            textarea.maxLength = 1000;
+            textarea.value = flag.response || '';
+            label.appendChild(textarea);
+            const button = document.createElement('button');
+            button.className = 'crf-download-btn';
+            button.type = 'submit';
+            button.textContent = 'Send Response';
+            form.append(label, button);
+            form.addEventListener('submit', async event => {
+                event.preventDefault();
+                button.disabled = true;
+                try {
+                    await api('/api/faculty/assessment-review-flags/' +
+                        encodeURIComponent(flag.id) + '/respond', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                            body: JSON.stringify({ response: textarea.value })
+                        });
+                    await loadWorkspace();
+                    status.textContent = 'Response sent to the Department Head.';
+                } catch (error) {
+                    status.textContent = error.message;
+                    button.disabled = false;
+                }
+            });
+            article.appendChild(form);
+            container.appendChild(article);
+        });
+    }
+
     function render() {
         const assessment = selectedAssessment();
         const students = workspace?.students || [];
@@ -8312,8 +8372,9 @@ function initRawAssessmentFaculty() {
         $('rafMode').classList.toggle('in-progress', locked);
         assessmentSelect.disabled = !workspace?.assessments.length;
         saveButton.disabled = !assessment || locked;
+        releaseButton.disabled = !assessment || locked || Boolean(assessment?.released_at);
+        releaseButton.textContent = assessment?.released_at ? 'Scores Released' : 'Release Scores';
         $('rafMaxInput').value = assessment ? String(maxScore) : '';
-        $('rafMaxLabel').textContent = assessment ? String(maxScore) : '';
         $('rafCO').textContent = assessment?.outcome_code || '—';
         $('rafDate').textContent = assessment?.due_date || '—';
         $('rafStudents').textContent = String(students.length);
@@ -8387,6 +8448,7 @@ function initRawAssessmentFaculty() {
         });
         $('rafEmpty').hidden = visible.length > 0;
         updateSummary(assessment, students);
+        renderQueries();
         createForm.querySelectorAll('input, select, button').forEach(control => {
             control.disabled = !workspace || locked ||
                 (!workspace.outcomes.length &&
@@ -8463,6 +8525,27 @@ function initRawAssessmentFaculty() {
     });
     $('rafSearch').addEventListener('input', render);
     $('rafSort').addEventListener('change', render);
+    releaseButton.addEventListener('click', async () => {
+        const assessment = selectedAssessment();
+        if (!assessment || assessment.released_at) return;
+        const assessmentId = assessment.id;
+        releaseButton.disabled = true;
+        status.textContent = 'Releasing scores...';
+        try {
+            await api('/api/faculty/assessments/' +
+                encodeURIComponent(assessmentId) + '/release', {
+                    method: 'POST',
+                    headers: { Accept: 'application/json' }
+                });
+            await loadWorkspace();
+            assessmentSelect.value = assessmentId;
+            render();
+            status.textContent = 'Scores released to students. You may continue editing until the gradebook is locked.';
+        } catch (error) {
+            status.textContent = error.message;
+            releaseButton.disabled = false;
+        }
+    });
     saveButton.addEventListener('click', async () => {
         const assessment = selectedAssessment();
         if (!assessment) return;
@@ -8669,6 +8752,348 @@ document.addEventListener("DOMContentLoaded", function () {
     [search, type, sort].forEach(element =>
         element.addEventListener(element === search ? 'input' : 'change', render)
     );
+    load();
+})();
+
+/* Department Head raw-score review is department-scoped and server-backed. */
+(function () {
+    'use strict';
+    const page = document.querySelector('.ra-dept-head-page');
+    if (!page) return;
+
+    const $ = id => document.getElementById(id);
+    const reviewBody = $('ra-review-rows');
+    const flagBody = $('ra-flag-rows');
+    const dialog = $('ra-dialog');
+    const message = document.createElement('p');
+    message.className = 'ra-review-message';
+    message.setAttribute('aria-live', 'polite');
+    message.setAttribute('role', 'status');
+    page.querySelector('.dh-panel').prepend(message);
+
+    let assessments = [];
+    let flags = [];
+    let sections = [];
+
+    async function api(url, options) {
+        const response = await fetch(url, Object.assign({
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin'
+        }, options || {}));
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || 'The request could not be completed.');
+        return result;
+    }
+
+    function fillSelect(select, placeholder, entries) {
+        const previous = select.value;
+        select.replaceChildren(new Option(placeholder, ''));
+        entries.forEach(([label, value]) => select.add(new Option(label, value)));
+        if (entries.some(([, value]) => value === previous)) select.value = previous;
+    }
+
+    function setFilters(data) {
+        fillSelect($('ra-year'), 'All School Years', [...new Set(
+            sections.map(section => section.academic_year_name).filter(Boolean)
+        )].sort().map(value => [value, value]));
+        const department = $('ra-department');
+        const departmentName = data.department?.name || 'My Department';
+        const departmentId = data.department?.id || 'department';
+        department.replaceChildren(new Option(departmentName, departmentId));
+        department.value = departmentId;
+        department.disabled = true;
+        const program = $('ra-program');
+        program.replaceChildren(new Option('All Programs', ''));
+        program.disabled = true;
+        fillSelect($('ra-course'), 'All Courses', [...new Map(
+            assessments.map(item => [
+                item.course_code,
+                [item.course_code + ' - ' + item.course_title, item.course_code]
+            ])
+        ).values()].sort((a, b) => a[0].localeCompare(b[0])));
+        fillSelect($('ra-section'), 'All Sections', [...new Map(
+            sections.map(section => [
+                section.id,
+                [section.course_code + ' · ' + section.section_name, section.id]
+            ])
+        ).values()].sort((a, b) => a[0].localeCompare(b[0])));
+        fillSelect($('ra-faculty'), 'All Faculty', [...new Map(
+            assessments.filter(item => item.faculty_name).map(item => [
+                item.faculty_profile_id || item.faculty_name,
+                [item.faculty_name, item.faculty_profile_id || item.faculty_name]
+            ])
+        ).values()].sort((a, b) => a[0].localeCompare(b[0])));
+    }
+
+    function matches(item) {
+        const query = $('ra-search').value.trim().toLowerCase();
+        const text = [
+            item.title, item.faculty_name, item.course_code, item.course_title,
+            item.section_name, item.activity_type
+        ].join(' ').toLowerCase();
+        return (!query || text.includes(query)) &&
+            (!$('ra-year').value || item.academic_year_name === $('ra-year').value) &&
+            (!$('ra-course').value || item.course_code === $('ra-course').value) &&
+            (!$('ra-section').value || item.section_id === $('ra-section').value) &&
+            (!$('ra-faculty').value ||
+                (item.faculty_profile_id || item.faculty_name) === $('ra-faculty').value) &&
+            (!$('ra-status-filter').value ||
+                item.review_status === $('ra-status-filter').value);
+    }
+
+    function button(text, className, action, id) {
+        const element = document.createElement('button');
+        element.type = 'button';
+        element.className = className;
+        element.dataset[action] = id;
+        element.textContent = text;
+        return element;
+    }
+
+    function renderAssessments() {
+        reviewBody.replaceChildren();
+        assessments.filter(matches).forEach(item => {
+            const row = document.createElement('tr');
+            const values = [
+                item.title,
+                item.activity_type,
+                item.faculty_name || 'Unassigned',
+                item.course_code + ' · ' + item.section_name,
+                String(item.student_count),
+                item.entered_score_count + ' / ' + item.student_count,
+                item.review_status
+            ];
+            values.forEach((value, index) => {
+                const cell = document.createElement('td');
+                cell.textContent = value;
+                if (index === 6) {
+                    const badge = document.createElement('span');
+                    badge.className = 'sodh-status ' +
+                        (item.review_status === 'No Issues' ? 'complete' : 'in-progress');
+                    badge.textContent = value;
+                    cell.replaceChildren(badge);
+                }
+                row.appendChild(cell);
+            });
+            const actionCell = document.createElement('td');
+            actionCell.className = 'ra-action-cell';
+            actionCell.appendChild(button(
+                'View Scores', 'ra-review-action', 'reviewId', item.id
+            ));
+            if (item.gradebook_status !== 'locked') {
+                actionCell.appendChild(button(
+                    'Lock Gradebook', 'ra-lock-action', 'lockSection', item.section_id
+                ));
+            } else {
+                const locked = document.createElement('span');
+                locked.className = 'ra-locked-label';
+                locked.textContent = 'Locked';
+                actionCell.appendChild(locked);
+            }
+            row.appendChild(actionCell);
+            reviewBody.appendChild(row);
+        });
+        const needsReview = assessments.filter(item => item.review_status !== 'No Issues').length;
+        $('ra-stat-students').textContent = String(new Set(
+            assessments.flatMap(item => item.scores.map(student => student.student_profile_id))
+        ).size);
+        $('ra-stat-faculty').textContent = String(new Set(
+            assessments.map(item => item.faculty_profile_id || item.faculty_name).filter(Boolean)
+        ).size);
+        $('ra-stat-assessments').textContent = String(assessments.length);
+        $('ra-stat-review').textContent = String(needsReview);
+        if (!reviewBody.children.length) {
+            const row = document.createElement('tr');
+            const cell = document.createElement('td');
+            cell.colSpan = 8;
+            cell.textContent = 'No assessments match these filters.';
+            row.appendChild(cell);
+            reviewBody.appendChild(row);
+        }
+    }
+
+    function renderFlags() {
+        flagBody.replaceChildren();
+        const openFlags = flags.filter(flag => flag.status !== 'resolved');
+        $('ra-open-flag-count').textContent = String(openFlags.length);
+        flags.forEach(flag => {
+            const row = document.createElement('tr');
+            [
+                flag.id.slice(0, 8),
+                flag.assessment_title,
+                flag.faculty_name || 'Unassigned',
+                flag.issue,
+                flag.description + (flag.response ? '\nFaculty response: ' + flag.response : ''),
+                flag.status
+            ].forEach(value => {
+                const cell = document.createElement('td');
+                cell.textContent = value || '—';
+                row.appendChild(cell);
+            });
+            const actionCell = document.createElement('td');
+            if (flag.status !== 'resolved') {
+                actionCell.appendChild(button(
+                    'Resolve', 'ra-review-action', 'resolveFlag', flag.id
+                ));
+            } else {
+                actionCell.textContent = '—';
+            }
+            row.appendChild(actionCell);
+            flagBody.appendChild(row);
+        });
+        if (!flags.length) {
+            const row = document.createElement('tr');
+            const cell = document.createElement('td');
+            cell.colSpan = 7;
+            cell.textContent = 'No flags or queries have been raised.';
+            row.appendChild(cell);
+            flagBody.appendChild(row);
+        }
+    }
+
+    function render() {
+        renderAssessments();
+        renderFlags();
+    }
+
+    async function load() {
+        message.textContent = 'Loading department assessment records...';
+        try {
+            const data = await api('/api/department-head/assessment-reviews');
+            assessments = Array.isArray(data.assessments) ? data.assessments : [];
+            flags = Array.isArray(data.flags) ? data.flags : [];
+            sections = Array.isArray(data.sections) ? data.sections : [];
+            setFilters(data);
+            render();
+            message.textContent = '';
+        } catch (error) {
+            message.textContent = error.message;
+        }
+    }
+
+    function openReview(item) {
+        $('ra-dialog-title').textContent = item.title + ' · Assessment Review';
+        const body = $('ra-dialog-body');
+        body.replaceChildren();
+        const context = document.createElement('p');
+        context.textContent = [
+            item.course_code, item.section_name, item.faculty_name || 'Unassigned Faculty'
+        ].filter(Boolean).join(' · ') + ' — ' + item.review_status;
+        body.appendChild(context);
+        const list = document.createElement('ul');
+        list.className = 'ra-review-score-list';
+        item.scores.forEach(student => {
+            const entry = document.createElement('li');
+            entry.textContent = (student.full_name || student.student_number || 'Student') +
+                ' — ' + (student.score === null
+                    ? 'Missing score'
+                    : student.score + ' / ' + student.max_score);
+            list.appendChild(entry);
+        });
+        body.appendChild(list);
+        const form = document.createElement('form');
+        form.className = 'ra-query-form';
+        const issueLabel = document.createElement('label');
+        issueLabel.textContent = 'Issue';
+        const issue = document.createElement('select');
+        [
+            ['Missing Scores', 'Missing Scores'],
+            ['Unusual Entry', 'Unusual Entry'],
+            ['Other Query', 'Other Query']
+        ].forEach(([label, value]) => issue.add(new Option(label, value)));
+        issueLabel.appendChild(issue);
+        const studentLabel = document.createElement('label');
+        studentLabel.textContent = 'Student (optional)';
+        const student = document.createElement('select');
+        student.add(new Option('Whole assessment', ''));
+        item.scores.forEach(person => {
+            student.add(new Option(
+                person.full_name || person.student_number || 'Student',
+                person.student_profile_id
+            ));
+        });
+        studentLabel.appendChild(student);
+        const detailsLabel = document.createElement('label');
+        detailsLabel.textContent = 'Query details';
+        const details = document.createElement('textarea');
+        details.required = true;
+        details.maxLength = 1000;
+        detailsLabel.appendChild(details);
+        const submit = document.createElement('button');
+        submit.type = 'submit';
+        submit.className = 'sodh-export-btn';
+        submit.textContent = 'Send Query to Faculty';
+        form.append(issueLabel, studentLabel, detailsLabel, submit);
+        form.addEventListener('submit', async event => {
+            event.preventDefault();
+            submit.disabled = true;
+            try {
+                await api('/api/department-head/assessment-reviews/' +
+                    encodeURIComponent(item.id) + '/flags', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                        body: JSON.stringify({
+                            issue: issue.value,
+                            student_profile_id: student.value || null,
+                            description: details.value
+                        })
+                    });
+                dialog.close();
+                message.textContent = 'Query sent to the assigned Faculty.';
+                await load();
+            } catch (error) {
+                message.textContent = error.message;
+                submit.disabled = false;
+            }
+        });
+        body.appendChild(form);
+        dialog.showModal();
+    }
+
+    page.addEventListener('click', async event => {
+        const target = event.target.closest('button');
+        if (!target) return;
+        if (target.dataset.reviewId) {
+            const item = assessments.find(row => row.id === target.dataset.reviewId);
+            if (item) openReview(item);
+        } else if (target.dataset.resolveFlag) {
+            target.disabled = true;
+            try {
+                await api('/api/department-head/assessment-review-flags/' +
+                    encodeURIComponent(target.dataset.resolveFlag) + '/resolve', {
+                        method: 'POST',
+                        headers: { Accept: 'application/json' }
+                    });
+                message.textContent = 'Assessment query resolved.';
+                await load();
+            } catch (error) {
+                message.textContent = error.message;
+                target.disabled = false;
+            }
+        } else if (target.dataset.lockSection) {
+            const sectionId = target.dataset.lockSection;
+            if (!window.confirm('Lock this section gradebook? Faculty will no longer be able to edit its scores.')) return;
+            target.disabled = true;
+            try {
+                await api('/api/department-head/sections/' +
+                    encodeURIComponent(sectionId) + '/lock', {
+                        method: 'POST',
+                        headers: { Accept: 'application/json' }
+                    });
+                message.textContent = 'Gradebook locked. Faculty score editing is now disabled.';
+                await load();
+            } catch (error) {
+                message.textContent = error.message;
+                target.disabled = false;
+            }
+        }
+    });
+
+    ['ra-year', 'ra-department', 'ra-program', 'ra-course', 'ra-section',
+        'ra-faculty', 'ra-status-filter'].forEach(id =>
+        $(id).addEventListener('change', render)
+    );
+    $('ra-search').addEventListener('input', render);
     load();
 })();
 

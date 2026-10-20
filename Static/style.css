@@ -1645,6 +1645,18 @@ body.so-reflection-page{margin:0;min-height:100vh;background:#F4F7FB;color:#173B
 .ra-dept-head-page .sodh-table tbody td:last-child{border-radius:0 7px 7px 0;white-space:nowrap;text-align:center;padding-inline:8px;}
 .ra-dept-head-page .sodh-table tbody td small{display:block;margin-top:3px;color:#6b829a;font-size:12px;}
 .ra-dept-head-page .sodh-table td, .ra-dept-head-page .sodh-table th{padding:11px 9px;vertical-align:middle;overflow-wrap:anywhere;}
+.ra-dept-head-page .ra-review-message{margin:0 0 10px;color:#004179;font-size:13px;}
+.ra-dept-head-page .ra-action-cell{text-align:center;}
+.ra-dept-head-page .ra-review-action,.ra-dept-head-page .ra-lock-action{display:block;width:100%;margin:3px 0;padding:6px 4px;border:1px solid #9bc6ea;border-radius:7px;background:#fff;color:#004179;font-size:11px;font-weight:700;cursor:pointer;}
+.ra-dept-head-page .ra-lock-action{border-color:#004179;background:#004179;color:#fff;}
+.ra-dept-head-page .ra-action-cell button:disabled{opacity:.55;cursor:wait;}
+.ra-dept-head-page .ra-locked-label{color:#477a00;font-size:11px;font-weight:700;}
+.ra-dept-head-page .ra-review-score-list{max-height:220px;overflow:auto;margin:12px 0;padding-left:22px;}
+.ra-dept-head-page .ra-review-score-list li{padding:3px 0;color:#355a7b;font-size:13px;}
+.ra-dept-head-page .ra-query-form{display:grid;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid #d9e6f3;}
+.ra-dept-head-page .ra-query-form label{display:grid;gap:4px;color:#004179;font-size:12px;font-weight:700;}
+.ra-dept-head-page .ra-query-form :is(select,textarea){box-sizing:border-box;width:100%;padding:8px;border:1px solid #b9cfe2;border-radius:6px;color:#244f74;font:inherit;font-size:13px;}
+.ra-dept-head-page .ra-query-form textarea{min-height:76px;resize:vertical;}
 .ra-dept-head-page .sodh-status{padding:5px 11px;border-radius:999px;background:#dff4ad;color:#477a00;font-size:12px;font-weight:700;}
 .ra-dept-head-page .ra-fixed-table-head{flex:0 0 auto;padding-right:15px;overflow:hidden;}
 .ra-dept-head-page .ra-fixed-table-head .ra-header-table{margin:0;border-spacing:0;table-layout:fixed;}
@@ -2643,6 +2655,16 @@ body.cm-dept-review-open, body.cm-dept-modal-open{overflow:hidden;}
 .ra-faculty-page .raf-score-input{width:90px;max-width:100%;height:30px;padding:4px 9px;border:1px solid #BFD5E7;border-radius:6px;color:#004179;background:#FFF;}
 .ra-faculty-page .raf-score-input:focus{outline:2px solid #F4C300;outline-offset:1px;}
 .ra-faculty-page .raf-message{min-height:20px;margin:8px 18px;color:#004179;font-size:13px;}
+.ra-faculty-page .raf-review-queries{margin:14px 0;padding:14px;border:1px solid #e8c96e;border-radius:9px;background:#fffaf0;}
+.ra-faculty-page .raf-review-queries h3{margin:0 0 10px;color:#004179;font-size:14px;}
+.ra-faculty-page .raf-review-query{margin-top:8px;padding:11px;border:1px solid #eadfb9;border-radius:7px;background:#fff;}
+.ra-faculty-page .raf-review-query>strong{color:#004179;font-size:13px;}
+.ra-faculty-page .raf-review-query p{margin:6px 0;color:#355a7b;font-size:13px;white-space:pre-wrap;}
+.ra-faculty-page .raf-review-query .raf-review-response{color:#376d1f;}
+.ra-faculty-page .raf-review-query form{display:flex;align-items:end;gap:10px;}
+.ra-faculty-page .raf-review-query label{display:grid;flex:1;gap:4px;color:#004179;font-size:12px;font-weight:700;}
+.ra-faculty-page .raf-review-query textarea{box-sizing:border-box;width:100%;min-height:54px;padding:8px;border:1px solid #bfd5e7;border-radius:6px;resize:vertical;font:inherit;}
+.ra-faculty-page .raf-review-query button:disabled{opacity:.55;cursor:wait;}
 @media(max-width:800px) {
   .ra-faculty-page .raf-heading{flex-wrap:wrap;}
 }

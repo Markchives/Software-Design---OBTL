@@ -38,7 +38,14 @@
 <article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Average Percentage</span><strong class="so-summary-number" id="rafMaximum">—</strong></article>
 </section>
 <section aria-labelledby="rafTitle" class="cr-roster-panel crf-roster-panel raf-panel">
-<header class="so-section-header raf-heading"><div><h2 id="rafTitle">Raw Scores by Student</h2><p>Select a section, create an assessment if needed, then enter raw points for enrolled students.</p></div><div class="raf-actions"><span class="sodh-status complete" id="rafMode">Open for Editing</span><button class="crf-download-btn" id="rafSave" type="button">Save Scores</button></div></header>
+<header class="so-section-header raf-heading"><div><h2 id="rafTitle">Raw Scores by Student</h2><p>Select a section, create an assessment if needed, then enter raw points for enrolled students.</p></div><div class="raf-actions"><span class="sodh-status complete" id="rafMode">Open for Editing</span><button class="crf-download-btn" id="rafRelease" type="button">Release Scores</button><button class="crf-download-btn" id="rafSave" type="button">Save Scores</button></div></header>
+<div class="raf-assessment-bar">
+<div><label for="rafSection">Course section</label><select id="rafSection"><option value="">Loading assigned sections...</option></select></div>
+<div><label for="rafAssessment">Assessment</label><select id="rafAssessment" disabled><option value="">Select a section first</option></select></div>
+<div class="raf-detail"><span>Course outcome</span><strong id="rafCO">—</strong></div>
+<div class="raf-detail"><span>Due date</span><strong id="rafDate">—</strong></div>
+<div><label for="rafMaxInput">Maximum score</label><input id="rafMaxInput" readonly value=""/></div>
+</div>
 <form class="raf-create-assessment" id="rafCreateAssessmentForm">
 <h3>Create Assessment</h3>
 <div><label for="rafNewTitle">Title</label><input id="rafNewTitle" maxlength="120" required placeholder="Assessment title"/></div>
@@ -49,7 +56,7 @@
 <button class="crf-download-btn" type="submit">Create Assessment</button>
 </form>
 <div class="cr-toolbar crf-toolbar raf-toolbar"><label class="cr-search crf-search"><span aria-hidden="true">⌕</span><input aria-label="Search students" id="rafSearch" placeholder="Search student name or ID..." type="search"/></label><div class="cr-sort-wrap"><label for="rafSort">Sort By</label><select id="rafSort"><option value="az">Student Name A–Z</option><option value="za">Student Name Z–A</option><option value="high">Highest Score</option><option value="low">Lowest Score</option></select></div></div>
-<div class="raf-table-frame"><div class="cr-table-header"><table class="cr-table raf-table"><colgroup><col/><col/><col/><col/><col/><col/></colgroup><thead><tr><th>#</th><th>Student ID</th><th>Student Name</th><th>Raw Points</th><th>Percentage</th><th>Entry Status</th></tr></thead></table></div><div class="cr-table-wrap"><table class="cr-table raf-table"><colgroup><col/><col/><col/><col/><col/><col/></colgroup><tbody id="rafRows"></tbody></table></div></div><div class="so-empty-state" hidden="" id="rafEmpty">No matching students found.</div><p aria-live="polite" class="raf-message" id="rafMessage" role="status"></p>
+<div class="raf-table-frame"><div class="cr-table-header"><table class="cr-table raf-table"><colgroup><col/><col/><col/><col/><col/><col/></colgroup><thead><tr><th>#</th><th>Student ID</th><th>Student Name</th><th>Raw Points</th><th>Percentage</th><th>Entry Status</th></tr></thead></table></div><div class="cr-table-wrap"><table class="cr-table raf-table"><colgroup><col/><col/><col/><col/><col/><col/></colgroup><tbody id="rafRows"></tbody></table></div></div><div class="so-empty-state" hidden="" id="rafEmpty">No matching students found.</div><section aria-label="Department Head queries" class="raf-review-queries" hidden id="rafQueries"><h3>Department Head Queries</h3><div id="rafQueryRows"></div></section><p aria-live="polite" class="raf-message" id="rafMessage" role="status"></p>
 </section></main>
 </div>
 <script src="../../Static/script.js"></script></body>
