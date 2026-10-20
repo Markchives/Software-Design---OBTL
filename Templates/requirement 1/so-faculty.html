@@ -235,7 +235,7 @@
 <div class="sodh-tab-panel sof-tab-panel" hidden="" id="course-outcomes" role="tabpanel" aria-labelledby="soTabCourseOutcomes">
 <div class="sodh-toolbar sof-outcome-toolbar sof-course-outcome-toolbar">
 <p>
-                            Define course outcomes, attainment targets, and their Student Outcome alignment.
+                            Add the fixed Course Outcomes used in this course, then map each one to its applicable Student Outcomes.
                         </p>
 <button class="sof-add-outcome-btn" id="addCourseOutcomeButton" type="button">
 <span class="sof-add-icon">
@@ -245,10 +245,11 @@
 </button>
 </div>
 <div class="so-workflow-grid" id="soCourseOutcomeForm">
-<label>Course Outcome code<input id="soCoCode" maxlength="20" placeholder="CO1"></label>
+<div class="so-workflow-wide">
+<p><strong>Next fixed Course Outcome:</strong> <output id="soCoCode">—</output></p>
+<p id="soCoDescription"></p>
+</div>
 <label>Target attainment (%)<input id="soCoTarget" type="number" min="0" max="100" value="70"></label>
-<label class="so-workflow-wide">Course Outcome description<input id="soCoDescription" maxlength="2000" placeholder="Describe what students should be able to demonstrate"></label>
-<label class="so-workflow-wide">Align to Student Outcome<select id="soCoAlignment"><option value="">Choose an SO (optional)</option></select></label>
 <button class="sof-add-outcome-btn" id="soSaveCo" type="button">Save Course Outcome</button>
 </div>
 <div class="sodh-table-wrap sof-outcome-table-wrap">
@@ -260,9 +261,9 @@
 </div>
 <div class="sodh-tab-panel sof-tab-panel" hidden="" id="student-outcomes" role="tabpanel" aria-labelledby="soTabStudentOutcomes">
 <div class="sodh-toolbar sof-outcome-toolbar sof-student-outcome-toolbar">
-<p>Create student self-assessments and track responses for this course.</p>
+<p>Create student self-assessments for Student Outcomes already mapped to this course.</p>
 <button class="sof-add-outcome-btn" id="addStudentOutcomeButton" type="button">
-<span class="sof-add-icon">+</span><span>Add Student Outcome</span>
+<span class="sof-add-icon">+</span><span>Create SO Assessment</span>
 </button>
 </div>
 <div class="so-workflow-grid" id="soAssessmentForm">
@@ -298,192 +299,6 @@
 </div>
 </section>
 </main>
-</div>
-<div class="sof-outcome-modal" hidden="" id="courseOutcomeModal">
-<div class="sof-outcome-modal-backdrop" id="courseOutcomeBackdrop"></div>
-<div aria-labelledby="courseOutcomeModalTitle" aria-modal="true" class="sof-outcome-dialog" role="dialog">
-<h2 id="courseOutcomeModalTitle">
-                Add Course Outcome
-            </h2>
-<p class="sof-outcome-dialog-subtitle" id="courseOutcomeModalSubtitle">
-                Select an existing course outcome and its aligned student outcomes.
-            </p>
-<div class="sof-outcome-form-group">
-<label for="courseOutcomeExistingSelect">
-                    Course Outcome
-                </label>
-<select id="courseOutcomeExistingSelect">
-<option value="">Select Course Outcome</option>
-<option value="CO1" data-description="Course Outcome 1">CO1</option>
-<option value="CO2" data-description="Course Outcome 2">CO2</option>
-<option value="CO3" data-description="Course Outcome 3">CO3</option>
-<option value="CO4" data-description="Course Outcome 4">CO4</option>
-<option value="CO5" data-description="Course Outcome 5">CO5</option>
-<option value="CO6" data-description="Course Outcome 6">CO6</option>
-<option value="CO7" data-description="Course Outcome 7">CO7</option>
-<option value="CO8" data-description="Course Outcome 8">CO8</option>
-<option value="CO9" data-description="Course Outcome 9">CO9</option>
-<option value="CO10" data-description="Course Outcome 10">CO10</option>
-</select>
-<div class="sof-course-outcome-preview" hidden="" id="courseOutcomeDescriptionPreview">
-<span>Course Outcome Description</span>
-<p id="courseOutcomeDescriptionPreviewText"></p>
-</div>
-</div>
-<input id="courseOutcomeNumber" type="hidden"/>
-<input id="courseOutcomeDescription" type="hidden"/>
-<div class="sof-outcome-field">
-<label>Student Outcome</label>
-<div class="sof-so-options" id="courseOutcomeSoOptions">
-<button class="sof-so-option" data-so="SO(A)" type="button">
-                    SO(A)
-                </button>
-<button class="sof-so-option" data-so="SO(B)" type="button">
-                    SO(B)
-                </button>
-<button class="sof-so-option" data-so="SO(C)" type="button">
-                    SO(C)
-                </button>
-<button class="sof-so-option" data-so="SO(D)" type="button">
-                    SO(D)
-                </button>
-<button class="sof-so-option" data-so="SO(E)" type="button">
-                    SO(E)
-                </button>
-<button class="sof-so-option" data-so="SO(F)" type="button">
-                    SO(F)
-                </button>
-<button class="sof-so-option" data-so="SO(G1)" type="button">
-                    SO(G1)
-                </button>
-<button class="sof-so-option" data-so="SO(G2)" type="button">
-                    SO(G2)
-                </button>
-<button class="sof-so-option" data-so="SO(H)" type="button">
-                    SO(H)
-                </button>
-<button class="sof-so-option" data-so="SO(I)" type="button">
-                    SO(I)
-                </button>
-<button class="sof-so-option" data-so="SO(J)" type="button">
-                    SO(J)
-                </button>
-<button class="sof-so-option" data-so="SO(K)" type="button">
-                    SO(K)
-                </button>
-<button class="sof-so-option" data-so="SO(L)" type="button">
-                    SO(L)
-                </button>
-</div>
-</div>
-<div class="sof-outcome-modal-actions">
-<button class="sof-outcome-cancel-btn" id="cancelCourseOutcomeButton" type="button">
-                    Cancel
-                </button>
-<button class="sof-outcome-save-btn" id="saveCourseOutcomeButton" type="button">
-                    Save
-                </button>
-</div>
-</div>
-</div>
-<div class="sof-delete-modal" hidden="" id="deleteCourseOutcomeModal">
-<div class="sof-delete-modal-backdrop" id="deleteCourseOutcomeBackdrop"></div>
-<div aria-modal="true" class="sof-delete-dialog" role="dialog">
-<h2>
-                Delete course outcome?
-            </h2>
-<p>
-                Are you sure you want to delete
-                <strong id="deleteCourseOutcomeName">
-                    this course outcome
-                </strong>?
-            </p>
-<p class="sof-delete-warning">
-                This course outcome will be removed from the selected course.
-            </p>
-<div class="sof-delete-dialog-actions">
-<button class="sof-delete-cancel-btn" id="cancelDeleteCourseOutcome" type="button">
-                    Cancel
-                </button>
-<button class="sof-delete-confirm-btn" id="confirmDeleteCourseOutcome" type="button">
-                    Delete
-                </button>
-</div>
-</div>
-</div>
-<div class="sof-outcome-modal" hidden="" id="studentOutcomeModal">
-<div class="sof-outcome-modal-backdrop" id="studentOutcomeModalBackdrop"></div>
-<div aria-labelledby="studentOutcomeModalTitle" aria-modal="true" class="sof-outcome-dialog" role="dialog">
-<h2 id="studentOutcomeModalTitle">Upload Student Outcome</h2>
-<p class="sof-outcome-dialog-subtitle" id="studentOutcomeModalSubtitle">
-                Select the Student Outcome to assign, set its due date, and choose its status.
-            </p>
-<div class="sof-outcome-form-group">
-<label for="studentOutcomeSelect">Student Outcome</label>
-<select id="studentOutcomeSelect">
-<option value="">Select Student Outcome</option>
-<option value="A">SO(A)</option>
-<option value="B">SO(B)</option>
-<option value="C">SO(C)</option>
-<option value="D">SO(D)</option>
-<option value="E">SO(E)</option>
-<option value="F">SO(F)</option>
-<option value="G1">SO(G1)</option>
-<option value="G2">SO(G2)</option>
-<option value="H">SO(H)</option>
-<option value="I">SO(I)</option>
-<option value="J">SO(J)</option>
-<option value="K">SO(K)</option>
-<option value="L">SO(L)</option>
-</select>
-</div>
-<div class="sof-outcome-form-group">
-<label for="studentOutcomeDueDate">Due Date</label>
-<input id="studentOutcomeDueDate" type="date"/>
-</div>
-<div class="sof-outcome-form-group">
-<label for="studentOutcomeStatus">Status</label>
-<select id="studentOutcomeStatus">
-<option value="Draft">Draft</option>
-<option selected="" value="Active">Active</option>
-<option value="Closed">Closed</option>
-<option value="Archived">Archived</option>
-</select>
-</div>
-<div class="sof-outcome-modal-actions">
-<button class="sof-outcome-cancel-btn" id="cancelStudentOutcomeButton" type="button">
-                    Cancel
-                </button>
-<button class="sof-outcome-save-btn" id="saveStudentOutcomeButton" type="button">
-                    Upload
-                </button>
-</div>
-</div>
-</div>
-<div class="sof-delete-modal" hidden="" id="deleteStudentOutcomeModal">
-<div class="sof-delete-modal-backdrop" id="deleteStudentOutcomeBackdrop"></div>
-<div aria-modal="true" class="sof-delete-dialog" role="dialog">
-<h2>
-                Delete student outcome?
-            </h2>
-<p>
-                Are you sure you want to delete
-                <strong id="deleteStudentOutcomeName">
-                    this student outcome
-                </strong>?
-            </p>
-<p class="sof-delete-warning">
-                This student outcome will be removed from the selected course.
-            </p>
-<div class="sof-delete-dialog-actions">
-<button class="sof-delete-cancel-btn" id="cancelDeleteStudentOutcome" type="button">
-                    Cancel
-                </button>
-<button class="sof-delete-confirm-btn" id="confirmDeleteStudentOutcome" type="button">
-                    Delete
-                </button>
-</div>
-</div>
 </div>
 <div class="sof-delete-modal" hidden="" id="deleteSyllabusModal">
 <div class="sof-delete-modal-backdrop" id="deleteSyllabusBackdrop"></div>

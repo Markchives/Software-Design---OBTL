@@ -4033,7 +4033,7 @@ function initFacultySyllabusOutcomes() {
     }
 
     /* OPEN ADD COURSE OUTCOME */
-    if (addCourseOutcomeButton) {
+    if (addCourseOutcomeButton && !document.getElementById("soWorkflowManager")) {
         addCourseOutcomeButton.addEventListener("click", function () {
             resetCourseOutcomeForm();
             if (courseOutcomeModalTitle) {
@@ -4507,7 +4507,7 @@ function initFacultySyllabusOutcomes() {
         document.body.style.overflow = "";
         resetStudentOutcomeForm();
     }
-    if (addStudentOutcomeButton) {
+    if (addStudentOutcomeButton && !document.getElementById("soWorkflowManager")) {
         addStudentOutcomeButton.addEventListener("click", function () {
             resetStudentOutcomeForm();
             openModal(studentOutcomeModal);

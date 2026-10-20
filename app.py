@@ -139,6 +139,22 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 SYLLABI_BUCKET = "course-syllabi"
 PROFILE_PHOTOS_BUCKET = "profile-photos"
 PROFILE_PHOTO_MAX_BYTES = 1024 * 1024
+FIXED_COURSE_OUTCOME_CODES = tuple(f"CO{number}" for number in range(1, 11))
+FIXED_COURSE_OUTCOME_DESCRIPTIONS = {
+    "CO1": "Evaluate how personal, family, and community values, morals, and ethics influence professional behavior and decision-making in IT.",
+    "CO2": "Create strategies that demonstrate proper conduct, responsibility, and accountability in IT practice, guided by professional codes of ethics (e.g., ACM, IEEE, PSIA, PCS).",
+    "CO3": "Analyze ethical dilemmas in computing, such as privacy versus security, whistleblowing, and conflicts of interest, and justify resolutions using established ethical frameworks.",
+    "CO4": "Evaluate Philippine IT-related laws and policies, including the Data Privacy Act (RA 10173), the Cybercrime Prevention Act (RA 10175), and the E-Commerce Act (RA 8792), and justify their correct application in real-world scenarios.",
+    "CO5": "Assess intellectual property frameworks (copyright, patents, trademarks, software licensing, and open source) and justify their proper application to software, digital content, and IT innovations.",
+    "CO6": "Evaluate data privacy and electronic transaction scenarios for legal compliance, and recommend corrective measures that protect data subjects and organizations.",
+    "CO7": "Evaluate contemporary IT issues, such as AI ethics, cybersecurity threats, the digital divide, misinformation, and environmental impact, for their effects on individuals, organizations, and society.",
+    "CO8": "Design lifelong learning strategies (certifications, continuing education, professional networks, and portfolio building) that keep IT skills current in a rapidly changing industry.",
+    "CO9": "Evaluate business and management trade-offs in IT decisions, such as cost versus quality, speed versus security, and profit versus social responsibility, and justify informed decisions.",
+    "CO10": "Justify IT decisions and recommendations that balance technical, ethical, legal, and societal considerations, and communicate them effectively as an accountable professional.",
+}
+FIXED_STUDENT_OUTCOME_CODES = tuple(
+    f"SO({code})" for code in ("A", "B", "C", "D", "E", "F", "G1", "G2", "H", "I", "J", "K", "L")
+)
 
 
 def record_audit_event(
@@ -2689,14 +2705,20 @@ def save_faculty_outcome_mappings(course_id):
             return jsonify({"error": "Provide a valid list of CO/SO mappings."}), 400
         outcomes = (
             admin_supabase.table("course_outcomes")
-            .select("id").eq("course_id", course_id).execute().data or []
+            .select("id, code").eq("course_id", course_id).execute().data or []
         )
-        outcome_ids = {row["id"] for row in outcomes}
+        outcome_ids = {
+            row["id"] for row in outcomes
+            if row["code"] in FIXED_COURSE_OUTCOME_CODES
+        }
         student_outcomes = (
             admin_supabase.table("student_outcomes")
-            .select("id").execute().data or []
+            .select("id, code").execute().data or []
         )
-        student_outcome_ids = {row["id"] for row in student_outcomes}
+        student_outcome_ids = {
+            row["id"] for row in student_outcomes
+            if row["code"] in FIXED_STUDENT_OUTCOME_CODES
+        }
         normalized, seen = [], set()
         for item in mappings:
             if not isinstance(item, dict):
@@ -2716,9 +2738,10 @@ def save_faculty_outcome_mappings(course_id):
                 "course_outcome_id": co_id,
                 "student_outcome_id": so_id,
             })
-        admin_supabase.table("course_outcome_student_outcomes").delete().in_(
-            "course_outcome_id", list(outcome_ids)
-        ).execute()
+        if outcome_ids and student_outcome_ids:
+            admin_supabase.table("course_outcome_student_outcomes").delete().in_(
+                "course_outcome_id", list(outcome_ids)
+            ).in_("student_outcome_id", list(student_outcome_ids)).execute()
         if normalized:
             admin_supabase.table("course_outcome_student_outcomes").insert(
                 normalized
@@ -2751,9 +2774,28 @@ def get_faculty_outcome_mappings(course_id):
             .select("id, code, description, target_percentage")
             .eq("course_id", course_id).order("code").execute().data or []
         )
+        outcomes = [
+            {
+                **row,
+                "description": FIXED_COURSE_OUTCOME_DESCRIPTIONS[row["code"]],
+            }
+            for row in outcomes if row["code"] in FIXED_COURSE_OUTCOME_DESCRIPTIONS
+        ]
+        used_codes = {row["code"] for row in outcomes}
+        next_code = next(
+            (code for code in FIXED_COURSE_OUTCOME_CODES if code not in used_codes),
+            None,
+        )
         student_outcomes = (
             admin_supabase.table("student_outcomes")
             .select("id, code, description").order("code").execute().data or []
+        )
+        student_outcomes = [
+            {**row, "description": row["description"] if row["description"] != row["code"] else ""}
+            for row in student_outcomes if row["code"] in FIXED_STUDENT_OUTCOME_CODES
+        ]
+        student_outcomes.sort(
+            key=lambda row: FIXED_STUDENT_OUTCOME_CODES.index(row["code"])
         )
         outcome_ids = [row["id"] for row in outcomes]
         mappings = []
@@ -2763,8 +2805,17 @@ def get_faculty_outcome_mappings(course_id):
                 .select("course_outcome_id, student_outcome_id")
                 .in_("course_outcome_id", outcome_ids).execute().data or []
             )
+        fixed_student_outcome_ids = {row["id"] for row in student_outcomes}
+        mappings = [
+            row for row in mappings
+            if row["student_outcome_id"] in fixed_student_outcome_ids
+        ]
         return jsonify({
             "outcomes": outcomes,
+            "next_course_outcome": {
+                "code": next_code,
+                "description": FIXED_COURSE_OUTCOME_DESCRIPTIONS[next_code],
+            } if next_code else None,
             "student_outcomes": student_outcomes,
             "mappings": mappings,
         }), 200
@@ -2786,18 +2837,30 @@ def create_faculty_course_outcome(course_id):
         if not any(get_faculty_section(row["id"]) for row in assigned):
             return jsonify({"error": "Course is not assigned to you."}), 403
         data = request.get_json(silent=True) or {}
-        code = str(data.get("code", "")).strip().upper()
-        description = str(data.get("description", "")).strip()
+        if not isinstance(data, dict):
+            return jsonify({"error": "Provide a valid Course Outcome request."}), 400
+        if "code" in data or "description" in data:
+            return jsonify({"error": "Course Outcome codes and descriptions are fixed."}), 400
         target = data.get("target_percentage", 70)
-        if not code or len(code) > 20 or not description or len(description) > 2000:
-            return jsonify({"error": "Provide a CO code and description."}), 400
         if isinstance(target, bool):
             return jsonify({"error": "Target must be a percentage."}), 400
         target = float(target)
         if not math.isfinite(target) or not 0 <= target <= 100:
             return jsonify({"error": "Target must be from 0 to 100."}), 400
+        existing = admin_supabase.table("course_outcomes").select(
+            "code"
+        ).eq("course_id", course_id).execute().data or []
+        used_codes = {row["code"] for row in existing if row["code"] in FIXED_COURSE_OUTCOME_CODES}
+        code = next(
+            (candidate for candidate in FIXED_COURSE_OUTCOME_CODES
+             if candidate not in used_codes),
+            None,
+        )
+        if code is None:
+            return jsonify({"error": "This course already has all ten Course Outcomes."}), 409
         rows = admin_supabase.table("course_outcomes").insert({
-            "course_id": course_id, "code": code, "description": description,
+            "course_id": course_id, "code": code,
+            "description": FIXED_COURSE_OUTCOME_DESCRIPTIONS[code],
             "target_percentage": target,
         }).execute().data or []
         for section_row in assigned:
@@ -2823,16 +2886,29 @@ def update_faculty_course_outcome(course_id, outcome_id):
         ).execute().data or []
         if not any(get_faculty_section(row["id"]) for row in assigned):
             return jsonify({"error": "Course is not assigned to you."}), 403
+        current = admin_supabase.table("course_outcomes").select(
+            "code"
+        ).eq("id", outcome_id).eq("course_id", course_id).limit(1).execute().data or []
+        if not current or current[0]["code"] not in FIXED_COURSE_OUTCOME_CODES:
+            return jsonify({"error": "Fixed Course Outcome not found for this course."}), 404
         data = request.get_json(silent=True) or {}
-        code = str(data.get("code", "")).strip().upper()
-        description = str(data.get("description", "")).strip()
-        target = float(data.get("target_percentage", 70))
-        if not code or len(code) > 20 or not description or len(description) > 2000 or not math.isfinite(target) or not 0 <= target <= 100:
-            return jsonify({"error": "Provide a CO code, description, and target from 0 to 100."}), 400
+        if not isinstance(data, dict):
+            return jsonify({"error": "Provide a valid Course Outcome request."}), 400
+        target_value = data.get("target_percentage", 70)
+        if isinstance(target_value, bool):
+            return jsonify({"error": "Target must be a percentage."}), 400
+        target = float(target_value)
+        if "code" in data or "description" in data:
+            return jsonify({"error": "Course Outcome codes and descriptions are fixed."}), 400
+        if not math.isfinite(target) or not 0 <= target <= 100:
+            return jsonify({"error": "Provide a target from 0 to 100."}), 400
         rows = admin_supabase.table("course_outcomes").update({
-            "code": code, "description": description, "target_percentage": target,
+            "description": FIXED_COURSE_OUTCOME_DESCRIPTIONS[current[0]["code"]],
+            "target_percentage": target,
             "updated_at": datetime.now(timezone.utc).isoformat(),
         }).eq("id", outcome_id).eq("course_id", course_id).execute().data or []
+        if not rows:
+            return jsonify({"error": "Course Outcome not found for this course."}), 404
         for section_row in assigned:
             if get_faculty_section(section_row["id"]):
                 _set_mapping_review_status(section_row["id"], "pending")
@@ -3025,12 +3101,17 @@ def outcomes_overview():
                 "completion_rate": round(total_submitted / total_expected * 100, 1) if total_expected else 0,
             })
         filtered_section_ids = {row["section_id"] for row in course_rows}
-        summary = {
-            so_id: {"so_code": so_by_id.get(so_id, {}).get("code", ""),
-                    "description": so_by_id.get(so_id, {}).get("description", ""),
-                    "score_sum": 0.0, "rating_count": 0, "responses": 0}
-            for so_id in so_ids
-        }
+        summary = {}
+        for so_id in so_ids:
+            so = so_by_id.get(so_id, {})
+            summary[so_id] = {
+                "so_code": so.get("code", ""),
+                "description": (
+                    so.get("description", "")
+                    if so.get("description") != so.get("code") else ""
+                ),
+                "score_sum": 0.0, "rating_count": 0, "responses": 0,
+            }
         response_log = []
         for assessment in outcome_assessments:
             if assessment["section_id"] not in filtered_section_ids:
@@ -4823,6 +4904,8 @@ def get_student_course_outcomes():
 def _so_assessment_payload(assessment, so_by_id=None):
     so_by_id = so_by_id or {}
     so = so_by_id.get(assessment.get("student_outcome_id"), {})
+    if so.get("description") == so.get("code"):
+        so = {**so, "description": ""}
     return {
         **assessment,
         "student_outcome": so,
@@ -4932,6 +5015,29 @@ def _validate_so_assessment_data(data):
     }
 
 
+def _course_has_fixed_so_mapping(course_id, student_outcome_id):
+    student_outcomes = admin_supabase.table("student_outcomes").select(
+        "id, code"
+    ).eq("id", student_outcome_id).limit(1).execute().data or []
+    if not student_outcomes or student_outcomes[0]["code"] not in FIXED_STUDENT_OUTCOME_CODES:
+        return False
+    course_outcomes = admin_supabase.table("course_outcomes").select(
+        "id, code"
+    ).eq("course_id", course_id).execute().data or []
+    fixed_course_outcome_ids = [
+        row["id"] for row in course_outcomes
+        if row["code"] in FIXED_COURSE_OUTCOME_CODES
+    ]
+    if not fixed_course_outcome_ids:
+        return False
+    mappings = admin_supabase.table("course_outcome_student_outcomes").select(
+        "student_outcome_id"
+    ).in_("course_outcome_id", fixed_course_outcome_ids).eq(
+        "student_outcome_id", student_outcome_id
+    ).limit(1).execute().data or []
+    return bool(mappings)
+
+
 @app.post("/api/faculty/sections/<section_id>/so-assessments")
 @require_role("faculty")
 def create_faculty_so_assessment(section_id):
@@ -4947,16 +5053,9 @@ def create_faculty_so_assessment(section_id):
         if not section:
             return jsonify({"error": "Section not found."}), 404
         data = _validate_so_assessment_data(request.get_json(silent=True))
-        linked = admin_supabase.table("course_outcomes").select("id").eq(
-            "course_id", section[0]["course_id"]
-        ).execute().data or []
-        co_ids = [row["id"] for row in linked]
-        mappings = admin_supabase.table("course_outcome_student_outcomes").select(
-            "student_outcome_id"
-        ).in_("course_outcome_id", co_ids).eq(
-            "student_outcome_id", data["student_outcome_id"]
-        ).execute().data if co_ids else []
-        if not mappings:
+        if not _course_has_fixed_so_mapping(
+            section[0]["course_id"], data["student_outcome_id"]
+        ):
             return jsonify({"error": "Map this Student Outcome to a Course Outcome before creating its assessment."}), 409
         result = admin_supabase.table("so_self_assessments").insert({
             **data, "section_id": section_id, "created_by": str(g.authenticated_user.id),
@@ -4990,6 +5089,13 @@ def update_faculty_so_assessment(assessment_id):
         if not get_faculty_section(rows[0]["section_id"]):
             return jsonify({"error": "Assessment is not in a section assigned to you."}), 403
         data = _validate_so_assessment_data(request.get_json(silent=True))
+        section = admin_supabase.table("course_sections").select("course_id").eq(
+            "id", rows[0]["section_id"]
+        ).limit(1).execute().data or []
+        if not section or not _course_has_fixed_so_mapping(
+            section[0]["course_id"], data["student_outcome_id"]
+        ):
+            return jsonify({"error": "Map this Student Outcome to a Course Outcome before updating its assessment."}), 409
         result = admin_supabase.table("so_self_assessments").update({
             **data, "updated_at": datetime.now(timezone.utc).isoformat(),
         }).eq("id", assessment_id).execute().data or []

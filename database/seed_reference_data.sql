@@ -87,6 +87,15 @@ VALUES
     ('cccccccc-cccc-4ccc-8ccc-cccccccccccc', 'SO3', 'Communicate effectively and ethically in the profession.')
 ON CONFLICT (code) DO NOTHING;
 
+INSERT INTO student_outcomes (code, description)
+VALUES
+    ('SO(A)', 'SO(A)'), ('SO(B)', 'SO(B)'), ('SO(C)', 'SO(C)'),
+    ('SO(D)', 'SO(D)'), ('SO(E)', 'SO(E)'), ('SO(F)', 'SO(F)'),
+    ('SO(G1)', 'SO(G1)'), ('SO(G2)', 'SO(G2)'), ('SO(H)', 'SO(H)'),
+    ('SO(I)', 'SO(I)'), ('SO(J)', 'SO(J)'), ('SO(K)', 'SO(K)'),
+    ('SO(L)', 'SO(L)')
+ON CONFLICT (code) DO NOTHING;
+
 INSERT INTO cqi_categories (id, name, description, is_active)
 VALUES
     ('dddddddd-dddd-4ddd-8ddd-dddddddddddd', 'Curriculum Improvement', 'Improvement in curriculum design and delivery.', TRUE),
