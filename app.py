@@ -832,6 +832,15 @@ def drop_faculty_section_enrollment(section_id):
         }), 503
 
 
+def _student_section_scope(section_ids):
+    requested_section_id = request.args.get("section_id", "").strip()
+    if requested_section_id:
+        if requested_section_id not in section_ids:
+            return None
+        return [requested_section_id]
+    return section_ids
+
+
 @app.get("/api/student/courses")
 @require_role("student")
 def student_courses():
@@ -4000,6 +4009,9 @@ def get_student_assessment_scores():
         section_ids = list({
             row["section_id"] for row in enrollments if row.get("section_id")
         })
+        section_ids = _student_section_scope(section_ids)
+        if section_ids is None:
+            return jsonify({"error": "You are not actively enrolled in this section."}), 403
         if not section_ids:
             return jsonify({"assessments": [], "profile_complete": True}), 200
         sections = (
@@ -4691,6 +4703,9 @@ def get_student_course_outcomes():
             .eq("enrollment_status", "active").execute().data or []
         )
         section_ids = list({row["section_id"] for row in enrollments})
+        section_ids = _student_section_scope(section_ids)
+        if section_ids is None:
+            return jsonify({"error": "You are not actively enrolled in this section."}), 403
         if not section_ids:
             return jsonify({"outcomes": [], "profile_complete": True}), 200
         sections = (
@@ -4998,6 +5013,9 @@ def student_so_assessments():
             "student_profile_id", profile["id"]
         ).eq("enrollment_status", "active").execute().data or []
         section_ids = list({row["section_id"] for row in enrollment_rows})
+        section_ids = _student_section_scope(section_ids)
+        if section_ids is None:
+            return jsonify({"error": "You are not actively enrolled in this section."}), 403
         if not section_ids:
             return jsonify({"assessments": [], "profile_complete": True}), 200
         reviews = admin_supabase.table("course_mapping_reviews").select(
@@ -5328,6 +5346,9 @@ def student_syllabi():
         section_ids = list({
             item["section_id"] for item in (enrollments_result.data or [])
         })
+        section_ids = _student_section_scope(section_ids)
+        if section_ids is None:
+            return jsonify({"error": "You are not actively enrolled in this section."}), 403
         if not section_ids:
             return jsonify({"profile_complete": True, "syllabi": []}), 200
 

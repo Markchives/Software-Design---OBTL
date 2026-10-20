@@ -13,6 +13,13 @@
         return data;
     };
     const notify = message => window.alert(message);
+    const studentSectionScopedUrl = path => {
+        const sectionId = new URLSearchParams(window.location.search).get("section_id");
+        if (!sectionId) return path;
+        const url = new URL(path, window.location.href);
+        url.searchParams.set("section_id", sectionId);
+        return url.pathname + url.search + url.hash;
+    };
 
     function initFaculty() {
         const root = document.getElementById("soWorkflowManager");
@@ -330,7 +337,7 @@
         }
         async function load() {
             try {
-                const data = await api("/api/student/so-assessments");
+                const data = await api(studentSectionScopedUrl("/api/student/so-assessments"));
                 const rows = data.assessments || [];
                 if (count) count.textContent = rows.length;
                 if (dueCount) dueCount.textContent = rows.filter(row => row.due_date && (new Date(row.due_date + "T00:00:00") - new Date()) / 86400000 <= 7).length;
@@ -341,7 +348,7 @@
                 notify(error.message);
             }
             try {
-                const syllabusData = await api("/api/student/syllabi");
+                const syllabusData = await api(studentSectionScopedUrl("/api/student/syllabi"));
                 syllabusRows = Array.isArray(syllabusData.syllabi) ? syllabusData.syllabi : [];
                 if (availableSyllabusCount) availableSyllabusCount.textContent = String(syllabusRows.length);
                 if (courseFilter) {
@@ -363,7 +370,7 @@
         list.addEventListener("click", async event => {
             const button = event.target.closest("[data-assessment]"); if (!button) return;
             try {
-                const data = await api("/api/student/so-assessments");
+                const data = await api(studentSectionScopedUrl("/api/student/so-assessments"));
                 const assessment = data.assessments.find(row => row.id === button.dataset.assessment); if (!assessment) return;
                 const veil = document.createElement("div"); veil.className = "so-response-dialog-backdrop";
                 veil.innerHTML = `<section class="so-response-dialog" role="dialog" aria-modal="true"><button type="button" class="so-response-close" aria-label="Close">×</button><p class="cw-eyebrow">${esc(assessment.course_code)} · ${esc(assessment.section_name)} · Due ${esc(assessment.due_date || "No due date")}</p><h2>${esc(assessment.student_outcome?.code)} · ${esc(assessment.title)}</h2><p>${esc(assessment.student_outcome?.description)}</p><form id="soStudentResponseForm">${assessment.performance_indicators.map((indicator, i) => `<fieldset><legend>${i + 1}. ${esc(indicator)}</legend>${assessment.rating_scale.map(option => `<label class="so-response-rating"><input required type="radio" name="rating-${i}" value="${esc(option.value)}"><span><strong>${esc(option.value)}.</strong> ${esc(option.label)}</span></label>`).join("")}</fieldset>`).join("")}<button class="sof-add-outcome-btn" type="submit">Submit assessment</button></form></section>`;
