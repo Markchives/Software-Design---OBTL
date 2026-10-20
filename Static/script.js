@@ -3007,9 +3007,11 @@ function initFacultySyllabusOutcomes() {
                     option.value;
             }
             if (courseOutcomeDescription) {
-                courseOutcomeDescription.value =
-                    option.dataset.description ||
-                    "";
+                courseOutcomeDescription.value = option.dataset.description || option.textContent.trim();
+            }
+            if (courseOutcomeDescriptionPreview && courseOutcomeDescriptionPreviewText) {
+                courseOutcomeDescriptionPreviewText.textContent = courseOutcomeDescription.value;
+                courseOutcomeDescriptionPreview.hidden = false;
             }
         });
     }
@@ -6209,6 +6211,21 @@ document.addEventListener("DOMContentLoaded", function () {
     function initAccountMenu() {
         const area = document.querySelector('.so-topbar .so-user-area');
         if (!area || area.querySelector('.so-account-menu')) return;
+        // Keep the header visible. Restore only the profile previously verified in this tab.
+        const headerInfo = area.querySelector('.so-user-info');
+        const verifiedEmail = sessionStorage.getItem('edumetrics-current-profile-email');
+        let verifiedProfile = null;
+        if (verifiedEmail) {
+            try {
+                verifiedProfile = JSON.parse(sessionStorage.getItem('edumetrics-profile-cache:' + verifiedEmail) || 'null');
+            } catch (_) { verifiedProfile = null; }
+        }
+        if (headerInfo) {
+            const headerName = headerInfo.querySelector('strong');
+            const headerRole = headerInfo.querySelector('span');
+            if (headerName) headerName.textContent = verifiedProfile?.full_name || headerName.textContent || 'Account';
+            if (headerRole) headerRole.textContent = ({student:'Student',faculty:'Faculty','department-head':'Department Head','admin-security':'Admin'})[verifiedProfile?.role] || headerRole.textContent || '';
+        }
         const avatar = area.querySelector('.so-avatar');
         if (!avatar) return;
         avatar.setAttribute('role', 'button');
@@ -6265,6 +6282,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const roleLabel = info?.querySelector('span');
             if (name && account.full_name) name.textContent = account.full_name;
             if (roleLabel) roleLabel.textContent = roleDisplayNames[account.role];
+            info?.classList.add('ed-header-identity-ready');
 
             const photoKey = 'edumetrics-' + photoRoleNames[account.role] + '-profile-photo';
             let photoData = '';
@@ -6320,6 +6338,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     );
                 }
             } catch (error) {
+                // Avoid showing a hardcoded Student/Faculty/Department Head identity on failure.
+                const info = area.querySelector('.so-user-info');
+                if (info) {
+                    const name = info.querySelector('strong');
+                    const role = info.querySelector('span');
+                    if (name && !name.textContent.trim()) name.textContent = verifiedProfile?.full_name || 'Account';
+                    if (role && !role.textContent.trim() && verifiedProfile) role.textContent = ({student:'Student',faculty:'Faculty','department-head':'Department Head','admin-security':'Admin'})[verifiedProfile.role] || '';
+                    info.classList.add('ed-header-identity-ready');
+                }
                 console.error('Unable to load the signed-in user header profile:', error);
             }
         }
@@ -7147,7 +7174,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// Faculty Courses: create and restore demo courses in this browser only.
+// Faculty Courses: browser-only course management, scoped to the faculty page.
 (function () {
     function init() {
         if (!document.body.classList.contains('faculty-courses-page')) return;
@@ -7155,56 +7182,90 @@ document.addEventListener('DOMContentLoaded', () => {
         const form = document.getElementById('fcCreateForm');
         const grid = document.getElementById('facultyCourseGrid');
         const open = document.getElementById('fcmOpenCreate');
-        if (!dialog || !form || !grid || !open) return;
+        const studentDialog = document.getElementById('fcStudentDialog');
+        const studentForm = document.getElementById('fcStudentForm');
+        if (!dialog || !form || !grid || !open || !studentDialog || !studentForm) return;
         const storageKey = 'edumetrics-faculty-demo-courses-v1';
         let courses = [];
+        let selectedCode = null;
         try {
-            const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
-            if (Array.isArray(stored)) courses = stored.filter(item => item && typeof item.code === 'string' && typeof item.title === 'string');
+            const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            if (Array.isArray(saved)) courses = saved.filter(c => c && typeof c.code === 'string' && typeof c.title === 'string');
         } catch (_) { /* Browser storage unavailable. */ }
+        const persist = () => { try { localStorage.setItem(storageKey, JSON.stringify(courses)); } catch (_) { /* Session-only. */ } };
+        const courseUrl = course => '../../Templates/requirement%201/so-faculty.html?course=' + encodeURIComponent(course.code);
         function render() {
             grid.querySelectorAll('[data-fc-demo-course]').forEach(node => node.remove());
+            const visible = courses.filter(course => !course.hidden);
             const empty = document.getElementById('fcmEmpty');
-            if (empty) empty.hidden = courses.length > 0 || grid.querySelector('.sc-course-card') !== null;
-            courses.forEach(course => {
-                const card = document.createElement('article'); card.className = 'sc-course-card';
-                card.dataset.fcDemoCourse = 'true';
+            if (empty) empty.hidden = visible.length > 0 || grid.querySelector('.sc-course-card') !== null;
+            visible.forEach(course => {
+                const card = document.createElement('article');
+                card.className = 'sc-course-card'; card.dataset.fcDemoCourse = 'true';
                 const top = document.createElement('div'); top.className = 'sc-card-top';
                 const symbol = document.createElement('span'); symbol.className = 'sc-course-icon'; symbol.textContent = course.code.slice(0, 2).toUpperCase();
-                const status = document.createElement('span'); status.className = 'sc-enrolled'; status.textContent = 'NEW COURSE';
+                const status = document.createElement('span'); status.className = 'sc-enrolled'; status.textContent = 'TEACHING COURSE';
                 top.append(symbol, status);
                 const body = document.createElement('div'); body.className = 'sc-course-body';
+                const link = document.createElement('a'); link.href = courseUrl(course); link.className = 'fc-course-open';
                 const code = document.createElement('span'); code.className = 'sc-course-code'; code.textContent = course.code;
                 const name = document.createElement('h2'); name.textContent = course.title;
+                link.append(code, name);
                 const note = document.createElement('p'); note.className = 'sc-faculty'; note.textContent = 'Assigned faculty · You';
-                body.append(code, name, note);
+                body.append(link, note);
                 const bottom = document.createElement('div'); bottom.className = 'sc-card-bottom';
-                const summary = document.createElement('div'); summary.className = 'sc-progress-top'; summary.textContent = '0 enrolled students · Demo';
-                bottom.append(summary); card.append(top, body, bottom); grid.append(card);
+                const summary = document.createElement('div'); summary.className = 'sc-progress-top';
+                const students = Array.isArray(course.students) ? course.students : [];
+                summary.textContent = students.length + ' enrolled student' + (students.length === 1 ? '' : 's') + ' · Demo';
+                const actions = document.createElement('div'); actions.className = 'fc-card-actions';
+                const add = document.createElement('button'); add.type = 'button'; add.className = 'fc-add-student'; add.textContent = '+ Add Student';
+                add.addEventListener('click', () => {
+                    selectedCode = course.code;
+                    document.getElementById('fcStudentCourse').textContent = course.title + ' (' + course.code + ')';
+                    document.getElementById('fcStudentError').textContent = '';
+                    studentForm.reset(); studentDialog.showModal(); studentForm.elements.studentId.focus();
+                });
+                const hide = document.createElement('button'); hide.type = 'button'; hide.className = 'fc-hide-course'; hide.textContent = 'Hide Course';
+                hide.addEventListener('click', () => { course.hidden = true; persist(); render(); });
+                const go = document.createElement('a'); go.href = courseUrl(course); go.className = 'fc-open-course'; go.textContent = 'Open Course →';
+                actions.append(add, hide, go); bottom.append(summary, actions);
+                card.append(top, body, bottom); grid.append(card);
             });
             const count = document.getElementById('facultyCourseCount');
             if (count) count.textContent = String(grid.querySelectorAll('.sc-course-card').length).padStart(2, '0');
         }
         const close = () => { if (dialog.open) dialog.close(); };
-        open.addEventListener('click', () => { form.reset(); dialog.showModal(); form.elements.code.focus(); });
+        open.addEventListener('click', () => { form.reset(); form.elements.code.setCustomValidity(''); dialog.showModal(); form.elements.code.focus(); });
         document.getElementById('fcCloseCreate')?.addEventListener('click', close);
         document.getElementById('fcCancelCreate')?.addEventListener('click', close);
         dialog.addEventListener('click', event => { if (event.target === dialog) close(); });
         form.addEventListener('submit', event => {
-            event.preventDefault();
-            if (!form.reportValidity()) return;
+            event.preventDefault(); if (!form.reportValidity()) return;
             const code = form.elements.code.value.trim();
             const title = form.elements.title.value.trim();
             if (!code || !title) return;
             if (courses.some(course => course.code.toLowerCase() === code.toLowerCase())) {
-                form.elements.code.setCustomValidity('This course code already exists.');
-                form.elements.code.reportValidity(); return;
+                form.elements.code.setCustomValidity('This course code already exists.'); form.elements.code.reportValidity(); return;
             }
-            courses.push({ code, title });
-            try { localStorage.setItem(storageKey, JSON.stringify(courses)); } catch (_) { /* Session-only if storage unavailable. */ }
-            render(); close();
+            courses.push({ code, title, students: [], hidden: false }); persist(); render(); close();
         });
         form.elements.code.addEventListener('input', () => form.elements.code.setCustomValidity(''));
+        const closeStudent = () => { if (studentDialog.open) studentDialog.close(); };
+        document.getElementById('fcCloseStudent')?.addEventListener('click', closeStudent);
+        document.getElementById('fcCancelStudent')?.addEventListener('click', closeStudent);
+        studentDialog.addEventListener('click', event => { if (event.target === studentDialog) closeStudent(); });
+        studentForm.addEventListener('submit', event => {
+            event.preventDefault(); if (!studentForm.reportValidity()) return;
+            const course = courses.find(item => item.code === selectedCode); if (!course) return;
+            const id = studentForm.elements.studentId.value.trim();
+            const name = studentForm.elements.studentName.value.trim();
+            const email = studentForm.elements.studentEmail.value.trim();
+            if (!Array.isArray(course.students)) course.students = [];
+            if (course.students.some(student => student.id.toLowerCase() === id.toLowerCase())) {
+                document.getElementById('fcStudentError').textContent = 'Student ID is already enrolled in this course.'; return;
+            }
+            course.students.push({ id, name, email }); persist(); render(); closeStudent();
+        });
         render();
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
@@ -7959,8 +8020,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (info) {
             const name = info.querySelector('strong');
             const subtitle = info.querySelector('span');
-            if (name) name.textContent = label;
-            if (subtitle) subtitle.textContent = label;
+            // Preserve the current identity; the shared account menu refreshes it.
         }
         page.dataset.dashboardRole = selected;
         document.dispatchEvent(new Event('edumetrics:nav-ready'));
@@ -8051,8 +8111,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (info) {
             const name = info.querySelector('strong');
             const label = info.querySelector('span');
-            if (name) name.textContent = roleName;
-            if (label) label.textContent = roleName;
+            // Keep the shell identity intact until the account profile is refreshed.
         }
         const breadcrumb = body.querySelector('.workflow-breadcrumb-wrap');
         if (breadcrumb) {

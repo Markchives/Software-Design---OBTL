@@ -3922,11 +3922,16 @@ body > #rrDialog[hidden]{display:none!important;}
 .faculty-courses-page .fc-create-btn,.fc-dialog .fc-create-btn{transition:background-color .2s ease,color .2s ease,border-color .2s ease,box-shadow .2s ease,transform .2s ease;background:#ffc900;color:#004179;border:1px solid #efbd00;border-radius:9px;padding:11px 18px;font:800 13px Arial,sans-serif;cursor:pointer;}
 .faculty-courses-page .fc-create-btn:hover,.fc-dialog .fc-create-btn:hover{background:#f2bd00;}
 
-.faculty-courses-page .fcm-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;}
-.faculty-courses-page .fcm-action{display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:6px 11px;border:1px solid #b9d1e8;border-radius:7px;background:#fff;color:#004179;font:700 11px Arial,sans-serif;line-height:1.2;white-space:nowrap;cursor:pointer;transition:background-color .15s,border-color .15s;}
-.faculty-courses-page .fcm-action:hover{background:#f0f6fc;border-color:#004179;}
-.faculty-courses-page .fcm-action:focus-visible{outline:2px solid #ffc900;outline-offset:2px;}
-.faculty-courses-page .fcm-action.fcm-hide{margin-left:auto;}
+.faculty-courses-page .fc-card-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.faculty-courses-page .fc-card-actions :is(.fc-add-student,.fc-hide-course,.fc-open-course){display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:36px;padding:8px 13px;border:1px solid #a9c5df;border-radius:8px;background:#fff;color:#004179;font:700 12px Arial,Helvetica,sans-serif;line-height:1.2;text-align:center;text-decoration:none;white-space:nowrap;cursor:pointer;transition:background-color .15s,border-color .15s,color .15s;}
+.faculty-courses-page .fc-card-actions .fc-add-student{background:#004179;border-color:#004179;color:#fff;}
+.faculty-courses-page .fc-card-actions .fc-add-student:hover{background:#00345f;border-color:#00345f;}
+.faculty-courses-page .fc-card-actions .fc-hide-course{background:#f5f8fc;border-color:#d6e3ef;color:#405e7b;}
+.faculty-courses-page .fc-card-actions .fc-hide-course:hover{background:#e8eff6;color:#004179;}
+.faculty-courses-page .fc-card-actions .fc-open-course{margin-left:auto;background:#ffc900;border-color:#efbd00;color:#004179;}
+.faculty-courses-page .fc-card-actions .fc-open-course:hover{background:#efbc00;border-color:#dfae00;}
+.faculty-courses-page .fc-card-actions :is(.fc-add-student,.fc-hide-course,.fc-open-course):focus-visible{outline:2px solid #ffc900;outline-offset:2px;}
+@media(max-width:520px){.faculty-courses-page .fc-card-actions{gap:7px;}.faculty-courses-page .fc-card-actions :is(.fc-add-student,.fc-hide-course,.fc-open-course){flex:1 1 auto;white-space:normal;}.faculty-courses-page .fc-card-actions .fc-open-course{margin-left:0;}}
 
 .fc-dialog{position:fixed;inset:0;margin:auto;width:min(540px,calc(100% - 32px));border:1px solid #d8e4f0;border-radius:16px;padding:0;background:#fff;color:#004179;box-shadow:0 18px 55px #002c5640;}
 .fc-dialog::backdrop{background:#082b4f99;}
@@ -5617,4 +5622,9 @@ body:is(.so-student-page,.dept-head-unified) .so-shell > :is(.so-main,.dh-main) 
 .account-settings-page .account-profile-controls button:not(.account-save-button):hover {
     background: #E6B000;
     border-color: #E6B000;
+}
+/* Keep the user identity area visible and its dimensions stable during profile refresh. */
+.so-topbar .so-user-area .so-user-info {
+    visibility: visible;
+    min-width: 135px;
 }
