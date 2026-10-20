@@ -5772,7 +5772,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 const bottom = document.createElement("div");
                 bottom.className = "sc-card-bottom";
-                bottom.textContent = "Enrolled course";
+                const link = document.createElement("a");
+                link.className = "sd-action";
+                link.href = "/requirement%203/cr-student.html?section_id=" +
+                    encodeURIComponent(course.section_id);
+                link.textContent = "Open Course Workspace →";
+                bottom.appendChild(link);
 
                 card.append(top, body, bottom);
                 list.appendChild(card);
@@ -6217,6 +6222,19 @@ document.addEventListener("DOMContentLoaded", function () {
                     closeAttainmentModal(modal);
             });
         }
+    });
+})();
+
+// Keep the selected course section when navigating between workspace tabs.
+(function () {
+    const sectionId = new URLSearchParams(window.location.search).get("section_id");
+    if (!sectionId)
+        return;
+
+    document.querySelectorAll(".cw-module-nav a[href]").forEach(function (link) {
+        const target = new URL(link.href, window.location.href);
+        target.searchParams.set("section_id", sectionId);
+        link.href = target.pathname + target.search + target.hash;
     });
 })();
 

@@ -877,6 +877,7 @@ def student_courses():
             courses.append({
                 "enrollment_id": enrollment["id"],
                 "enrollment_status": enrollment["enrollment_status"],
+                "section_id": section["id"],
                 "section_name": section["section_name"],
                 "course_code": course["code"],
                 "course_title": course["title"],
