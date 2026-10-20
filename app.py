@@ -2222,6 +2222,9 @@ def login():
             return set_remembered_accounts_cookie(response, remembered_accounts), 200
 
         # Password is correct, but require a separate login OTP.
+        session.permanent = True
+        session["pending_login_email"] = email
+        session["pending_login_remember"] = remember_me
         auth_client.auth.sign_out()
 
         auth_client.auth.sign_in_with_otp({
@@ -2444,7 +2447,14 @@ def verify_otp():
 
             import time
 
-            remember_me = data.get("rememberMe", False) is True
+            pending_login_matches = (
+                session.get("pending_login_email") == email
+            )
+            remember_me = (
+                session.get("pending_login_remember") is True
+                if pending_login_matches
+                else data.get("rememberMe", False) is True
+            )
 
             # Preserve remembered accounts when switching users.
             remembered_accounts = get_remembered_accounts()
