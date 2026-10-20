@@ -20,6 +20,7 @@ from flask import (
 )
 from supabase import create_client, Client
 from datetime import datetime, timedelta, timezone
+import math
 from werkzeug.utils import secure_filename
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
@@ -196,6 +197,38 @@ def require_role(required_role):
 
             try:
                 if not has_active_role_record(user.id, required_role):
+                    return "Your account is not active for this role.", 403
+                if has_pending_role_request(user.id):
+                    return "Your account is awaiting approval.", 403
+            except Exception:
+                app.logger.exception("Unable to verify the user's active role")
+                return "Authorization could not be verified.", 503
+
+            g.authenticated_user = user
+            return view_function(*args, **kwargs)
+
+        return wrapped
+
+    return decorator
+
+
+def require_roles(*required_roles):
+    def decorator(view_function):
+        @wraps(view_function)
+        def wrapped(*args, **kwargs):
+            user = get_authenticated_user()
+            if not user:
+                session.pop("access_token", None)
+                session.pop("refresh_token", None)
+                session.pop("user_id", None)
+                return redirect("/login page.html")
+
+            role = get_user_role(user)
+            if role not in required_roles:
+                return "You are not authorized to access this resource.", 403
+
+            try:
+                if not has_active_role_record(user.id, role):
                     return "Your account is not active for this role.", 403
                 if has_pending_role_request(user.id):
                     return "Your account is awaiting approval.", 403
@@ -408,6 +441,743 @@ def student_courses():
     except Exception:
         app.logger.exception("Unable to load student course enrollments")
         return jsonify({"error": "Student courses could not be loaded."}), 500
+
+
+def _account_profile(role, user_id, fields):
+    table_by_role = {
+        "student": "student_profiles",
+        "faculty": "faculty_profiles",
+        "department-head": "dept_head_profiles",
+    }
+    table = table_by_role.get(role)
+    if not table:
+        return None
+    result = (
+        admin_supabase.table(table)
+        .select(fields)
+        .eq("user_id", str(user_id))
+        .limit(1)
+        .execute()
+    )
+    rows = result.data or []
+    return rows[0] if rows else None
+
+
+def _post_rows_for_scope(column, values):
+    if not values:
+        return []
+    result = (
+        admin_supabase.table("course_posts")
+        .select(
+            "id, author_user_id, audience_type, section_id, department_id, "
+            "title, message, created_at"
+        )
+        .in_(column, values)
+        .order("created_at", desc=True)
+        .limit(100)
+        .execute()
+    )
+    return result.data or []
+
+
+@app.get("/api/posts")
+@require_roles("student", "faculty", "department-head")
+def get_dashboard_posts():
+    if not admin_supabase:
+        return jsonify({"error": "Posts are unavailable."}), 503
+
+    role = get_user_role(g.authenticated_user)
+    try:
+        section_ids = []
+        department_id = None
+        if role == "student":
+            profile = _account_profile(
+                role, g.authenticated_user.id, "id, program_id"
+            )
+            if not profile:
+                return jsonify({"error": "Your student profile is incomplete."}), 409
+            enrollments = (
+                admin_supabase.table("enrollments")
+                .select("section_id")
+                .eq("student_profile_id", profile["id"])
+                .eq("enrollment_status", "active")
+                .execute()
+                .data
+                or []
+            )
+            section_ids = list({
+                row["section_id"] for row in enrollments
+                if row.get("section_id")
+            })
+            if profile.get("program_id"):
+                program_rows = (
+                    admin_supabase.table("programs")
+                    .select("department_id")
+                    .eq("id", profile["program_id"])
+                    .limit(1)
+                    .execute()
+                    .data
+                    or []
+                )
+                department_id = (
+                    program_rows[0].get("department_id")
+                    if program_rows else None
+                )
+        elif role == "faculty":
+            profile = _account_profile(
+                role, g.authenticated_user.id, "id, department_id"
+            )
+            if not profile:
+                return jsonify({"error": "Your faculty profile is incomplete."}), 409
+            assignments = (
+                admin_supabase.table("course_sections")
+                .select("id")
+                .eq("faculty_id", profile["id"])
+                .execute()
+                .data
+                or []
+            )
+            section_ids = [row["id"] for row in assignments]
+            department_id = profile.get("department_id")
+        elif role == "department-head":
+            profile = _account_profile(
+                role, g.authenticated_user.id, "department_id"
+            )
+            department_id = profile.get("department_id") if profile else None
+            if not department_id:
+                return jsonify({"error": "Your department profile is incomplete."}), 409
+            if department_id:
+                department_courses = (
+                    admin_supabase.table("courses")
+                    .select("id")
+                    .eq("department_id", department_id)
+                    .execute()
+                    .data
+                    or []
+                )
+                department_course_ids = [
+                    row["id"] for row in department_courses
+                ]
+                if department_course_ids:
+                    sections = (
+                        admin_supabase.table("course_sections")
+                        .select("id")
+                        .in_("course_id", department_course_ids)
+                        .execute()
+                        .data
+                        or []
+                    )
+                    section_ids = [row["id"] for row in sections]
+        else:
+            return jsonify({"error": "Your account role cannot view posts."}), 403
+
+        posts = _post_rows_for_scope("section_id", section_ids)
+        if department_id:
+            posts.extend(_post_rows_for_scope(
+                "department_id", [department_id]
+            ))
+
+        unique_posts = {row["id"]: row for row in posts}
+        posts = sorted(
+            unique_posts.values(),
+            key=lambda row: row.get("created_at") or "",
+            reverse=True,
+        )[:100]
+        author_ids = list({
+            row["author_user_id"] for row in posts
+            if row.get("author_user_id")
+        })
+        authors = {}
+        if author_ids:
+            author_rows = (
+                admin_supabase.table("users")
+                .select("id, full_name")
+                .in_("id", author_ids)
+                .execute()
+                .data
+                or []
+            )
+            authors = {row["id"]: row for row in author_rows}
+        post_section_ids = list({
+            row["section_id"] for row in posts if row.get("section_id")
+        })
+        sections = {}
+        if post_section_ids:
+            section_rows = (
+                admin_supabase.table("course_sections")
+                .select("id, course_id, section_name")
+                .in_("id", post_section_ids)
+                .execute()
+                .data
+                or []
+            )
+            course_ids = list({
+                row["course_id"] for row in section_rows
+                if row.get("course_id")
+            })
+            courses = {}
+            if course_ids:
+                course_rows = (
+                    admin_supabase.table("courses")
+                    .select("id, code, title")
+                    .in_("id", course_ids)
+                    .execute()
+                    .data
+                    or []
+                )
+                courses = {row["id"]: row for row in course_rows}
+            for row in section_rows:
+                course = courses.get(row.get("course_id"), {})
+                sections[row["id"]] = {
+                    "course_code": course.get("code", ""),
+                    "course_title": course.get("title", ""),
+                    "section_name": row.get("section_name", ""),
+                }
+
+        response_posts = []
+        for row in posts:
+            section = sections.get(row.get("section_id"), {})
+            response_posts.append({
+                "id": row["id"],
+                "title": row["title"],
+                "message": row["message"],
+                "author": authors.get(row.get("author_user_id"), {}).get(
+                    "full_name", "EduMetrics user"
+                ),
+                "audience_type": row["audience_type"],
+                "section_id": row.get("section_id"),
+                "course_label": " - ".join(filter(None, (
+                    section.get("course_code"),
+                    section.get("section_name"),
+                ))),
+                "created_at": row.get("created_at"),
+            })
+        return jsonify({"posts": response_posts}), 200
+    except Exception:
+        app.logger.exception("Unable to load dashboard posts")
+        return jsonify({"error": "Posts could not be loaded."}), 500
+
+
+@app.post("/api/posts")
+@require_roles("faculty", "department-head")
+def create_dashboard_post():
+    if not admin_supabase:
+        return jsonify({"error": "Posts are unavailable."}), 503
+
+    role = get_user_role(g.authenticated_user)
+    data = request.get_json(silent=True) or {}
+    if not isinstance(data, dict):
+        return jsonify({"error": "Post data must be a JSON object."}), 400
+    title_value = data.get("title", "")
+    message_value = data.get("message", "")
+    if not isinstance(title_value, str) or not isinstance(message_value, str):
+        return jsonify({"error": "Post title and message must be text."}), 400
+    title = title_value.strip()
+    message = message_value.strip()
+    if not title or len(title) > 120:
+        return jsonify({"error": "Post title must contain 1 to 120 characters."}), 400
+    if not message or len(message) > 3000:
+        return jsonify({"error": "Post message must contain 1 to 3,000 characters."}), 400
+
+    try:
+        record = {
+            "author_user_id": str(g.authenticated_user.id),
+            "author_role": role,
+            "title": title,
+            "message": message,
+        }
+        if role == "faculty":
+            section_id = str(data.get("section_id", "")).strip()
+            try:
+                section_id = str(UUID(section_id))
+            except (TypeError, ValueError):
+                return jsonify({"error": "Choose a valid course section."}), 400
+            if not get_faculty_section(section_id):
+                return jsonify({"error": "Section not found or not assigned to you."}), 404
+            record.update({
+                "audience_type": "section",
+                "section_id": section_id,
+                "department_id": None,
+            })
+        elif role == "department-head":
+            profile = _account_profile(
+                role, g.authenticated_user.id, "department_id"
+            )
+            if not profile or not profile.get("department_id"):
+                return jsonify({"error": "Your department profile is incomplete."}), 403
+            record.update({
+                "audience_type": "department",
+                "section_id": None,
+                "department_id": profile["department_id"],
+            })
+        else:
+            return jsonify({"error": "Your account role cannot publish posts."}), 403
+
+        result = (
+            admin_supabase.table("course_posts")
+            .insert(record)
+            .execute()
+        )
+        rows = result.data or []
+        if not rows:
+            raise RuntimeError("Post insert returned no saved record.")
+        post = rows[0]
+        return jsonify({
+            "post": {
+                "id": post["id"],
+                "title": post["title"],
+                "message": post["message"],
+                "audience_type": post["audience_type"],
+                "created_at": post.get("created_at"),
+            }
+        }), 201
+    except Exception:
+        app.logger.exception("Unable to create dashboard post")
+        return jsonify({"error": "Post could not be published."}), 500
+
+
+def _faculty_assessment_workspace(section_id):
+    if not get_faculty_section(section_id):
+        return None
+    sections = (
+        admin_supabase.table("course_sections")
+        .select("id, course_id, section_name")
+        .eq("id", section_id)
+        .limit(1)
+        .execute()
+        .data
+        or []
+    )
+    if not sections:
+        return None
+    section = sections[0]
+    courses = (
+        admin_supabase.table("courses")
+        .select("id, code, title")
+        .eq("id", section["course_id"])
+        .limit(1)
+        .execute()
+        .data
+        or []
+    )
+    outcomes = (
+        admin_supabase.table("course_outcomes")
+        .select("id, code, description")
+        .eq("course_id", section["course_id"])
+        .order("code")
+        .execute()
+        .data
+        or []
+    )
+    enrollments = (
+        admin_supabase.table("enrollments")
+        .select("student_profile_id")
+        .eq("section_id", section_id)
+        .eq("enrollment_status", "active")
+        .execute()
+        .data
+        or []
+    )
+    student_ids = list({
+        row["student_profile_id"] for row in enrollments
+        if row.get("student_profile_id")
+    })
+    students = []
+    if student_ids:
+        profiles = (
+            admin_supabase.table("student_profiles")
+            .select("id, user_id, student_number")
+            .in_("id", student_ids)
+            .execute()
+            .data
+            or []
+        )
+        user_ids = list({
+            row["user_id"] for row in profiles if row.get("user_id")
+        })
+        users = {}
+        if user_ids:
+            user_rows = (
+                admin_supabase.table("users")
+                .select("id, full_name")
+                .in_("id", user_ids)
+                .execute()
+                .data
+                or []
+            )
+            users = {row["id"]: row for row in user_rows}
+        students = [{
+            "student_profile_id": row["id"],
+            "student_number": row.get("student_number", ""),
+            "full_name": users.get(row.get("user_id"), {}).get(
+                "full_name", ""
+            ),
+        } for row in profiles]
+    activities = (
+        admin_supabase.table("assessment_activities")
+        .select(
+            "id, course_outcome_id, title, activity_type, due_date, "
+            "max_score, created_at"
+        )
+        .eq("section_id", section_id)
+        .order("created_at", desc=True)
+        .execute()
+        .data
+        or []
+    )
+    activity_ids = [row["id"] for row in activities]
+    scores = []
+    if activity_ids:
+        scores = (
+            admin_supabase.table("raw_assessment_scores")
+            .select(
+                "assessment_activity_id, student_profile_id, score, "
+                "max_score, percentage"
+            )
+            .in_("assessment_activity_id", activity_ids)
+            .execute()
+            .data
+            or []
+        )
+    scores_by_activity = {}
+    for row in scores:
+        scores_by_activity.setdefault(
+            row["assessment_activity_id"], {}
+        )[row["student_profile_id"]] = row
+    outcome_codes = {row["id"]: row["code"] for row in outcomes}
+    for activity in activities:
+        activity["outcome_code"] = outcome_codes.get(
+            activity.get("course_outcome_id"), ""
+        )
+        activity["scores"] = scores_by_activity.get(activity["id"], {})
+    gradebooks = (
+        admin_supabase.table("gradebooks")
+        .select("status")
+        .eq("section_id", section_id)
+        .limit(1)
+        .execute()
+        .data
+        or []
+    )
+    return {
+        "section": {
+            **section,
+            "course_code": courses[0].get("code", "") if courses else "",
+            "course_title": courses[0].get("title", "") if courses else "",
+        },
+        "outcomes": outcomes,
+        "students": students,
+        "assessments": activities,
+        "gradebook_status": gradebooks[0]["status"] if gradebooks else "draft",
+    }
+
+
+@app.get("/api/faculty/sections/<section_id>/assessments")
+@require_role("faculty")
+def get_faculty_assessment_workspace(section_id):
+    if not admin_supabase:
+        return jsonify({"error": "Assessment records are unavailable."}), 503
+    try:
+        section_id = str(UUID(section_id))
+        workspace = _faculty_assessment_workspace(section_id)
+        if not workspace:
+            return jsonify({"error": "Section not found or not assigned to you."}), 404
+        return jsonify(workspace), 200
+    except ValueError:
+        return jsonify({"error": "Invalid section ID."}), 400
+    except Exception:
+        app.logger.exception("Unable to load faculty assessment workspace")
+        return jsonify({"error": "Assessment records could not be loaded."}), 500
+
+
+@app.post("/api/faculty/sections/<section_id>/assessments")
+@require_role("faculty")
+def create_faculty_assessment(section_id):
+    if not admin_supabase:
+        return jsonify({"error": "Assessments are unavailable."}), 503
+    try:
+        section_id = str(UUID(section_id))
+        workspace = _faculty_assessment_workspace(section_id)
+        if not workspace:
+            return jsonify({"error": "Section not found or not assigned to you."}), 404
+        if workspace["gradebook_status"] == "locked":
+            return jsonify({"error": "This section's gradebook is locked."}), 409
+
+        data = request.get_json(silent=True) or {}
+        if not isinstance(data, dict):
+            return jsonify({"error": "Assessment data must be a JSON object."}), 400
+        title = data.get("title", "")
+        activity_type = data.get("activity_type", "")
+        outcome_id = str(data.get("course_outcome_id", "")).strip()
+        if not isinstance(title, str) or not isinstance(activity_type, str):
+            return jsonify({"error": "Assessment title and type must be text."}), 400
+        title = title.strip()
+        activity_type = activity_type.strip()
+        due_date = str(data.get("due_date", "")).strip() or None
+        try:
+            outcome_id = str(UUID(outcome_id))
+        except (TypeError, ValueError):
+            return jsonify({"error": "Choose a valid course outcome."}), 400
+        if isinstance(data.get("max_score"), bool):
+            return jsonify({"error": "Maximum score must be a number."}), 400
+        try:
+            max_score = float(data.get("max_score"))
+        except (TypeError, ValueError):
+            return jsonify({"error": "Maximum score must be a number."}), 400
+        if not title or len(title) > 120:
+            return jsonify({"error": "Assessment title must contain 1 to 120 characters."}), 400
+        if not activity_type or len(activity_type) > 50:
+            return jsonify({"error": "Choose a valid assessment type."}), 400
+        if activity_type not in {
+            "Quiz", "Major Exam", "Laboratory", "Assignment", "Other"
+        }:
+            return jsonify({"error": "Choose a valid assessment type."}), 400
+        if not math.isfinite(max_score) or not 0 < max_score <= 10000:
+            return jsonify({"error": "Maximum score must be greater than 0 and at most 10,000."}), 400
+        if due_date:
+            try:
+                datetime.strptime(due_date, "%Y-%m-%d")
+            except ValueError:
+                return jsonify({"error": "Due date must use YYYY-MM-DD format."}), 400
+        if not any(item["id"] == outcome_id for item in workspace["outcomes"]):
+            return jsonify({"error": "The selected outcome does not belong to this course."}), 400
+
+        result = (
+            admin_supabase.table("assessment_activities")
+            .insert({
+                "section_id": section_id,
+                "course_outcome_id": outcome_id,
+                "title": title,
+                "activity_type": activity_type,
+                "due_date": due_date,
+                "max_score": max_score,
+            })
+            .execute()
+        )
+        rows = result.data or []
+        if not rows:
+            raise RuntimeError("Assessment insert returned no saved record.")
+        return jsonify({"assessment": rows[0]}), 201
+    except ValueError:
+        return jsonify({"error": "Invalid section ID."}), 400
+    except Exception:
+        app.logger.exception("Unable to create faculty assessment")
+        return jsonify({"error": "Assessment could not be created."}), 500
+
+
+@app.put("/api/faculty/assessments/<assessment_id>/scores")
+@require_role("faculty")
+def save_faculty_assessment_scores(assessment_id):
+    if not admin_supabase:
+        return jsonify({"error": "Scores are unavailable."}), 503
+    try:
+        assessment_id = str(UUID(assessment_id))
+        activities = (
+            admin_supabase.table("assessment_activities")
+            .select("id, section_id, max_score")
+            .eq("id", assessment_id)
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if not activities:
+            return jsonify({"error": "Assessment not found."}), 404
+        activity = activities[0]
+        if not get_faculty_section(activity["section_id"]):
+            return jsonify({"error": "Assessment is not in a section assigned to you."}), 403
+        workspace = _faculty_assessment_workspace(activity["section_id"])
+        if workspace["gradebook_status"] == "locked":
+            return jsonify({"error": "This section's gradebook is locked."}), 409
+
+        data = request.get_json(silent=True) or {}
+        if not isinstance(data, dict):
+            return jsonify({"error": "Score data must be a JSON object."}), 400
+        entries = data.get("scores")
+        if not isinstance(entries, list):
+            return jsonify({"error": "Scores must be supplied as a list."}), 400
+        allowed_students = {
+            row["student_profile_id"] for row in workspace["students"]
+        }
+        max_score = float(activity["max_score"])
+        if not math.isfinite(max_score) or max_score <= 0:
+            return jsonify({"error": "Assessment maximum score is invalid."}), 409
+        payload = []
+        seen_students = set()
+        for entry in entries:
+            if not isinstance(entry, dict):
+                return jsonify({"error": "Each score entry must be an object."}), 400
+            try:
+                student_id = str(UUID(str(entry.get("student_profile_id", ""))))
+            except (TypeError, ValueError):
+                return jsonify({"error": "A score entry has an invalid student ID."}), 400
+            if student_id not in allowed_students:
+                return jsonify({"error": "A student is not actively enrolled in this section."}), 400
+            if student_id in seen_students:
+                return jsonify({"error": "A student may appear only once per save."}), 400
+            seen_students.add(student_id)
+            raw_score = entry.get("score")
+            if raw_score in (None, ""):
+                score = None
+                percentage = None
+            else:
+                if isinstance(raw_score, bool):
+                    return jsonify({"error": "Scores must be numeric or blank."}), 400
+                try:
+                    score = float(raw_score)
+                except (TypeError, ValueError):
+                    return jsonify({"error": "Scores must be numeric or blank."}), 400
+                if not math.isfinite(score) or not 0 <= score <= max_score:
+                    return jsonify({"error": f"Scores must be between 0 and {max_score:g}."}), 400
+                percentage = round(score / max_score * 100, 2)
+            payload.append({
+                "section_id": activity["section_id"],
+                "student_profile_id": student_id,
+                "assessment_activity_id": assessment_id,
+                "score": score,
+                "max_score": max_score,
+                "percentage": percentage,
+                "entered_by": str(g.authenticated_user.id),
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            })
+        if payload:
+            admin_supabase.table("raw_assessment_scores").upsert(
+                payload,
+                on_conflict="assessment_activity_id,student_profile_id",
+            ).execute()
+        return jsonify({"saved_count": len(payload)}), 200
+    except ValueError:
+        return jsonify({"error": "Invalid assessment ID."}), 400
+    except Exception:
+        app.logger.exception("Unable to save faculty assessment scores")
+        return jsonify({"error": "Scores could not be saved."}), 500
+
+
+@app.get("/api/student/assessment-scores")
+@require_role("student")
+def get_student_assessment_scores():
+    if not admin_supabase:
+        return jsonify({"error": "Assessment scores are unavailable."}), 503
+    try:
+        profile = _account_profile(
+            "student", g.authenticated_user.id, "id"
+        )
+        if not profile:
+            return jsonify({"error": "Your student profile is incomplete."}), 409
+        enrollments = (
+            admin_supabase.table("enrollments")
+            .select("section_id")
+            .eq("student_profile_id", profile["id"])
+            .eq("enrollment_status", "active")
+            .execute()
+            .data
+            or []
+        )
+        section_ids = list({
+            row["section_id"] for row in enrollments if row.get("section_id")
+        })
+        if not section_ids:
+            return jsonify({"assessments": [], "profile_complete": True}), 200
+        sections = (
+            admin_supabase.table("course_sections")
+            .select("id, course_id")
+            .in_("id", section_ids)
+            .execute()
+            .data
+            or []
+        )
+        section_map = {row["id"]: row for row in sections}
+        course_ids = list({
+            row["course_id"] for row in sections if row.get("course_id")
+        })
+        courses = {}
+        if course_ids:
+            course_rows = (
+                admin_supabase.table("courses")
+                .select("id, code, title")
+                .in_("id", course_ids)
+                .execute()
+                .data
+                or []
+            )
+            courses = {row["id"]: row for row in course_rows}
+        activities = (
+            admin_supabase.table("assessment_activities")
+            .select("id, section_id, course_outcome_id, title, activity_type, due_date, max_score")
+            .in_("section_id", list(section_map))
+            .order("due_date", desc=True)
+            .execute()
+            .data
+            or []
+        )
+        activity_ids = [row["id"] for row in activities]
+        score_map = {}
+        if activity_ids:
+            score_rows = (
+                admin_supabase.table("raw_assessment_scores")
+                .select("assessment_activity_id, score, max_score, percentage")
+                .eq("student_profile_id", profile["id"])
+                .in_("assessment_activity_id", activity_ids)
+                .execute()
+                .data
+                or []
+            )
+            score_map = {
+                row["assessment_activity_id"]: row for row in score_rows
+            }
+        gradebooks = (
+            admin_supabase.table("gradebooks")
+            .select("section_id, status")
+            .in_("section_id", list(section_map))
+            .execute()
+            .data
+            or []
+        )
+        released_sections = {
+            row["section_id"] for row in gradebooks
+            if row.get("status") == "locked"
+        }
+        rows = []
+        for activity in activities:
+            section_id = activity["section_id"]
+            section = section_map.get(section_id, {})
+            course = courses.get(section.get("course_id"), {})
+            score = score_map.get(activity["id"])
+            released = section_id in released_sections
+            rows.append({
+                "assessment_id": activity["id"],
+                "title": activity["title"],
+                "course_code": course.get("code", ""),
+                "course_title": course.get("title", ""),
+                "activity_type": activity["activity_type"],
+                "due_date": activity.get("due_date"),
+                "score": score.get("score") if released and score else None,
+                "max_score": activity["max_score"],
+                "percentage": score.get("percentage") if released and score else None,
+                "has_score": bool(score and score.get("score") is not None),
+                "release_status": "Released" if released else "Awaiting Release",
+            })
+        rows.sort(
+            key=lambda row: row.get("due_date") or "",
+            reverse=True,
+        )
+        released_count = sum(
+            1 for row in rows if row["release_status"] == "Released"
+            and row["has_score"]
+        )
+        return jsonify({
+            "assessments": rows,
+            "profile_complete": True,
+            "course_count": len({
+                row.get("course_id") for row in sections
+                if row.get("course_id")
+            }),
+            "released_count": released_count,
+            "pending_count": len(rows) - released_count,
+        }), 200
+    except Exception:
+        app.logger.exception("Unable to load student assessment scores")
+        return jsonify({"error": "Assessment scores could not be loaded."}), 500
 
 
 def get_faculty_section(section_id):
@@ -916,6 +1686,18 @@ def faculty_dashboard():
 @require_role("department-head")
 def dept_head_dashboard():
     return render_template("requirement 1/so-dept-head.html")
+
+
+@app.get("/requirement 4/ra-faculty.html")
+@require_role("faculty")
+def faculty_assessment_page():
+    return render_template("requirement 4/ra-faculty.html")
+
+
+@app.get("/requirement 4/ra-student.html")
+@require_role("student")
+def student_assessment_page():
+    return render_template("requirement 4/ra-student.html")
 
 
 @app.get("/requirement 2/cm-dept-head.html")

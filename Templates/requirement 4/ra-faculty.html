@@ -38,13 +38,23 @@
 <article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Average Percentage</span><strong class="so-summary-number" id="rafMaximum">—</strong></article>
 </section>
 <section aria-labelledby="rafTitle" class="cr-roster-panel crf-roster-panel raf-panel">
-<header class="so-section-header raf-heading"><div><h2 id="rafTitle">Raw Scores by Student</h2><p>Select an assessment, then enter the raw points earned by each student.</p></div><div class="raf-actions"><span class="sodh-status complete" id="rafMode">Open for Editing</span><button class="crf-download-btn" id="rafSave" type="button">Save Scores</button></div></header>
+<header class="so-section-header raf-heading"><div><h2 id="rafTitle">Raw Scores by Student</h2><p>Select a section, create an assessment if needed, then enter raw points for enrolled students.</p></div><div class="raf-actions"><span class="sodh-status complete" id="rafMode">Open for Editing</span><button class="crf-download-btn" id="rafSave" type="button">Save Scores</button></div></header>
 <div aria-label="Selected assessment details" class="raf-assessment-bar">
+<div class="raf-assessment-select"><label for="rafSection">Course section</label><select id="rafSection"><option value="">Loading assigned sections...</option></select></div>
 <div class="raf-assessment-select"><label for="rafAssessment">Assessment</label><select id="rafAssessment"><option value="">Select</option></select></div>
-<div class="raf-max-field"><label for="rafMaxInput">Total Score</label><input aria-label="Maximum points for selected assessment" id="rafMaxInput" max="10000" min="0.01" step="0.01" type="number" value="20"/><strong hidden="" id="rafMaxLabel">20</strong></div>
-<div class="raf-detail"><span>Mapped CO(s)</span><strong id="rafCO">CO1</strong></div>
-<div class="raf-detail"><span>Date</span><strong id="rafDate">Oct. 3, 2026</strong></div>
+<div class="raf-max-field"><label for="rafMaxInput">Total Score</label><input aria-label="Maximum points for selected assessment" id="rafMaxInput" max="10000" min="0.01" step="0.01" type="number" readonly/><strong hidden="" id="rafMaxLabel"></strong></div>
+<div class="raf-detail"><span>Mapped CO</span><strong id="rafCO">—</strong></div>
+<div class="raf-detail"><span>Due Date</span><strong id="rafDate">—</strong></div>
 </div>
+<form class="raf-create-assessment" id="rafCreateAssessmentForm">
+<h3>Create Assessment</h3>
+<div><label for="rafNewTitle">Title</label><input id="rafNewTitle" maxlength="120" required placeholder="Assessment title"/></div>
+<div><label for="rafNewType">Type</label><select id="rafNewType" required><option value="">Select type</option><option>Quiz</option><option>Major Exam</option><option>Laboratory</option><option>Assignment</option><option>Other</option></select></div>
+<div><label for="rafNewOutcome">Course outcome</label><select id="rafNewOutcome" required><option value="">Choose a section first</option></select></div>
+<div><label for="rafNewDate">Due date</label><input id="rafNewDate" type="date"/></div>
+<div><label for="rafNewMax">Maximum score</label><input id="rafNewMax" type="number" min="0.01" max="10000" step="0.01" value="100" required/></div>
+<button class="crf-download-btn" type="submit">Create Assessment</button>
+</form>
 <div class="cr-toolbar crf-toolbar raf-toolbar"><label class="cr-search crf-search"><span aria-hidden="true">⌕</span><input aria-label="Search students" id="rafSearch" placeholder="Search student name or ID..." type="search"/></label><div class="cr-sort-wrap"><label for="rafSort">Sort By</label><select id="rafSort"><option value="az">Student Name A–Z</option><option value="za">Student Name Z–A</option><option value="high">Highest Score</option><option value="low">Lowest Score</option></select></div></div>
 <div class="raf-table-frame"><div class="cr-table-header"><table class="cr-table raf-table"><colgroup><col/><col/><col/><col/><col/><col/></colgroup><thead><tr><th>#</th><th>Student ID</th><th>Student Name</th><th>Raw Points</th><th>Percentage</th><th>Entry Status</th></tr></thead></table></div><div class="cr-table-wrap"><table class="cr-table raf-table"><colgroup><col/><col/><col/><col/><col/><col/></colgroup><tbody id="rafRows"></tbody></table></div></div><div class="so-empty-state" hidden="" id="rafEmpty">No matching students found.</div><p aria-live="polite" class="raf-message" id="rafMessage" role="status"></p>
 </section></main>

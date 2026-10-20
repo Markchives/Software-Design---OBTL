@@ -2601,21 +2601,29 @@ body.cm-dept-review-open, body.cm-dept-modal-open{overflow:hidden;}
 :is(.ra-faculty-page .raf-heading, .ac-faculty-page .ac-co-content-heading) :is(h1,h2){margin:0;color:#004179;font-size:14px;font-weight:800;line-height:1.3;}
 :is(.ra-faculty-page .raf-heading, .ac-faculty-page .ac-co-content-heading) p{margin:2px 0 0;color:#41658b;font-size:11px;font-weight:400;line-height:1.45;}
 .ra-faculty-page .raf-actions{display:flex;align-items:center;gap:10px;}
-/* Faculty assessment metadata: compact four-column control strip. */
-.ra-faculty-page .raf-assessment-bar{display:grid;grid-template-columns:minmax(230px,2.2fr) minmax(125px,1fr) minmax(115px,0.9fr) minmax(145px,1fr);align-items:stretch;margin:0 0 6px;border:1px solid #D8E6F2;border-radius:9px;background:#fff;overflow:hidden;}
+/* Faculty assessment metadata and server-backed assessment creation. */
+.ra-faculty-page .raf-assessment-bar{display:grid;grid-template-columns:minmax(170px,1.5fr) minmax(150px,1.2fr) minmax(120px,.8fr) minmax(90px,.6fr) minmax(110px,.8fr);align-items:stretch;margin:0 0 6px;border:1px solid #D8E6F2;border-radius:9px;background:#fff;overflow:hidden;}
 .ra-faculty-page .raf-assessment-bar > div{min-width:0;padding:8px 12px;display:flex;flex-direction:column;justify-content:center;}
 .ra-faculty-page .raf-assessment-bar > div + div{border-left:1px solid #D8E6F2;}
 .ra-faculty-page .raf-assessment-bar label,.ra-faculty-page .raf-detail span{display:block;margin:0 0 4px;color:#004179;font-weight:700;font-size:11px;line-height:1.3;}
 .ra-faculty-page .raf-assessment-bar select,.ra-faculty-page .raf-assessment-bar input{box-sizing:border-box;width:100%;height:32px;padding:0 10px;border:1px solid #BFD5E7;border-radius:6px;background:#fff;color:#004179;font:inherit;font-size:12px;}
 .ra-faculty-page .raf-detail strong{display:block;color:#004179;font-size:13px;line-height:32px;}
+.ra-faculty-page .raf-create-assessment{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr)) auto;align-items:end;gap:10px;margin:8px 0 12px;padding:12px;border:1px solid #D8E6F2;border-radius:9px;background:#f8fbff;}
+.ra-faculty-page .raf-create-assessment h3{grid-column:1/-1;margin:0;color:#004179;font-size:13px;}
+.ra-faculty-page .raf-create-assessment > div{min-width:0;}
+.ra-faculty-page .raf-create-assessment label{display:block;margin-bottom:4px;color:#004179;font-size:11px;font-weight:700;}
+.ra-faculty-page .raf-create-assessment input,.ra-faculty-page .raf-create-assessment select{box-sizing:border-box;width:100%;height:34px;padding:0 9px;border:1px solid #BFD5E7;border-radius:6px;background:#fff;color:#004179;font:inherit;font-size:12px;}
+.ra-faculty-page .raf-create-assessment button{min-height:34px;white-space:nowrap;}
 @media(max-width:900px) {
-  .ra-faculty-page .raf-assessment-bar{grid-template-columns:minmax(220px,1.5fr) minmax(125px,1fr);}
-  .ra-faculty-page .raf-assessment-bar > div:nth-child(3){border-left:0;border-top:1px solid #D8E6F2;}
-  .ra-faculty-page .raf-assessment-bar > div:nth-child(4){border-top:1px solid #D8E6F2;}
+  .ra-faculty-page .raf-assessment-bar{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .ra-faculty-page .raf-assessment-bar > div:nth-child(odd){border-left:0;}
+  .ra-faculty-page .raf-assessment-bar > div:nth-child(n+3){border-top:1px solid #D8E6F2;}
+  .ra-faculty-page .raf-create-assessment{grid-template-columns:repeat(2,minmax(0,1fr));}
 }
 @media(max-width:480px) {
   .ra-faculty-page .raf-assessment-bar{grid-template-columns:1fr;}
   .ra-faculty-page .raf-assessment-bar > div + div{border-left:0;border-top:1px solid #D8E6F2;}
+  .ra-faculty-page .raf-create-assessment{grid-template-columns:1fr;}
 }
 .ra-faculty-page .raf-toolbar{min-height:36px;padding:0 0 4px;margin:0;align-items:center;}
 .ra-faculty-page .raf-table-frame{margin:0;}
@@ -3674,6 +3682,8 @@ body > #rrDialog[hidden]{display:none!important;}
 .ed-dashboard-page .sd-post-body{padding-left:48px;}
 .ed-dashboard-page .sd-post-body strong{display:block;color:#073d73;font-size:14px;font-weight:800;}
 .ed-dashboard-page .sd-post-body p{margin:3px 0 8px;color:#597897;font-size:12px;line-height:1.5;}
+.ed-dashboard-page .sd-post-audience{display:block;color:#7893b2;font-size:11px;font-weight:700;}
+.ed-dashboard-page .sd-post-status{margin:4px 0 0;color:#597897;font-size:12px;}
 .ed-dashboard-page .sd-attachment{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:6px 9px;background:#fff3d4;border:1px solid #f1d68a;border-radius:7px;color:#845800;font-size:11px;font-weight:700;}
 .ed-dashboard-page .sd-post-actions{display:flex;align-items:center;gap:4px;margin:10px 0 0 48px;padding-top:8px;border-top:1px solid #dce6f3;}
 .ed-dashboard-page .sd-post-action{display:inline-flex;align-items:center;justify-content:center;gap:7px;font:inherit;font-size:12px;font-weight:700;color:#527294;background:transparent;border:1px solid transparent;border-radius:8px;padding:7px 13px;cursor:pointer;transition:background-color .15s,color .15s;}
@@ -5413,7 +5423,7 @@ body.ed-inside-page .ed-inside-main .public-page-cta .workflow-container{width:m
 .ed-dashboard-page #sdComposeClose{background:transparent;border:0;font-size:28px;cursor:pointer;color:#073e74}
 .ed-dashboard-page #sdComposeForm{display:grid;gap:10px}
 .ed-dashboard-page #sdComposeForm label{font-weight:700;font-size:13px}
-.ed-dashboard-page #sdComposeForm input,.ed-dashboard-page #sdComposeForm textarea{width:100%;box-sizing:border-box;padding:11px;border:1px solid #cbd9e8;border-radius:8px;font:inherit;color:#073e74;resize:vertical}
+.ed-dashboard-page #sdComposeForm input,.ed-dashboard-page #sdComposeForm select,.ed-dashboard-page #sdComposeForm textarea{width:100%;box-sizing:border-box;padding:11px;border:1px solid #cbd9e8;border-radius:8px;font:inherit;color:#073e74;resize:vertical}
 .ed-dashboard-page .sd-compose-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:10px}
 .ed-dashboard-page .sd-compose-actions button{padding:10px 14px;border-radius:8px;cursor:pointer}
 .ed-dashboard-page .sd-created-post{padding-right:14px}

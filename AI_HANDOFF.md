@@ -167,6 +167,14 @@ def get_signature_url(file_path: str, expires_in: int = 60):
     except Exception as e:
         print(f"❌ Error generating signed URL: {str(e)}")
         return None
+
+## Backend persistence for posts and scores
+
+- Dashboard posts now use authenticated Flask APIs and Supabase instead of browser storage. Faculty posts are scoped to a section they teach; Department Head posts are scoped to their own department. Students see posts from active enrolled sections and their program department. Faculty and Department Heads can see relevant section and department posts.
+- The faculty Assessment Entry page now loads assigned sections, active enrolled students, course outcomes, assessments, and saved scores from the backend. Faculty can create assessments and save scores only for their assigned sections. Locked gradebooks are read-only.
+- The student Assessment Records page now reads scores from the backend. Scores are visible only when the section gradebook is Locked; otherwise the item is shown as Awaiting Release.
+- Apply `database/posts_and_scores_persistence.sql` to the Supabase database before using these features. The migration creates the scoped `course_posts` table, enables row-level security on posts, assessments, and raw scores, increases score precision, and records who entered each score. These routes use the server-side Supabase service-role client; browser clients should not access these tables directly.
+- These changes have code-level validation only until the SQL migration is applied and role-specific end-to-end checks are run against Supabase. The existing Gradebook locking/verification screens are still front-end prototypes; a backend transition to Verified/Locked is not implemented yet, so student score release requires that status to be set through the database until that workflow is connected.
 Flask Route Example (If using Flask in app.py)
 If app.py is a Flask web app, here is how you handle file inputs from an HTML form request:
 

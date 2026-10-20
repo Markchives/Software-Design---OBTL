@@ -6715,53 +6715,197 @@ document.addEventListener("DOMContentLoaded", function () {
     else initRoleNavigation();
 })();
 
-/* Dashboard posts: one shared composer for Faculty and Department Head previews. */
+/* Dashboard posts are persisted and scoped by the authenticated backend. */
 (function () {
     const root = document.getElementById('dashboardRoleContent');
     const role = document.body.dataset.dashboardRole;
-    const allowed = role === 'faculty' || role === 'dept-head';
-    if (!root || !allowed) return;
+    if (!root || !['student', 'faculty', 'department-head', 'dept-head'].includes(role)) return;
     const feed = document.getElementById('sdPosts');
     const empty = document.getElementById('sdEmpty');
     const overlay = document.getElementById('sdComposeOverlay');
     const form = document.getElementById('sdComposeForm');
+    const status = document.getElementById('sdPostStatus');
     const trigger = root.querySelector('[data-create-post]');
-    if (!feed || !overlay || !form || !trigger) return;
-    const key = 'edumetrics-dashboard-posts-v1-' + role;
+    const filter = document.getElementById('sdCourseFilter');
+    if (!feed || !empty) return;
+    const canCreate = role === 'faculty' || role === 'department-head' || role === 'dept-head';
+    const sectionSelect = document.getElementById('sdComposeSection');
     let posts = [];
-    try { const saved = JSON.parse(localStorage.getItem(key) || '[]'); if (Array.isArray(saved)) posts = saved; } catch (_) { }
+    let sections = [];
+
+    async function api(url, options) {
+        const response = await fetch(url, Object.assign({
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin'
+        }, options || {}));
+        if (!(response.headers.get('content-type') || '').includes('application/json')) {
+            throw new Error('The server did not return account data. Sign in again and retry.');
+        }
+        let result;
+        try {
+            result = await response.json();
+        } catch (_) {
+            throw new Error('The server returned an invalid response.');
+        }
+        if (!response.ok) throw new Error(result.error || 'The request could not be completed.');
+        return result;
+    }
+
+    function filteredPosts() {
+        return posts.filter(post => !filter || filter.value === 'all' ||
+            (filter.value === 'department' && post.audience_type === 'department') ||
+            post.section_id === filter.value);
+    }
+
     function render() {
         feed.replaceChildren();
-        posts.forEach(function (post) {
-            const card = document.createElement('article'); card.className = 'sd-post sd-created-post';
+        const visiblePosts = filteredPosts();
+        visiblePosts.forEach(function (post) {
+            const card = document.createElement('article');
+            card.className = 'sd-post sd-created-post';
             const author = document.createElement('div'); author.className = 'sd-post-author';
             const by = document.createElement('div');
-            const name = document.createElement('strong'); name.textContent = role === 'faculty' ? 'Faculty' : 'Department Head';
-            const date = document.createElement('small'); date.textContent = post.date || '';
+            const name = document.createElement('strong'); name.textContent = post.author || 'EduMetrics user';
+            const date = document.createElement('small');
+            const createdAt = post.created_at ? new Date(post.created_at) : null;
+            date.textContent = createdAt && !Number.isNaN(createdAt.getTime())
+                ? createdAt.toLocaleString()
+                : '';
             by.append(name, date); author.append(by);
             const body = document.createElement('div'); body.className = 'sd-post-body';
-            const title = document.createElement('strong'); title.textContent = post.title;
+            const title = document.createElement('strong'); title.textContent = post.title || '';
             const message = document.createElement('p'); message.textContent = post.message;
-            body.append(title, message); card.append(author, body); feed.append(card);
+            body.append(title, message);
+            if (post.course_label || post.audience_type === 'department') {
+                const audience = document.createElement('small');
+                audience.className = 'sd-post-audience';
+                audience.textContent = post.course_label || 'Department announcement';
+                body.appendChild(audience);
+            }
+            card.append(author, body); feed.append(card);
         });
-        empty.hidden = posts.length > 0;
+        empty.hidden = visiblePosts.length > 0;
+        if (!posts.length && status && canCreate) {
+            empty.textContent = 'No updates have been published yet.';
+        } else if (posts.length && !visiblePosts.length) {
+            empty.textContent = 'No updates match this filter.';
+        }
     }
-    function close() { overlay.hidden = true; document.body.classList.remove('sd-compose-open'); trigger.focus(); }
-    trigger.addEventListener('click', function () { overlay.hidden = false; document.body.classList.add('sd-compose-open'); document.getElementById('sdComposeSubject').focus(); });
-    document.getElementById('sdComposeClose').addEventListener('click', close);
-    document.getElementById('sdComposeCancel').addEventListener('click', close);
-    overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !overlay.hidden) close(); });
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
-        const title = document.getElementById('sdComposeSubject').value.trim();
-        const message = document.getElementById('sdComposeMessage').value.trim();
-        if (!title || !message) return;
-        posts.unshift({ title: title, message: message, date: new Date().toLocaleString() });
-        try { localStorage.setItem(key, JSON.stringify(posts)); } catch (_) { }
-        form.reset(); render(); close();
-    });
-    render();
+
+    async function loadPosts() {
+        try {
+            const result = await api('/api/posts');
+            posts = Array.isArray(result.posts) ? result.posts : [];
+            if (filter && !canCreate) {
+                filter.replaceChildren(new Option('All Courses', 'all'));
+                const labels = new Map();
+                posts.forEach(post => {
+                    if (post.section_id && post.course_label) {
+                        labels.set(post.section_id, post.course_label);
+                    }
+                });
+                labels.forEach((label, sectionId) => {
+                    filter.add(new Option(label, sectionId));
+                });
+            }
+            render();
+        } catch (error) {
+            if (status) status.textContent = error.message;
+            empty.textContent = 'Updates could not be loaded. Refresh the page to try again.';
+            empty.hidden = false;
+        }
+    }
+
+    if (filter) {
+        filter.addEventListener('change', render);
+        if (canCreate) {
+            filter.replaceChildren(
+                new Option('All Updates', 'all'),
+                new Option('Department Updates', 'department')
+            );
+        }
+    }
+
+    if (canCreate && overlay && form && trigger) {
+        const close = function () {
+            overlay.hidden = true;
+            document.body.classList.remove('sd-compose-open');
+            trigger.focus();
+        };
+        const sectionField = document.getElementById('sdComposeSectionField');
+        if (role === 'faculty') {
+            api('/api/faculty/sections').then(result => {
+                sections = Array.isArray(result.sections) ? result.sections : [];
+                if (sectionSelect) {
+                    sectionSelect.replaceChildren(new Option(
+                        sections.length ? 'Select course section' : 'No assigned sections',
+                        ''
+                    ));
+                    sections.forEach(section => {
+                        const label = [section.course_code, section.section_name]
+                            .filter(Boolean).join(' - ');
+                        sectionSelect.add(new Option(label, section.section_id));
+                        if (filter) filter.add(new Option(label, section.section_id));
+                    });
+                    sectionSelect.disabled = sections.length === 0;
+                }
+                if (sections.length === 1 && sectionSelect) sectionSelect.value = sections[0].section_id;
+            }).catch(error => {
+                if (status) status.textContent = error.message;
+                if (sectionSelect) sectionSelect.disabled = true;
+            });
+        } else if (sectionField) {
+            sectionField.hidden = true;
+            if (sectionSelect) sectionSelect.required = false;
+        }
+        trigger.addEventListener('click', function () {
+            overlay.hidden = false;
+            document.body.classList.add('sd-compose-open');
+            document.getElementById('sdComposeSubject').focus();
+        });
+        document.getElementById('sdComposeClose').addEventListener('click', close);
+        document.getElementById('sdComposeCancel').addEventListener('click', close);
+        overlay.addEventListener('click', function (event) {
+            if (event.target === overlay) close();
+        });
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && !overlay.hidden) close();
+        });
+        form.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const submit = form.querySelector('[type="submit"]');
+            const title = document.getElementById('sdComposeSubject').value.trim();
+            const message = document.getElementById('sdComposeMessage').value.trim();
+            if (!title || !message) return;
+            const payload = { title, message };
+            if (role === 'faculty') {
+                if (!sectionSelect || !sectionSelect.value) {
+                    if (status) status.textContent = 'Select an assigned course section for this post.';
+                    return;
+                }
+                payload.section_id = sectionSelect.value;
+            }
+            submit.disabled = true;
+            if (status) status.textContent = 'Publishing post...';
+            try {
+                await api('/api/posts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                form.reset();
+                if (sections.length === 1 && sectionSelect) sectionSelect.value = sections[0].section_id;
+                if (status) status.textContent = 'Post published.';
+                await loadPosts();
+                close();
+            } catch (error) {
+                if (status) status.textContent = error.message;
+            } finally {
+                submit.disabled = false;
+            }
+        });
+    }
+    loadPosts();
 })();
 
 /* Dashboard interactions: filter, reactions, comments and reader */
@@ -7117,69 +7261,298 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* Page-specific initialization moved from HTML: no inline JavaScript. */
 
-/* ra-faculty.html.txt */
+/* Faculty raw assessment entry uses server-backed assessments and scores. */
 function initRawAssessmentFaculty() {
-    /* Frontend demonstration only: saved scores are held in this browser session, not a backend. */
-    (() => {
-        const students = [['2026-COE-001', 'Angel S. Villanueva'], ['2026-COE-002', 'Bea M. Santos'], ['2026-COE-003', 'Carl P. Reyes'], ['2026-COE-004', 'Dana L. Cruz'], ['2026-COE-005', 'Ella R. Garcia'], ['2026-COE-006', 'Francis D. Lim'], ['2026-COE-007', 'Gina A. Ramos'], ['2026-COE-008', 'Hannah P. Tan']];
-        const assessments = { quiz1: { max: 20, co: 'CO1', date: 'Oct. 3, 2026', scores: [18, 17, 16, 15, 19, 14, 18, 17] }, quiz2: { max: 20, co: 'CO2', date: 'Oct. 10, 2026', scores: [null, null, null, null, null, null, null, null] }, lab1: { max: 50, co: 'CO1, CO2', date: 'Sept. 19, 2026', scores: [42, 45, 40, 38, 47, 41, 44, 46] }, midterm: { max: 100, co: 'CO1–CO3', date: 'Oct. 20, 2026', scores: [null, null, null, null, null, null, null, null] } };
-        const $ = id => document.getElementById(id), selector = $('rafAssessment'), body = $('rafRows');
-        if (!selector || !body) return;
-        let saved = false;
-        function render() {
-            const a = assessments[selector.value], q = $('rafSearch').value.trim().toLowerCase(), sort = $('rafSort').value;
-            $('rafMaxLabel').textContent = a.max; $('rafMaxInput').value = a.max; $('rafCO').textContent = a.co; $('rafDate').textContent = a.date;
-            const entered = a.scores.filter(v => v !== null);
-            $('rafMaximum').textContent = entered.length ? (entered.reduce((sum, v) => sum + v, 0) / entered.length / a.max * 100).toFixed(1) + '%' : '—';
-            $('rafEntered').textContent = a.scores.filter(v => v !== null).length; $('rafStudents').textContent = students.length;
-            let indices = students.map((_, i) => i).filter(i => (students[i].join(' ')).toLowerCase().includes(q));
-            indices.sort((i, j) => sort === 'za' ? students[j][1].localeCompare(students[i][1]) : sort === 'high' ? (a.scores[j] ?? -1) - (a.scores[i] ?? -1) : sort === 'low' ? (a.scores[i] ?? Infinity) - (a.scores[j] ?? Infinity) : students[i][1].localeCompare(students[j][1]));
-            body.replaceChildren();
-            indices.forEach((i, n) => {
-                const tr = document.createElement('tr'); const [id, name] = students[i], v = a.scores[i];
-                tr.innerHTML = `<td>${n + 1}</td><td><span class="raf-id">${id}</span></td><td class="raf-student-name"></td><td><input class="raf-score-input" type="number" min="0" max="${a.max}" step="0.01" aria-label="Raw points for ${name}" value="${v ?? ''}"></td><td class="raf-percentage">${v === null ? '—' : (v / a.max * 100).toFixed(1) + '%'}</td><td><span class="sodh-status ${v === null ? 'in-progress' : 'complete'}">${v === null ? 'Pending' : 'Entered'}</span></td>`;
-                tr.querySelector('.raf-student-name').textContent = name;
-                tr.querySelector('input').addEventListener('input', e => {
-                    const value = e.target.value.trim(), num = Number(value);
-                    if (value !== '' && (!Number.isFinite(num) || num < 0 || num > a.max)) { e.target.setCustomValidity(`Enter a score from 0 to ${a.max}`); e.target.reportValidity(); return; }
-                    e.target.setCustomValidity(''); a.scores[i] = value === '' ? null : num;
-                    tr.querySelector('.raf-percentage').textContent = value === '' ? '—' : (num / a.max * 100).toFixed(1) + '%';
-                    const status = tr.querySelector('.sodh-status'); status.className = 'sodh-status ' + (value === '' ? 'in-progress' : 'complete'); status.textContent = value === '' ? 'Pending' : 'Entered';
-                    $('rafEntered').textContent = a.scores.filter(v => v !== null).length;
-                    const entered = a.scores.filter(v => v !== null);
-                    $('rafMaximum').textContent = entered.length ? (entered.reduce((sum, v) => sum + v, 0) / entered.length / a.max * 100).toFixed(1) + '%' : '—';
-                    saved = false; $('rafMessage').textContent = 'Unsaved changes';
-                }); body.append(tr);
+    const $ = id => document.getElementById(id);
+    const sectionSelect = $('rafSection');
+    const assessmentSelect = $('rafAssessment');
+    const body = $('rafRows');
+    const createForm = $('rafCreateAssessmentForm');
+    if (!sectionSelect || !assessmentSelect || !body || !createForm) return;
+
+    let workspace = null;
+    let assignments = [];
+    let editedScores = new Map();
+    const status = $('rafMessage');
+    const saveButton = $('rafSave');
+
+    async function api(url, options) {
+        const response = await fetch(url, Object.assign({
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin'
+        }, options || {}));
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || 'The request could not be completed.');
+        return result;
+    }
+
+    function selectedAssessment() {
+        return workspace?.assessments.find(item => item.id === assessmentSelect.value) || null;
+    }
+
+    function scoreFor(assessment, studentId) {
+        if (editedScores.has(studentId)) return editedScores.get(studentId);
+        const saved = assessment?.scores?.[studentId];
+        return saved && saved.score !== null ? Number(saved.score) : null;
+    }
+
+    function render() {
+        const assessment = selectedAssessment();
+        const students = workspace?.students || [];
+        const maxScore = Number(assessment?.max_score || 0);
+        const query = $('rafSearch').value.trim().toLowerCase();
+        const sort = $('rafSort').value;
+        const locked = workspace?.gradebook_status === 'locked';
+        $('rafMode').textContent = locked ? 'Gradebook Locked' : 'Open for Editing';
+        $('rafMode').classList.toggle('in-progress', locked);
+        assessmentSelect.disabled = !workspace?.assessments.length;
+        saveButton.disabled = !assessment || locked;
+        $('rafMaxInput').value = assessment ? String(maxScore) : '';
+        $('rafMaxLabel').textContent = assessment ? String(maxScore) : '';
+        $('rafCO').textContent = assessment?.outcome_code || '—';
+        $('rafDate').textContent = assessment?.due_date || '—';
+        $('rafStudents').textContent = String(students.length);
+
+        const values = students.map(student => ({
+            student,
+            score: assessment ? scoreFor(assessment, student.student_profile_id) : null
+        }));
+        const visible = values.filter(({ student }) =>
+            (student.full_name + ' ' + student.student_number).toLowerCase().includes(query)
+        );
+        visible.sort((a, b) => {
+            if (sort === 'za') return b.student.full_name.localeCompare(a.student.full_name);
+            if (sort === 'high') return (b.score ?? -1) - (a.score ?? -1);
+            if (sort === 'low') return (a.score ?? Infinity) - (b.score ?? Infinity);
+            return a.student.full_name.localeCompare(b.student.full_name);
+        });
+        body.replaceChildren();
+        visible.forEach(({ student, score }, index) => {
+            const row = document.createElement('tr');
+            const number = document.createElement('td');
+            number.textContent = String(index + 1);
+            const idCell = document.createElement('td');
+            const id = document.createElement('span');
+            id.className = 'raf-id';
+            id.textContent = student.student_number || '—';
+            idCell.appendChild(id);
+            const nameCell = document.createElement('td');
+            nameCell.className = 'raf-student-name';
+            nameCell.textContent = student.full_name || 'Student';
+            const scoreCell = document.createElement('td');
+            const input = document.createElement('input');
+            input.className = 'raf-score-input';
+            input.type = 'number';
+            input.min = '0';
+            input.max = String(maxScore);
+            input.step = '0.01';
+            input.value = score === null ? '' : String(score);
+            input.disabled = !assessment || locked;
+            input.setAttribute('aria-label', 'Raw score for ' + nameCell.textContent);
+            scoreCell.appendChild(input);
+            const percentageCell = document.createElement('td');
+            percentageCell.className = 'raf-percentage';
+            percentageCell.textContent = score === null || !maxScore
+                ? '—'
+                : (score / maxScore * 100).toFixed(1) + '%';
+            const stateCell = document.createElement('td');
+            const badge = document.createElement('span');
+            badge.className = 'sodh-status ' + (score === null ? 'in-progress' : 'complete');
+            badge.textContent = score === null ? 'Pending' : 'Entered';
+            stateCell.appendChild(badge);
+            row.append(number, idCell, nameCell, scoreCell, percentageCell, stateCell);
+            input.addEventListener('input', () => {
+                const raw = input.value.trim();
+                const value = raw === '' ? null : Number(raw);
+                if (raw && (!Number.isFinite(value) || value < 0 || value > maxScore)) {
+                    input.setCustomValidity('Enter a score from 0 to ' + maxScore + '.');
+                    input.reportValidity();
+                    return;
+                }
+                input.setCustomValidity('');
+                editedScores.set(student.student_profile_id, value);
+                percentageCell.textContent = value === null ? '—' :
+                    (value / maxScore * 100).toFixed(1) + '%';
+                badge.className = 'sodh-status ' + (value === null ? 'in-progress' : 'complete');
+                badge.textContent = value === null ? 'Pending' : 'Entered';
+                status.textContent = 'Unsaved changes';
+                updateSummary(assessment, students);
             });
-            $('rafEmpty').hidden = indices.length > 0;
+            body.appendChild(row);
+        });
+        $('rafEmpty').hidden = visible.length > 0;
+        updateSummary(assessment, students);
+        createForm.querySelectorAll('input, select, button').forEach(control => {
+            control.disabled = !workspace || locked ||
+                (!workspace.outcomes.length &&
+                    (control.id === 'rafNewOutcome' || control.type === 'submit'));
+        });
+        if (locked) status.textContent = 'This section gradebook is locked; scores are read-only.';
+        else if (workspace && !workspace.outcomes.length) {
+            status.textContent = 'Add course outcomes before creating assessments.';
+        } else if (!assessment && !status.textContent) {
+            status.textContent = 'Select an assessment or create one for this section.';
         }
-        $('rafMaxInput').addEventListener('change', event => {
-            const assessment = assessments[selector.value];
-            const next = Number(event.target.value);
-            if (!Number.isFinite(next) || next <= 0 || next > 10000) {
-                event.target.setCustomValidity('Enter a total score greater than 0 and at most 10,000.');
-                event.target.reportValidity();
-                return;
+    }
+
+    function updateSummary(assessment, students) {
+        const scores = assessment
+            ? students.map(student => scoreFor(assessment, student.student_profile_id))
+                .filter(value => value !== null)
+            : [];
+        $('rafEntered').textContent = String(scores.length);
+        const average = scores.length && assessment
+            ? scores.reduce((sum, value) => sum + value, 0) /
+                scores.length / Number(assessment.max_score) * 100
+            : null;
+        $('rafMaximum').textContent = average === null ? '—' : average.toFixed(1) + '%';
+    }
+
+    async function loadWorkspace() {
+        workspace = null;
+        editedScores.clear();
+        assessmentSelect.replaceChildren(new Option('Loading assessments...', ''));
+        body.replaceChildren();
+        $('rafMessage').textContent = '';
+        try {
+            workspace = await api('/api/faculty/sections/' +
+                encodeURIComponent(sectionSelect.value) + '/assessments');
+            assessmentSelect.replaceChildren(new Option(
+                workspace.assessments.length ? 'Select assessment' : 'No assessments yet',
+                ''
+            ));
+            workspace.assessments.forEach(item => {
+                assessmentSelect.add(new Option(item.title, item.id));
+            });
+            const outcomeSelect = $('rafNewOutcome');
+            outcomeSelect.replaceChildren(new Option(
+                workspace.outcomes.length ? 'Select course outcome' : 'No course outcomes configured',
+                ''
+            ));
+            workspace.outcomes.forEach(outcome => {
+                outcomeSelect.add(new Option(outcome.code + ' - ' + outcome.description, outcome.id));
+            });
+            const assignment = assignments.find(item => item.section_id === sectionSelect.value);
+            const breadcrumb = document.querySelector('.cw-breadcrumb-current');
+            if (breadcrumb && assignment) {
+                breadcrumb.textContent = assignment.course_code + ' / ' + assignment.section_name;
             }
-            if (assessment.scores.some(score => score !== null && score > next)) {
-                event.target.setCustomValidity('Total score cannot be less than an existing student score.');
-                event.target.reportValidity();
-                return;
-            }
-            event.target.setCustomValidity('');
-            assessment.max = next;
-            saved = false;
-            $('rafMessage').textContent = 'Total score updated for this assessment. Unsaved changes.';
+            const heading = document.querySelector('.cw-hero h2');
+            const subheading = document.querySelector('.cw-hero p');
+            if (heading && assignment) heading.textContent = assignment.course_code + ' - ' + assignment.course_title;
+            if (subheading && assignment) subheading.textContent = assignment.section_name;
             render();
-        });
-        selector.addEventListener('change', () => { saved = false; $('rafMessage').textContent = ''; render(); });
-        $('rafSearch').addEventListener('input', render); $('rafSort').addEventListener('change', render);
-        $('rafSave').addEventListener('click', () => {
-            if (body.querySelector('input:invalid')) { body.querySelector('input:invalid').reportValidity(); return; }
-            saved = true; $('rafMessage').textContent = 'Demo scores saved for this session only. Connect a backend to save permanently.';
-        });
+        } catch (error) {
+            workspace = null;
+            $('rafMessage').textContent = error.message;
+            assessmentSelect.replaceChildren(new Option('Unable to load assessments', ''));
+            render();
+        }
+    }
+
+    sectionSelect.addEventListener('change', loadWorkspace);
+    assessmentSelect.addEventListener('change', () => {
+        editedScores.clear();
+        $('rafMessage').textContent = '';
         render();
-    })();
+    });
+    $('rafSearch').addEventListener('input', render);
+    $('rafSort').addEventListener('change', render);
+    saveButton.addEventListener('click', async () => {
+        const assessment = selectedAssessment();
+        if (!assessment) return;
+        if (body.querySelector('input:invalid')) {
+            body.querySelector('input:invalid').reportValidity();
+            return;
+        }
+        saveButton.disabled = true;
+        $('rafMessage').textContent = 'Saving scores...';
+        try {
+            const scores = workspace.students.map(student => ({
+                student_profile_id: student.student_profile_id,
+                score: scoreFor(assessment, student.student_profile_id)
+            }));
+            await api('/api/faculty/assessments/' +
+                encodeURIComponent(assessment.id) + '/scores', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                    body: JSON.stringify({ scores })
+                });
+            editedScores.clear();
+            $('rafMessage').textContent = 'Scores saved.';
+            await loadWorkspace();
+            assessmentSelect.value = assessment.id;
+            render();
+        } catch (error) {
+            $('rafMessage').textContent = error.message;
+            saveButton.disabled = false;
+        }
+    });
+    createForm.addEventListener('submit', async event => {
+        event.preventDefault();
+        if (!sectionSelect.value) {
+            $('rafMessage').textContent = 'Select a course section first.';
+            return;
+        }
+        const submit = createForm.querySelector('[type="submit"]');
+        submit.disabled = true;
+        $('rafMessage').textContent = 'Creating assessment...';
+        try {
+            const result = await api('/api/faculty/sections/' +
+                encodeURIComponent(sectionSelect.value) + '/assessments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                    body: JSON.stringify({
+                        title: $('rafNewTitle').value.trim(),
+                        activity_type: $('rafNewType').value,
+                        course_outcome_id: $('rafNewOutcome').value,
+                        due_date: $('rafNewDate').value,
+                        max_score: $('rafNewMax').value
+                    })
+                });
+            createForm.reset();
+            $('rafNewMax').value = '100';
+            await loadWorkspace();
+            assessmentSelect.value = result.assessment.id;
+            $('rafMessage').textContent = 'Assessment created.';
+            render();
+        } catch (error) {
+            $('rafMessage').textContent = error.message;
+        } finally {
+            submit.disabled = !workspace || workspace.gradebook_status === 'locked' ||
+                !workspace.outcomes.length;
+        }
+    });
+
+    api('/api/faculty/sections').then(result => {
+        assignments = Array.isArray(result.sections) ? result.sections : [];
+        sectionSelect.replaceChildren(new Option(
+            assignments.length ? 'Select course section' : 'No assigned sections',
+            ''
+        ));
+        assignments.forEach(item => {
+            sectionSelect.add(new Option(
+                [item.course_code, item.section_name, item.academic_year_name]
+                    .filter(Boolean).join(' - '),
+                item.section_id
+            ));
+        });
+        if (assignments.length === 1) {
+            sectionSelect.value = assignments[0].section_id;
+            loadWorkspace();
+        } else {
+            sectionSelect.disabled = assignments.length === 0;
+            $('rafStudents').textContent = '0';
+            $('rafEntered').textContent = '0';
+            if (!assignments.length) {
+                $('rafMessage').textContent = 'No course sections are assigned to your faculty account.';
+            }
+        }
+    }).catch(error => {
+        sectionSelect.replaceChildren(new Option('Unable to load sections', ''));
+        sectionSelect.disabled = true;
+        $('rafMessage').textContent = error.message;
+    });
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initRawAssessmentFaculty, { once: true });
 else initRawAssessmentFaculty();
@@ -7209,27 +7582,87 @@ document.addEventListener("DOMContentLoaded", function () {
     new MutationObserver(styleAlignedSOs).observe(courseOutcomeBody, { childList: true, subtree: true });
 });
 
-/* ra-student(1).html.txt */
-document.addEventListener("DOMContentLoaded", function () {
-    /* Demo-only filtering. Backend must provide authenticated student records and release flags. */
-    (function () {
-        const tbody = document.getElementById('raRows');
-        const search = document.getElementById('raSearch');
-        const type = document.getElementById('raType');
-        const sort = document.getElementById('raSort');
-        if (!tbody || !search || !type || !sort) return;
-        const rows = Array.from(tbody.querySelectorAll('tr'));
-        function render() {
-            const query = search.value.trim().toLowerCase();
-            const filtered = rows.filter(row => row.textContent.toLowerCase().includes(query) && (type.value === 'all' || row.dataset.type === type.value));
-            filtered.sort((a, b) => sort.value === 'name' ? a.cells[0].textContent.localeCompare(b.cells[0].textContent) : sort.value === 'oldest' ? a.dataset.date.localeCompare(b.dataset.date) : b.dataset.date.localeCompare(a.dataset.date));
-            tbody.replaceChildren(...filtered);
-            document.getElementById('raEmpty').hidden = filtered.length !== 0;
+/* Student assessment records are loaded from published backend data. */
+(function () {
+    const tbody = document.getElementById('raRows');
+    const search = document.getElementById('raSearch');
+    const type = document.getElementById('raType');
+    const sort = document.getElementById('raSort');
+    const empty = document.getElementById('raEmpty');
+    if (!tbody || !search || !type || !sort || !empty) return;
+    let assessments = [];
+
+    function render() {
+        const query = search.value.trim().toLowerCase();
+        const filtered = assessments.filter(item =>
+            (item.title + ' ' + item.course_code + ' ' + item.course_title)
+                .toLowerCase().includes(query) &&
+            (type.value === 'all' || item.activity_type === type.value)
+        );
+        filtered.sort((a, b) => sort.value === 'name'
+            ? a.title.localeCompare(b.title)
+            : sort.value === 'oldest'
+                ? String(a.due_date || '').localeCompare(String(b.due_date || ''))
+                : String(b.due_date || '').localeCompare(String(a.due_date || ''))
+        );
+        tbody.replaceChildren();
+        filtered.forEach(item => {
+            const row = document.createElement('tr');
+            row.dataset.type = item.activity_type;
+            row.dataset.date = item.due_date || '';
+            [
+                item.title,
+                [item.course_code, item.course_title].filter(Boolean).join(' - ') || '—',
+                item.activity_type || '—',
+                item.due_date || '—',
+                item.release_status === 'Released' && item.has_score ? String(item.score) : '—',
+                String(item.max_score),
+                item.release_status === 'Released' && item.has_score
+                    ? Number(item.percentage).toFixed(1) + '%'
+                    : '—',
+                item.release_status
+            ].forEach(value => {
+                const cell = document.createElement('td');
+                cell.textContent = value;
+                row.appendChild(cell);
+            });
+            tbody.appendChild(row);
+        });
+        empty.hidden = filtered.length > 0;
+        if (!assessments.length && empty.dataset.loadFailed !== 'true') {
+            empty.textContent = 'No assessment records are available yet.';
+        } else if (assessments.length && !filtered.length) {
+            empty.textContent = 'No matching assessment records found.';
         }
-        [search, type, sort].forEach(el => el.addEventListener(el === search ? 'input' : 'change', render));
-        render();
-    })();
-});
+    }
+
+    async function load() {
+        try {
+            const response = await fetch('/api/student/assessment-scores', {
+                headers: { Accept: 'application/json' },
+                credentials: 'same-origin'
+            });
+            if (!(response.headers.get('content-type') || '').includes('application/json')) {
+                throw new Error('The server did not return assessment data. Sign in again and retry.');
+            }
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'Assessment scores could not be loaded.');
+            assessments = Array.isArray(result.assessments) ? result.assessments : [];
+            document.getElementById('raReleasedCount').textContent = String(result.released_count || 0);
+            document.getElementById('raCourseCount').textContent = String(result.course_count || 0);
+            document.getElementById('raPendingCount').textContent = String(result.pending_count || 0);
+            render();
+        } catch (error) {
+            empty.dataset.loadFailed = 'true';
+            empty.textContent = error.message;
+            empty.hidden = false;
+        }
+    }
+    [search, type, sort].forEach(element =>
+        element.addEventListener(element === search ? 'input' : 'change', render)
+    );
+    load();
+})();
 
 /* AC Student: attainment search, release filter and sort. */
 (function () {

@@ -133,6 +133,31 @@ CREATE TABLE IF NOT EXISTS enrollments (
     UNIQUE (section_id, student_profile_id)
 );
 
+CREATE TABLE IF NOT EXISTS course_posts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    author_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    author_role TEXT NOT NULL CHECK (author_role IN ('faculty', 'department-head')),
+    audience_type TEXT NOT NULL CHECK (audience_type IN ('section', 'department')),
+    section_id UUID REFERENCES course_sections(id) ON DELETE CASCADE,
+    department_id UUID REFERENCES departments(id) ON DELETE CASCADE,
+    title TEXT NOT NULL CHECK (char_length(title) BETWEEN 1 AND 120),
+    message TEXT NOT NULL CHECK (char_length(message) BETWEEN 1 AND 3000),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CHECK (
+        (audience_type = 'section' AND section_id IS NOT NULL AND department_id IS NULL)
+        OR
+        (audience_type = 'department' AND section_id IS NULL AND department_id IS NOT NULL)
+    ),
+    CHECK (
+        (author_role = 'faculty' AND audience_type = 'section')
+        OR
+        (author_role = 'department-head' AND audience_type = 'department')
+    )
+);
+
+ALTER TABLE course_posts ENABLE ROW LEVEL SECURITY;
+
 CREATE TABLE IF NOT EXISTS course_outcomes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
@@ -160,24 +185,29 @@ CREATE TABLE IF NOT EXISTS assessment_activities (
     activity_type TEXT NOT NULL,
     due_date DATE,
     weight_percentage NUMERIC(5,2) NOT NULL DEFAULT 0.00,
-    max_score NUMERIC(5,2) NOT NULL DEFAULT 100.00,
+    max_score NUMERIC(7,2) NOT NULL DEFAULT 100.00,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE assessment_activities ENABLE ROW LEVEL SECURITY;
 
 CREATE TABLE IF NOT EXISTS raw_assessment_scores (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     section_id UUID NOT NULL REFERENCES course_sections(id) ON DELETE CASCADE,
     student_profile_id UUID NOT NULL REFERENCES student_profiles(id) ON DELETE CASCADE,
     assessment_activity_id UUID NOT NULL REFERENCES assessment_activities(id) ON DELETE CASCADE,
-    score NUMERIC(5,2),
-    max_score NUMERIC(5,2) NOT NULL DEFAULT 100.00,
+    score NUMERIC(7,2),
+    max_score NUMERIC(7,2) NOT NULL DEFAULT 100.00,
     percentage NUMERIC(5,2),
     remarks TEXT,
+    entered_by UUID REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     UNIQUE (assessment_activity_id, student_profile_id)
 );
+
+ALTER TABLE raw_assessment_scores ENABLE ROW LEVEL SECURITY;
 
 CREATE TABLE IF NOT EXISTS co_attainment (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -350,6 +380,8 @@ CREATE INDEX IF NOT EXISTS idx_course_sections_course_id ON course_sections (cou
 CREATE INDEX IF NOT EXISTS idx_course_sections_faculty_id ON course_sections (faculty_id);
 CREATE INDEX IF NOT EXISTS idx_enrollments_section_id ON enrollments (section_id);
 CREATE INDEX IF NOT EXISTS idx_enrollments_student_profile_id ON enrollments (student_profile_id);
+CREATE INDEX IF NOT EXISTS idx_course_posts_section_created_at ON course_posts (section_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_course_posts_department_created_at ON course_posts (department_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_raw_assessment_scores_student_profile_id ON raw_assessment_scores (student_profile_id);
 CREATE INDEX IF NOT EXISTS idx_raw_assessment_scores_activity_id ON raw_assessment_scores (assessment_activity_id);
 CREATE INDEX IF NOT EXISTS idx_co_attainment_section_id ON co_attainment (section_id);
