@@ -29,6 +29,7 @@
         const button = (text, action, id) => `<button class="so-workflow-action" type="button" data-action="${action}" data-id="${esc(id)}">${text}</button>`;
         async function loadSection() {
             section = sections.find(row => row.section_id === sectionSelect.value) || null;
+            window.syncEduMetricsWorkspaceSection?.(section?.section_id || "", section || undefined);
             document.getElementById("soCoCode").value = "";
             document.getElementById("soCoDescription").value = "";
             if (!section) return;
@@ -124,6 +125,10 @@
         api("/api/faculty/sections").then(data => {
             sections = data.sections || [];
             sectionSelect.innerHTML = `<option value="">Select a section</option>` + sections.map(row => `<option value="${esc(row.section_id)}">${esc(row.course_code)} · ${esc(row.course_title)} · ${esc(row.section_name)} · ${esc(row.academic_year_name || "")}</option>`).join("");
+            const requested = new URLSearchParams(window.location.search).get("section_id");
+            if (sections.some(row => row.section_id === requested)) sectionSelect.value = requested;
+            else if (sections.length === 1) sectionSelect.value = sections[0].section_id;
+            if (sectionSelect.value) loadSection();
         }).catch(error => notify(error.message));
     }
 
