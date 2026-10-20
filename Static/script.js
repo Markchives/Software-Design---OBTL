@@ -7173,11 +7173,23 @@ document.addEventListener("DOMContentLoaded", function () {
                 nav.insertBefore(link, recordsLink ? recordsLink.nextSibling : nav.firstChild);
             }
         };
+        const movePlatformAboveWorkflow = nav => {
+            if (!nav) return;
+            const platformLink = [...nav.querySelectorAll(':scope > a.so-nav-item')]
+                .find(item => item.textContent.trim() === 'Platform');
+            const workflowGroup = [...nav.querySelectorAll(':scope > .so-nav-group')]
+                .find(group => group.querySelector(':scope > details > summary')
+                    ?.textContent.trim() === 'Workflow');
+            if (platformLink && workflowGroup && platformLink.nextElementSibling !== workflowGroup) {
+                nav.insertBefore(platformLink, workflowGroup);
+            }
+        };
 
         document.querySelectorAll('.so-sidebar nav').forEach(nav => {
             normalizeAccountRequestLinks(nav);
             addCourseOfferings(nav);
             addAcademicTermsLink(nav);
+            movePlatformAboveWorkflow(nav);
             if (nav.getAttribute('aria-label') === 'Department Head navigation') {
                 addLink(nav);
             }
@@ -7187,6 +7199,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 normalizeAccountRequestLinks(nav);
                 addCourseOfferings(nav);
                 addAcademicTermsLink(nav);
+                movePlatformAboveWorkflow(nav);
                 if (nav.getAttribute('aria-label') === 'Department Head navigation') {
                     addLink(nav);
                 }
