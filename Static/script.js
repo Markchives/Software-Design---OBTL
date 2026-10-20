@@ -5017,6 +5017,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 courseName: item.course_code + " - " + item.course_title,
                 sectionName: item.section_name,
                 academicYearName: item.academic_year_name,
+                termName: item.term_name,
                 fileName: item.file_name,
                 uploadedAt: item.uploaded_at,
                 signedUrl: item.signed_url
@@ -5084,7 +5085,9 @@ document.addEventListener("DOMContentLoaded", function () {
         meta.className = "so-student-file-meta";
         meta.innerHTML = "<span>PDF</span><span>•</span><span></span>";
         meta.lastElementChild.textContent = record.sectionName +
-            (record.academicYearName ? " - " + record.academicYearName : "");
+            ([record.academicYearName, record.termName].filter(Boolean).length
+                ? " - " + [record.academicYearName, record.termName].filter(Boolean).join(" · ")
+                : "");
         copy.appendChild(course);
         copy.appendChild(name);
         copy.appendChild(meta);
@@ -5337,9 +5340,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 title.textContent = course.course_title || "Untitled course";
                 const section = document.createElement("p");
                 section.className = "sc-section";
-                section.textContent = [course.section_name, course.academic_year_name]
+                section.textContent = [
+                    course.section_name,
+                    course.academic_year_name,
+                    course.term_name
+                ]
                     .filter(Boolean)
-                    .join(" - ");
+                    .join(" · ");
                 body.append(code, title, section);
 
                 const bottom = document.createElement("div");
@@ -6625,6 +6632,24 @@ document.addEventListener("DOMContentLoaded", function () {
 /* Shared main-page navigation and active indicator (single source of truth). */
 (function () {
     function addDepartmentHeadAccountRequests() {
+        const addCourseOfferings = nav => {
+            if (!nav || nav.getAttribute('aria-label') !== 'Department Head navigation') return;
+            let link = [...nav.querySelectorAll('a.so-nav-item')]
+                .find(item => item.textContent.trim() === 'Course Offerings');
+            if (!link) {
+                link = document.createElement('a');
+                link.className = 'so-nav-item';
+                link.textContent = 'Course Offerings';
+            }
+            link.href = '/department-head/course-offerings.html';
+            const accountLink = [...nav.querySelectorAll('a.so-nav-item')]
+                .find(item => item.textContent.trim() === 'Account Requests');
+            if (accountLink && link.parentElement !== nav) {
+                nav.insertBefore(link, accountLink.nextSibling);
+            } else if (!link.parentElement) {
+                nav.appendChild(link);
+            }
+        };
         const normalizeAccountRequestLinks = root => {
             if (!root) return;
             root.querySelectorAll('a.so-nav-item').forEach(link => {
@@ -6663,6 +6688,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         document.querySelectorAll('.so-sidebar nav').forEach(nav => {
             normalizeAccountRequestLinks(nav);
+            addCourseOfferings(nav);
             if (nav.getAttribute('aria-label') === 'Department Head navigation') {
                 addLink(nav);
             }
@@ -6670,6 +6696,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll('template').forEach(template => {
             template.content.querySelectorAll('nav').forEach(nav => {
                 normalizeAccountRequestLinks(nav);
+                addCourseOfferings(nav);
                 if (nav.getAttribute('aria-label') === 'Department Head navigation') {
                     addLink(nav);
                 }
@@ -7147,68 +7174,433 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// Faculty Courses: create and restore demo courses in this browser only.
+// Faculty course list reflects server-assigned sections.
 (function () {
     function init() {
         if (!document.body.classList.contains('faculty-courses-page')) return;
-        const dialog = document.getElementById('fcCreateDialog');
-        const form = document.getElementById('fcCreateForm');
         const grid = document.getElementById('facultyCourseGrid');
-        const open = document.getElementById('fcmOpenCreate');
-        if (!dialog || !form || !grid || !open) return;
-        const storageKey = 'edumetrics-faculty-demo-courses-v1';
-        let courses = [];
-        try {
-            const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
-            if (Array.isArray(stored)) courses = stored.filter(item => item && typeof item.code === 'string' && typeof item.title === 'string');
-        } catch (_) { /* Browser storage unavailable. */ }
-        function render() {
-            grid.querySelectorAll('[data-fc-demo-course]').forEach(node => node.remove());
-            const empty = document.getElementById('fcmEmpty');
-            if (empty) empty.hidden = courses.length > 0 || grid.querySelector('.sc-course-card') !== null;
-            courses.forEach(course => {
-                const card = document.createElement('article'); card.className = 'sc-course-card';
-                card.dataset.fcDemoCourse = 'true';
-                const top = document.createElement('div'); top.className = 'sc-card-top';
-                const symbol = document.createElement('span'); symbol.className = 'sc-course-icon'; symbol.textContent = course.code.slice(0, 2).toUpperCase();
-                const status = document.createElement('span'); status.className = 'sc-enrolled'; status.textContent = 'NEW COURSE';
-                top.append(symbol, status);
-                const body = document.createElement('div'); body.className = 'sc-course-body';
-                const code = document.createElement('span'); code.className = 'sc-course-code'; code.textContent = course.code;
-                const name = document.createElement('h2'); name.textContent = course.title;
-                const note = document.createElement('p'); note.className = 'sc-faculty'; note.textContent = 'Assigned faculty · You';
-                body.append(code, name, note);
-                const bottom = document.createElement('div'); bottom.className = 'sc-card-bottom';
-                const summary = document.createElement('div'); summary.className = 'sc-progress-top'; summary.textContent = '0 enrolled students · Demo';
-                bottom.append(summary); card.append(top, body, bottom); grid.append(card);
-            });
-            const count = document.getElementById('facultyCourseCount');
-            if (count) count.textContent = String(grid.querySelectorAll('.sc-course-card').length).padStart(2, '0');
-        }
-        const close = () => { if (dialog.open) dialog.close(); };
-        open.addEventListener('click', () => { form.reset(); dialog.showModal(); form.elements.code.focus(); });
-        document.getElementById('fcCloseCreate')?.addEventListener('click', close);
-        document.getElementById('fcCancelCreate')?.addEventListener('click', close);
-        dialog.addEventListener('click', event => { if (event.target === dialog) close(); });
-        form.addEventListener('submit', event => {
-            event.preventDefault();
-            if (!form.reportValidity()) return;
-            const code = form.elements.code.value.trim();
-            const title = form.elements.title.value.trim();
-            if (!code || !title) return;
-            if (courses.some(course => course.code.toLowerCase() === code.toLowerCase())) {
-                form.elements.code.setCustomValidity('This course code already exists.');
-                form.elements.code.reportValidity(); return;
+        if (!grid) return;
+        const empty = document.getElementById('fcmEmpty');
+        const status = document.getElementById('facultyCoursesStatus');
+        const count = document.getElementById('facultyCourseCount');
+        const summary = document.getElementById('facultyTermSummary');
+        fetch('/api/faculty/sections', {
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin'
+        }).then(async response => {
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(result.error || 'Teaching assignments could not be loaded.');
+            const sections = Array.isArray(result.sections) ? result.sections : [];
+            grid.replaceChildren();
+            if (count) count.textContent = String(sections.length).padStart(2, '0');
+            if (summary) {
+                const terms = new Set(sections.map(section =>
+                    [section.academic_year_name, section.term_name].filter(Boolean).join(' · ')
+                ).filter(Boolean));
+                summary.textContent = terms.size ? [...terms].join(' | ') : 'No term assigned';
             }
-            courses.push({ code, title });
-            try { localStorage.setItem(storageKey, JSON.stringify(courses)); } catch (_) { /* Session-only if storage unavailable. */ }
-            render(); close();
+            if (empty) {
+                empty.hidden = sections.length > 0;
+                if (!sections.length) {
+                    empty.textContent = 'No teaching sections have been assigned to your account.';
+                    grid.appendChild(empty);
+                }
+            }
+            sections.forEach(section => {
+                const card = document.createElement('article');
+                card.className = 'sc-course-card';
+                const top = document.createElement('div');
+                top.className = 'sc-card-top';
+                const icon = document.createElement('span');
+                icon.className = 'sc-course-icon';
+                icon.textContent = String(section.course_code || '').slice(0, 2).toUpperCase();
+                const term = document.createElement('span');
+                term.className = 'sc-enrolled';
+                term.textContent = [section.academic_year_name, section.term_name].filter(Boolean).join(' · ');
+                top.append(icon, term);
+                const body = document.createElement('div');
+                body.className = 'sc-course-body';
+                const code = document.createElement('span');
+                code.className = 'sc-course-code';
+                code.textContent = section.course_code || '';
+                const title = document.createElement('h2');
+                title.textContent = section.course_title || 'Course';
+                const detail = document.createElement('p');
+                detail.className = 'sc-section';
+                detail.textContent = 'Section ' + (section.section_name || '—') +
+                    (section.schedule ? ' · ' + section.schedule : '');
+                body.append(code, title, detail);
+                const bottom = document.createElement('div');
+                bottom.className = 'sc-card-bottom';
+                const link = document.createElement('a');
+                link.className = 'sd-action';
+                link.href = '/requirement%204/ra-faculty.html?section_id=' +
+                    encodeURIComponent(section.section_id);
+                link.textContent = 'Open Assessment Entry →';
+                bottom.appendChild(link);
+                card.append(top, body, bottom);
+                grid.appendChild(card);
+            });
+        }).catch(error => {
+            if (status) status.textContent = error.message;
+            if (empty) {
+                empty.textContent = 'Assigned sections could not be loaded.';
+                empty.hidden = false;
+            }
+            if (!grid.contains(empty) && empty) grid.appendChild(empty);
         });
-        form.elements.code.addEventListener('input', () => form.elements.code.setCustomValidity(''));
-        render();
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
     else init();
+})();
+
+// Department Heads manage department courses, term offerings, and faculty assignments.
+(function () {
+    const page = document.querySelector('.department-course-offerings-page');
+    if (!page) return;
+    const status = document.getElementById('offeringsStatus');
+    const courseForm = document.getElementById('departmentCourseForm');
+    const offeringForm = document.getElementById('departmentOfferingForm');
+    const coursesBody = document.getElementById('departmentCoursesBody');
+    const offeringsBody = document.getElementById('departmentOfferingsBody');
+    const yearsSelect = offeringForm.elements.academic_year_id;
+    const termsSelect = offeringForm.elements.academic_term_id;
+    let data = { courses: [], faculty: [], academic_years: [], offerings: [] };
+
+    async function request(url, options) {
+        const response = await fetch(url, Object.assign({
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin'
+        }, options || {}));
+        if (!(response.headers.get('content-type') || '').includes('application/json')) {
+            throw new Error('The server did not return course data. Sign in again and retry.');
+        }
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'The request could not be completed.');
+        return result;
+    }
+
+    function showStatus(message, isError) {
+        status.textContent = message || '';
+        status.classList.toggle('is-error', Boolean(isError));
+    }
+
+    function renderSelect(select, placeholder, options) {
+        select.replaceChildren(new Option(placeholder, ''));
+        options.forEach(option => select.add(new Option(option.label, option.value)));
+    }
+
+    function renderCourses() {
+        coursesBody.replaceChildren();
+        data.courses.forEach(course => {
+            const row = document.createElement('tr');
+            [course.code, course.title, String(course.units || 0)].forEach(value => {
+                const cell = document.createElement('td');
+                cell.textContent = value;
+                row.appendChild(cell);
+            });
+            const action = document.createElement('td');
+            const edit = document.createElement('button');
+            edit.type = 'button';
+            edit.className = 'department-inline-button';
+            edit.dataset.editCourse = course.id;
+            edit.textContent = 'Edit';
+            action.appendChild(edit);
+            row.appendChild(action);
+            coursesBody.appendChild(row);
+        });
+        const courseOptions = data.courses.map(course => ({
+            value: course.id,
+            label: course.code + ' - ' + course.title
+        }));
+        renderSelect(offeringForm.elements.course_id,
+            courseOptions.length ? 'Select course' : 'Add a course first',
+            courseOptions);
+    }
+
+    function renderOfferings() {
+        offeringsBody.replaceChildren();
+        const empty = document.getElementById('departmentOfferingsEmpty');
+        empty.hidden = data.offerings.length > 0;
+        data.offerings.forEach(offering => {
+            const row = document.createElement('tr');
+            const values = [
+                offering.course_code + ' - ' + offering.course_title,
+                [offering.academic_year_name, offering.term_name].filter(Boolean).join(' · '),
+                offering.section_name,
+                offering.faculty_name,
+                [offering.room, offering.schedule].filter(Boolean).join(' · ') || '—'
+            ];
+            values.forEach(value => {
+                const cell = document.createElement('td');
+                cell.textContent = value;
+                row.appendChild(cell);
+            });
+            const assignmentCell = document.createElement('td');
+            const controls = document.createElement('div');
+            controls.className = 'department-reassign-controls';
+            const select = document.createElement('select');
+            select.setAttribute('aria-label', 'New Faculty assignment for ' + offering.course_code + ' ' + offering.section_name);
+            select.disabled = data.faculty.length === 0;
+            data.faculty.forEach(faculty => {
+                const option = new Option(faculty.full_name +
+                    (faculty.employee_number ? ' · ' + faculty.employee_number : ''),
+                    faculty.id, false, faculty.id === offering.faculty_id);
+                select.add(option);
+            });
+            const reason = document.createElement('input');
+            reason.type = 'text';
+            reason.maxLength = 500;
+            reason.placeholder = 'Reason (optional)';
+            reason.setAttribute('aria-label', 'Reason for assignment change');
+            const save = document.createElement('button');
+            save.type = 'button';
+            save.className = 'department-inline-button';
+            save.dataset.reassignSection = offering.id;
+            save.textContent = 'Save';
+            save.disabled = data.faculty.length === 0;
+            controls.append(select, reason, save);
+            assignmentCell.appendChild(controls);
+            row.appendChild(assignmentCell);
+            offeringsBody.appendChild(row);
+        });
+    }
+
+    function renderYears() {
+        renderSelect(yearsSelect,
+            data.academic_years.length ? 'Select academic year' : 'No academic years configured',
+            data.academic_years.map(year => ({ value: year.id, label: year.name })));
+        renderTerms();
+    }
+
+    function renderTerms() {
+        const year = data.academic_years.find(item => item.id === yearsSelect.value);
+        const terms = year?.terms || [];
+        renderSelect(termsSelect,
+            terms.length ? 'Select term' : 'Select a year with configured terms',
+            terms.map(term => ({
+                value: term.id,
+                label: term.name + (term.start_date && term.end_date
+                    ? ' (' + term.start_date + ' – ' + term.end_date + ')'
+                    : '')
+            })));
+        termsSelect.disabled = !terms.length;
+    }
+
+    async function load() {
+        try {
+            data = await request('/api/department-head/offerings');
+            renderCourses();
+            renderOfferings();
+            renderYears();
+            renderSelect(offeringForm.elements.faculty_id,
+                data.faculty.length ? 'Select active Faculty' : 'No active Faculty in your department',
+                data.faculty.map(faculty => ({
+                    value: faculty.id,
+                    label: faculty.full_name +
+                        (faculty.employee_number ? ' · ' + faculty.employee_number : '')
+                })));
+            showStatus('');
+        } catch (error) {
+            showStatus(error.message, true);
+        }
+    }
+
+    courseForm.addEventListener('submit', async event => {
+        event.preventDefault();
+        if (!courseForm.reportValidity()) return;
+        const values = Object.fromEntries(new FormData(courseForm));
+        const id = values.id;
+        delete values.id;
+        values.units = Number(values.units);
+        const submit = document.getElementById('departmentCourseSubmit');
+        submit.disabled = true;
+        showStatus(id ? 'Saving course changes...' : 'Adding course...');
+        try {
+            await request(id
+                ? '/api/department-head/courses/' + encodeURIComponent(id)
+                : '/api/department-head/courses', {
+                    method: id ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                    body: JSON.stringify(values)
+                });
+            resetCourseForm();
+            await load();
+            showStatus(id ? 'Course updated.' : 'Course added.');
+        } catch (error) {
+            showStatus(error.message, true);
+        } finally {
+            submit.disabled = false;
+        }
+    });
+
+    function resetCourseForm() {
+        courseForm.reset();
+        courseForm.elements.id.value = '';
+        courseForm.elements.units.value = '3';
+        document.getElementById('departmentCourseSubmit').textContent = 'Add Course';
+        document.getElementById('departmentCourseCancel').hidden = true;
+        document.getElementById('courseFormHeading').textContent = 'Department Course Catalog';
+    }
+    document.getElementById('departmentCourseCancel').addEventListener('click', resetCourseForm);
+    coursesBody.addEventListener('click', event => {
+        const button = event.target.closest('[data-edit-course]');
+        if (!button) return;
+        const course = data.courses.find(item => item.id === button.dataset.editCourse);
+        if (!course) return;
+        courseForm.elements.id.value = course.id;
+        courseForm.elements.code.value = course.code;
+        courseForm.elements.title.value = course.title;
+        courseForm.elements.units.value = String(course.units || 0);
+        courseForm.elements.description.value = course.description || '';
+        document.getElementById('departmentCourseSubmit').textContent = 'Save Course';
+        document.getElementById('departmentCourseCancel').hidden = false;
+        document.getElementById('courseFormHeading').textContent = 'Edit Department Course';
+        courseForm.elements.code.focus();
+    });
+
+    yearsSelect.addEventListener('change', renderTerms);
+    offeringForm.addEventListener('submit', async event => {
+        event.preventDefault();
+        if (!offeringForm.reportValidity()) return;
+        const values = Object.fromEntries(new FormData(offeringForm));
+        const submit = offeringForm.querySelector('[type="submit"]');
+        submit.disabled = true;
+        showStatus('Creating section and Faculty assignment...');
+        try {
+            await request('/api/department-head/offerings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify(values)
+            });
+            offeringForm.reset();
+            termsSelect.disabled = true;
+            await load();
+            showStatus('Course section created and Faculty assigned.');
+        } catch (error) {
+            showStatus(error.message, true);
+        } finally {
+            submit.disabled = false;
+        }
+    });
+
+    offeringsBody.addEventListener('click', async event => {
+        const button = event.target.closest('[data-reassign-section]');
+        if (!button) return;
+        const row = button.closest('tr');
+        const facultySelect = row.querySelector('select');
+        button.disabled = true;
+        showStatus('Updating Faculty assignment...');
+        try {
+            await request('/api/department-head/offerings/' +
+                encodeURIComponent(button.dataset.reassignSection) + '/faculty', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                    body: JSON.stringify({
+                        faculty_id: facultySelect.value,
+                        reason: row.querySelector('input').value.trim()
+                    })
+                });
+            await load();
+            showStatus('Faculty assignment updated and recorded in assignment history.');
+        } catch (error) {
+            showStatus(error.message, true);
+        } finally {
+            button.disabled = false;
+        }
+    });
+    load();
+})();
+
+// Admin creates academic years atomically with exactly three terms.
+(function () {
+    const form = document.getElementById('academicYearForm');
+    if (!form) return;
+    const status = document.getElementById('academicTermsStatus');
+    const rows = document.getElementById('academicYearsBody');
+    const empty = document.getElementById('academicYearsEmpty');
+
+    async function request(url, options) {
+        const response = await fetch(url, Object.assign({
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin'
+        }, options || {}));
+        if (!(response.headers.get('content-type') || '').includes('application/json')) {
+            throw new Error('The server did not return academic year data. Sign in again and retry.');
+        }
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'The request could not be completed.');
+        return result;
+    }
+
+    function render(years) {
+        rows.replaceChildren();
+        empty.hidden = years.length > 0;
+        years.forEach(year => {
+            const row = document.createElement('tr');
+            const yearCell = document.createElement('td');
+            yearCell.textContent = year.name;
+            row.appendChild(yearCell);
+            [1, 2, 3].forEach(number => {
+                const cell = document.createElement('td');
+                const term = (year.terms || []).find(item => item.term_number === number);
+                cell.textContent = term
+                    ? term.name + (term.start_date && term.end_date
+                        ? ' · ' + term.start_date + ' – ' + term.end_date
+                        : ' · Dates not set')
+                    : 'Not configured';
+                row.appendChild(cell);
+            });
+            rows.appendChild(row);
+        });
+    }
+
+    async function load() {
+        try {
+            const result = await request('/api/admin/academic-years');
+            render(Array.isArray(result.academic_years) ? result.academic_years : []);
+        } catch (error) {
+            status.textContent = error.message;
+            status.classList.add('is-error');
+        }
+    }
+
+    form.addEventListener('submit', async event => {
+        event.preventDefault();
+        if (!form.reportValidity()) return;
+        const values = Object.fromEntries(new FormData(form));
+        const terms = [1, 2, 3].map(number => ({
+            term_number: number,
+            name: 'Term ' + number,
+            start_date: values['term' + number + '_start'],
+            end_date: values['term' + number + '_end']
+        }));
+        const submit = form.querySelector('[type="submit"]');
+        submit.disabled = true;
+        status.classList.remove('is-error');
+        status.textContent = 'Creating academic year and three terms...';
+        try {
+            await request('/api/admin/academic-years', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify({
+                    name: values.name,
+                    start_date: values.start_date,
+                    end_date: values.end_date,
+                    terms
+                })
+            });
+            form.reset();
+            status.textContent = 'Academic year created with Term 1, Term 2, and Term 3.';
+            await load();
+        } catch (error) {
+            status.textContent = error.message;
+            status.classList.add('is-error');
+        } finally {
+            submit.disabled = false;
+        }
+    });
+    load();
 })();
 
 /* Shared calendar: reuse the existing header popup on every role/page. */
@@ -7557,13 +7949,16 @@ function initRawAssessmentFaculty() {
         ));
         assignments.forEach(item => {
             sectionSelect.add(new Option(
-                [item.course_code, item.section_name, item.academic_year_name]
+                [item.course_code, item.section_name, item.academic_year_name, item.term_name]
                     .filter(Boolean).join(' - '),
                 item.section_id
             ));
         });
-        if (assignments.length === 1) {
-            sectionSelect.value = assignments[0].section_id;
+        const requestedSection = new URLSearchParams(location.search).get('section_id');
+        const selectedAssignment = assignments.find(item => item.section_id === requestedSection) ||
+            (assignments.length === 1 ? assignments[0] : null);
+        if (selectedAssignment) {
+            sectionSelect.value = selectedAssignment.section_id;
             loadWorkspace();
         } else {
             sectionSelect.disabled = assignments.length === 0;

@@ -175,6 +175,15 @@ def get_signature_url(file_path: str, expires_in: int = 60):
 - The student Assessment Records page now reads scores from the backend. Scores are visible only when the section gradebook is Locked; otherwise the item is shown as Awaiting Release.
 - Apply `database/posts_and_scores_persistence.sql` to the Supabase database before using these features. The migration creates the scoped `course_posts` table, enables row-level security on posts, assessments, and raw scores, increases score precision, and records who entered each score. These routes use the server-side Supabase service-role client; browser clients should not access these tables directly.
 - These changes have code-level validation only until the SQL migration is applied and role-specific end-to-end checks are run against Supabase. The existing Gradebook locking/verification screens are still front-end prototypes; a backend transition to Verified/Locked is not implemented yet, so student score release requires that status to be set through the database until that workflow is connected.
+
+## Academic terms and course offerings
+
+- Admins can create academic years with exactly three terms named Term 1, Term 2, and Term 3 at `/admin/academic-terms.html`. Year dates and each term's date range are optional; supplied ranges must be complete, sequential, within the year, and non-overlapping.
+- Department Heads can manage their own department's course catalog, create sections for an academic term, assign active Faculty from their department, and reassign Faculty without deleting the section or its scores. Course codes remain institution-wide unique. Faculty see only sections assigned to them; student course and syllabus views include the academic term.
+- Apply `database/academic_terms_and_offerings.sql` to an existing Supabase database before using the new pages or APIs. Existing sections are assigned to Term 1 in their existing academic year; sections without a year are placed in a generated "Legacy Academic Year". The migration has **not** been run against Supabase. Review and test it against a backup/staging database before applying it to production.
+- `database/schema.sql` includes the corresponding definitions for new database installations. The application calls server-side RPCs for atomic academic-year setup, section creation, and Faculty reassignment history; do not expose service-role credentials or call these RPCs from browser code.
+- Code-level validation does not replace an end-to-end test against Supabase. Verify the year/term list, department scoping, unique course/section checks, active Faculty restrictions, reassignment history, and student term labels after applying the migration.
+
 Flask Route Example (If using Flask in app.py)
 If app.py is a Flask web app, here is how you handle file inputs from an HTML form request:
 

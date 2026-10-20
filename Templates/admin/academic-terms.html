@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Academic Terms | EduMetrics Admin</title>
+  <link rel="stylesheet" href="/Static/style.css">
+  <script src="/Static/script.js" defer></script>
+</head>
+<body class="so-student-page admin-academic-terms-page">
+  <header class="so-topbar">
+    <div class="so-brand"><div class="so-brand-logo">Edu<span>Metrics</span></div><div class="so-brand-subtitle">Academic Assessment &amp; Grading System</div></div>
+    <div class="so-user-area"><div class="so-user-info"><strong>System Administrator</strong><span>Admin &amp; Security</span></div><div class="so-avatar">AD</div></div>
+  </header>
+  <div class="so-header-lines"><div class="so-header-blue"></div><div class="so-header-gold"></div></div>
+  <div class="so-shell">
+    <aside class="so-sidebar">
+      <nav aria-label="Administrator navigation" class="so-nav">
+        <a class="so-nav-item" href="/requirement%202/cm-admin.html"><span>Dashboard</span></a>
+        <a class="so-nav-item" href="/requirement%207/gl-admin.html"><span>System Records</span></a>
+        <a class="so-nav-item active" aria-current="page" href="/admin/academic-terms.html"><span>Academic Terms</span></a>
+        <a class="so-nav-item" href="/account-approvals.html?role=admin"><span>Account Requests</span></a>
+      </nav>
+      <div class="so-sidebar-brand"><div class="so-sidebar-logo">Edu<span>Metrics</span></div><small>Academic Assessment &amp; Grading System</small></div>
+    </aside>
+    <main class="so-main admin-terms-main">
+      <section class="so-page-heading"><h1>Academic Years &amp; Terms</h1><p>Create an academic year together with its three sequential terms. Dates are optional, but any entered term dates must be within the year and may not overlap.</p></section>
+      <p id="academicTermsStatus" class="department-offerings-status" role="status" aria-live="polite"></p>
+      <section class="so-content-card department-offerings-panel">
+        <h2>Create Academic Year</h2>
+        <form id="academicYearForm" class="academic-year-form">
+          <label>Academic year name<input name="name" maxlength="80" required placeholder="e.g. 2026–2027"></label>
+          <label>Year start date<input name="start_date" type="date"></label>
+          <label>Year end date<input name="end_date" type="date"></label>
+          <div class="academic-term-fields">
+            <fieldset><legend>Term 1</legend><label>Start<input name="term1_start" type="date"></label><label>End<input name="term1_end" type="date"></label></fieldset>
+            <fieldset><legend>Term 2</legend><label>Start<input name="term2_start" type="date"></label><label>End<input name="term2_end" type="date"></label></fieldset>
+            <fieldset><legend>Term 3</legend><label>Start<input name="term3_start" type="date"></label><label>End<input name="term3_end" type="date"></label></fieldset>
+          </div>
+          <button type="submit">Create Academic Year and Terms</button>
+        </form>
+      </section>
+      <section class="so-content-card department-offerings-panel">
+        <h2>Configured Academic Years</h2>
+        <div class="department-table-wrap"><table><thead><tr><th>Academic Year</th><th>Term 1</th><th>Term 2</th><th>Term 3</th></tr></thead><tbody id="academicYearsBody"></tbody></table></div>
+        <p id="academicYearsEmpty" hidden>No academic years are configured yet.</p>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

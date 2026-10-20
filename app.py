@@ -283,7 +283,7 @@ def faculty_sections():
 
         section_result = (
             admin_supabase.table("course_sections")
-            .select("id, course_id, academic_year_id, section_name")
+            .select("id, course_id, academic_year_id, academic_term_id, section_name")
             .eq("faculty_id", profiles[0]["id"])
             .execute()
         )
@@ -320,6 +320,22 @@ def faculty_sections():
             years_by_id = {
                 item["id"]: item for item in (year_result.data or [])
             }
+        term_ids = list({
+            item["academic_term_id"]
+            for item in sections
+            if item.get("academic_term_id")
+        })
+        terms_by_id = {}
+        if term_ids:
+            term_result = (
+                admin_supabase.table("academic_terms")
+                .select("id, term_number, name, start_date, end_date")
+                .in_("id", term_ids)
+                .execute()
+            )
+            terms_by_id = {
+                item["id"]: item for item in (term_result.data or [])
+            }
 
         assignments = []
         for section in sections:
@@ -328,6 +344,7 @@ def faculty_sections():
                 continue
 
             year = years_by_id.get(section.get("academic_year_id"), {})
+            term = terms_by_id.get(section.get("academic_term_id"), {})
             assignments.append({
                 "section_id": section["id"],
                 "section_name": section["section_name"],
@@ -336,6 +353,11 @@ def faculty_sections():
                 "course_title": course["title"],
                 "academic_year_id": section.get("academic_year_id"),
                 "academic_year_name": year.get("name", ""),
+                "academic_term_id": section.get("academic_term_id"),
+                "term_number": term.get("term_number"),
+                "term_name": term.get("name", ""),
+                "term_start_date": term.get("start_date"),
+                "term_end_date": term.get("end_date"),
             })
 
         return jsonify({"sections": assignments}), 200
@@ -376,7 +398,7 @@ def student_courses():
         section_ids = list({item["section_id"] for item in enrollments})
         section_result = (
             admin_supabase.table("course_sections")
-            .select("id, course_id, academic_year_id, section_name")
+            .select("id, course_id, academic_year_id, academic_term_id, section_name")
             .in_("id", section_ids)
             .execute()
         )
@@ -416,6 +438,22 @@ def student_courses():
             years_by_id = {
                 item["id"]: item for item in (year_result.data or [])
             }
+        term_ids = list({
+            item["academic_term_id"]
+            for item in sections_by_id.values()
+            if item.get("academic_term_id")
+        })
+        terms_by_id = {}
+        if term_ids:
+            term_result = (
+                admin_supabase.table("academic_terms")
+                .select("id, term_number, name")
+                .in_("id", term_ids)
+                .execute()
+            )
+            terms_by_id = {
+                item["id"]: item for item in (term_result.data or [])
+            }
 
         courses = []
         for enrollment in enrollments:
@@ -428,6 +466,7 @@ def student_courses():
                 continue
 
             year = years_by_id.get(section.get("academic_year_id"), {})
+            term = terms_by_id.get(section.get("academic_term_id"), {})
             courses.append({
                 "enrollment_id": enrollment["id"],
                 "enrollment_status": enrollment["enrollment_status"],
@@ -435,6 +474,9 @@ def student_courses():
                 "course_code": course["code"],
                 "course_title": course["title"],
                 "academic_year_name": year.get("name", ""),
+                "academic_term_id": section.get("academic_term_id"),
+                "term_number": term.get("term_number"),
+                "term_name": term.get("name", ""),
             })
 
         return jsonify({"profile_complete": True, "courses": courses}), 200
@@ -461,6 +503,565 @@ def _account_profile(role, user_id, fields):
     )
     rows = result.data or []
     return rows[0] if rows else None
+
+
+def _department_head_department_id(user_id):
+    profile = _account_profile(
+        "department-head", user_id, "department_id"
+    )
+    return profile.get("department_id") if profile else None
+
+
+def _parse_uuid(value, error_message):
+    try:
+        return str(UUID(str(value)))
+    except (TypeError, ValueError, AttributeError):
+        raise ValueError(error_message) from None
+
+
+@app.get("/api/admin/academic-years")
+@require_role("admin-security")
+def list_academic_years():
+    if not admin_supabase:
+        return jsonify({"error": "Academic years are unavailable."}), 503
+    try:
+        years = (
+            admin_supabase.table("academic_years")
+            .select("id, name, start_date, end_date, is_active")
+            .order("start_date", desc=True)
+            .execute()
+            .data
+            or []
+        )
+        year_ids = [row["id"] for row in years]
+        terms = []
+        if year_ids:
+            terms = (
+                admin_supabase.table("academic_terms")
+                .select("id, academic_year_id, term_number, name, start_date, end_date")
+                .in_("academic_year_id", year_ids)
+                .order("term_number")
+                .execute()
+                .data
+                or []
+            )
+        terms_by_year = {}
+        for term in terms:
+            terms_by_year.setdefault(term["academic_year_id"], []).append(term)
+        return jsonify({
+            "academic_years": [
+                {**year, "terms": terms_by_year.get(year["id"], [])}
+                for year in years
+            ]
+        }), 200
+    except Exception:
+        app.logger.exception("Unable to load academic years and terms")
+        return jsonify({"error": "Academic years could not be loaded."}), 500
+
+
+@app.post("/api/admin/academic-years")
+@require_role("admin-security")
+def create_academic_year():
+    if not admin_supabase:
+        return jsonify({"error": "Academic years are unavailable."}), 503
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "Academic year data must be a JSON object."}), 400
+    name = data.get("name")
+    terms = data.get("terms")
+    if not isinstance(name, str) or not name.strip() or len(name.strip()) > 80:
+        return jsonify({"error": "Academic year name must contain 1 to 80 characters."}), 400
+    if not isinstance(terms, list) or len(terms) != 3:
+        return jsonify({"error": "An academic year must have exactly three terms."}), 400
+    start_date = str(data.get("start_date", "")).strip() or None
+    end_date = str(data.get("end_date", "")).strip() or None
+    parsed_year_dates = []
+    for date_value in (start_date, end_date):
+        if date_value is None:
+            parsed_year_dates.append(None)
+            continue
+        try:
+            parsed_year_dates.append(datetime.strptime(date_value, "%Y-%m-%d").date())
+        except ValueError:
+            return jsonify({"error": "Academic year dates must use YYYY-MM-DD format."}), 400
+    if bool(start_date) != bool(end_date):
+        return jsonify({"error": "Provide both academic year dates or leave both blank."}), 400
+    if all(parsed_year_dates) and parsed_year_dates[0] > parsed_year_dates[1]:
+        return jsonify({"error": "Academic year start date must be before its end date."}), 400
+
+    validated_terms = []
+    previous_end = None
+    for index, term in enumerate(terms, start=1):
+        if not isinstance(term, dict):
+            return jsonify({"error": "Each academic term must be an object."}), 400
+        term_number = term.get("term_number")
+        label = term.get("name", f"Term {index}")
+        if term_number != index or label != f"Term {index}":
+            return jsonify({"error": "Terms must be supplied in Term 1, Term 2, Term 3 order."}), 400
+        if not isinstance(label, str) or not label.strip() or len(label.strip()) > 40:
+            return jsonify({"error": "Each term name must contain 1 to 40 characters."}), 400
+        term_start = str(term.get("start_date", "")).strip() or None
+        term_end = str(term.get("end_date", "")).strip() or None
+        if bool(term_start) != bool(term_end):
+            return jsonify({"error": "Provide both dates for a term or leave both blank."}), 400
+        dates = []
+        for date_value in (term_start, term_end):
+            if date_value is None:
+                dates.append(None)
+                continue
+            try:
+                dates.append(datetime.strptime(date_value, "%Y-%m-%d").date())
+            except ValueError:
+                return jsonify({"error": "Term dates must use YYYY-MM-DD format."}), 400
+        if dates[0] and dates[0] > dates[1]:
+            return jsonify({"error": f"{label.strip()} start date must be before its end date."}), 400
+        if dates[0] and parsed_year_dates[0] and dates[0] < parsed_year_dates[0]:
+            return jsonify({"error": "Term dates must fall within the academic year."}), 400
+        if dates[1] and parsed_year_dates[1] and dates[1] > parsed_year_dates[1]:
+            return jsonify({"error": "Term dates must fall within the academic year."}), 400
+        if dates[0] and previous_end and dates[0] <= previous_end:
+            return jsonify({"error": "Academic term date ranges must not overlap."}), 400
+        previous_end = dates[1] or previous_end
+        validated_terms.append({
+            "term_number": index,
+            "name": label.strip(),
+            "start_date": term_start,
+            "end_date": term_end,
+        })
+
+    try:
+        result = admin_supabase.rpc(
+            "create_academic_year_with_terms",
+            {
+                "p_name": name.strip(),
+                "p_start_date": start_date,
+                "p_end_date": end_date,
+                "p_terms": validated_terms,
+            },
+        ).execute()
+        year_id = result.data
+        if isinstance(year_id, list):
+            year_id = year_id[0] if year_id else None
+        if not year_id:
+            raise RuntimeError("Academic year creation returned no ID.")
+        return jsonify({"academic_year_id": str(year_id)}), 201
+    except Exception:
+        app.logger.exception("Unable to create academic year and its three terms")
+        return jsonify({"error": "Academic year and terms could not be created."}), 500
+
+
+@app.get("/api/department-head/offerings")
+@require_role("department-head")
+def department_head_offerings():
+    if not admin_supabase:
+        return jsonify({"error": "Course offerings are unavailable."}), 503
+    try:
+        department_id = _department_head_department_id(g.authenticated_user.id)
+        if not department_id:
+            return jsonify({"error": "Your department profile is incomplete."}), 409
+
+        courses = (
+            admin_supabase.table("courses")
+            .select("id, code, title, description, units")
+            .eq("department_id", department_id)
+            .order("code")
+            .execute()
+            .data
+            or []
+        )
+        faculty_profiles = (
+            admin_supabase.table("faculty_profiles")
+            .select("id, user_id, employee_number")
+            .eq("department_id", department_id)
+            .execute()
+            .data
+            or []
+        )
+        faculty_by_id = {}
+        if faculty_profiles:
+            user_ids = [profile["user_id"] for profile in faculty_profiles]
+            users = (
+                admin_supabase.table("users")
+                .select("id, full_name, is_active, role")
+                .in_("id", user_ids)
+                .execute()
+                .data
+                or []
+            )
+            users_by_id = {user["id"]: user for user in users}
+            faculty_by_id = {
+                profile["id"]: {
+                    "id": profile["id"],
+                    "employee_number": profile.get("employee_number") or "",
+                    "user_id": profile["user_id"],
+                    "full_name": users_by_id.get(profile["user_id"], {}).get("full_name") or "",
+                }
+                for profile in faculty_profiles
+                if users_by_id.get(profile["user_id"], {}).get("role") == "faculty"
+                and users_by_id.get(profile["user_id"], {}).get("is_active") is True
+            }
+
+        years = (
+            admin_supabase.table("academic_years")
+            .select("id, name, start_date, end_date, is_active")
+            .order("start_date", desc=True)
+            .execute()
+            .data
+            or []
+        )
+        year_ids = [year["id"] for year in years]
+        terms = []
+        if year_ids:
+            terms = (
+                admin_supabase.table("academic_terms")
+                .select("id, academic_year_id, term_number, name, start_date, end_date")
+                .in_("academic_year_id", year_ids)
+                .order("term_number")
+                .execute()
+                .data
+                or []
+            )
+        terms_by_year = {}
+        for term in terms:
+            terms_by_year.setdefault(term["academic_year_id"], []).append(term)
+
+        sections = []
+        course_ids = [course["id"] for course in courses]
+        if course_ids:
+            sections = (
+                admin_supabase.table("course_sections")
+                .select("id, course_id, academic_year_id, academic_term_id, section_name, faculty_id, room, schedule")
+                .in_("course_id", course_ids)
+                .order("section_name")
+                .execute()
+                .data
+                or []
+            )
+        year_names = {year["id"]: year["name"] for year in years}
+        course_by_id = {course["id"]: course for course in courses}
+        offerings = []
+        for section in sections:
+            course = course_by_id.get(section["course_id"], {})
+            faculty = faculty_by_id.get(section.get("faculty_id"), {})
+            term = next(
+                (term for term in terms if term["id"] == section.get("academic_term_id")),
+                {},
+            )
+            offerings.append({
+                **section,
+                "course_code": course.get("code", ""),
+                "course_title": course.get("title", ""),
+                "faculty_name": faculty.get("full_name", "Unassigned"),
+                "academic_year_name": year_names.get(section.get("academic_year_id"), ""),
+                "term_name": term.get("name", ""),
+                "term_number": term.get("term_number"),
+            })
+
+        return jsonify({
+            "department_id": department_id,
+            "courses": courses,
+            "faculty": list(faculty_by_id.values()),
+            "academic_years": [
+                {**year, "terms": terms_by_year.get(year["id"], [])}
+                for year in years
+            ],
+            "offerings": offerings,
+        }), 200
+    except Exception:
+        app.logger.exception("Unable to load department course offerings")
+        return jsonify({"error": "Department course offerings could not be loaded."}), 500
+
+
+@app.post("/api/department-head/courses")
+@require_role("department-head")
+def create_department_course():
+    if not admin_supabase:
+        return jsonify({"error": "Course catalog is unavailable."}), 503
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "Course data must be a JSON object."}), 400
+    code = data.get("code")
+    title = data.get("title")
+    description = data.get("description", "")
+    units = data.get("units", 0)
+    if not isinstance(code, str) or not isinstance(title, str):
+        return jsonify({"error": "Course code and title must be text."}), 400
+    code = code.strip().upper()
+    title = title.strip()
+    if not 2 <= len(code) <= 30:
+        return jsonify({"error": "Course code must contain 2 to 30 characters."}), 400
+    if not code.replace("-", "").replace("_", "").replace(".", "").isalnum():
+        return jsonify({"error": "Course code may contain letters, numbers, dots, underscores, and hyphens."}), 400
+    if not title or len(title) > 120:
+        return jsonify({"error": "Course title must contain 1 to 120 characters."}), 400
+    if not isinstance(description, str) or len(description.strip()) > 2000:
+        return jsonify({"error": "Course description must be at most 2,000 characters."}), 400
+    if isinstance(units, bool) or not isinstance(units, int) or not 0 <= units <= 30:
+        return jsonify({"error": "Course units must be a whole number from 0 to 30."}), 400
+    try:
+        department_id = _department_head_department_id(g.authenticated_user.id)
+        if not department_id:
+            return jsonify({"error": "Your department profile is incomplete."}), 409
+        result = (
+            admin_supabase.table("courses")
+            .insert({
+                "department_id": department_id,
+                "code": code,
+                "title": title,
+                "description": description.strip(),
+                "units": units,
+            })
+            .execute()
+        )
+        rows = result.data or []
+        if not rows:
+            raise RuntimeError("Course creation returned no saved record.")
+        return jsonify({"course": rows[0]}), 201
+    except Exception as error:
+        if "duplicate key" in str(error).lower() or "unique" in str(error).lower():
+            return jsonify({"error": "That course code is already in use institution-wide."}), 409
+        app.logger.exception("Unable to create department course")
+        return jsonify({"error": "Course could not be created."}), 500
+
+
+@app.put("/api/department-head/courses/<course_id>")
+@require_role("department-head")
+def update_department_course(course_id):
+    if not admin_supabase:
+        return jsonify({"error": "Course catalog is unavailable."}), 503
+    try:
+        course_id = str(UUID(course_id))
+        department_id = _department_head_department_id(g.authenticated_user.id)
+        if not department_id:
+            return jsonify({"error": "Your department profile is incomplete."}), 409
+        existing = (
+            admin_supabase.table("courses")
+            .select("id")
+            .eq("id", course_id)
+            .eq("department_id", department_id)
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if not existing:
+            return jsonify({"error": "Course not found in your department."}), 404
+        data = request.get_json(silent=True)
+        if not isinstance(data, dict):
+            return jsonify({"error": "Course data must be a JSON object."}), 400
+        code, title = data.get("code"), data.get("title")
+        description, units = data.get("description", ""), data.get("units", 0)
+        if not isinstance(code, str) or not isinstance(title, str):
+            return jsonify({"error": "Course code and title must be text."}), 400
+        code, title = code.strip().upper(), title.strip()
+        if not 2 <= len(code) <= 30 or not code.replace("-", "").replace("_", "").replace(".", "").isalnum():
+            return jsonify({"error": "Enter a valid course code (2 to 30 letters, numbers, dots, underscores, or hyphens)."}), 400
+        if not title or len(title) > 120:
+            return jsonify({"error": "Course title must contain 1 to 120 characters."}), 400
+        if not isinstance(description, str) or len(description.strip()) > 2000:
+            return jsonify({"error": "Course description must be at most 2,000 characters."}), 400
+        if isinstance(units, bool) or not isinstance(units, int) or not 0 <= units <= 30:
+            return jsonify({"error": "Course units must be a whole number from 0 to 30."}), 400
+        result = (
+            admin_supabase.table("courses")
+            .update({
+                "code": code,
+                "title": title,
+                "description": description.strip(),
+                "units": units,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            })
+            .eq("id", course_id)
+            .eq("department_id", department_id)
+            .execute()
+        )
+        rows = result.data or []
+        if not rows:
+            return jsonify({"error": "Course could not be found or updated."}), 404
+        return jsonify({"course": rows[0]}), 200
+    except ValueError:
+        return jsonify({"error": "Invalid course ID."}), 400
+    except Exception as error:
+        if "duplicate key" in str(error).lower() or "unique" in str(error).lower():
+            return jsonify({"error": "That course code is already in use institution-wide."}), 409
+        app.logger.exception("Unable to update department course")
+        return jsonify({"error": "Course could not be updated."}), 500
+
+
+@app.post("/api/department-head/offerings")
+@require_role("department-head")
+def create_department_offering():
+    if not admin_supabase:
+        return jsonify({"error": "Course offerings are unavailable."}), 503
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "Offering data must be a JSON object."}), 400
+    section_name = data.get("section_name")
+    if not isinstance(section_name, str) or not section_name.strip() or len(section_name.strip()) > 40:
+        return jsonify({"error": "Section name must contain 1 to 40 characters."}), 400
+    try:
+        course_id = _parse_uuid(data.get("course_id"), "Choose a valid course.")
+        term_id = _parse_uuid(data.get("academic_term_id"), "Choose a valid academic term.")
+        faculty_id = _parse_uuid(data.get("faculty_id"), "Choose an active Faculty member.")
+        department_id = _department_head_department_id(g.authenticated_user.id)
+        if not department_id:
+            return jsonify({"error": "Your department profile is incomplete."}), 409
+        course = (
+            admin_supabase.table("courses")
+            .select("id")
+            .eq("id", course_id)
+            .eq("department_id", department_id)
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if not course:
+            return jsonify({"error": "Course not found in your department."}), 404
+        term = (
+            admin_supabase.table("academic_terms")
+            .select("id, academic_year_id")
+            .eq("id", term_id)
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if not term:
+            return jsonify({"error": "Academic term not found."}), 404
+        faculty = (
+            admin_supabase.table("faculty_profiles")
+            .select("id, user_id")
+            .eq("id", faculty_id)
+            .eq("department_id", department_id)
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if not faculty:
+            return jsonify({"error": "Faculty member must be assigned to your department."}), 400
+        active_user = (
+            admin_supabase.table("users")
+            .select("id")
+            .eq("id", faculty[0]["user_id"])
+            .eq("role", "faculty")
+            .eq("is_active", True)
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if not active_user:
+            return jsonify({"error": "Faculty member is not active."}), 400
+        result = admin_supabase.rpc(
+            "create_course_section_with_assignment",
+            {
+                "p_course_id": course_id,
+                "p_academic_term_id": term_id,
+                "p_section_name": section_name.strip(),
+                "p_faculty_id": faculty_id,
+                "p_actor_id": str(g.authenticated_user.id),
+                "p_room": str(data.get("room", "")).strip(),
+                "p_schedule": str(data.get("schedule", "")).strip(),
+            },
+        ).execute()
+        section_id = result.data
+        if isinstance(section_id, list):
+            section_id = section_id[0] if section_id else None
+        if not section_id:
+            raise RuntimeError("Course offering creation returned no section ID.")
+        return jsonify({"section_id": str(section_id)}), 201
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+    except Exception as error:
+        message = str(error).lower()
+        if "duplicate key" in message or "unique" in message:
+            return jsonify({"error": "That section name already exists for this course and term."}), 409
+        app.logger.exception("Unable to create course offering")
+        return jsonify({"error": "Course offering could not be created."}), 500
+
+
+@app.patch("/api/department-head/offerings/<section_id>/faculty")
+@require_role("department-head")
+def reassign_department_offering(section_id):
+    if not admin_supabase:
+        return jsonify({"error": "Faculty assignments are unavailable."}), 503
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "Assignment data must be a JSON object."}), 400
+    try:
+        section_id = str(UUID(section_id))
+        faculty_id = _parse_uuid(data.get("faculty_id"), "Choose an active Faculty member.")
+        reason = data.get("reason", "")
+        if not isinstance(reason, str) or len(reason.strip()) > 500:
+            return jsonify({"error": "Assignment reason must be at most 500 characters."}), 400
+        department_id = _department_head_department_id(g.authenticated_user.id)
+        if not department_id:
+            return jsonify({"error": "Your department profile is incomplete."}), 409
+        section = (
+            admin_supabase.table("course_sections")
+            .select("id, course_id, faculty_id")
+            .eq("id", section_id)
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if not section:
+            return jsonify({"error": "Course section not found."}), 404
+        course = (
+            admin_supabase.table("courses")
+            .select("id")
+            .eq("id", section[0]["course_id"])
+            .eq("department_id", department_id)
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if not course:
+            return jsonify({"error": "Course section is outside your department."}), 403
+        faculty = (
+            admin_supabase.table("faculty_profiles")
+            .select("id, user_id")
+            .eq("id", faculty_id)
+            .eq("department_id", department_id)
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if not faculty:
+            return jsonify({"error": "Faculty member must be assigned to your department."}), 400
+        active_user = (
+            admin_supabase.table("users")
+            .select("id")
+            .eq("id", faculty[0]["user_id"])
+            .eq("role", "faculty")
+            .eq("is_active", True)
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if not active_user:
+            return jsonify({"error": "Faculty member is not active."}), 400
+        admin_supabase.rpc(
+            "reassign_course_section_faculty",
+            {
+                "p_section_id": section_id,
+                "p_faculty_id": faculty_id,
+                "p_actor_id": str(g.authenticated_user.id),
+                "p_reason": reason.strip(),
+            },
+        ).execute()
+        return jsonify({"message": "Faculty assignment updated."}), 200
+    except ValueError:
+        return jsonify({"error": "Invalid course section ID."}), 400
+    except Exception:
+        app.logger.exception("Unable to reassign course section")
+        return jsonify({"error": "Faculty assignment could not be updated."}), 500
 
 
 def _post_rows_for_scope(column, values):
@@ -1390,7 +1991,7 @@ def student_syllabi():
 
         sections_result = (
             admin_supabase.table("course_sections")
-            .select("id, course_id, academic_year_id, section_name")
+            .select("id, course_id, academic_year_id, academic_term_id, section_name")
             .in_("id", section_ids)
             .execute()
         )
@@ -1423,6 +2024,22 @@ def student_syllabi():
             years_by_id = {
                 item["id"]: item for item in (year_result.data or [])
             }
+        term_ids = list({
+            item["academic_term_id"]
+            for item in sections
+            if item.get("academic_term_id")
+        })
+        terms_by_id = {}
+        if term_ids:
+            term_result = (
+                admin_supabase.table("academic_terms")
+                .select("id, term_number, name")
+                .in_("id", term_ids)
+                .execute()
+            )
+            terms_by_id = {
+                item["id"]: item for item in (term_result.data or [])
+            }
 
         syllabus_result = (
             admin_supabase.table("course_syllabi")
@@ -1440,12 +2057,14 @@ def student_syllabi():
                 continue
 
             year = years_by_id.get(section.get("academic_year_id"), {})
+            term = terms_by_id.get(section.get("academic_term_id"), {})
             syllabi.append({
                 "course_id": course["id"],
                 "course_code": course["code"],
                 "course_title": course["title"],
                 "section_name": section["section_name"],
                 "academic_year_name": year.get("name", ""),
+                "term_name": term.get("name", ""),
                 "file_name": record["file_name"],
                 "uploaded_at": record["uploaded_at"],
                 "signed_url": signed_syllabus_url(record),
@@ -1883,6 +2502,18 @@ def faculty_courses_page():
 @require_role("student")
 def student_courses_page():
     return render_template("main/courses.html")
+
+
+@app.get("/department-head/course-offerings.html")
+@require_role("department-head")
+def department_head_course_offerings_page():
+    return render_template("department-head/course-offerings.html")
+
+
+@app.get("/admin/academic-terms.html")
+@require_role("admin-security")
+def admin_academic_terms_page():
+    return render_template("admin/academic-terms.html")
 
 
 @app.get("/main/platform.html")

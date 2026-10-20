@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Course Offerings | EduMetrics</title>
+  <link rel="stylesheet" href="/Static/style.css">
+  <script src="/Static/script.js" defer></script>
+</head>
+<body class="so-student-page dept-head-unified department-course-offerings-page">
+  <header class="so-topbar">
+    <div class="so-brand"><div class="so-brand-logo">Edu<span>Metrics</span></div><div class="so-brand-subtitle">Academic Assessment &amp; Grading System</div></div>
+    <div class="so-user-area">
+      <div class="so-user-info"><strong>Department Head</strong><span>Department Head</span></div>
+      <div aria-hidden="true" class="so-avatar">DH</div>
+    </div>
+  </header>
+  <div class="so-header-lines"><div class="so-header-blue"></div><div class="so-header-gold"></div></div>
+  <div class="so-shell">
+    <aside class="so-sidebar">
+      <nav aria-label="Department Head navigation" class="so-nav">
+        <a class="so-nav-item" href="/main/dashboard.html"><span>Dashboard</span></a>
+        <a class="so-nav-item" href="/account-approvals.html?role=dept-head"><span>Account Requests</span></a>
+        <a class="so-nav-item active" aria-current="page" href="/department-head/course-offerings.html"><span>Course Offerings</span></a>
+        <a class="so-nav-item" href="/main/platform.html?role=dept-head"><span>Platform</span></a>
+        <a class="so-nav-item" href="/main/resources.html?role=dept-head"><span>Resources</span></a>
+      </nav>
+      <div class="so-sidebar-brand"><div class="so-sidebar-logo">Edu<span>Metrics</span></div><small>Academic Assessment &amp; Grading System</small></div>
+    </aside>
+    <main class="so-main department-offerings-main">
+      <section class="so-page-heading"><h1>Courses &amp; Faculty Assignments</h1><p>Create courses for your department, open sections for one of the three terms, and assign an active Faculty member.</p></section>
+      <p id="offeringsStatus" class="department-offerings-status" role="status" aria-live="polite"></p>
+      <div class="department-offerings-grid">
+        <section class="so-content-card department-offerings-panel" aria-labelledby="courseFormHeading">
+          <h2 id="courseFormHeading">Department Course Catalog</h2>
+          <p>Course codes must be unique across the institution. Courses already in use cannot be deleted.</p>
+          <form id="departmentCourseForm">
+            <input type="hidden" name="id">
+            <label>Course code<input name="code" maxlength="30" required autocomplete="off" placeholder="e.g. COE232"></label>
+            <label>Course title<input name="title" maxlength="120" required autocomplete="off" placeholder="e.g. Software Design"></label>
+            <label>Units<input name="units" type="number" min="0" max="30" step="1" value="3" required></label>
+            <label>Description<textarea name="description" maxlength="2000" rows="3"></textarea></label>
+            <div class="department-form-actions"><button type="submit" id="departmentCourseSubmit">Add Course</button><button type="button" id="departmentCourseCancel" hidden>Cancel Edit</button></div>
+          </form>
+          <div class="department-table-wrap"><table><thead><tr><th>Code</th><th>Course</th><th>Units</th><th></th></tr></thead><tbody id="departmentCoursesBody"></tbody></table></div>
+        </section>
+        <section class="so-content-card department-offerings-panel" aria-labelledby="offeringFormHeading">
+          <h2 id="offeringFormHeading">Create Section &amp; Assign Faculty</h2>
+          <p>Sections are attached to a specific academic term. Faculty assignment changes are retained in history.</p>
+          <form id="departmentOfferingForm">
+            <label>Course<select name="course_id" required><option value="">Loading courses...</option></select></label>
+            <label>Academic year<select name="academic_year_id" required><option value="">Select academic year</option></select></label>
+            <label>Term<select name="academic_term_id" required disabled><option value="">Select academic year first</option></select></label>
+            <label>Section name<input name="section_name" maxlength="40" required placeholder="e.g. A"></label>
+            <label>Faculty<select name="faculty_id" required><option value="">Loading Faculty...</option></select></label>
+            <label>Room<input name="room" maxlength="100" placeholder="Optional"></label>
+            <label>Schedule<input name="schedule" maxlength="200" placeholder="Optional"></label>
+            <button type="submit">Create Offering</button>
+          </form>
+        </section>
+      </div>
+      <section class="so-content-card department-offerings-panel" aria-labelledby="offeringsHeading">
+        <h2 id="offeringsHeading">Department Offerings</h2>
+        <div class="department-table-wrap"><table><thead><tr><th>Course</th><th>Term</th><th>Section</th><th>Faculty</th><th>Room / Schedule</th><th>Reassign Faculty</th></tr></thead><tbody id="departmentOfferingsBody"></tbody></table></div>
+        <p id="departmentOfferingsEmpty" hidden>No course sections have been created for this department yet.</p>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
