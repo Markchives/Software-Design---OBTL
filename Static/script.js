@@ -363,11 +363,7 @@
         if (sections.some(item => item.section_id === requested)) sectionSelect.value = requested;
         else if (sections.length === 1) sectionSelect.value = sections[0].section_id;
         if (sectionSelect.value) {
-            const selectedSection = sections.find(function (item) {
-                return item.section_id === sectionSelect.value;
-            });
-            window.syncEduMetricsWorkspaceSection?.(sectionSelect.value, selectedSection);
-            load();
+            sectionSelect.dispatchEvent(new Event('change', { bubbles: true }));
         }
     }).catch(error => { sectionSelect.replaceChildren(new Option(error.message, '')); });
     sectionSelect.addEventListener('change', load);
@@ -6555,6 +6551,13 @@ document.addEventListener("DOMContentLoaded", function () {
             tbody.appendChild(row);
         }
         openBtn.disabled = !sectionSelect.value || locked || !workspace?.outcomes.length;
+        if (locked) {
+            status.textContent = 'This gradebook is locked. Activities and mappings are read-only.';
+        } else if (!workspace?.outcomes.length) {
+            status.textContent = 'Add Course Outcomes in Syllabus & Outcomes before creating activity mappings.';
+        } else {
+            status.textContent = 'Activities here are shared with Assessment Entry. Only released scores contribute to CO attainment.';
+        }
     }
 
     async function loadSection() {
@@ -6573,9 +6576,6 @@ document.addEventListener("DOMContentLoaded", function () {
             const assignment = workspace.section;
             window.syncEduMetricsWorkspaceSection?.(sectionSelect.value, assignment);
             renderActivities();
-            status.textContent = workspace.gradebook_status === 'locked'
-                ? 'This gradebook is locked. Activities and mappings are read-only.'
-                : 'Activities here are shared with Assessment Entry. Only released scores contribute to CO attainment.';
         } catch (error) {
             status.textContent = error.message;
             workspace = null;
