@@ -3697,15 +3697,21 @@ async function initializePersistentFacultySyllabus(sectionSelect) {
         empty.hidden = hasSyllabus;
         fileRow.hidden = !hasSyllabus;
         if (syllabus) {
-            fileName.textContent = syllabus.file_name;
-            fileSize.textContent = "PDF";
-            lastUpdated.textContent = syllabus.uploaded_at
-                ? "Last Updated: " + new Date(syllabus.uploaded_at).toLocaleDateString()
-                : "Syllabus available";
+            if (fileName) fileName.textContent = syllabus.file_name;
+            if (fileSize) fileSize.textContent = "PDF";
+            if (lastUpdated) {
+                lastUpdated.textContent = syllabus.uploaded_at
+                    ? "Last Updated: " + new Date(syllabus.uploaded_at).toLocaleDateString()
+                    : "Syllabus available";
+            }
         } else {
-            fileName.textContent = "Course_Syllabus.pdf";
-            fileSize.textContent = "0 MB";
-            lastUpdated.textContent = selected ? "No syllabus uploaded" : "Select a course section";
+            if (fileName) fileName.textContent = "Course_Syllabus.pdf";
+            if (fileSize) fileSize.textContent = "0 MB";
+            if (lastUpdated) {
+                lastUpdated.textContent = selected
+                    ? "No syllabus uploaded"
+                    : "Select a course section";
+            }
         }
     }
 
