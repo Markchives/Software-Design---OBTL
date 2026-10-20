@@ -5879,6 +5879,19 @@ body.cr-student-page:not(.cr-faculty-page) .cr-table-wrap{box-sizing:border-box;
 .so-response-dialog legend { padding: 0 6px; color: #123e66; font-weight: 700; }
 .so-response-rating { display: flex; align-items: flex-start; gap: 10px; padding: 8px 4px; color: #39566f; }
 .so-response-dialog details p { margin: 6px 0; }
+.so-mapping-dialog { width: min(560px, calc(100% - 40px)); padding: 24px; border: 1px solid #d9e5ef; border-radius: 16px; color: #16456d; box-shadow: 0 18px 55px #08274433; }
+.so-mapping-dialog::backdrop { background: #0b2e4e66; }
+.so-mapping-dialog h2 { margin: 0 0 10px; color: #245787; font-size: 1.1rem; }
+.so-mapping-options { display: flex; flex-wrap: wrap; gap: 8px; }
+.so-mapping-chip { min-width: 84px; min-height: 38px; padding: 7px 16px; border: 1px solid #c8d9e9; border-radius: 999px; background: #fff; color: #28577f; font: inherit; font-size: .9rem; font-weight: 700; cursor: pointer; }
+.so-mapping-chip:hover { border-color: #7eafd4; background: #f4f9fd; }
+.so-mapping-chip[aria-pressed="true"] { border-color: #17477e; background: #17477e; color: #fff; }
+.so-mapping-chip:focus-visible,.so-mapping-dialog footer button:focus-visible { outline: 3px solid #f3c644; outline-offset: 2px; }
+.so-mapping-status { min-height: 1.25em; margin: 12px 0; color: #a12e2e; font-size: .88rem; }
+.so-mapping-dialog footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
+.so-mapping-dialog footer button { min-width: 92px; min-height: 40px; padding: 8px 18px; border: 1px solid #c8d9e9; border-radius: 8px; background: #fff; color: #28577f; font: inherit; font-weight: 700; cursor: pointer; }
+.so-mapping-dialog footer .so-mapping-save { border-color: #17477e; background: #17477e; color: #fff; }
+.so-mapping-dialog footer .so-mapping-save:hover { background: #0e3768; }
 @media (max-width: 720px) { .so-workflow-grid { grid-template-columns: 1fr; } .so-workflow-wide { grid-column: auto; } .so-workflow-manager { padding: 18px; } .so-response-dialog { padding: 23px 17px; } .so-assessment-editor.so-workflow-wide, .so-assessment-actions.so-workflow-wide { grid-column: auto; } }
 @media (max-width: 480px) { .so-rating-editor-head, .so-rating-row { grid-template-columns: minmax(58px, .35fr) minmax(0, 1fr) auto; gap: 6px; } .so-editor-remove { padding: 6px 8px; font-size: .8rem; } .so-assessment-actions { flex-direction: column-reverse; } }
 

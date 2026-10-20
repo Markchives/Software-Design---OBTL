@@ -36,6 +36,13 @@
         const coRows = document.getElementById("soCoRows");
         const assessmentRows = document.getElementById("soAssessmentRows");
         const outcomeSelect = document.getElementById("soAssessmentOutcome");
+        const mappingDialog = document.getElementById("soMappingDialog");
+        const mappingOptions = document.getElementById("soMappingOptions");
+        const mappingTitle = document.getElementById("soMappingTitle");
+        const mappingStatus = document.getElementById("soMappingStatus");
+        const saveMappingButton = document.getElementById("soSaveMapping");
+        let mappingCourseOutcomeId = null;
+        let selectedMappingSoIds = new Set();
         let sections = [];
         let section = null;
         let outcomes = [];
@@ -156,13 +163,10 @@
                 coRows.innerHTML = outcomes.length ? outcomes.map(row => {
                     const currentSoIds = new Set(mappings.filter(link => link.course_outcome_id === row.id).map(link => link.student_outcome_id));
                     const linkedOutcomes = studentOutcomes.filter(so => currentSoIds.has(so.id));
-                    const alignOptions = studentOutcomes.filter(so => !currentSoIds.has(so.id));
-                    const links = linkedOutcomes.map(so => soLabel(so)).join("; ");
-                    const alignmentEditor = alignOptions.length
-                        ? `<details class="so-inline-map"><summary>+ Align another SO</summary><div class="so-inline-map-controls"><select aria-label="Choose an additional Student Outcome for ${esc(row.code)}" data-map-select="${esc(row.id)}"><option value="">Choose Student Outcome</option>${alignOptions.map(so => `<option value="${esc(so.id)}">${esc(soLabel(so))}</option>`).join("")}</select>${button("Add", "map-co", row.id)}</div></details>`
-                        : studentOutcomes.length
-                            ? `<span class="so-all-outcomes-aligned">All available SOs are aligned</span>`
-                            : `<span class="so-no-outcomes">No Student Outcomes are available</span>`;
+                    const links = linkedOutcomes.map(so => so.code).join(", ");
+                    const alignmentEditor = studentOutcomes.length
+                        ? button("Align SOs", "align-co", row.id)
+                        : `<span class="so-no-outcomes">No Student Outcomes are available</span>`;
                     return `<tr><td>${esc(row.code)}</td><td>${esc(row.description)}</td><td>${esc(row.target_percentage ?? 70)}%</td><td><div class="so-aligned-outcomes">${links ? esc(links) : `<span class="so-no-outcomes">No SO aligned yet</span>`}</div>${alignmentEditor}</td><td>${button("Edit", "edit-co", row.id)} ${button("Delete", "delete-co", row.id)}</td></tr>`;
                 }).join("") : `<tr><td colspan="5">No Course Outcomes. Add one above.</td></tr>`;
                 const mappedSoIds = new Set(mappings.map(row => row.student_outcome_id));
@@ -247,24 +251,80 @@
             if (assessmentForm) assessmentForm.hidden = true;
             setAssessmentEditor(null);
         });
+        function openMappingEditor(courseOutcomeId) {
+            const outcome = outcomes.find(item => item.id === courseOutcomeId);
+            if (!outcome || !mappingDialog || !mappingOptions || !mappingTitle || !mappingStatus) return;
+            mappingCourseOutcomeId = courseOutcomeId;
+            selectedMappingSoIds = new Set(
+                mappings.filter(link => link.course_outcome_id === courseOutcomeId)
+                    .map(link => link.student_outcome_id)
+            );
+            mappingTitle.textContent = `Student Outcome and Reflection — ${outcome.code}`;
+            mappingStatus.textContent = "";
+            mappingOptions.replaceChildren();
+            studentOutcomes.forEach(so => {
+                const chip = document.createElement("button");
+                chip.type = "button";
+                chip.className = "so-mapping-chip";
+                chip.textContent = so.code;
+                chip.setAttribute("aria-pressed", String(selectedMappingSoIds.has(so.id)));
+                chip.dataset.soId = so.id;
+                chip.title = so.description || so.code;
+                mappingOptions.appendChild(chip);
+            });
+            mappingDialog.showModal();
+        }
+        mappingOptions?.addEventListener("click", event => {
+            const chip = event.target.closest("[data-so-id]");
+            if (!chip) return;
+            const soId = chip.dataset.soId;
+            if (selectedMappingSoIds.has(soId)) selectedMappingSoIds.delete(soId);
+            else selectedMappingSoIds.add(soId);
+            chip.setAttribute("aria-pressed", String(selectedMappingSoIds.has(soId)));
+        });
+        document.getElementById("soCancelMapping")?.addEventListener("click", () => {
+            mappingDialog?.close();
+        });
+        saveMappingButton?.addEventListener("click", async () => {
+            if (!section || !mappingCourseOutcomeId) return;
+            saveMappingButton.disabled = true;
+            mappingStatus.textContent = "Saving Student Outcome alignment...";
+            const nextMappings = mappings.filter(
+                link => link.course_outcome_id !== mappingCourseOutcomeId
+            );
+            selectedMappingSoIds.forEach(studentOutcomeId => nextMappings.push({
+                course_outcome_id: mappingCourseOutcomeId,
+                student_outcome_id: studentOutcomeId
+            }));
+            try {
+                await api(
+                    `/api/faculty/courses/${encodeURIComponent(section.course_id)}/outcome-mappings`,
+                    { method: "PUT", body: JSON.stringify({ mappings: nextMappings }) }
+                );
+                mappingDialog.close();
+                await loadSection(section.section_id);
+                if (status) status.textContent = "Student Outcome alignment saved.";
+            } catch (error) {
+                mappingStatus.textContent = error.message;
+            } finally {
+                saveMappingButton.disabled = false;
+            }
+        });
         root.addEventListener("click", async event => {
             const control = event.target.closest("[data-action]");
             if (!control || !section) return;
             const { action, id } = control.dataset;
             try {
-                if (action === "edit-co") {
+                if (action === "align-co") {
+                    openMappingEditor(id);
+                    return;
+                } else if (action === "edit-co") {
                     const row = outcomes.find(item => item.id === id); if (!row) return;
                     const target = prompt("Target attainment percentage", row.target_percentage); if (target === null) return;
                     await api(`/api/faculty/courses/${encodeURIComponent(section.course_id)}/outcomes/${encodeURIComponent(id)}`, { method: "PUT", body: JSON.stringify({ target_percentage: Number(target) }) });
                 } else if (action === "delete-co") {
                     if (!confirm("Delete this Course Outcome and its connected assessment data?")) return;
                     await api(`/api/faculty/courses/${encodeURIComponent(section.course_id)}/outcomes/${encodeURIComponent(id)}`, { method: "DELETE" });
-                } else if (action === "map-co") {
-                    const soId = root.querySelector(`[data-map-select="${CSS.escape(id)}"]`)?.value;
-                    if (!soId) return notify("Choose a Student Outcome to align.");
-                    const current = await api(`/api/faculty/courses/${encodeURIComponent(section.course_id)}/outcome-mappings`);
-                    const next = [...(current.mappings || []), { course_outcome_id: id, student_outcome_id: soId }];
-                    await api(`/api/faculty/courses/${encodeURIComponent(section.course_id)}/outcome-mappings`, { method: "PUT", body: JSON.stringify({ mappings: next }) });
                 } else if (action === "delete-assessment") {
                     if (!confirm("Delete this SO self-assessment and submitted responses?")) return;
                     await api(`/api/faculty/so-assessments/${encodeURIComponent(id)}`, { method: "DELETE" });
