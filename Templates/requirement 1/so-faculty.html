@@ -307,6 +307,34 @@
 </div>
 </div>
 </section>
+<section class="so-content-card so-workflow-manager" id="soWorkflowManager">
+<div class="so-section-header"><div><h2>Outcome &amp; SO Assessment Workspace</h2><p>Manage this section’s Course Outcomes and Student Outcome self-assessment.</p></div></div>
+<div class="so-section-rule"></div>
+<div class="so-workflow-grid">
+<label>Assigned section<select id="soFacultySection"><option value="">Select a section</option></select></label>
+<label>Course Outcome code<input id="soCoCode" maxlength="20" placeholder="CO1"></label>
+<label class="so-workflow-wide">Course Outcome description<input id="soCoDescription" maxlength="2000" placeholder="Describe the expected course outcome"></label>
+<label>Target attainment (%)<input id="soCoTarget" type="number" min="0" max="100" value="70"></label>
+<label>Align new CO to SO<select id="soCoAlignment"><option value="">Choose an SO (optional)</option></select></label>
+<button class="sof-add-outcome-btn" id="soSaveCo" type="button">Add Course Outcome</button>
+</div>
+<div class="sodh-table-wrap"><table class="sodh-table"><thead><tr><th>CO</th><th>Description</th><th>Target</th><th>Actions</th></tr></thead><tbody id="soCoRows"><tr><td colspan="4">Choose an assigned section to load outcomes.</td></tr></tbody></table></div>
+<h3 class="so-workflow-subheading">Configure SO self-assessment</h3>
+<div class="so-workflow-grid">
+<label>Student Outcome<select id="soAssessmentOutcome"><option value="">Select a mapped SO</option></select></label>
+<label>Assessment title<input id="soAssessmentTitle" maxlength="160" placeholder="SO self-assessment"></label>
+<label>Due date<input id="soAssessmentDue" type="date"></label>
+<label>Status<select id="soAssessmentStatus"><option value="draft">Draft</option><option value="open">Open to students</option><option value="closed">Closed</option></select></label>
+<label class="so-workflow-wide">Performance indicators <small>One indicator per line</small><textarea id="soIndicators" rows="4" placeholder="Apply relevant knowledge to solve problems&#10;Communicate technical findings"></textarea></label>
+<label class="so-workflow-wide">Rating scale <small>One rating per line, format: value | label</small><textarea id="soRatingScale" rows="3">1 | Beginning
+2 | Developing
+3 | Proficient
+4 | Advanced</textarea></label>
+<button class="sof-add-outcome-btn" id="soSaveAssessment" type="button">Save assessment</button>
+</div>
+<div class="sodh-table-wrap"><table class="sodh-table"><thead><tr><th>SO assessment</th><th>Due date</th><th>Status</th><th>Responses</th><th>Completion</th><th>Actions</th></tr></thead><tbody id="soAssessmentRows"><tr><td colspan="6">Choose an assigned section to load SO assessments.</td></tr></tbody></table></div>
+<div class="sodh-table-wrap" id="soResponseLog" hidden><h3>Response log</h3><table class="sodh-table"><thead><tr><th>Student number</th><th>Name</th><th>Program</th><th>Submitted</th><th>Answers</th></tr></thead><tbody id="soResponseRows"></tbody></table></div>
+</section>
 </main>
 </div>
 <div class="sof-outcome-modal" hidden="" id="courseOutcomeModal">
@@ -523,6 +551,6 @@
 </div>
 </div>
 </div>
-<script src="../../Static/script.js"></script>
+<script src="../../Static/script.js"></script><script src="../../Static/so_workflow.js"></script>
 </body>
 </html>

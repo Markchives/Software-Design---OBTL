@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Syllabus &amp; Outcomes | EduMetrics Department Head</title>
+<title>Syllabus &amp; Outcomes | EduMetrics {{ role_label|default('Department Head') }}</title>
 <link href="../../Static/style.css" rel="stylesheet"/>
 </head>
 <body class="so-student-page so-dept-head-page dept-head-unified">
@@ -23,10 +23,10 @@
 <span class="so-notification-dot"></span>
 </button>
 <div class="so-user-info">
-<strong id="departmentHeadName">Department Head</strong>
-<span>Department Head</span>
+<strong id="departmentHeadName">{{ role_label|default('Department Head') }}</strong>
+<span>{{ role_label|default('Department Head') }}</span>
 </div>
-<div aria-hidden="true" class="so-avatar">DH</div>
+<div aria-hidden="true" class="so-avatar">{{ 'AS' if admin_view else 'DH' }}</div>
 <span aria-hidden="true" class="so-online-dot"></span>
 </div>
 </header>
@@ -36,15 +36,15 @@
 </div>
 <div class="so-shell">
 <aside class="so-sidebar">
-<nav aria-label="Department Head navigation" class="so-nav">
+<nav aria-label="{{ role_label|default('Department Head') }} navigation" class="so-nav">
 <a class="so-nav-item" href="../main/dashboard.html">
 <span class="so-nav-icon so-nav-image-wrap">
 <img alt="" class="so-nav-image" src="../../Static/images/sidebar/home-white.png"/>
 </span>
 <span>Dashboard</span>
 </a>
-<a class="so-nav-item" href="/account-approvals.html?role=dept-head"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/acreq.png"/></span><span>Account Requests</span></a>
-<a class="so-nav-item" href="/department-head/course-offerings.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="/Static/images/sidebar/course-white.png"></span><span>Course Offerings</span></a>
+{% if not admin_view %}<a class="so-nav-item" href="/account-approvals.html?role=dept-head"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="../../Static/images/sidebar/acreq.png"/></span><span>Account Requests</span></a>
+<a class="so-nav-item" href="/department-head/course-offerings.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="/Static/images/sidebar/course-white.png"></span><span>Course Offerings</span></a>{% else %}<a class="so-nav-item" href="/requirement%202/cm-admin.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="/Static/images/sidebar/course-white.png"></span><span>Curriculum Mapping</span></a>{% endif %}
 <a class="so-nav-item" href="../main/platform.html">
 <span class="so-nav-icon so-nav-image-wrap">
 <img alt="" class="so-nav-image" src="../../Static/images/sidebar/pl-white.png"/>
@@ -56,7 +56,7 @@
 <img alt="" class="so-nav-image" src="../../Static/images/sidebar/ws-blue.png"/>
 </span>
 <span>Workflow</span>
-</summary><div class="so-subnav"><a aria-current="page" class="active" href="../requirement 1/so-dept-head.html">Syllabus &amp; Outcomes</a><a href="../requirement 2/cm-dept-head.html">Curriculum Mapping</a><a href="../requirement 3/cr-dept-head.html">Class Roster</a><a href="../requirement 4/ra-dept-head.html">Assessment Entry</a><a href="../requirement 5/ac-dept-head.html">Attainment</a><a href="../requirement 6/cqi-dept-head.html">CQI Planning</a><a href="../requirement 7/gl-dept-head.html">Gradebook</a><a href="../requirement 8/rp-dept-head.html">Compliance Report</a></div></details></div>
+</summary><div class="so-subnav"><a aria-current="page" class="active" href="{{ '/requirement 1/so-admin.html' if admin_view else '/requirement 1/so-dept-head.html' }}">Syllabus &amp; Outcomes</a>{% if admin_view %}<a href="/requirement%202/cm-admin.html">Curriculum Mapping</a><a href="/requirement%204/ra-admin.html">Assessment Entry</a><a href="/requirement%205/ac-admin.html">Attainment</a><a href="/requirement%206/cqi-admin.html">CQI Planning</a><a href="/requirement%207/gl-admin.html">System Records</a>{% else %}<a href="../requirement 2/cm-dept-head.html">Curriculum Mapping</a><a href="../requirement 3/cr-dept-head.html">Class Roster</a><a href="../requirement 4/ra-dept-head.html">Assessment Entry</a><a href="../requirement 5/ac-dept-head.html">Attainment</a><a href="../requirement 6/cqi-dept-head.html">CQI Planning</a><a href="../requirement 7/gl-dept-head.html">Gradebook</a><a href="../requirement 8/rp-dept-head.html">Compliance Report</a>{% endif %}</div></details></div>
 <a class="so-nav-item" href="../main/resources.html">
 <span class="so-nav-icon so-nav-image-wrap">
 <img alt="" class="so-nav-image" src="../../Static/images/sidebar/rs-white.png"/>
@@ -142,7 +142,7 @@
 </section>
 <section class="dh-summary">
 <article class="dh-stat"><span class="dh-stat-label">Total Students</span><strong class="dh-stat-value" id="totalStudents">—</strong></article>
-<article class="dh-stat"><span class="dh-stat-label">Total Programs</span><strong class="dh-stat-value" id="totalPrograms">—</strong></article>
+<article class="dh-stat"><span class="dh-stat-label">Total Faculty</span><strong class="dh-stat-value" id="totalFaculty">—</strong></article>
 <article class="dh-stat"><span class="dh-stat-label">Total Courses</span><strong class="dh-stat-value" id="totalCourses">—</strong></article>
 <article class="dh-stat"><span class="dh-stat-label">Total Sections</span><strong class="dh-stat-value" id="totalSections">—</strong></article>
 </section>
@@ -257,6 +257,6 @@
 </section>
 </main>
 </div>
-<script src="../../Static/script.js"></script>
+<script src="../../Static/script.js"></script><script src="../../Static/so_workflow.js"></script>
 </body>
 </html>
