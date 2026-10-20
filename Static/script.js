@@ -6600,8 +6600,28 @@ document.addEventListener("DOMContentLoaded", function () {
 /* Shared main-page navigation and active indicator (single source of truth). */
 (function () {
     function addDepartmentHeadAccountRequests() {
+        const normalizeAccountRequestLinks = root => {
+            if (!root) return;
+            root.querySelectorAll('a.so-nav-item').forEach(link => {
+                if (link.textContent.trim() === 'Account Requests') {
+                    link.href = '/account-approvals.html';
+                }
+            });
+        };
         const addLink = nav => {
-            if (!nav || nav.querySelector('[data-account-approval-nav]')) return;
+            if (!nav) return;
+            normalizeAccountRequestLinks(nav);
+            const existingLink = nav.querySelector('[data-account-approval-nav]') ||
+                [...nav.querySelectorAll('a.so-nav-item')]
+                    .find(link => link.textContent.trim() === 'Account Requests');
+            if (existingLink) {
+                existingLink.dataset.accountApprovalNav = 'true';
+                if (location.pathname.toLowerCase().endsWith('/account-approvals.html')) {
+                    existingLink.classList.add('active');
+                    existingLink.setAttribute('aria-current', 'page');
+                }
+                return;
+            }
             const link = document.createElement('a');
             link.className = 'so-nav-item';
             link.href = '/account-approvals.html';
@@ -6616,10 +6636,19 @@ document.addEventListener("DOMContentLoaded", function () {
             nav.insertBefore(link, dashboardLink ? dashboardLink.nextSibling : nav.firstChild);
         };
 
-        document.querySelectorAll('.so-sidebar nav[aria-label="Department Head navigation"]')
-            .forEach(addLink);
+        document.querySelectorAll('.so-sidebar nav').forEach(nav => {
+            normalizeAccountRequestLinks(nav);
+            if (nav.getAttribute('aria-label') === 'Department Head navigation') {
+                addLink(nav);
+            }
+        });
         document.querySelectorAll('template').forEach(template => {
-            addLink(template.content.querySelector('nav[aria-label="Department Head navigation"]'));
+            template.content.querySelectorAll('nav').forEach(nav => {
+                normalizeAccountRequestLinks(nav);
+                if (nav.getAttribute('aria-label') === 'Department Head navigation') {
+                    addLink(nav);
+                }
+            });
         });
     }
 
