@@ -75,12 +75,12 @@ Do not confuse this project with the separate Portfolio repository that may be t
 - During the latest student signup attempt, Flask logged `POST /api/auth/register` as `409`, followed by a retry returning `200` and a request to `/verification-signup.html`. No traceback accompanied the successful retry. The first conflict's exact cause was not established.
 - The user confirmed the successful password-based student signup was email-verified, the student can sign in, and the selected program is saved and visible in the Profile page.
 - The user also confirmed the Google student profile-completion flow with a selected college/program is done and the selected program is saved.
+- The user confirmed Faculty and Department Head registration/profile/sidebar smoke tests and the relevant role-specific approval checks are complete.
 
 ## Remaining work / recommended next steps
 
-1. Smoke-test Faculty and Department Head registration, then test their profile details and role-specific account approvals.
-2. Test the Profile menu and account details for each role in the browser, not just through the focused API checks.
-3. Revisit the separate Department Head identity mismatch only if it remains an issue. Review the prepared reconciliation SQL and confirm the intended account/department before any live execution.
+1. No active registration, profile, or sidebar checks remain based on the user's confirmation.
+2. Revisit the separate Department Head identity mismatch only if it is still affecting the project. Review the prepared reconciliation SQL and confirm the intended account/department before any live execution.
 
 ## Important files
 
