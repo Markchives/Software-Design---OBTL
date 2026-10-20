@@ -42,11 +42,11 @@
             <label>Description<textarea name="description" maxlength="2000" rows="3"></textarea></label>
             <div class="department-form-actions"><button type="submit" id="departmentCourseSubmit">Add Course</button><button type="button" id="departmentCourseCancel" hidden>Cancel Edit</button></div>
           </form>
-          <div class="department-table-wrap"><table><thead><tr><th>Code</th><th>Course</th><th>Units</th><th></th></tr></thead><tbody id="departmentCoursesBody"></tbody></table></div>
+          <div class="department-table-wrap"><table><thead><tr><th>Code</th><th>Course</th><th>Units</th><th></th></tr></thead><tbody id="departmentCoursesBody"></tbody></table><p id="departmentCoursesEmpty" class="department-offerings-empty" hidden>No courses are configured for your department yet. Add a course using the form above.</p></div>
         </section>
         <section class="so-content-card department-offerings-panel" aria-labelledby="offeringFormHeading">
           <h2 id="offeringFormHeading">Create Section &amp; Assign Faculty</h2>
-          <p>Sections are attached to a specific academic term. Faculty assignment changes are retained in history.</p>
+          <p>Sections are attached to a specific academic term. Faculty assignment changes are retained in history. Academic years and terms are configured by an Admin under Academic Terms; contact your Admin if no years are available.</p>
           <form id="departmentOfferingForm">
             <label>Course<select name="course_id" required><option value="">Loading courses...</option></select></label>
             <label>Academic year<select name="academic_year_id" required><option value="">Select academic year</option></select></label>

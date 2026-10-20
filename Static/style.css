@@ -5689,6 +5689,22 @@ body.admin-academic-terms-page .so-main.admin-terms-main{box-sizing:border-box;d
   body.admin-academic-terms-page .so-main.admin-terms-main{min-height:0!important}
 }
 
+/* Course Offerings can grow with the course and section tables. */
+body.department-course-offerings-page{box-sizing:border-box;height:auto!important;min-height:100vh!important;overflow-x:hidden!important;overflow-y:auto!important}
+body.department-course-offerings-page .so-shell{box-sizing:border-box;display:grid!important;grid-template-columns:260px minmax(0,1fr)!important;align-items:start;height:auto!important;min-height:calc(100vh - 95px)!important;overflow:visible!important}
+body.department-course-offerings-page .so-sidebar{display:flex!important;position:sticky!important;top:95px;height:calc(100vh - 95px)!important;min-height:0!important;overflow:hidden!important}
+body.department-course-offerings-page .so-sidebar .so-nav{box-sizing:border-box;flex:1 1 auto!important;min-height:0!important;padding:14px 0 150px!important;overflow-x:hidden!important;overflow-y:auto!important}
+body.department-course-offerings-page .so-main.department-offerings-main{box-sizing:border-box;display:block!important;height:auto!important;min-height:calc(100vh - 95px)!important;overflow:visible!important}
+body.department-course-offerings-page .department-offerings-grid{align-items:start}
+body.department-course-offerings-page .department-offerings-panel{overflow:visible}
+@media(max-width:820px){
+  body.department-course-offerings-page .so-shell{grid-template-columns:1fr!important}
+  body.department-course-offerings-page .so-sidebar{display:flex!important;position:relative!important;top:auto;height:auto!important;min-height:0!important;overflow:visible!important}
+  body.department-course-offerings-page .so-sidebar .so-nav{max-height:none;overflow:visible!important;padding-bottom:14px!important}
+  body.department-course-offerings-page .so-sidebar-brand{position:relative!important}
+  body.department-course-offerings-page .so-main.department-offerings-main{min-height:0!important}
+}
+
 /* Keep the user identity area visible and its dimensions stable during profile refresh. */
 .so-topbar .so-user-area .so-user-info {
     visibility: visible;

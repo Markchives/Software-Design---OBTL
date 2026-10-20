@@ -183,6 +183,18 @@ def has_active_role_record(user_id, role):
     )
 
 
+def _auth_failure_response(message, status_code):
+    if request.path.startswith("/api/"):
+        return jsonify({"error": message}), status_code
+    return message, status_code
+
+
+def _login_required_response():
+    if request.path.startswith("/api/"):
+        return jsonify({"error": "Your session has expired. Sign in and retry."}), 401
+    return redirect("/login page.html")
+
+
 def require_role(required_role):
     def decorator(view_function):
         @wraps(view_function)
@@ -193,19 +205,27 @@ def require_role(required_role):
                 session.pop("access_token", None)
                 session.pop("refresh_token", None)
                 session.pop("user_id", None)
-                return redirect("/login page.html")
+                return _login_required_response()
 
             if get_user_role(user) != required_role:
-                return "You are not authorized to view this page.", 403
+                return _auth_failure_response(
+                    "You are not authorized to view this page.", 403
+                )
 
             try:
                 if not has_active_role_record(user.id, required_role):
-                    return "Your account is not active for this role.", 403
+                    return _auth_failure_response(
+                        "Your account is not active for this role.", 403
+                    )
                 if has_pending_role_request(user.id):
-                    return "Your account is awaiting approval.", 403
+                    return _auth_failure_response(
+                        "Your account is awaiting approval.", 403
+                    )
             except Exception:
                 app.logger.exception("Unable to verify the user's active role")
-                return "Authorization could not be verified.", 503
+                return _auth_failure_response(
+                    "Authorization could not be verified.", 503
+                )
 
             g.authenticated_user = user
             return view_function(*args, **kwargs)
@@ -224,20 +244,28 @@ def require_roles(*required_roles):
                 session.pop("access_token", None)
                 session.pop("refresh_token", None)
                 session.pop("user_id", None)
-                return redirect("/login page.html")
+                return _login_required_response()
 
             role = get_user_role(user)
             if role not in required_roles:
-                return "You are not authorized to access this resource.", 403
+                return _auth_failure_response(
+                    "You are not authorized to access this resource.", 403
+                )
 
             try:
                 if not has_active_role_record(user.id, role):
-                    return "Your account is not active for this role.", 403
+                    return _auth_failure_response(
+                        "Your account is not active for this role.", 403
+                    )
                 if has_pending_role_request(user.id):
-                    return "Your account is awaiting approval.", 403
+                    return _auth_failure_response(
+                        "Your account is awaiting approval.", 403
+                    )
             except Exception:
                 app.logger.exception("Unable to verify the user's active role")
-                return "Authorization could not be verified.", 503
+                return _auth_failure_response(
+                    "Authorization could not be verified.", 503
+                )
 
             g.authenticated_user = user
             return view_function(*args, **kwargs)
@@ -256,7 +284,7 @@ def require_authenticated(view_function):
             session.pop("access_token", None)
             session.pop("refresh_token", None)
             session.pop("user_id", None)
-            return redirect("/login page.html")
+            return _login_required_response()
 
         g.authenticated_user = user
         return view_function(*args, **kwargs)
@@ -3305,12 +3333,30 @@ def get_authenticated_user():
     if not access_token:
         return None
 
+    auth_client = None
     try:
         auth_client = create_client(SUPABASE_URL, SUPABASE_KEY)
         result = auth_client.auth.get_user(access_token)
         return result.user
     except Exception:
-        app.logger.exception("Failed to validate authenticated user")
+        refresh_token = session.get("refresh_token")
+        if not refresh_token:
+            app.logger.exception("Failed to validate authenticated user")
+            return None
+
+    try:
+        if auth_client is None:
+            auth_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        refreshed = auth_client.auth.refresh_session(refresh_token)
+        if not refreshed.user or not refreshed.session:
+            raise RuntimeError("Supabase refresh returned no authenticated session.")
+        session["access_token"] = refreshed.session.access_token
+        session["refresh_token"] = refreshed.session.refresh_token
+        session["user_id"] = refreshed.user.id
+        session["user_role"] = get_user_role(refreshed.user)
+        return refreshed.user
+    except Exception:
+        app.logger.exception("Failed to refresh authenticated user session")
         return None
 
 

@@ -7743,7 +7743,13 @@ document.addEventListener('DOMContentLoaded', () => {
             credentials: 'same-origin'
         }, options || {}));
         if (!(response.headers.get('content-type') || '').includes('application/json')) {
-            throw new Error('The server did not return course data. Sign in again and retry.');
+            if (response.redirected || response.status === 401) {
+                throw new Error('Your session has expired. Sign in again and retry.');
+            }
+            if (response.status === 403) {
+                throw new Error('Your account is not authorized to access Department Head course offerings.');
+            }
+            throw new Error('The server returned an unexpected response (HTTP ' + response.status + ').');
         }
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || 'The request could not be completed.');
@@ -7762,6 +7768,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderCourses() {
         coursesBody.replaceChildren();
+        const empty = document.getElementById('departmentCoursesEmpty');
+        empty.hidden = data.courses.length > 0;
         data.courses.forEach(course => {
             const row = document.createElement('tr');
             [course.code, course.title, String(course.units || 0)].forEach(value => {
