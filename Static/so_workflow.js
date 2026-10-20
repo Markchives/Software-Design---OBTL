@@ -17,7 +17,7 @@
     function initFaculty() {
         const root = document.getElementById("soWorkflowManager");
         if (!root) return;
-        const sectionSelect = document.getElementById("soFacultySection");
+        const sectionContext = document.getElementById("soSelectedSection");
         const coRows = document.getElementById("soCoRows");
         const assessmentRows = document.getElementById("soAssessmentRows");
         const outcomeSelect = document.getElementById("soAssessmentOutcome");
@@ -27,9 +27,14 @@
         let studentOutcomes = [];
         let mappings = [];
         const button = (text, action, id) => `<button class="so-workflow-action" type="button" data-action="${action}" data-id="${esc(id)}">${text}</button>`;
-        async function loadSection() {
-            section = sections.find(row => row.section_id === sectionSelect.value) || null;
+        async function loadSection(sectionId) {
+            section = sections.find(row => row.section_id === sectionId) || null;
             window.syncEduMetricsWorkspaceSection?.(section?.section_id || "", section || undefined);
+            if (sectionContext) {
+                sectionContext.textContent = section
+                    ? `${section.course_code} · ${section.course_title} · ${section.section_name} · ${section.academic_year_name || ""}`
+                    : "Open this workspace from your assigned course.";
+            }
             document.getElementById("soCoCode").value = "";
             document.getElementById("soCoDescription").value = "";
             if (!section) return;
@@ -55,7 +60,6 @@
                 assessmentRows.innerHTML = (data.assessments || []).length ? data.assessments.map(row => `<tr><td><strong>${esc(row.student_outcome?.code)} · ${esc(row.title)}</strong><small class="so-co-links">${esc(row.student_outcome?.description)}</small></td><td>${esc(row.due_date || "No due date")}</td><td><span class="so-status-pill ${esc(row.status)}">${esc(row.status)}</span></td><td>${row.response_count || 0} / ${row.student_count || 0}</td><td>${row.completion_rate || 0}%</td><td>${button("Responses", "responses", row.id)} ${button("Edit", "edit-assessment", row.id)} ${button("Delete", "delete-assessment", row.id)}</td></tr>`).join("") : `<tr><td colspan="6">No SO assessments for this section yet.</td></tr>`;
             } catch (error) { notify(error.message); }
         }
-        sectionSelect.addEventListener("change", loadSection);
         document.getElementById("soSaveCo").addEventListener("click", async () => {
             if (!section) return notify("Select a section first.");
             const data = { code: document.getElementById("soCoCode").value, description: document.getElementById("soCoDescription").value, target_percentage: Number(document.getElementById("soCoTarget").value) };
@@ -66,7 +70,7 @@
                     const current = await api(`/api/faculty/courses/${encodeURIComponent(section.course_id)}/outcome-mappings`);
                     await api(`/api/faculty/courses/${encodeURIComponent(section.course_id)}/outcome-mappings`, { method: "PUT", body: JSON.stringify({ mappings: [...(current.mappings || []), { course_outcome_id: saved.outcome.id, student_outcome_id: soId }] }) });
                 }
-                await loadSection(); notify("Course Outcome saved.");
+                await loadSection(section.section_id); notify("Course Outcome saved.");
             }
             catch (error) { notify(error.message); }
         });
@@ -78,7 +82,7 @@
                 return { value: Number(value.trim()), label: label.join("|").trim() };
             }).filter(row => Number.isInteger(row.value) && row.label);
             const data = { student_outcome_id: outcomeSelect.value, title: document.getElementById("soAssessmentTitle").value, due_date: document.getElementById("soAssessmentDue").value || null, status: document.getElementById("soAssessmentStatus").value, performance_indicators: indicators, rating_scale };
-            try { await api(`/api/faculty/sections/${encodeURIComponent(section.section_id)}/so-assessments`, { method: "POST", body: JSON.stringify(data) }); await loadSection(); notify("SO assessment saved."); }
+            try { await api(`/api/faculty/sections/${encodeURIComponent(section.section_id)}/so-assessments`, { method: "POST", body: JSON.stringify(data) }); await loadSection(section.section_id); notify("SO assessment saved."); }
             catch (error) { notify(error.message); }
         });
         root.addEventListener("click", async event => {
@@ -119,16 +123,13 @@
                     document.getElementById("soResponseRows").innerHTML = data.responses.length ? data.responses.map(row => `<tr><td>${esc(row.student_number)}</td><td>${esc(row.student_name)}</td><td>${esc(row.program)}</td><td>${esc(row.submitted_at ? new Date(row.submitted_at).toLocaleString() : "")}</td><td>${Object.entries(row.answers).map(([i, value]) => `${esc(data.performance_indicators[Number(i)] || `Indicator ${Number(i) + 1}`)}: ${esc((data.rating_scale.find(x => String(x.value) === String(value)) || {}).label || value)}`).join("<br>")}</td></tr>`).join("") : `<tr><td colspan="5">No responses submitted yet.</td></tr>`;
                     document.getElementById("soResponseLog").scrollIntoView({ behavior: "smooth", block: "start" }); return;
                 }
-                await loadSection();
+                await loadSection(section.section_id);
             } catch (error) { notify(error.message); }
         });
         api("/api/faculty/sections").then(data => {
             sections = data.sections || [];
-            sectionSelect.innerHTML = `<option value="">Select a section</option>` + sections.map(row => `<option value="${esc(row.section_id)}">${esc(row.course_code)} · ${esc(row.course_title)} · ${esc(row.section_name)} · ${esc(row.academic_year_name || "")}</option>`).join("");
             const requested = new URLSearchParams(window.location.search).get("section_id");
-            if (sections.some(row => row.section_id === requested)) sectionSelect.value = requested;
-            else if (sections.length === 1) sectionSelect.value = sections[0].section_id;
-            if (sectionSelect.value) loadSection();
+            if (requested) loadSection(requested);
         }).catch(error => notify(error.message));
     }
 
