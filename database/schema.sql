@@ -656,6 +656,28 @@ CREATE TABLE IF NOT EXISTS student_outcomes (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS course_outcome_student_outcomes (
+    course_outcome_id UUID NOT NULL REFERENCES course_outcomes(id) ON DELETE CASCADE,
+    student_outcome_id UUID NOT NULL REFERENCES student_outcomes(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (course_outcome_id, student_outcome_id)
+);
+
+CREATE TABLE IF NOT EXISTS course_mapping_reviews (
+    section_id UUID PRIMARY KEY REFERENCES course_sections(id) ON DELETE CASCADE,
+    status TEXT NOT NULL DEFAULT 'draft'
+        CHECK (status IN ('draft', 'pending', 'submitted', 'verified')),
+    submitted_at TIMESTAMPTZ,
+    reviewed_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    reviewed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE course_outcome_student_outcomes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE course_mapping_reviews ENABLE ROW LEVEL SECURITY;
+
 CREATE TABLE IF NOT EXISTS assessment_activities (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     section_id UUID NOT NULL REFERENCES course_sections(id) ON DELETE CASCADE,

@@ -112,6 +112,286 @@
     else initAcFaculty();
 })();
 
+/* Faculty attainment view uses calculated backend results and raw score inputs. */
+(function () {
+    const page = document.querySelector('.ac-faculty-page');
+    const sectionSelect = document.getElementById('facultyAttainmentSection');
+    const outcomeBody = document.getElementById('facultyAttainmentRows');
+    const activityBody = document.getElementById('facultyAssessmentInputRows');
+    const message = document.getElementById('facultyAttainmentStatus');
+    if (!page || !sectionSelect || !outcomeBody || !activityBody) return;
+    async function load(sectionId) {
+        outcomeBody.replaceChildren(); activityBody.replaceChildren();
+        if (!sectionId) return;
+        message.textContent = 'Calculating course outcomes...';
+        try {
+            const response = await fetch('/api/faculty/sections/' + encodeURIComponent(sectionId) + '/attainment', {
+                credentials: 'same-origin', headers: { Accept: 'application/json' }
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data.error || 'Attainment could not be loaded.');
+            const section = data.section || {};
+            const heading = page.querySelector('.cw-hero h2');
+            const subheading = page.querySelector('.cw-hero p');
+            if (heading) heading.textContent = [section.course_code, section.course_title].filter(Boolean).join(' — ');
+            if (subheading) subheading.textContent = section.section_name || '';
+            let onTarget = 0, belowTarget = 0;
+            (data.outcomes || []).forEach(item => {
+                const tr = document.createElement('tr');
+                const activities = (item.activities || []).map(activity => {
+                    const chip = document.createElement('span'); chip.className = 'ac-co-chip'; chip.textContent = activity.title; return chip;
+                });
+                const values = [item.code, item.description, activities, item.attainment_percentage == null ? 'Awaiting results' : Number(item.attainment_percentage).toFixed(1) + '%', Number(item.target_percentage).toFixed(1) + '%', item.status === 'met' ? 'Met' : item.status === 'awaiting_results' ? 'Awaiting results' : 'Needs improvement'];
+                values.forEach(value => {
+                    const td = document.createElement('td');
+                    if (Array.isArray(value)) value.forEach(chip => td.appendChild(chip)); else td.textContent = value;
+                    tr.appendChild(td);
+                });
+                const action = document.createElement('td');
+                const button = document.createElement('button'); button.type = 'button'; button.className = 'ac-co-action'; button.dataset.co = item.code; button.textContent = 'Breakdown';
+                action.appendChild(button); tr.appendChild(action); outcomeBody.appendChild(tr);
+                if (item.status === 'met') onTarget++; else if (item.flagged) belowTarget++;
+            });
+            (data.assessments || []).forEach(item => {
+                const scores = Object.values(item.scores || {}).filter(score => score && score.percentage != null);
+                const average = scores.length ? scores.reduce((sum, score) => sum + Number(score.percentage), 0) / scores.length : null;
+                const values = [item.title, item.activity_type, scores.length + ' score(s) entered' + (average == null ? '' : ' · average ' + average.toFixed(1) + '%'), item.outcome_code || '—', scores.length ? 'Included in attainment' : 'Awaiting scores'];
+                const tr = document.createElement('tr');
+                values.forEach(value => { const td = document.createElement('td'); td.textContent = value; tr.appendChild(td); });
+                activityBody.appendChild(tr);
+            });
+            const summary = page.querySelectorAll('.ac-attainment-content > .so-summary-grid .so-summary-number');
+            if (summary.length >= 3) { summary[0].textContent = String((data.outcomes || []).length); summary[1].textContent = String(onTarget); summary[2].textContent = String(belowTarget); }
+            message.textContent = 'Mapping status: ' + data.mapping_status + '. CO attainment recalculates whenever saved scores change.';
+        } catch (error) { message.textContent = error.message; }
+    }
+    fetch('/api/faculty/sections', { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+        .then(response => response.json().then(data => { if (!response.ok) throw new Error(data.error || 'Sections could not be loaded.'); return data; }))
+        .then(data => {
+            const sections = Array.isArray(data.sections) ? data.sections : [];
+            sectionSelect.replaceChildren(new Option(sections.length ? 'Select course section' : 'No assigned sections', ''));
+            sections.forEach(item => sectionSelect.add(new Option(item.course_code + ' · ' + item.section_name, item.section_id)));
+            const requested = new URLSearchParams(location.search).get('section_id');
+            if (sections.some(item => item.section_id === requested)) sectionSelect.value = requested;
+            else if (sections.length === 1) sectionSelect.value = sections[0].section_id;
+            if (sectionSelect.value) load(sectionSelect.value);
+        }).catch(error => { message.textContent = error.message; });
+    sectionSelect.addEventListener('change', () => load(sectionSelect.value));
+})();
+
+/* Department Head mapping verification workflow. */
+(function () {
+    const root = document.getElementById('mappingReviewWorkflow');
+    if (!root) return;
+    const sectionSelect = document.getElementById('mappingReviewSection');
+    const status = document.getElementById('mappingReviewStatus');
+    const rows = document.getElementById('mappingReviewRows');
+    const verifyButton = document.getElementById('verifyMappingReview');
+    let currentReview = null;
+    async function request(url, options) {
+        const response = await fetch(url, Object.assign({
+            credentials: 'same-origin', headers: { Accept: 'application/json' }
+        }, options || {}));
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || 'The request could not be completed.');
+        return result;
+    }
+    function addRow(values) {
+        const row = document.createElement('tr');
+        values.forEach(value => {
+            const cell = document.createElement('td');
+            cell.textContent = value == null || value === '' ? '—' : String(value);
+            row.appendChild(cell);
+        });
+        rows.appendChild(row);
+    }
+    async function loadReview() {
+        rows.replaceChildren(); verifyButton.disabled = true; currentReview = null;
+        if (!sectionSelect.value) { status.textContent = 'Select a section to review.'; return; }
+        status.textContent = 'Loading syllabus and mappings...';
+        try {
+            const data = await request('/api/department-head/sections/' + encodeURIComponent(sectionSelect.value) + '/mapping-review');
+            currentReview = data;
+            (data.assessments || []).forEach(activity => {
+                const coAttainment = (data.attainment || []).find(co => co.course_outcome_id === activity.course_outcome_id);
+                addRow([
+                    activity.title, activity.activity_type,
+                    activity.course_outcome ? activity.course_outcome.code : 'Unmapped',
+                    (data.outcomes || []).find(co => co.id === activity.course_outcome_id)?.student_outcomes.map(so => so.code).join(', ') || 'No SO mapping',
+                    coAttainment?.attainment_percentage == null ? 'Awaiting scores' : Number(coAttainment.attainment_percentage).toFixed(1) + '%',
+                    coAttainment?.flagged ? 'Flagged · CQI recommended' : coAttainment?.status || data.review.status
+                ]);
+            });
+            (data.outcomes || []).forEach(outcome => {
+                const coAttainment = (data.attainment || []).find(co => co.course_outcome_id === outcome.id);
+                if ((data.assessments || []).some(activity => activity.course_outcome_id === outcome.id)) return;
+                addRow([
+                    outcome.code + ' · ' + outcome.description, 'Course Outcome', outcome.code,
+                    outcome.student_outcomes.map(so => so.code).join(', ') || 'No SO mapping',
+                    coAttainment?.attainment_percentage == null ? 'Awaiting scores' : Number(coAttainment.attainment_percentage).toFixed(1) + '%',
+                    coAttainment?.flagged ? 'Flagged · CQI recommended' : coAttainment?.status || data.review.status
+                ]);
+            });
+            if (!(data.assessments || []).length) addRow(['No assessments submitted', '', '', '', '', data.review.status]);
+            const syllabusLink = data.syllabus?.signed_url;
+            status.textContent = 'Review status: ' + data.review.status +
+                (data.syllabus ? ' · Syllabus: ' + data.syllabus.file_name : ' · No syllabus uploaded');
+            if (syllabusLink) {
+                const link = document.createElement('a'); link.href = syllabusLink;
+                link.target = '_blank'; link.rel = 'noopener'; link.textContent = ' View syllabus';
+                status.appendChild(link);
+            }
+            verifyButton.disabled = data.review.status !== 'submitted';
+        } catch (error) { status.textContent = error.message; }
+    }
+    document.getElementById('loadMappingReview').addEventListener('click', loadReview);
+    sectionSelect.addEventListener('change', loadReview);
+    verifyButton.addEventListener('click', async () => {
+        if (!currentReview || !sectionSelect.value) return;
+        verifyButton.disabled = true; status.textContent = 'Verifying mappings...';
+        try {
+            await request('/api/department-head/sections/' + encodeURIComponent(sectionSelect.value) + '/verify-mappings', { method: 'POST' });
+            status.textContent = 'Mappings verified. The syllabus and outcome information are now visible to enrolled students.';
+            await loadReview();
+        } catch (error) { status.textContent = error.message; verifyButton.disabled = false; }
+    });
+    request('/api/department-head/mapping-reviews').then(data => {
+        const reviews = Array.isArray(data.reviews) ? data.reviews : [];
+        sectionSelect.replaceChildren(new Option(reviews.length ? 'Select course section' : 'No sections in your department', ''));
+        reviews.forEach(item => sectionSelect.add(new Option(
+            item.course_code + ' · ' + item.section_name + ' · ' + item.status,
+            item.section_id
+        )));
+    }).catch(error => { sectionSelect.replaceChildren(new Option(error.message, '')); });
+})();
+
+/* Faculty edits syllabus CO-to-SO links and submits each section for review. */
+(function () {
+    const root = document.getElementById('facultyOutcomeMappingEditor');
+    if (!root) return;
+    const sectionSelect = document.getElementById('facultyMappingSection');
+    const rows = document.getElementById('facultyOutcomeMappingRows');
+    const status = document.getElementById('facultyOutcomeMappingStatus');
+    let sections = [];
+    async function request(url, options) {
+        const response = await fetch(url, Object.assign({ credentials: 'same-origin', headers: { Accept: 'application/json' } }, options || {}));
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || 'The request could not be completed.');
+        return data;
+    }
+    async function load() {
+        rows.replaceChildren();
+        const section = sections.find(item => item.section_id === sectionSelect.value);
+        if (!section) return;
+        status.textContent = 'Loading outcomes from the course syllabus...';
+        try {
+            const data = await request('/api/faculty/courses/' + encodeURIComponent(section.course_id) + '/outcome-mappings');
+            const selected = new Set((data.mappings || []).map(item => item.course_outcome_id + ':' + item.student_outcome_id));
+            (data.outcomes || []).forEach(co => {
+                const row = document.createElement('tr');
+                const label = document.createElement('td');
+                label.textContent = co.code + ' — ' + co.description;
+                const choices = document.createElement('td');
+                (data.student_outcomes || []).forEach(so => {
+                    const wrapper = document.createElement('label');
+                    wrapper.style.marginRight = '12px';
+                    const input = document.createElement('input'); input.type = 'checkbox';
+                    input.dataset.co = co.id; input.dataset.so = so.id;
+                    input.checked = selected.has(co.id + ':' + so.id);
+                    wrapper.append(input, document.createTextNode(' ' + so.code + ' — ' + so.description));
+                    choices.appendChild(wrapper);
+                });
+                const target = document.createElement('td'); target.textContent = Number(co.target_percentage || 70).toFixed(1) + '%';
+                row.append(label, choices, target); rows.appendChild(row);
+            });
+            if (!data.outcomes?.length) status.textContent = 'Add Course Outcomes to the syllabus before mapping Student Outcomes.';
+            else status.textContent = 'Review the syllabus mappings and save your changes.';
+        } catch (error) { status.textContent = error.message; }
+    }
+    request('/api/faculty/sections').then(data => {
+        sections = Array.isArray(data.sections) ? data.sections : [];
+        sectionSelect.replaceChildren(new Option(sections.length ? 'Select course section' : 'No assigned sections', ''));
+        sections.forEach(item => sectionSelect.add(new Option(
+            item.course_code + ' · ' + item.section_name, item.section_id
+        )));
+        const requested = new URLSearchParams(location.search).get('section_id');
+        if (sections.some(item => item.section_id === requested)) sectionSelect.value = requested;
+        else if (sections.length === 1) sectionSelect.value = sections[0].section_id;
+        if (sectionSelect.value) load();
+    }).catch(error => { sectionSelect.replaceChildren(new Option(error.message, '')); });
+    sectionSelect.addEventListener('change', load);
+    document.getElementById('loadFacultyOutcomeMappings').addEventListener('click', load);
+    document.getElementById('saveFacultyOutcomeMappings').addEventListener('click', async () => {
+        const section = sections.find(item => item.section_id === sectionSelect.value);
+        if (!section) { status.textContent = 'Select a course section first.'; return; }
+        const mappings = Array.from(rows.querySelectorAll('input:checked')).map(input => ({
+            course_outcome_id: input.dataset.co, student_outcome_id: input.dataset.so
+        }));
+        status.textContent = 'Saving CO/SO mappings...';
+        try {
+            const result = await request('/api/faculty/courses/' + encodeURIComponent(section.course_id) + '/outcome-mappings', {
+                method: 'PUT', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify({ mappings })
+            });
+            status.textContent = result.saved_count + ' CO/SO mappings saved. Submit the section for Dept. Head verification.';
+        } catch (error) { status.textContent = error.message; }
+    });
+    document.getElementById('submitFacultyOutcomeMappings').addEventListener('click', async () => {
+        if (!sectionSelect.value) { status.textContent = 'Select a course section first.'; return; }
+        try {
+            await request('/api/faculty/sections/' + encodeURIComponent(sectionSelect.value) + '/submit-mappings', { method: 'POST' });
+            status.textContent = 'Syllabus and mappings submitted to the Department Head.';
+        } catch (error) { status.textContent = error.message; }
+    });
+})();
+
+/* Student CO results are read-only and available only after mapping verification. */
+(function () {
+    const body = document.getElementById('ac-attainment-rows');
+    if (!body) return;
+    const targets = Array.from(document.querySelectorAll('.so-summary-grid .so-summary-number')).slice(-3);
+    fetch('/api/student/course-outcomes', { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+        .then(async response => {
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(result.error || 'Course outcomes could not be loaded.');
+            return result;
+        })
+        .then(result => {
+            const outcomes = Array.isArray(result.outcomes) ? result.outcomes : [];
+            let met = 0, notMet = 0, awaiting = 0;
+            body.replaceChildren();
+            outcomes.forEach(item => {
+                const row = document.createElement('tr');
+                const attainment = item.attainment_percentage;
+                if (item.status === 'met') met++;
+                else if (item.status === 'not_met') notMet++;
+                else awaiting++;
+                [
+                    [item.course_code, item.course_title, item.section_name].filter(Boolean).join(' · '),
+                    item.code,
+                    item.description + ((item.student_outcomes || []).length ? ' · Aligned SO: ' + item.student_outcomes.map(so => so.code).join(', ') : ''),
+                    item.status === 'met' ? 'Met · ' + Number(attainment).toFixed(1) + '%' :
+                        item.status === 'not_met' ? 'Needs improvement · ' + Number(attainment).toFixed(1) + '%' : 'Awaiting results',
+                    item.release_status === 'Released' ? 'Released' : 'Not Released'
+                ].forEach(value => { const cell = document.createElement('td'); cell.textContent = value || '—'; row.appendChild(cell); });
+                body.appendChild(row);
+            });
+            if (targets.length >= 3) {
+                targets[0].textContent = String(met);
+                targets[1].textContent = String(notMet);
+                targets[2].textContent = String(awaiting);
+            }
+            const search = document.getElementById('ac-attainment-search');
+            if (search) search.dispatchEvent(new Event('input', { bubbles: true }));
+            const empty = document.getElementById('ac-attainment-empty');
+            if (empty && outcomes.length === 0) empty.textContent = 'No verified course outcomes are available yet.';
+        })
+        .catch(error => {
+            const empty = document.getElementById('ac-attainment-empty');
+            if (empty) { empty.textContent = error.message; empty.hidden = false; }
+        });
+})();
+
 
 
 /* RP FACULTY — report index, previews, downloads and filters. */
@@ -8278,6 +8558,7 @@ function initRawAssessmentFaculty() {
     let workspace = null;
     let assignments = [];
     let editedScores = new Map();
+    let editingAssessmentId = null;
     const status = $('rafMessage');
     const saveButton = $('rafSave');
 
@@ -8311,6 +8592,10 @@ function initRawAssessmentFaculty() {
         $('rafMode').textContent = locked ? 'Gradebook Locked' : 'Open for Editing';
         $('rafMode').classList.toggle('in-progress', locked);
         assessmentSelect.disabled = !workspace?.assessments.length;
+        const manageLocked = !assessment || locked;
+        $('rafEditAssessment').disabled = manageLocked;
+        $('rafDeleteAssessment').disabled = manageLocked;
+        $('rafSubmitMappings').disabled = !workspace || !workspace.assessments.length || locked;
         saveButton.disabled = !assessment || locked;
         $('rafMaxInput').value = assessment ? String(maxScore) : '';
         $('rafMaxLabel').textContent = assessment ? String(maxScore) : '';
@@ -8459,7 +8744,55 @@ function initRawAssessmentFaculty() {
     assessmentSelect.addEventListener('change', () => {
         editedScores.clear();
         $('rafMessage').textContent = '';
+        editingAssessmentId = null;
+        createForm.reset();
+        $('rafNewMax').value = '100';
+        createForm.querySelector('h3').textContent = 'Create Assessment';
+        createForm.querySelector('[type="submit"]').textContent = 'Create Assessment';
         render();
+    });
+    $('rafEditAssessment').addEventListener('click', () => {
+        const assessment = selectedAssessment();
+        if (!assessment || workspace?.gradebook_status === 'locked') return;
+        editingAssessmentId = assessment.id;
+        $('rafNewTitle').value = assessment.title || '';
+        $('rafNewType').value = assessment.activity_type || '';
+        $('rafNewOutcome').value = assessment.course_outcome_id || '';
+        $('rafNewDate').value = assessment.due_date || '';
+        $('rafNewMax').value = String(assessment.max_score || 100);
+        createForm.querySelector('h3').textContent = 'Update Assessment';
+        createForm.querySelector('[type="submit"]').textContent = 'Save Changes';
+        createForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        $('rafNewTitle').focus();
+    });
+    $('rafDeleteAssessment').addEventListener('click', async () => {
+        const assessment = selectedAssessment();
+        if (!assessment || workspace?.gradebook_status === 'locked') return;
+        if (!window.confirm('Remove “' + assessment.title + '” and its saved scores?')) return;
+        $('rafDeleteAssessment').disabled = true;
+        status.textContent = 'Removing assessment...';
+        try {
+            await api('/api/faculty/assessments/' + encodeURIComponent(assessment.id), { method: 'DELETE' });
+            editingAssessmentId = null;
+            status.textContent = 'Assessment removed.';
+            await loadWorkspace();
+        } catch (error) {
+            status.textContent = error.message;
+            render();
+        }
+    });
+    $('rafSubmitMappings').addEventListener('click', async () => {
+        if (!sectionSelect.value || !workspace) return;
+        $('rafSubmitMappings').disabled = true;
+        status.textContent = 'Submitting mappings for review...';
+        try {
+            await api('/api/faculty/sections/' + encodeURIComponent(sectionSelect.value) + '/submit-mappings', { method: 'POST' });
+            status.textContent = 'Mappings submitted to the Department Head.';
+        } catch (error) {
+            status.textContent = error.message;
+        } finally {
+            render();
+        }
     });
     $('rafSearch').addEventListener('input', render);
     $('rafSort').addEventListener('change', render);
@@ -8501,11 +8834,12 @@ function initRawAssessmentFaculty() {
         }
         const submit = createForm.querySelector('[type="submit"]');
         submit.disabled = true;
-        $('rafMessage').textContent = 'Creating assessment...';
+        $('rafMessage').textContent = editingAssessmentId ? 'Updating assessment...' : 'Creating assessment...';
         try {
-            const result = await api('/api/faculty/sections/' +
-                encodeURIComponent(sectionSelect.value) + '/assessments', {
-                    method: 'POST',
+            const result = await api(editingAssessmentId
+                ? '/api/faculty/assessments/' + encodeURIComponent(editingAssessmentId)
+                : '/api/faculty/sections/' + encodeURIComponent(sectionSelect.value) + '/assessments', {
+                    method: editingAssessmentId ? 'PUT' : 'POST',
                     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
                     body: JSON.stringify({
                         title: $('rafNewTitle').value.trim(),
@@ -8517,9 +8851,12 @@ function initRawAssessmentFaculty() {
                 });
             createForm.reset();
             $('rafNewMax').value = '100';
+            editingAssessmentId = null;
+            createForm.querySelector('h3').textContent = 'Create Assessment';
+            createForm.querySelector('[type="submit"]').textContent = 'Create Assessment';
             await loadWorkspace();
             assessmentSelect.value = result.assessment.id;
-            $('rafMessage').textContent = 'Assessment created.';
+            $('rafMessage').textContent = 'Assessment ' + (result.assessment ? 'saved.' : 'updated.');
             render();
         } catch (error) {
             $('rafMessage').textContent = error.message;
@@ -8619,7 +8956,7 @@ document.addEventListener("DOMContentLoaded", function () {
             row.dataset.type = item.activity_type;
             row.dataset.date = item.due_date || '';
             [
-                item.title,
+                item.course_outcome_code ? item.course_outcome_code + ' · ' + item.title : item.title,
                 [item.course_code, item.course_title].filter(Boolean).join(' - ') || '—',
                 item.activity_type || '—',
                 item.due_date || '—',
@@ -8680,10 +9017,10 @@ document.addEventListener("DOMContentLoaded", function () {
         const release = document.getElementById('ac-attainment-release');
         const sort = document.getElementById('ac-attainment-sort');
         if (!body || !search || !release || !sort) return;
-        const rows = Array.from(body.querySelectorAll('tr'));
         function update() {
             const term = search.value.trim().toLowerCase();
             const filter = release.value;
+            const rows = Array.from(body.querySelectorAll('tr'));
             const ordered = rows.slice().sort((a, b) => {
                 if (sort.value === 'course') return a.cells[0].textContent.localeCompare(b.cells[0].textContent);
                 if (sort.value === 'outcome') return a.cells[1].textContent.localeCompare(b.cells[1].textContent, undefined, { numeric: true });

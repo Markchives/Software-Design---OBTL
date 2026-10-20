@@ -35,6 +35,12 @@
 <h1>Curriculum Mapping</h1>
 <p>Manage course outcomes, assessment mappings, and student attainment.</p>
 </section>
+<section aria-labelledby="mappingReviewHeading" class="so-content-card" id="mappingReviewWorkflow" style="padding:20px;margin-bottom:20px">
+<header class="so-section-header"><div><h2 id="mappingReviewHeading">Syllabus and Mapping Verification</h2><p>Review the faculty-submitted assessment-to-CO and CO-to-SO mappings. Verification publishes syllabus and outcome information to enrolled students.</p></div></header>
+<div class="cm-filter-group"><label for="mappingReviewSection">Submitted course section</label><select id="mappingReviewSection"><option value="">Loading sections...</option></select><button class="crf-download-btn" id="loadMappingReview" type="button">Load Review</button><button class="crf-download-btn" id="verifyMappingReview" type="button" disabled>Verify Mappings</button></div>
+<p aria-live="polite" id="mappingReviewStatus" role="status"></p>
+<div class="cm-table-wrap"><table class="cm-table"><thead><tr><th>Assessment</th><th>Type</th><th>Mapped CO</th><th>CO to SO links</th><th>Class Attainment</th><th>Status</th></tr></thead><tbody id="mappingReviewRows"></tbody></table></div>
+</section>
 <section class="cm-student-filters dh-filters">
 <div class="cm-filter-group"><label for="cmDeptSchoolYear">School Year</label><select id="cmDeptSchoolYear"><option selected="" value="">Select School Year</option></select></div>
 <div class="cm-filter-group"><label for="cmDeptDepartment">Department</label><select id="cmDeptDepartment"><option selected="" value="">All Departments</option></select></div>
