@@ -96,3 +96,101 @@ Do not confuse this project with the separate Portfolio repository that may be t
 ## Validation history
 
 Previously completed checks include Python syntax compilation, `git diff --check`, focused mocked tests for the registration-options APIs and program/college validation, and browser checks of the college-to-program dropdown. The live endpoints were subsequently checked and returned the seven colleges and five programs per college. Full end-to-end confirmation of verified student login and profile persistence remains outstanding.
+
+## Image upload
+
+Buckets created for Profile pictures and signatures for users (both images). Created table for url (text) for pfp and signature. Attached is code snippet for backend integration, use as reference only.
+
+# ----------------------------------------------------
+# 1. PROFILE PICTURE UPLOAD (Public Bucket)
+# ----------------------------------------------------
+def upload_profile_picture(user_id: str, file_bytes: bytes, file_name: str, content_type: str = "image/png"):
+    try:
+        file_ext = file_name.split(".")[-1]
+        file_path = f"{user_id}/avatar.{file_ext}"
+
+        # 1. Upload file to 'profile_pictures' storage bucket
+        supabase.storage.from_("profile_pictures").upload(
+            path=file_path,
+            file=file_bytes,
+            file_options={"upsert": "true", "content-type": content_type}
+        )
+
+        # 2. Get Public URL
+        public_url = supabase.storage.from_("profile_pictures").get_public_url(file_path)
+
+        # 3. Update 'pfp_url' column in 'users' table
+        supabase.table("users").update({"pfp_url": public_url}).eq("id", user_id).execute()
+
+        print(f"✅ Profile picture updated: {public_url}")
+        return public_url
+
+    except Exception as e:
+        print(f"❌ Error uploading profile picture: {str(e)}")
+        return None
+
+
+# ----------------------------------------------------
+# 2. SIGNATURE UPLOAD (Private Bucket)
+# ----------------------------------------------------
+def upload_signature(user_id: str, file_bytes: bytes, file_name: str, content_type: str = "image/png"):
+    try:
+        file_ext = file_name.split(".")[-1]
+        file_path = f"{user_id}/signature.{file_ext}"
+
+        # 1. Upload file to 'signatures' storage bucket
+        supabase.storage.from_("signatures").upload(
+            path=file_path,
+            file=file_bytes,
+            file_options={"upsert": "true", "content-type": content_type}
+        )
+
+        # 2. Update 'signature_url' column in 'users' table (save relative path)
+        supabase.table("users").update({"signature_url": file_path}).eq("id", user_id).execute()
+
+        print(f"✅ Signature file path saved: {file_path}")
+        return file_path
+
+    except Exception as e:
+        print(f"❌ Error uploading signature: {str(e)}")
+        return None
+
+
+# ----------------------------------------------------
+# 3. GET SIGNATURE IMAGE URL (Private Signed URL)
+# ----------------------------------------------------
+def get_signature_url(file_path: str, expires_in: int = 60):
+    try:
+        # Generate temporary URL valid for 60 seconds
+        response = supabase.storage.from_("signatures").create_signed_url(file_path, expires_in)
+        return response.get("signedUrl")
+    except Exception as e:
+        print(f"❌ Error generating signed URL: {str(e)}")
+        return None
+Flask Route Example (If using Flask in app.py)
+If app.py is a Flask web app, here is how you handle file inputs from an HTML form request:
+
+Python
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route("/upload-pfp", methods=["POST"])
+def handle_pfp_upload():
+    user_id = request.form.get("user_id")
+    file = request.files.get("pfp_image")
+
+    if not user_id or not file:
+        return jsonify({"error": "Missing user_id or file"}), 400
+
+    file_bytes = file.read()
+    public_url = upload_profile_picture(
+        user_id=user_id,
+        file_bytes=file_bytes,
+        file_name=file.filename,
+        content_type=file.content_type
+    )
+
+    if public_url:
+        return jsonify({"message": "Success", "pfp_url": public_url}), 200
+    return jsonify({"error": "Upload failed"}), 500 
