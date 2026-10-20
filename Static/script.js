@@ -6005,7 +6005,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 termName: item.term_name,
                 fileName: item.file_name,
                 uploadedAt: item.uploaded_at,
-                signedUrl: item.signed_url
+                signedUrl: item.signed_url,
+                downloadUrl: item.download_url
             };
         });
     }
@@ -6093,10 +6094,11 @@ document.addEventListener("DOMContentLoaded", function () {
             window.open(record.signedUrl, "_blank", "noopener");
         });
         downloadButton.addEventListener("click", function () {
-            if (!record.signedUrl)
+            const downloadUrl = record.downloadUrl || record.signedUrl;
+            if (!downloadUrl)
                 return;
             const link = document.createElement("a");
-            link.href = record.signedUrl;
+            link.href = downloadUrl;
             link.download = record.fileName || "Course_Syllabus.pdf";
             document.body.appendChild(link);
             link.click();
@@ -6113,36 +6115,18 @@ document.addEventListener("DOMContentLoaded", function () {
         const page = document.querySelector(".so-student-page:not(.so-faculty-page)");
         const list = document.getElementById("studentSyllabusList");
         const empty = document.getElementById("studentSyllabusEmpty");
-        const filter = document.getElementById("studentCourseSort");
         const count = document.getElementById("availableSyllabusCount");
         if (!page || !list || !empty) {
             return;
         }
         try {
             const records = await getSharedSyllabi();
-            if (filter) {
-                const previous = filter.value;
-                filter.innerHTML = '<option value="">All Courses</option>';
-                records.forEach(function (record) {
-                    const option = document.createElement("option");
-                    option.value = record.courseKey;
-                    option.textContent = record.courseName || record.courseKey;
-                    filter.appendChild(option);
-                });
-                if (Array.from(filter.options).some(function (option) { return option.value === previous; })) {
-                    filter.value = previous;
-                }
-            }
-            const activeCourse = filter ? filter.value : "";
-            const finalRecords = records.filter(function (record) {
-                return !activeCourse || record.courseKey === activeCourse;
-            });
             list.innerHTML = "";
-            finalRecords.forEach(function (record) {
+            records.forEach(function (record) {
                 list.appendChild(renderStudentSyllabusRow(record));
             });
-            list.hidden = finalRecords.length === 0;
-            empty.hidden = finalRecords.length > 0;
+            list.hidden = records.length === 0;
+            empty.hidden = records.length > 0;
             if (count) {
                 count.textContent = String(records.length);
             }
@@ -6222,11 +6206,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }, true);
 
     document.addEventListener("DOMContentLoaded", function () {
-        const filter = document.getElementById("studentCourseSort");
-        if (filter && filter.dataset.sharedSyllabusInitialized !== "true") {
-            filter.dataset.sharedSyllabusInitialized = "true";
-            filter.addEventListener("change", renderStudentSharedSyllabi);
-        }
         renderStudentSharedSyllabi();
         loadFacultySyllabus();
     });

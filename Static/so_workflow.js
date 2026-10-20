@@ -328,20 +328,16 @@
         const count = document.getElementById("pendingSOCount");
         const dueCount = document.getElementById("dueThisWeekCount");
         const availableSyllabusCount = document.getElementById("availableSyllabusCount");
-        const courseFilter = document.getElementById("studentCourseSort");
         const escape = esc;
         let syllabusRows = [];
         function renderSyllabi() {
             const syllabusList = document.getElementById("studentSyllabusList");
             const emptySyllabus = document.getElementById("studentSyllabusEmpty");
-            const visible = syllabusRows.filter(item =>
-                !courseFilter?.value || item.course_id === courseFilter.value
-            );
             if (syllabusList) {
-                syllabusList.innerHTML = visible.map(item => `<div class="so-student-file-row"><div class="so-student-file-info"><div class="so-student-file-copy"><strong>${escape(item.course_code)} · ${escape(item.course_title)} · ${escape(item.section_name)}</strong><div>${escape(item.file_name)}</div><small>${escape(item.term_name)} ${escape(item.academic_year_name)}</small></div></div><div class="so-student-file-actions"><a class="so-student-view-btn" target="_blank" rel="noopener" href="${escape(item.signed_url)}">View syllabus</a><a class="so-student-download-btn" href="${escape(item.download_url || item.signed_url)}" target="_blank" rel="noopener">Download</a></div></div>`).join("");
-                syllabusList.hidden = !visible.length;
+                syllabusList.innerHTML = syllabusRows.map(item => `<div class="so-student-file-row"><div class="so-student-file-info"><div class="so-student-file-copy"><strong>${escape(item.course_code)} · ${escape(item.course_title)} · ${escape(item.section_name)}</strong><div>${escape(item.file_name)}</div><small>${escape(item.term_name)} ${escape(item.academic_year_name)}</small></div></div><div class="so-student-file-actions"><a class="so-student-view-btn" target="_blank" rel="noopener" href="${escape(item.signed_url)}">View syllabus</a><a class="so-student-download-btn" href="${escape(item.download_url || item.signed_url)}" target="_blank" rel="noopener">Download</a></div></div>`).join("");
+                syllabusList.hidden = !syllabusRows.length;
             }
-            if (emptySyllabus) emptySyllabus.hidden = visible.length > 0;
+            if (emptySyllabus) emptySyllabus.hidden = syllabusRows.length > 0;
         }
         async function load() {
             try {
@@ -359,22 +355,11 @@
                 const syllabusData = await api(studentSectionScopedUrl("/api/student/syllabi"));
                 syllabusRows = Array.isArray(syllabusData.syllabi) ? syllabusData.syllabi : [];
                 if (availableSyllabusCount) availableSyllabusCount.textContent = String(syllabusRows.length);
-                if (courseFilter) {
-                    const previous = courseFilter.value;
-                    const courses = [...new Map(syllabusRows.map(item => [
-                        item.course_id,
-                        `${item.course_code} · ${item.course_title}`
-                    ])).entries()];
-                    courseFilter.replaceChildren(new Option("All Courses", ""));
-                    courses.forEach(([id, label]) => courseFilter.add(new Option(label, id)));
-                    if (courses.some(([id]) => id === previous)) courseFilter.value = previous;
-                }
                 renderSyllabi();
             } catch (error) {
                 notify(error.message);
             }
         }
-        courseFilter?.addEventListener("change", renderSyllabi);
         list.addEventListener("click", async event => {
             const button = event.target.closest("[data-assessment]"); if (!button) return;
             try {
