@@ -34,9 +34,73 @@
         let outcomes = [];
         let studentOutcomes = [];
         let mappings = [];
+        let editingAssessmentId = null;
+        const indicatorRows = document.getElementById("soIndicatorRows");
+        const ratingRows = document.getElementById("soRatingRows");
+        const indicatorDefaults = [""];
+        const ratingDefaults = [
+            { value: 1, label: "Beginning" },
+            { value: 2, label: "Developing" },
+            { value: 3, label: "Proficient" },
+            { value: 4, label: "Advanced" }
+        ];
         const button = (text, action, id) => `<button class="so-workflow-action" type="button" data-action="${action}" data-id="${esc(id)}">${text}</button>`;
         if (coForm) coForm.hidden = true;
         if (assessmentForm) assessmentForm.hidden = true;
+        function addIndicator(value = "") {
+            const row = document.createElement("div");
+            row.className = "so-editor-row so-indicator-row";
+            row.innerHTML = `<input type="text" maxlength="300" aria-label="Performance indicator" placeholder="Example: Apply relevant knowledge to solve problems" value="${esc(value)}"><button class="so-editor-remove" type="button" aria-label="Remove performance indicator">Remove</button>`;
+            row.querySelector("button").addEventListener("click", () => {
+                row.remove();
+                updateEditorControls();
+            });
+            indicatorRows.appendChild(row);
+            updateEditorControls();
+        }
+        function addRating(value = "", label = "") {
+            const row = document.createElement("div");
+            row.className = "so-editor-row so-rating-row";
+            row.innerHTML = `<input type="number" min="0" max="100" step="1" aria-label="Rating score" placeholder="1" value="${esc(value)}"><input type="text" maxlength="80" aria-label="Rating label" placeholder="Example: Beginning" value="${esc(label)}"><button class="so-editor-remove" type="button" aria-label="Remove rating level">Remove</button>`;
+            row.querySelector("button").addEventListener("click", () => {
+                row.remove();
+                updateEditorControls();
+            });
+            ratingRows.appendChild(row);
+            updateEditorControls();
+        }
+        function updateEditorControls() {
+            const indicators = indicatorRows.querySelectorAll(".so-indicator-row");
+            const ratings = ratingRows.querySelectorAll(".so-rating-row");
+            indicators.forEach(row => { row.querySelector("button").disabled = indicators.length <= 1; });
+            ratings.forEach(row => { row.querySelector("button").disabled = ratings.length <= 2; });
+            document.getElementById("soAddRating").disabled = ratings.length >= 10;
+            document.getElementById("soAddIndicator").disabled = indicators.length >= 30;
+        }
+        function setAssessmentEditor(assessment) {
+            editingAssessmentId = assessment?.id || null;
+            document.getElementById("soAssessmentOutcome").value = assessment?.student_outcome_id || "";
+            document.getElementById("soAssessmentTitle").value = assessment?.title || "";
+            document.getElementById("soAssessmentDue").value = assessment?.due_date || "";
+            document.getElementById("soAssessmentStatus").value = assessment?.status || "draft";
+            indicatorRows.replaceChildren();
+            (assessment?.performance_indicators?.length ? assessment.performance_indicators : indicatorDefaults)
+                .forEach(addIndicator);
+            ratingRows.replaceChildren();
+            (assessment?.rating_scale?.length ? assessment.rating_scale : ratingDefaults)
+                .forEach(row => addRating(row.value, row.label));
+            saveAssessmentButton.textContent = editingAssessmentId
+                ? "Save Changes" : "Create Assessment";
+        }
+        setAssessmentEditor(null);
+        document.getElementById("soAddIndicator").addEventListener("click", () => addIndicator());
+        document.getElementById("soAddRating").addEventListener("click", () => {
+            const values = [...ratingRows.querySelectorAll(".so-rating-row input[type=number]")]
+                .map(input => Number(input.value)).filter(Number.isFinite);
+            const nextValue = values.length ? Math.max(...values) + 1 : 1;
+            if (nextValue > 100) return notify("Rating scores must be between 0 and 100.");
+            addRating(nextValue, "");
+        });
         async function loadSection(sectionId) {
             section = sections.find(row => row.section_id === sectionId) || null;
             if (sectionSelect) sectionSelect.value = section?.section_id || "";
@@ -50,14 +114,20 @@
             saveAssessmentButton.disabled = !section;
             if (addCoButton) addCoButton.disabled = !section;
             if (addAssessmentButton) addAssessmentButton.disabled = !section;
-            if (status) status.textContent = section ? "Loading course outcomes and Student Outcome assessments..." : "Select a course section to get started.";
+            if (status) status.textContent = section
+                ? `${section.course_code} · ${section.course_title} · ${section.section_name} — loading outcomes...`
+                : sections.length > 1
+                    ? "Open this page from a specific assigned course section to load its outcomes."
+                    : sections.length === 1
+                        ? "Loading your assigned course..."
+                        : "No course sections are assigned to your Faculty account.";
             if (coForm) coForm.hidden = true;
             if (assessmentForm) assessmentForm.hidden = true;
             document.getElementById("soCoCode").value = "";
             document.getElementById("soCoDescription").value = "";
             if (!section) {
-                coRows.innerHTML = `<tr><td colspan="5">Choose an assigned section to load outcomes.</td></tr>`;
-                assessmentRows.innerHTML = `<tr><td colspan="5">Choose an assigned section to load Student Outcomes.</td></tr>`;
+                coRows.innerHTML = `<tr><td colspan="5">Open this workspace from an assigned course section to load outcomes.</td></tr>`;
+                assessmentRows.innerHTML = `<tr><td colspan="5">Open this workspace from an assigned course section to load Student Outcomes.</td></tr>`;
                 return;
             }
             try {
@@ -101,7 +171,9 @@
                 const mapped = studentOutcomes.some(so => mappings.some(link => link.student_outcome_id === so.id));
                 if (!mapped) return notify("Add and align a Course Outcome with a Student Outcome before creating an assessment.");
             }
-            if (assessmentForm) assessmentForm.hidden = !assessmentForm.hidden;
+            const opening = assessmentForm.hidden;
+            if (opening) setAssessmentEditor(null);
+            if (assessmentForm) assessmentForm.hidden = !opening;
             if (!assessmentForm.hidden) outcomeSelect.focus();
         });
         saveCoButton.addEventListener("click", async () => {
@@ -122,18 +194,41 @@
         });
         saveAssessmentButton.addEventListener("click", async () => {
             if (!section) return notify("Select a section first.");
-            const indicators = document.getElementById("soIndicators").value.split("\n").map(v => v.trim()).filter(Boolean);
-            const rating_scale = document.getElementById("soRatingScale").value.split("\n").map(line => {
-                const [value, ...label] = line.split("|");
-                return { value: Number(value.trim()), label: label.join("|").trim() };
-            }).filter(row => Number.isInteger(row.value) && row.label);
+            const indicatorInputs = [...indicatorRows.querySelectorAll(".so-indicator-row input")];
+            const indicators = indicatorInputs.map(input => input.value.trim());
+            if (indicators.some(value => !value)) return notify("Complete or remove each blank performance indicator.");
+            const ratingRowsData = [...ratingRows.querySelectorAll(".so-rating-row")].map(row => ({
+                rawValue: row.querySelector('input[type="number"]').value.trim(),
+                value: Number(row.querySelector('input[type="number"]').value),
+                label: row.querySelector('input[type="text"]').value.trim()
+            }));
+            if (ratingRowsData.some(row => !row.rawValue || !row.label ||
+                !Number.isInteger(row.value) || row.value < 0 || row.value > 100)) {
+                return notify("Enter a whole-number score from 0 to 100 and a label for every rating level.");
+            }
+            const rating_scale = ratingRowsData.map(({ value, label }) => ({ value, label }));
+            if (new Set(rating_scale.map(row => row.value)).size !== rating_scale.length) {
+                return notify("Each rating level must have a unique score.");
+            }
             const data = { student_outcome_id: outcomeSelect.value, title: document.getElementById("soAssessmentTitle").value, due_date: document.getElementById("soAssessmentDue").value || null, status: document.getElementById("soAssessmentStatus").value, performance_indicators: indicators, rating_scale };
+            saveAssessmentButton.disabled = true;
             try {
-                await api(`/api/faculty/sections/${encodeURIComponent(section.section_id)}/so-assessments`, { method: "POST", body: JSON.stringify(data) });
+                await api(editingAssessmentId
+                    ? `/api/faculty/so-assessments/${encodeURIComponent(editingAssessmentId)}`
+                    : `/api/faculty/sections/${encodeURIComponent(section.section_id)}/so-assessments`, {
+                    method: editingAssessmentId ? "PUT" : "POST",
+                    body: JSON.stringify(data)
+                });
                 if (assessmentForm) assessmentForm.hidden = true;
+                setAssessmentEditor(null);
                 await loadSection(section.section_id);
                 if (status) status.textContent = "Student Outcome assessment saved.";
             } catch (error) { if (status) status.textContent = error.message; notify(error.message); }
+            finally { saveAssessmentButton.disabled = !section; }
+        });
+        document.getElementById("soCancelAssessment").addEventListener("click", () => {
+            if (assessmentForm) assessmentForm.hidden = true;
+            setAssessmentEditor(null);
         });
         root.addEventListener("click", async event => {
             const control = event.target.closest("[data-action]");
@@ -161,12 +256,10 @@
                 } else if (action === "edit-assessment") {
                     const row = (await api(`/api/faculty/sections/${encodeURIComponent(section.section_id)}/so-assessments`)).assessments.find(item => item.id === id);
                     if (!row) return;
-                    const title = prompt("Assessment title", row.title); if (title === null) return;
-                    const due_date = prompt("Due date (YYYY-MM-DD), blank for none", row.due_date || ""); if (due_date === null) return;
-                    const status = prompt("Status: draft, open, or closed", row.status); if (status === null) return;
-                    const performance_indicators = (row.performance_indicators || []).map((v, i) => prompt(`Performance indicator ${i + 1}`, v)).filter(v => v !== null);
-                    if (performance_indicators.length !== row.performance_indicators.length) return;
-                    await api(`/api/faculty/so-assessments/${encodeURIComponent(id)}`, { method: "PUT", body: JSON.stringify({ student_outcome_id: row.student_outcome_id, title, due_date: due_date || null, status, performance_indicators, rating_scale: row.rating_scale }) });
+                    setAssessmentEditor(row);
+                    if (assessmentForm) assessmentForm.hidden = false;
+                    document.getElementById("soTabStudentOutcomes").click();
+                    document.getElementById("soAssessmentTitle").focus();
                 } else if (action === "responses") {
                     const data = await api(`/api/faculty/so-assessments/${encodeURIComponent(id)}/responses`);
                     document.getElementById("soResponseLog").hidden = false;
@@ -209,6 +302,7 @@
                 sectionSelect.replaceChildren(new Option("Unable to load sections", ""));
                 sectionSelect.disabled = true;
             }
+            if (status) status.textContent = error.message;
             notify(error.message);
         });
     }

@@ -147,10 +147,8 @@
                 </button>
 </section>
 <section class="so-content-card so-workflow-manager" id="soWorkflowManager">
-<div class="so-workflow-grid">
-<label class="so-section-context"><span>Teaching section</span><select aria-label="Select assigned course section" id="soFacultySection"><option value="">Loading assigned sections...</option></select><small id="soSelectedSection">Select an assigned section to manage its syllabus and outcomes.</small></label>
-</div>
-<p class="so-workflow-status" id="soFacultyStatus" role="status" aria-live="polite">Select a course section to get started.</p>
+<select aria-label="Assigned course section" id="soFacultySection" hidden><option value="">Loading assigned sections...</option></select>
+<p class="so-workflow-status" id="soFacultyStatus" role="status" aria-live="polite">Loading your assigned course...</p>
 <div class="sodh-tabs sof-tabs" role="tablist" aria-label="Syllabus and outcome management">
 <button class="sodh-tab sof-tab active" id="soTabSyllabus" role="tab" aria-controls="syllabus" aria-selected="true" data-tab="syllabus" type="button">
                         Course Syllabus
@@ -262,7 +260,7 @@
 </div>
 <div class="sodh-tab-panel sof-tab-panel" hidden="" id="student-outcomes" role="tabpanel" aria-labelledby="soTabStudentOutcomes">
 <div class="sodh-toolbar sof-outcome-toolbar sof-student-outcome-toolbar">
-<p>Configure SO self-assessments and track student responses.</p>
+<p>Create student self-assessments and track responses for this course.</p>
 <button class="sof-add-outcome-btn" id="addStudentOutcomeButton" type="button">
 <span class="sof-add-icon">+</span><span>Add Student Outcome</span>
 </button>
@@ -272,17 +270,28 @@
 <label>Assessment title<input id="soAssessmentTitle" maxlength="160" placeholder="SO self-assessment"></label>
 <label>Due date<input id="soAssessmentDue" type="date"></label>
 <label>Status<select id="soAssessmentStatus"><option value="draft">Draft</option><option value="open">Active</option><option value="closed">Closed</option></select></label>
-<label class="so-workflow-wide">Performance indicators <small>One indicator per line</small><textarea id="soIndicators" rows="4" placeholder="Apply relevant knowledge to solve problems&#10;Communicate technical findings"></textarea></label>
-<label class="so-workflow-wide">Rating scale <small>One rating per line, format: value | label</small><textarea id="soRatingScale" rows="3">1 | Beginning
-2 | Developing
-3 | Proficient
-4 | Advanced</textarea></label>
-<button class="sof-add-outcome-btn" id="soSaveAssessment" type="button">Save Student Outcome</button>
+<fieldset class="so-assessment-editor so-workflow-wide">
+<legend>Performance indicators</legend>
+<p class="so-assessment-hint">Add a short, clear statement for each aspect students should assess.</p>
+<div id="soIndicatorRows"></div>
+<button class="so-editor-add" id="soAddIndicator" type="button">+ Add indicator</button>
+</fieldset>
+<fieldset class="so-assessment-editor so-workflow-wide">
+<legend>Rating scale</legend>
+<p class="so-assessment-hint">Use the same scale for every indicator. Scores must be unique whole numbers from 0 to 100.</p>
+<div class="so-rating-editor-head"><span>Score</span><span>Rating label</span><span></span></div>
+<div id="soRatingRows"></div>
+<button class="so-editor-add" id="soAddRating" type="button">+ Add rating level</button>
+</fieldset>
+<div class="so-assessment-actions so-workflow-wide">
+<button class="so-assessment-cancel" id="soCancelAssessment" type="button">Cancel</button>
+<button class="sof-add-outcome-btn" id="soSaveAssessment" type="button">Create Assessment</button>
+</div>
 </div>
 <div class="sodh-table-wrap sof-outcome-table-wrap">
 <table class="sodh-table sof-outcome-table sof-student-outcome-table">
 <thead><tr><th>Student Outcome</th><th>Due Date</th><th>Responses</th><th>Status</th><th>Actions</th></tr></thead>
-<tbody id="soAssessmentRows"><tr><td colspan="5">Choose an assigned section to load Student Outcomes.</td></tr></tbody>
+<tbody id="soAssessmentRows"><tr><td colspan="5">Loading Student Outcomes...</td></tr></tbody>
 </table>
 </div>
 <div class="sodh-table-wrap" id="soResponseLog" hidden><h3>Response log</h3><table class="sodh-table"><thead><tr><th>Student number</th><th>Name</th><th>Program</th><th>Submitted</th><th>Answers</th></tr></thead><tbody id="soResponseRows"></tbody></table></div>
@@ -324,7 +333,7 @@
 <input id="courseOutcomeNumber" type="hidden"/>
 <input id="courseOutcomeDescription" type="hidden"/>
 <div class="sof-outcome-field">
-<label>Student Outcome and Reflection</label>
+<label>Student Outcome</label>
 <div class="sof-so-options" id="courseOutcomeSoOptions">
 <button class="sof-so-option" data-so="SO(A)" type="button">
                     SO(A)
@@ -413,19 +422,19 @@
 <label for="studentOutcomeSelect">Student Outcome</label>
 <select id="studentOutcomeSelect">
 <option value="">Select Student Outcome</option>
-<option value="A">SO(A) — Self-Assessment and Reflection</option>
-<option value="B">SO(B) — Self-Assessment and Reflection</option>
-<option value="C">SO(C) — Self-Assessment and Reflection</option>
-<option value="D">SO(D) — Self-Assessment and Reflection</option>
-<option value="E">SO(E) — Self-Assessment and Reflection</option>
-<option value="F">SO(F) — Self-Assessment and Reflection</option>
-<option value="G1">SO(G1) — Self-Assessment and Reflection</option>
-<option value="G2">SO(G2) — Self-Assessment and Reflection</option>
-<option value="H">SO(H) — Self-Assessment and Reflection</option>
-<option value="I">SO(I) — Self-Assessment and Reflection</option>
-<option value="J">SO(J) — Self-Assessment and Reflection</option>
-<option value="K">SO(K) — Self-Assessment and Reflection</option>
-<option value="L">SO(L) — Self-Assessment and Reflection</option>
+<option value="A">SO(A)</option>
+<option value="B">SO(B)</option>
+<option value="C">SO(C)</option>
+<option value="D">SO(D)</option>
+<option value="E">SO(E)</option>
+<option value="F">SO(F)</option>
+<option value="G1">SO(G1)</option>
+<option value="G2">SO(G2)</option>
+<option value="H">SO(H)</option>
+<option value="I">SO(I)</option>
+<option value="J">SO(J)</option>
+<option value="K">SO(K)</option>
+<option value="L">SO(L)</option>
 </select>
 </div>
 <div class="sof-outcome-form-group">

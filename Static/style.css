@@ -5849,6 +5849,19 @@ body.cr-student-page:not(.cr-faculty-page) .cr-table-wrap{box-sizing:border-box;
 .so-inline-map { display: flex; gap: 5px; align-items: center; margin-top: 7px; }
 .so-inline-map select { max-width: 120px; border: 1px solid #c7d5e2; border-radius: 6px; padding: 6px; color: #16456d; }
 .so-co-links { display: block; color: #647c94; margin-top: 4px; font-size: .88em; }
+.so-workflow-manager .so-assessment-editor { min-width: 0; margin: 0; padding: 16px; border: 1px solid #d6e2ee; border-radius: 12px; background: #f8fbfe; }
+.so-assessment-editor legend { padding: 0 7px; color: #123e66; font-weight: 700; }
+.so-assessment-hint { margin: 0 0 12px; color: #65809a; font-size: .9rem; }
+.so-editor-row, .so-rating-editor-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; margin: 8px 0; }
+.so-rating-editor-head, .so-rating-row { grid-template-columns: minmax(90px, .35fr) minmax(0, 1fr) auto; }
+.so-rating-editor-head { margin: 0 0 4px; color: #52708b; font-size: .82rem; font-weight: 700; }
+.so-workflow-grid .so-editor-row input { min-width: 0; min-height: 40px; }
+.so-editor-remove, .so-editor-add, .so-assessment-cancel { min-height: 38px; padding: 7px 12px; border: 1px solid #c8d8e7; border-radius: 8px; background: #fff; color: #16456d; font: inherit; font-size: .9rem; font-weight: 700; cursor: pointer; }
+.so-editor-remove:hover, .so-editor-add:hover, .so-assessment-cancel:hover { background: #eaf2f9; }
+.so-editor-remove:disabled, .so-editor-add:disabled { opacity: .55; cursor: not-allowed; }
+.so-assessment-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.so-assessment-actions .sof-add-outcome-btn { min-height: 42px; padding: 9px 16px; }
+.so-workflow-manager [hidden] { display: none !important; }
 .so-status-pill { display: inline-flex; border-radius: 999px; padding: 4px 10px; text-transform: capitalize; font-size: .86em; font-weight: 700; background: #eef2f6; color: #344d64; }
 .so-status-pill.open { background: #e1f5e9; color: #08713b; }
 .so-status-pill.closed { background: #fff1d8; color: #8b5c00; }
@@ -5860,7 +5873,8 @@ body.cr-student-page:not(.cr-faculty-page) .cr-table-wrap{box-sizing:border-box;
 .so-response-dialog legend { padding: 0 6px; color: #123e66; font-weight: 700; }
 .so-response-rating { display: flex; align-items: flex-start; gap: 10px; padding: 8px 4px; color: #39566f; }
 .so-response-dialog details p { margin: 6px 0; }
-@media (max-width: 720px) { .so-workflow-grid { grid-template-columns: 1fr; } .so-workflow-wide { grid-column: auto; } .so-workflow-manager { padding: 18px; } .so-response-dialog { padding: 23px 17px; } }
+@media (max-width: 720px) { .so-workflow-grid { grid-template-columns: 1fr; } .so-workflow-wide { grid-column: auto; } .so-workflow-manager { padding: 18px; } .so-response-dialog { padding: 23px 17px; } .so-assessment-editor.so-workflow-wide, .so-assessment-actions.so-workflow-wide { grid-column: auto; } }
+@media (max-width: 480px) { .so-rating-editor-head, .so-rating-row { grid-template-columns: minmax(58px, .35fr) minmax(0, 1fr) auto; gap: 6px; } .so-editor-remove { padding: 6px 8px; font-size: .8rem; } .so-assessment-actions { flex-direction: column-reverse; } }
 
 /* Keep Requirement 1 and 2 content in the document flow so all sections remain reachable. */
 body.so-requirement-one-page,
