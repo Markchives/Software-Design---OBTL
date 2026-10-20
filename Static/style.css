@@ -5858,3 +5858,26 @@ body.cr-student-page:not(.cr-faculty-page) .cr-table-wrap{box-sizing:border-box;
 .so-response-rating { display: flex; align-items: flex-start; gap: 10px; padding: 8px 4px; color: #39566f; }
 .so-response-dialog details p { margin: 6px 0; }
 @media (max-width: 720px) { .so-workflow-grid { grid-template-columns: 1fr; } .so-workflow-wide { grid-column: auto; } .so-workflow-manager { padding: 18px; } .so-response-dialog { padding: 23px 17px; } }
+
+/* Keep Requirement 1 and 2 content in the document flow so all sections remain reachable. */
+body.so-requirement-one-page,
+body.cm-requirement-two-page{height:auto!important;min-height:100vh!important;overflow-x:hidden!important;overflow-y:auto!important;}
+body.so-requirement-one-page .so-shell,
+body.cm-requirement-two-page .so-shell{height:auto!important;min-height:calc(100vh - 95px)!important;overflow:visible!important;align-items:start!important;}
+body.so-requirement-one-page .so-sidebar,
+body.cm-requirement-two-page .so-sidebar{position:sticky!important;top:95px!important;align-self:start!important;height:calc(100vh - 95px)!important;}
+body.so-requirement-one-page .so-shell > .so-main,
+body.so-requirement-one-page .so-shell > .dh-main,
+body.cm-requirement-two-page .so-shell > .so-main,
+body.cm-requirement-two-page .so-shell > .dh-main{box-sizing:border-box;height:auto!important;min-height:0!important;overflow:visible!important;}
+body.so-requirement-one-page .so-main > .so-content-card{overflow:visible!important;}
+body.so-requirement-one-page .so-main > .so-syllabus-card{height:auto!important;max-height:none!important;overflow:visible!important;}
+body.so-requirement-one-page .sodh-content-card,
+body.cm-requirement-two-page .sodh-content-card{flex:0 0 auto!important;min-height:0!important;overflow:visible!important;}
+body.so-requirement-one-page .sodh-tab-panel.active,
+body.cm-requirement-two-page .sodh-tab-panel.active{flex:0 0 auto!important;min-height:0!important;overflow:visible!important;}
+body.cm-requirement-two-page .cm-student-content{flex:0 0 auto!important;overflow:visible!important;}
+body.cm-requirement-two-page .cm-tab-panel.active{flex:0 0 auto!important;overflow:visible!important;}
+body.so-requirement-one-page .sodh-table-wrap,
+body.cm-requirement-two-page .sodh-table-wrap{flex:0 0 auto!important;min-height:0!important;overflow-x:auto!important;overflow-y:visible!important;}
+body.cm-requirement-two-page .cm-table-wrap{flex:0 0 auto!important;min-height:0!important;overflow-x:auto!important;overflow-y:visible!important;}
