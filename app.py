@@ -2318,6 +2318,26 @@ def faculty_assessment_page():
     return render_template("requirement 4/ra-faculty.html")
 
 
+@app.get("/requirement 2/cm-faculty.html")
+@app.get("/requirement 3/cr.faculty.html")
+@app.get("/requirement 5/ac-faculty.html")
+@app.get("/requirement 6/cqi-faculty.html")
+@app.get("/requirement 8/rp-faculty.html")
+@require_role("faculty")
+def faculty_workflow_page():
+    return render_template(request.path.lstrip("/"))
+
+
+@app.get("/requirement 2/cm-student.html")
+@app.get("/requirement 3/cr-student.html")
+@app.get("/requirement 5/ac-student.html")
+@app.get("/requirement 6/cqi-student.html")
+@app.get("/requirement 8/rp-student.html")
+@require_role("student")
+def student_workflow_page():
+    return render_template(request.path.lstrip("/"))
+
+
 @app.get("/requirement 4/ra-student.html")
 @require_role("student")
 def student_assessment_page():
