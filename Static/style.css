@@ -5898,3 +5898,19 @@ body.cm-requirement-two-page .cm-tab-panel.active{flex:0 0 auto!important;overfl
 body.so-requirement-one-page .sodh-table-wrap,
 body.cm-requirement-two-page .sodh-table-wrap{flex:0 0 auto!important;min-height:0!important;overflow-x:auto!important;overflow-y:visible!important;}
 body.cm-requirement-two-page .cm-table-wrap{flex:0 0 auto!important;min-height:0!important;overflow-x:auto!important;overflow-y:visible!important;}
+.cm-faculty-page-heading { margin: 18px 0 0; }
+.cm-faculty-page-heading h1 { margin: 0; color: #064879; font-size: 28px; }
+.cm-faculty-page-heading p { margin: 5px 0 0; color: #315875; }
+.so-student-page .cm-faculty-context { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 14px; }
+.cm-faculty-context .cm-filter-group output { display: flex; align-items: center; min-height: 42px; box-sizing: border-box; padding: 0 12px; border: 1px solid #91b8d7; border-radius: 6px; background: #fff; color: #294b68; font-size: 14px; }
+.cm-faculty-context [hidden], #cmFacultySummary .so-summary-card[hidden] { display: none !important; }
+#cmFacultySummary { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+#cmFacultySummary .so-summary-card { min-width: 0; }
+#facultyStudentsAttainmentBody td { white-space: nowrap; }
+@media (max-width: 900px) {
+    .so-student-page .cm-faculty-context { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #cmFacultySummary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+    .so-student-page .cm-faculty-context, #cmFacultySummary { grid-template-columns: 1fr; }
+}

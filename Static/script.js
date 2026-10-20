@@ -6568,9 +6568,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 activity.title,
                 activity.activity_type,
                 activity.due_date || '—',
-                Number(activity.max_score).toString(),
-                (activity.outcome_codes || []).join(', ') || 'Unmapped',
-                activity.released_at ? 'Released' : 'Not released'
+                (activity.outcome_codes || []).join(', ') || 'Unmapped'
             ];
             values.forEach(value => {
                 const cell = document.createElement('td');
@@ -6598,7 +6596,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!workspace?.assessments.length) {
             const row = document.createElement('tr');
             const cell = document.createElement('td');
-            cell.colSpan = 7;
+            cell.colSpan = 5;
             cell.textContent = 'No activities are set up for this section yet.';
             row.appendChild(cell);
             tbody.appendChild(row);
@@ -6749,12 +6747,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const cqiModal = document.getElementById('cqiBasisModal');
     if (!body || !detailModal || !cqiModal)
         return;
-    const coNames = ['CO1', 'CO2', 'CO3', 'CO4', 'CO5'];
-
     function rowData(row) {
-        const cells = row.cells;
-        const scores = coNames.map((co, index) => ({ co: co, value: parseInt(cells[index + 3].textContent, 10) || 0 }));
-        return { id: cells[1].textContent.trim(), name: cells[2].textContent.trim(), status: cells[8].textContent.trim(), scores: scores };
+        return row.attainmentData;
     }
 
     function openAttainmentModal(modal) {
@@ -6771,12 +6765,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function scoreRows(scores, onlyCqi) {
+        const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, char => ({
+            "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+        })[char]);
         return scores
-            .filter(item => !onlyCqi || item.value <= 59)
+            .filter(item => !onlyCqi || item.value < item.target)
             .map(item => '<div class="cm-attainment-detail-row">' +
-                '<strong>' + item.co + '</strong>' +
+                '<strong>' + escapeHtml(item.co) + '</strong>' +
                 '<span>' + item.value + '%</span>' +
-                '<em class="' + (item.value <= 59 ? 'needs' : 'met') + '">' + (item.value <= 59 ? 'CQI Basis' : 'Met') + '</em>' +
+                '<em class="' + (item.value < item.target ? 'needs' : 'met') + '">' + (item.value < item.target ? 'Below target' : 'Met') + '</em>' +
                 '</div>')
             .join('');
     }
@@ -6786,6 +6783,8 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!view && !cqi)
             return;
         const data = rowData(event.target.closest('tr'));
+        if (!data)
+            return;
         if (view) {
             document.getElementById('attainmentStudentId').textContent = data.id;
             document.getElementById('attainmentStudentName').textContent = data.name;
@@ -6796,10 +6795,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         document.getElementById('cqiStudentId').textContent = data.id;
         document.getElementById('cqiStudentName').textContent = data.name;
-        const failed = data.scores.filter(item => item.value <= 59);
+        const failed = data.scores.filter(item => item.value < item.target);
         document.getElementById('cqiBasisDetails').innerHTML = failed.length
             ? scoreRows(failed, true)
-            : '<div class="cm-cqi-empty">No CO is at 59% or below.</div>';
+            : '<div class="cm-cqi-empty">No Course Outcomes are below target.</div>';
         openAttainmentModal(cqiModal);
     });
     document.querySelectorAll('[data-close-attainment]').forEach(button =>
@@ -6819,6 +6818,286 @@ document.addEventListener("DOMContentLoaded", function () {
                     closeAttainmentModal(modal);
             });
         }
+    });
+})();
+
+/* Requirement 2 faculty assigned-course context and tab summaries. */
+(function () {
+    const page = document.querySelector(".cm-faculty-page");
+    const sectionSelect = document.getElementById("facultyMappingSection");
+    const summary = document.getElementById("cmFacultySummary");
+    if (!page || !sectionSelect || !summary) return;
+
+    const status = document.getElementById("facultyActivityStatus");
+    const outcomeStatus = document.getElementById("facultyCourseOutcomesStatus");
+    const studentStatus = document.getElementById("facultyStudentsAttainmentStatus");
+    const activityBody = document.getElementById("facultyAssessmentMappingBody");
+    const outcomeBody = document.getElementById("facultyCourseOutcomesBody");
+    const studentBody = document.getElementById("facultyStudentsAttainmentBody");
+    const escape = value => String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    })[char]);
+    let sections = [];
+    let workspace = null;
+    let outcomes = [];
+    let students = [];
+
+    async function request(url) {
+        const response = await fetch(url, {
+            credentials: "same-origin",
+            headers: { Accept: "application/json" }
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || "Course information could not be loaded.");
+        return data;
+    }
+
+    function setContext(section) {
+        document.getElementById("cmFacultySchoolYear").textContent = section?.academic_year_name || "—";
+        document.getElementById("cmFacultyDepartment").textContent = section?.department_name || "—";
+        document.getElementById("cmFacultyCourse").textContent = section
+            ? `${section.course_code} · ${section.course_title}` : "—";
+        document.getElementById("cmFacultySection").textContent = section?.section_name || "—";
+        window.syncEduMetricsWorkspaceSection?.(section?.section_id || "", section || undefined);
+    }
+
+    function showSummary(tab) {
+        const cards = [...summary.querySelectorAll(".so-summary-card")];
+        cards.forEach((card, index) => { card.hidden = index > (tab === "students-attainment" ? 3 : 1); });
+        const labels = {
+            "assessment-mapping": ["Total Course Outcomes", "Overall CO Attainment"],
+            "course-outcomes": ["Total Course Outcomes", "Total Enrolled Students"],
+            "students-attainment": ["Total Enrolled Students", "Students Meeting All COs",
+                "Needs Improvement", "Low COs"]
+        }[tab] || [];
+        summary.querySelector('[data-summary-label="first"]').textContent = labels[0] || "—";
+        summary.querySelector('[data-summary-label="second"]').textContent = labels[1] || "—";
+        summary.querySelector('[data-summary-label="third"]').textContent = labels[2] || "—";
+        summary.querySelector('[data-summary-label="fourth"]').textContent = labels[3] || "—";
+    }
+
+    function setSummaryValues(selectedTab) {
+        const outcomeAttainments = outcomes.map(item => Number(item.attainment_percentage))
+            .filter(Number.isFinite);
+        const overall = outcomeAttainments.length
+            ? `${(outcomeAttainments.reduce((sum, value) => sum + value, 0) / outcomeAttainments.length).toFixed(1)}%`
+            : "—";
+        const studentScores = students.map(student => student.attainmentScores || []);
+        const fullyScored = studentScores.filter(scores => scores.length === outcomes.length && outcomes.length);
+        const metAll = fullyScored.filter(scores => scores.every(score => score.value >= score.target)).length;
+        const needsImprovement = studentScores.filter(scores => scores.some(score => score.value < score.target)).length;
+        const lowOutcomes = outcomes.filter(item => item.status === "needs_improvement").length;
+        const activeTab = selectedTab ||
+            page.querySelector(".cm-tab.active")?.dataset.cmTab || "assessment-mapping";
+        summary.querySelector('[data-summary="outcomes"]').textContent =
+            String(activeTab === "students-attainment" ? students.length : outcomes.length);
+        summary.querySelector('[data-summary="attainment"]').textContent =
+            activeTab === "students-attainment" ? String(metAll)
+                : activeTab === "course-outcomes" ? String(students.length) : overall;
+        summary.querySelector('[data-summary="third"]').textContent =
+            activeTab === "students-attainment" ? String(needsImprovement) : String(students.length);
+        summary.querySelector('[data-summary="fourth"]').textContent =
+            activeTab === "students-attainment" ? String(lowOutcomes) : String(metAll);
+        summary.dataset.needsImprovement = String(needsImprovement);
+        summary.dataset.lowOutcomes = String(lowOutcomes);
+    }
+
+    function renderActivities() {
+        activityBody.replaceChildren();
+        const activities = workspace?.assessments || [];
+        activities.forEach(activity => {
+            const row = document.createElement("tr");
+            const values = [
+                activity.title,
+                activity.activity_type,
+                activity.due_date || "—",
+                (activity.outcome_codes || []).join(", ") || "Unmapped"
+            ];
+            values.forEach(value => {
+                const cell = document.createElement("td");
+                cell.textContent = value;
+                row.appendChild(cell);
+            });
+            const actions = document.createElement("td");
+            const edit = document.createElement("button");
+            edit.type = "button"; edit.className = "cm-action-btn cm-edit-btn";
+            edit.dataset.action = "edit"; edit.textContent = "Edit";
+            edit.disabled = workspace.gradebook_status === "locked";
+            const remove = document.createElement("button");
+            remove.type = "button"; remove.className = "cm-action-btn cm-delete-btn";
+            remove.dataset.action = "delete"; remove.textContent = "Delete";
+            remove.disabled = workspace.gradebook_status === "locked";
+            actions.append(edit, remove);
+            row.appendChild(actions);
+            row.dataset.assessmentId = activity.id;
+            activityBody.appendChild(row);
+        });
+        if (!activities.length) {
+            activityBody.innerHTML = '<tr><td colspan="5">No activities are set up for this section yet.</td></tr>';
+        }
+        if (status) status.textContent = workspace?.gradebook_status === "locked"
+            ? "This gradebook is locked. Activities and mappings are read-only."
+            : "Activities are shared with Assessment Entry; only released scores contribute to CO attainment.";
+    }
+
+    function renderOutcomes() {
+        outcomeBody.replaceChildren();
+        outcomes.forEach(outcome => {
+            const row = document.createElement("tr");
+            const activities = (outcome.activities || []).map(activity =>
+                `<span class="cm-co-badge">${escape(activity.title)}</span>`).join(" ") || "—";
+            const attainment = outcome.attainment_percentage == null
+                ? "—" : `${Number(outcome.attainment_percentage).toFixed(1)}%`;
+            const statusText = outcome.status === "met" ? "Met"
+                : outcome.status === "awaiting_results" ? "Awaiting results"
+                    : outcome.status === "needs_improvement" ? "Needs improvement" : "Below target";
+            row.innerHTML = `<td>${escape(outcome.code)}</td><td>${escape(outcome.description)}</td><td>${activities}</td><td>${attainment}</td><td>≥ ${Number(outcome.target_percentage || 70).toFixed(0)}%</td><td>${escape(statusText)}</td><td><button type="button" class="cm-action-btn cm-co-view-btn">View</button>${outcome.flagged ? ' <button type="button" class="cm-action-btn cm-co-cqi-btn">CQI Basis</button>' : ""}</td>`;
+            outcomeBody.appendChild(row);
+        });
+        if (!outcomes.length) outcomeBody.innerHTML = '<tr><td colspan="7">No Course Outcomes are configured for this course.</td></tr>';
+        if (outcomeStatus) outcomeStatus.textContent = outcomes.length
+            ? `${outcomes.length} Course Outcome(s) loaded.` : "Add Course Outcomes in Syllabus & Outcomes.";
+    }
+
+    function calculateStudentResults() {
+        const byId = new Map();
+        students.forEach(student => byId.set(student.student_profile_id, {
+            ...student, attainmentScores: []
+        }));
+        outcomes.forEach(outcome => {
+            const scoresByStudent = new Map();
+            (workspace?.assessments || []).forEach(activity => {
+                if (!activity.released_at ||
+                    !(activity.course_outcome_ids || []).includes(outcome.course_outcome_id)) return;
+                Object.entries(activity.scores || {}).forEach(([studentId, score]) => {
+                    if (score.percentage == null || !byId.has(studentId)) return;
+                    if (!scoresByStudent.has(studentId)) scoresByStudent.set(studentId, []);
+                    scoresByStudent.get(studentId).push(Number(score.percentage));
+                });
+            });
+            scoresByStudent.forEach((values, studentId) => {
+                const value = values.reduce((sum, score) => sum + score, 0) / values.length;
+                byId.get(studentId).attainmentScores.push({
+                    co: outcome.code,
+                    value: Number(value.toFixed(1)),
+                    target: Number(outcome.target_percentage || 70)
+                });
+            });
+        });
+        students = [...byId.values()];
+    }
+
+    function renderStudents() {
+        const head = document.getElementById("facultyStudentsAttainmentHead");
+        head.replaceChildren();
+        ["#", "Student ID", "Student Name", ...outcomes.map(item => item.code), "Status", "Action"]
+            .forEach(title => {
+                const cell = document.createElement("th");
+                cell.textContent = title;
+                head.appendChild(cell);
+            });
+        studentBody.replaceChildren();
+        students.forEach((student, index) => {
+            const row = document.createElement("tr");
+            const scores = student.attainmentScores || [];
+            const allScored = scores.length === outcomes.length && outcomes.length > 0;
+            const needsImprovement = scores.some(score => score.value < score.target);
+            const statusText = !scores.length ? "No released results"
+                : allScored && !needsImprovement ? "Met"
+                    : needsImprovement ? "Needs improvement" : "In progress";
+            const cells = [String(index + 1), student.student_number, student.full_name];
+            cells.forEach(value => {
+                const cell = document.createElement("td");
+                cell.textContent = value || "—";
+                row.appendChild(cell);
+            });
+            outcomes.forEach(outcome => {
+                const cell = document.createElement("td");
+                const score = scores.find(item => item.co === outcome.code);
+                cell.textContent = score ? `${score.value}%` : "—";
+                row.appendChild(cell);
+            });
+            const statusCell = document.createElement("td");
+            statusCell.textContent = statusText;
+            row.appendChild(statusCell);
+            const actionCell = document.createElement("td");
+            const view = document.createElement("button");
+            view.type = "button"; view.className = "cm-action-btn cm-attainment-view-btn";
+            view.textContent = "View";
+            actionCell.appendChild(view);
+            if (needsImprovement) {
+                const cqi = document.createElement("button");
+                cqi.type = "button"; cqi.className = "cm-action-btn cm-cqi-basis-btn";
+                cqi.textContent = "CQI Basis";
+                actionCell.appendChild(cqi);
+            }
+            row.appendChild(actionCell);
+            row.attainmentData = {
+                id: student.student_number || "—", name: student.full_name || "—",
+                status: statusText, scores
+            };
+            studentBody.appendChild(row);
+        });
+        if (!students.length) {
+            studentBody.innerHTML = `<tr><td colspan="${outcomes.length + 5}">No active students are enrolled in this section.</td></tr>`;
+        }
+        if (studentStatus) studentStatus.textContent =
+            "Student results are calculated from released scores for mapped Course Outcomes.";
+    }
+
+    async function loadSection() {
+        const section = sections.find(item => item.section_id === sectionSelect.value);
+        setContext(section || null);
+        if (!section) {
+            workspace = null; outcomes = []; students = [];
+            renderActivities(); renderOutcomes(); renderStudents(); setSummaryValues();
+            const message = sections.length > 1
+                ? "Open Curriculum Mapping from a specific assigned course section."
+                : sections.length ? "Loading your assigned course..." : "No course sections are assigned to your Faculty account.";
+            if (status) status.textContent = message;
+            return;
+        }
+        if (status) status.textContent = "Loading course activities and attainment...";
+        try {
+            const [assessmentData, attainmentData] = await Promise.all([
+                request(`/api/faculty/sections/${encodeURIComponent(section.section_id)}/assessments`),
+                request(`/api/faculty/sections/${encodeURIComponent(section.section_id)}/attainment`)
+            ]);
+            workspace = assessmentData;
+            outcomes = attainmentData.outcomes || [];
+            students = assessmentData.students || [];
+            calculateStudentResults();
+            renderActivities(); renderOutcomes(); renderStudents(); setSummaryValues();
+        } catch (error) {
+            if (status) status.textContent = error.message;
+            if (outcomeStatus) outcomeStatus.textContent = error.message;
+            if (studentStatus) studentStatus.textContent = error.message;
+        }
+    }
+
+    page.querySelectorAll(".cm-tab").forEach(tab => tab.addEventListener("click", () => {
+        showSummary(tab.dataset.cmTab);
+        setSummaryValues(tab.dataset.cmTab);
+    }));
+    showSummary("assessment-mapping");
+    request("/api/faculty/sections").then(data => {
+        sections = Array.isArray(data.sections) ? data.sections : [];
+        sectionSelect.replaceChildren(new Option(
+            sections.length ? "Select assigned section" : "No assigned sections", ""
+        ));
+        sections.forEach(item => sectionSelect.add(new Option(
+            `${item.course_code} · ${item.section_name}`, item.section_id
+        )));
+        const requested = new URLSearchParams(window.location.search).get("section_id");
+        const selected = sections.some(item => item.section_id === requested)
+            ? requested : sections.length === 1 ? sections[0].section_id : "";
+        sectionSelect.value = selected;
+        sectionSelect.addEventListener("change", loadSection);
+        if (selected) sectionSelect.dispatchEvent(new Event("change", { bubbles: true }));
+        else loadSection();
+    }).catch(error => {
+        setContext(null);
+        if (status) status.textContent = error.message;
     });
 })();
 

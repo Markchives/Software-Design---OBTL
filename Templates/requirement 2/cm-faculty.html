@@ -88,25 +88,19 @@
 </aside>
 <main class="so-main cm-student-main">
 <div class="cw-breadcrumb">My Courses <span class="cw-breadcrumb-separator">/</span> <span class="cw-breadcrumb-current">Course not selected</span></div><div class="cw-workspace"><section aria-label="Selected course" class="cw-hero"><div><div class="cw-eyebrow">COURSE WORKSPACE</div><h2>—</h2><p>—</p></div></section><nav aria-label="Course modules" class="cw-module-nav"><a class="cw-module-tab" href="../requirement 1/so-faculty.html"><span class="cw-module-number">01</span> Syllabus &amp; Outcomes</a><a aria-current="page" class="cw-module-tab active" href="cm-faculty.html"><span class="cw-module-number">02</span> Curriculum Mapping</a><a class="cw-module-tab" href="../requirement 3/cr.faculty.html"><span class="cw-module-number">03</span> Class Roster</a><a class="cw-module-tab" href="../requirement 4/ra-faculty.html"><span class="cw-module-number">04</span> Assessment Entry</a><a class="cw-module-tab" href="../requirement 5/ac-faculty.html"><span class="cw-module-number">05</span> Attainment</a><a class="cw-module-tab" href="../requirement 6/cqi-faculty.html"><span class="cw-module-number">06</span> CQI Planning</a><a class="cw-module-tab" href="../requirement 8/rp-faculty.html"><span class="cw-module-number">07</span> Compliance Report</a></nav></div>
-<section aria-labelledby="facultyOutcomeMappingTitle" class="faculty-outcome-mapping-card" id="facultyOutcomeMappingEditor">
-<header class="faculty-outcome-mapping-header"><div><span class="faculty-outcome-kicker">SYLLABUS SETUP</span><h2 id="facultyOutcomeMappingTitle">Course Outcome Alignment</h2><p>Connect each syllabus Course Outcome to the Student Outcomes it supports. Save your mapping, then submit the section for Department Head review.</p></div></header>
-<div class="faculty-outcome-mapping-toolbar">
-<label class="faculty-outcome-section-field" for="facultyMappingSection">Course section<select id="facultyMappingSection"><option value="">Loading sections...</option></select></label>
-<div class="faculty-outcome-actions"><button class="faculty-outcome-button faculty-outcome-button-light" id="loadFacultyOutcomeMappings" type="button">Load Outcomes</button><button class="faculty-outcome-button faculty-outcome-button-primary" id="saveFacultyOutcomeMappings" type="button">Save Mappings</button><button class="faculty-outcome-button faculty-outcome-button-submit" id="submitFacultyOutcomeMappings" type="button">Submit for Review</button></div>
-</div>
-<p aria-live="polite" class="faculty-outcome-status" id="facultyOutcomeMappingStatus" role="status">Choose a section to load its syllabus outcomes.</p>
-<div class="faculty-outcome-table-wrap"><table class="faculty-outcome-table"><thead><tr><th scope="col">Course Outcome</th><th scope="col">Aligned Student Outcomes</th><th scope="col">Target</th></tr></thead><tbody id="facultyOutcomeMappingRows"><tr class="faculty-outcome-placeholder"><td colspan="3">Select a course section to view its outcomes.</td></tr></tbody></table></div>
-</section><section aria-hidden="true" class="cm-student-filters cw-legacy-controls" hidden="hidden">
-<div class="cm-filter-group"><label for="cmFacultySchoolYear">School Year</label><select id="cmFacultySchoolYear"><option selected="" value="">Select School Year</option></select></div>
-<div class="cm-filter-group"><label for="cmFacultyDepartment">Department</label><select id="cmFacultyDepartment"><option selected="" value="">Select Department</option></select></div>
-<div class="cm-filter-group"><label for="cmFacultyProgram">Program</label><select id="cmFacultyProgram"><option selected="" value="">Select Program</option></select></div>
-<div class="cm-filter-group"><label for="cmFacultyCourse">Course</label><select id="cmFacultyCourse"><option selected="" value="">Select Course</option></select></div>
-<div class="cm-filter-group"><label for="cmFacultySection">Section</label><select id="cmFacultySection"><option selected="" value="">Select Section</option></select></div>
+<header class="cm-faculty-page-heading"><h1>Curriculum Mapping</h1><p>Manage course activities and map them to Course Outcomes.</p></header>
+<section class="cm-student-filters cm-faculty-context" aria-label="Assigned course context">
+<div class="cm-filter-group"><label>School Year</label><output id="cmFacultySchoolYear">—</output></div>
+<div class="cm-filter-group"><label>Department</label><output id="cmFacultyDepartment">—</output></div>
+<div class="cm-filter-group"><label>Course</label><output id="cmFacultyCourse">—</output></div>
+<div class="cm-filter-group"><label>Section</label><output id="cmFacultySection">—</output></div>
+<select aria-label="Assigned section" id="facultyMappingSection" hidden><option value="">Loading assigned sections...</option></select>
 </section>
-<section class="cm-student-summary so-summary-grid">
-<article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Total Course Outcomes</span><strong class="so-summary-number">0</strong></article>
-<article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Mapped Assessments</span><strong class="so-summary-number">0</strong></article>
-<article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Overall CO Attainment</span><strong class="so-summary-number">—</strong></article>
+<section class="cm-student-summary so-summary-grid" id="cmFacultySummary">
+<article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label" data-summary-label="first">Total Course Outcomes</span><strong class="so-summary-number" data-summary="outcomes">—</strong></article>
+<article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label" data-summary-label="second">Overall CO Attainment</span><strong class="so-summary-number" data-summary="attainment">—</strong></article>
+<article class="so-summary-card" hidden><div class="so-summary-accent"></div><span class="so-summary-label" data-summary-label="third">Total Enrolled Students</span><strong class="so-summary-number" data-summary="third">—</strong></article>
+<article class="so-summary-card" hidden><div class="so-summary-accent"></div><span class="so-summary-label" data-summary-label="fourth">Students Meeting All COs</span><strong class="so-summary-number" data-summary="fourth">—</strong></article>
 </section>
 <section class="cm-student-content cm-faculty-content">
 <div class="cm-tabs" role="tablist">
@@ -116,12 +110,12 @@
 </div>
 <div class="cm-tab-panel active" id="assessment-mapping">
 <div class="cm-assessment-toolbar"><p>Set up course activities and map each activity to every Course Outcome it measures. These saved activities are used for Requirement 4 score entry.</p><button class="cm-add-assessment-btn" id="openAssessmentModal" type="button" disabled><span>+</span> Add Activity</button></div>
-<p aria-live="polite" class="faculty-outcome-status" id="facultyActivityStatus" role="status">Choose a section to load its activities.</p>
-<div class="cm-table-wrap"><table class="cm-table cm-assessment-table"><thead><tr><th>Activity Title</th><th>Type</th><th>Due Date</th><th>Maximum Score</th><th>Mapped CO(s)</th><th>Score Status</th><th>Actions</th></tr></thead><tbody id="facultyAssessmentMappingBody">
+<p aria-live="polite" class="faculty-outcome-status" id="facultyActivityStatus" role="status">Open this workspace from an assigned course to load its activities.</p>
+<div class="cm-table-wrap"><table class="cm-table cm-assessment-table"><thead><tr><th>Assessment Title</th><th>Assessment Type</th><th>Date</th><th>Mapped CO(s)</th><th>Actions</th></tr></thead><tbody id="facultyAssessmentMappingBody">
 </tbody></table></div></div>
-<div class="cm-tab-panel" id="course-outcomes"><div class="cm-table-wrap"><table class="cm-table cm-course-outcomes-table"><thead><tr><th>CO No.</th><th>Course Outcome</th><th>Mapped Activities</th><th>Class Attainment</th><th>Target</th><th>Status</th><th>Action</th></tr></thead><tbody id="facultyCourseOutcomesBody">
+<div class="cm-tab-panel" id="course-outcomes"><p aria-live="polite" class="faculty-outcome-status" id="facultyCourseOutcomesStatus" role="status"></p><div class="cm-table-wrap"><table class="cm-table cm-course-outcomes-table"><thead><tr><th>CO No.</th><th>Course Outcome</th><th>Mapped Activities</th><th>Class Attainment</th><th>Target</th><th>Status</th><th>Action</th></tr></thead><tbody id="facultyCourseOutcomesBody">
 </tbody></table></div></div>
-<div class="cm-tab-panel" id="students-attainment"><div class="cm-table-wrap"><table class="cm-table cm-students-attainment-table"><thead><tr><th>#</th><th>Student ID</th><th>Student Name</th><th>Outcome Summary</th><th>Status</th><th>Action</th></tr></thead><tbody id="facultyStudentsAttainmentBody">
+<div class="cm-tab-panel" id="students-attainment"><p aria-live="polite" class="faculty-outcome-status" id="facultyStudentsAttainmentStatus" role="status"></p><div class="cm-table-wrap"><table class="cm-table cm-students-attainment-table"><thead><tr id="facultyStudentsAttainmentHead"><th>#</th><th>Student ID</th><th>Student Name</th><th>Status</th><th>Action</th></tr></thead><tbody id="facultyStudentsAttainmentBody">
 </tbody></table></div></div>
 </section>
 </main>

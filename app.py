@@ -391,13 +391,29 @@ def faculty_sections():
 
         course_result = (
             admin_supabase.table("courses")
-            .select("id, code, title")
+            .select("id, code, title, department_id")
             .in_("id", course_ids)
             .execute()
         )
         courses_by_id = {
             item["id"]: item for item in (course_result.data or [])
         }
+        department_ids = list({
+            item["department_id"]
+            for item in courses_by_id.values()
+            if item.get("department_id")
+        })
+        departments_by_id = {}
+        if department_ids:
+            department_result = (
+                admin_supabase.table("departments")
+                .select("id, name")
+                .in_("id", department_ids)
+                .execute()
+            )
+            departments_by_id = {
+                item["id"]: item for item in (department_result.data or [])
+            }
 
         years_by_id = {}
         if year_ids:
@@ -441,6 +457,10 @@ def faculty_sections():
                 "course_id": course["id"],
                 "course_code": course["code"],
                 "course_title": course["title"],
+                "department_id": course.get("department_id"),
+                "department_name": departments_by_id.get(
+                    course.get("department_id"), {}
+                ).get("name", ""),
                 "academic_year_id": section.get("academic_year_id"),
                 "academic_year_name": year.get("name", ""),
                 "academic_term_id": section.get("academic_term_id"),
