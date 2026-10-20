@@ -6288,24 +6288,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             }
         }
-        const profileEmail = (
-            sessionStorage.getItem('verificationEmail') ||
-            sessionStorage.getItem('verifiedEmail') ||
-            sessionStorage.getItem('edumetrics-current-profile-email') ||
-            ''
-        ).trim().toLowerCase();
-        const cachedProfileKey = profileEmail
-            ? 'edumetrics-profile-cache:' + profileEmail
-            : '';
-        if (cachedProfileKey) {
-            try {
-                const cachedProfile = sessionStorage.getItem(cachedProfileKey);
-                if (cachedProfile) applyHeaderProfile(JSON.parse(cachedProfile));
-            } catch (cacheError) {
-                console.warn('Unable to load the cached account profile.', cacheError);
-                sessionStorage.removeItem(cachedProfileKey);
-            }
-        }
+        // Do not paint a cached identity before the authenticated profile is verified.
+        // Cached data can belong to a different account after a role switch/login.
         async function loadHeaderProfile() {
             try {
                 const response = await fetch('/api/account/profile', {
@@ -6322,6 +6306,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 const result = await response.json();
                 const account = result.profile;
                 applyHeaderProfile(account);
+                const verifiedMenuRole = normalizeMenuRole(account.role);
+                if (['student', 'faculty', 'dept-head', 'admin'].includes(verifiedMenuRole)) {
+                    accountUrl.searchParams.set('role', verifiedMenuRole);
+                    profile.href = accountUrl.href;
+                }
                 const accountEmail = String(account.email || '').trim().toLowerCase();
                 if (accountEmail) {
                     sessionStorage.setItem('edumetrics-current-profile-email', accountEmail);
@@ -6489,15 +6478,20 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
         const idLabel = page.querySelector('#accountIdLabel');
-        if (idLabel) idLabel.textContent = selected === 'student' ? 'Student ID' : selected === 'admin' ? 'Admin ID' : 'Employee ID';
+        if (idLabel) idLabel.textContent = selected === 'student' ? 'Student ID' : 'Employee ID';
         const programLabel = page.querySelector('#accountProgramLabel');
-        if (programLabel) programLabel.textContent = selected === 'student' ? 'Program' : selected === 'admin' ? 'Account Type' : 'Department';
+        if (programLabel) programLabel.textContent = selected === 'student' ? 'Program' : 'Department';
+        const extraDepartmentField = page.querySelector('.account-detail-department');
+        if (extraDepartmentField) extraDepartmentField.hidden = true;
+        const programField = page.querySelector('.account-detail-program');
+        if (programField) programField.hidden = selected === 'admin';
         const accountDataMessage = page.querySelector('#accountDataMessage');
         const accountFields = {
             accountFullName: page.querySelector('#accountFullName'),
             accountStudentId: page.querySelector('#accountStudentId'),
             accountProgram: page.querySelector('#accountProgram'),
-            accountDetailEmail: page.querySelector('#accountDetailEmail')
+            accountDetailEmail: page.querySelector('#accountDetailEmail'),
+            accountDepartment: page.querySelector('#accountDepartment')
         };
         async function loadAccountProfile() {
             try {
@@ -6510,11 +6504,27 @@ document.addEventListener("DOMContentLoaded", function () {
                     throw new Error(result.error || 'Account details could not be loaded.');
                 }
                 const profile = result.profile;
+                // The server-authenticated role wins over a stale ?role= URL or
+                // sessionStorage value. Reopen the correct account-settings shell
+                // before populating fields, so header, sidebar and details agree.
+                const authenticatedRole = normalize(String(profile?.role || '').trim().toLowerCase());
+                if (['student', 'faculty', 'dept-head', 'admin'].includes(authenticatedRole)
+                    && authenticatedRole !== selected) {
+                    sessionStorage.setItem('edumetricsRole', authenticatedRole);
+                    sessionStorage.setItem('userRole', authenticatedRole);
+                    const correctUrl = new URL(location.href);
+                    correctUrl.searchParams.set('role', authenticatedRole);
+                    location.replace(correctUrl.href);
+                    return;
+                }
                 const values = {
                     accountFullName: profile.full_name,
                     accountStudentId: profile.id_number,
-                    accountProgram: profile.affiliation,
-                    accountDetailEmail: profile.email
+                    accountProgram: selected === 'student'
+                        ? (profile.program || profile.program_name || profile.affiliation)
+                        : (profile.department || profile.department_name || profile.affiliation),
+                    accountDetailEmail: profile.email,
+                    accountDepartment: profile.department || profile.department_name || ''
                 };
                 Object.entries(values).forEach(([id, value]) => {
                     if (accountFields[id]) accountFields[id].textContent = value || 'Not available';
@@ -6542,6 +6552,20 @@ document.addEventListener("DOMContentLoaded", function () {
         const photo = page.querySelector('#accountProfileImage');
         const photoMessage = page.querySelector('#accountPhotoMessage');
         const photoKey = 'edumetrics-' + selected + '-profile-photo';
+        const photoDialog = page.querySelector('#accountPhotoDialog');
+        page.querySelector('#accountEditPhotoButton')?.addEventListener('click', () => photoDialog?.showModal());
+        page.querySelector('#accountClosePhotoButton')?.addEventListener('click', () => photoDialog?.close());
+        page.querySelector('#accountUploadPhotoButton')?.addEventListener('click', () => { photoDialog?.close(); photoInput?.click(); });
+        page.querySelector('#accountRemovePhotoButton')?.addEventListener('click', () => {
+            try { localStorage.removeItem(photoKey); } catch (_) {}
+            if (photo) { photo.removeAttribute('src'); photo.hidden = true; }
+            const avatar = page.querySelector('.so-topbar .so-avatar');
+            avatar?.querySelector('.account-avatar-photo')?.remove();
+            avatar?.querySelector('.sd-icon-placeholder')?.removeAttribute('hidden');
+            if (photoInput) photoInput.value = '';
+            if (photoMessage) photoMessage.textContent = '';
+            photoDialog?.close();
+        });
         function showPhoto(data) {
             if (!photo || !data) return;
             photo.src = data;
@@ -6558,6 +6582,7 @@ document.addEventListener("DOMContentLoaded", function () {
         photoInput?.addEventListener('change', () => {
             const file = photoInput.files?.[0];
             if (!file) return;
+            if (photoMessage) photoMessage.textContent = '';
             if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 1024 * 1024) {
                 photoMessage.textContent = 'Choose a JPG, PNG or WebP image up to 1 MB.';
                 photoInput.value = '';
@@ -6565,7 +6590,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             const reader = new FileReader();
             reader.onload = () => {
-                try { localStorage.setItem(photoKey, String(reader.result)); showPhoto(String(reader.result)); photoMessage.textContent = 'Profile photo saved in this browser.'; }
+                try { localStorage.setItem(photoKey, String(reader.result)); showPhoto(String(reader.result)); if (photoMessage) photoMessage.textContent = ''; }
                 catch (_) { photoMessage.textContent = 'Unable to save photo in this browser.'; }
             };
             reader.readAsDataURL(file);
