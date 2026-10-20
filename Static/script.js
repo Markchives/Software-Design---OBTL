@@ -6280,23 +6280,17 @@ document.addEventListener("DOMContentLoaded", function () {
         menu.className = 'so-account-menu';
         menu.hidden = true;
         const profile = document.createElement('a');
-        const templatesRoot = window.location.pathname.split('/Templates/')[0];
         const currentFile = decodeURIComponent(window.location.pathname).split('/').pop().toLowerCase();
-        const normalizeMenuRole = value => ({ 'department-head': 'dept-head', 'department_head': 'dept-head', 'admin-security': 'admin' }[value] || value);
         const roleFromPage = /(?:^|-)admin(?:\.html)?$/.test(currentFile.replace(/\.html$/, '')) || document.body.classList.contains('cm-admin-page') || /-admin-page/.test(document.body.className)
             ? 'admin'
             : /-dept-head(?:\.html)?$/.test(currentFile) ? 'dept-head'
                 : /-faculty(?:\.html)?$/.test(currentFile) ? 'faculty'
                     : '';
-        const menuRole = normalizeMenuRole(roleFromPage || new URLSearchParams(location.search).get('role') || sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || document.body.dataset.role || 'student');
         if (roleFromPage) {
             sessionStorage.setItem('edumetricsRole', roleFromPage);
             sessionStorage.setItem('userRole', roleFromPage);
         }
-        const accountUrl = new URL(window.location.pathname.includes('/Templates/')
-            ? templatesRoot + '/Templates/main/account-settings.html'
-            : '/account-settings', window.location.origin);
-        accountUrl.searchParams.set('role', menuRole);
+        const accountUrl = new URL('/account-settings', window.location.origin);
         profile.href = accountUrl.href;
         profile.textContent = 'Profile';
         const logout = document.createElement('a');
@@ -6381,7 +6375,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!page) return;
         const normalize = value => ({ 'department-head': 'dept-head', 'department_head': 'dept-head', 'depthead': 'dept-head', 'admin-security': 'admin' }[value] || value);
         const params = new URLSearchParams(location.search);
-        const raw = params.get('role') || sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || sessionStorage.getItem('verifiedRole') || page.dataset.role || 'student';
+        const raw = page.dataset.role || params.get('role') || sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || sessionStorage.getItem('verifiedRole') || 'student';
         const role = normalize(raw.toLowerCase());
         const selected = ['student', 'faculty', 'dept-head', 'admin'].includes(role) ? role : 'student';
         const roleNames = { student: 'Student', faculty: 'Faculty', 'dept-head': 'Department Head', admin: 'Admin' };

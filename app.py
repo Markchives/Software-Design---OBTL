@@ -966,6 +966,37 @@ def main_dashboard_page():
     return render_template("main/dashboard.html", dashboard_role=role)
 
 
+@app.get("/account-settings")
+@require_authenticated
+def account_settings_page():
+    role = normalize_role_name(get_user_role(g.authenticated_user))
+    allowed_roles = {"student", "faculty", "department-head", "admin-security"}
+    if role not in allowed_roles:
+        return "You are not authorized to view this page.", 403
+
+    try:
+        if has_pending_role_request(g.authenticated_user.id):
+            session.clear()
+            return redirect(url_for("account_pending_page"))
+
+        if not has_active_role_record(g.authenticated_user.id, role):
+            session["profile_completion_role"] = role
+            session["profile_completion_mode"] = (
+                "repair" if role == "student" else "request"
+            )
+            return redirect(url_for("complete_profile_page"))
+
+        if not has_role_profile(g.authenticated_user.id, role):
+            session["profile_completion_role"] = role
+            session["profile_completion_mode"] = "repair"
+            return redirect(url_for("complete_profile_page"))
+    except Exception:
+        app.logger.exception("Unable to verify account settings access")
+        return "Account settings could not be verified.", 503
+
+    return render_template("main/account-settings.html", account_role=role)
+
+
 @app.get("/main/courses-faculty.html")
 @require_role("faculty")
 def faculty_courses_page():
