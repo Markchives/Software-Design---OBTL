@@ -7158,7 +7158,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!link) {
                 link = document.createElement('a');
                 link.className = 'so-nav-item';
-                link.innerHTML = '<span class="so-nav-icon"><img alt="" class="so-nav-image" src="/Static/images/sidebar/sr.png"></span><span>Academic Terms</span>';
+                link.innerHTML = '<span class="so-nav-icon"><img alt="" class="so-nav-image" src="/Static/images/sidebar/at.png"></span><span>Academic Terms</span>';
             }
             link.href = '/admin/academic-terms.html';
             const path = decodeURIComponent(location.pathname).toLowerCase();
