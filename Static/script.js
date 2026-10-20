@@ -8951,7 +8951,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const rawRole = (page.dataset.reviewerRole || '').toLowerCase();
     const queryRole = (new URLSearchParams(location.search).get('role') || '').toLowerCase();
     const savedRole = (sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || '').toLowerCase();
-    const chosenRole = [rawRole, queryRole, savedRole].find(value => ['department-head', 'department_head', 'dept-head', 'admin', 'admin-security', 'admin_security'].includes(value)) || 'admin';
+    const chosenRole = [queryRole, rawRole, savedRole].find(value => ['department-head', 'department_head', 'dept-head', 'admin', 'admin-security', 'admin_security'].includes(value)) || 'admin';
     const role = ['department-head', 'department_head', 'dept-head'].includes(chosenRole) ? 'dept-head' : 'admin';
     const nav = page.querySelector('.so-nav[data-approval-nav="' + role + '"]');
     if (nav) nav.hidden = false;
