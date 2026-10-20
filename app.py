@@ -2647,6 +2647,327 @@ def get_faculty_outcome_mappings(course_id):
         return jsonify({"error": "Outcome mappings could not be loaded."}), 500
 
 
+@app.post("/api/faculty/courses/<course_id>/outcomes")
+@require_role("faculty")
+def create_faculty_course_outcome(course_id):
+    try:
+        course_id = str(UUID(course_id))
+        assigned = admin_supabase.table("course_sections").select("id").eq(
+            "course_id", course_id
+        ).execute().data or []
+        if not any(get_faculty_section(row["id"]) for row in assigned):
+            return jsonify({"error": "Course is not assigned to you."}), 403
+        data = request.get_json(silent=True) or {}
+        code = str(data.get("code", "")).strip().upper()
+        description = str(data.get("description", "")).strip()
+        target = data.get("target_percentage", 70)
+        if not code or len(code) > 20 or not description or len(description) > 2000:
+            return jsonify({"error": "Provide a CO code and description."}), 400
+        if isinstance(target, bool):
+            return jsonify({"error": "Target must be a percentage."}), 400
+        target = float(target)
+        if not math.isfinite(target) or not 0 <= target <= 100:
+            return jsonify({"error": "Target must be from 0 to 100."}), 400
+        rows = admin_supabase.table("course_outcomes").insert({
+            "course_id": course_id, "code": code, "description": description,
+            "target_percentage": target,
+        }).execute().data or []
+        for section_row in assigned:
+            if get_faculty_section(section_row["id"]):
+                _set_mapping_review_status(section_row["id"], "pending")
+        return jsonify({"outcome": rows[0]}), 201
+    except ValueError:
+        return jsonify({"error": "Invalid course ID or target."}), 400
+    except Exception as error:
+        if "duplicate key" in str(error).lower():
+            return jsonify({"error": "That CO code already exists for this course."}), 409
+        app.logger.exception("Unable to create faculty Course Outcome")
+        return jsonify({"error": "Course Outcome could not be created."}), 500
+
+
+@app.put("/api/faculty/courses/<course_id>/outcomes/<outcome_id>")
+@require_role("faculty")
+def update_faculty_course_outcome(course_id, outcome_id):
+    try:
+        course_id, outcome_id = str(UUID(course_id)), str(UUID(outcome_id))
+        assigned = admin_supabase.table("course_sections").select("id").eq(
+            "course_id", course_id
+        ).execute().data or []
+        if not any(get_faculty_section(row["id"]) for row in assigned):
+            return jsonify({"error": "Course is not assigned to you."}), 403
+        data = request.get_json(silent=True) or {}
+        code = str(data.get("code", "")).strip().upper()
+        description = str(data.get("description", "")).strip()
+        target = float(data.get("target_percentage", 70))
+        if not code or len(code) > 20 or not description or len(description) > 2000 or not math.isfinite(target) or not 0 <= target <= 100:
+            return jsonify({"error": "Provide a CO code, description, and target from 0 to 100."}), 400
+        rows = admin_supabase.table("course_outcomes").update({
+            "code": code, "description": description, "target_percentage": target,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }).eq("id", outcome_id).eq("course_id", course_id).execute().data or []
+        for section_row in assigned:
+            if get_faculty_section(section_row["id"]):
+                _set_mapping_review_status(section_row["id"], "pending")
+        return jsonify({"outcome": rows[0] if rows else None}), 200
+    except ValueError:
+        return jsonify({"error": "Invalid course or outcome ID."}), 400
+    except Exception as error:
+        if "duplicate key" in str(error).lower():
+            return jsonify({"error": "That CO code already exists for this course."}), 409
+        app.logger.exception("Unable to update faculty Course Outcome")
+        return jsonify({"error": "Course Outcome could not be updated."}), 500
+
+
+@app.delete("/api/faculty/courses/<course_id>/outcomes/<outcome_id>")
+@require_role("faculty")
+def delete_faculty_course_outcome(course_id, outcome_id):
+    try:
+        course_id, outcome_id = str(UUID(course_id)), str(UUID(outcome_id))
+        assigned = admin_supabase.table("course_sections").select("id").eq(
+            "course_id", course_id
+        ).execute().data or []
+        if not any(get_faculty_section(row["id"]) for row in assigned):
+            return jsonify({"error": "Course is not assigned to you."}), 403
+        admin_supabase.table("course_outcomes").delete().eq("id", outcome_id).eq(
+            "course_id", course_id
+        ).execute()
+        for section_row in assigned:
+            if get_faculty_section(section_row["id"]):
+                _set_mapping_review_status(section_row["id"], "pending")
+        return jsonify({"status": "deleted"}), 200
+    except ValueError:
+        return jsonify({"error": "Invalid course or outcome ID."}), 400
+    except Exception:
+        app.logger.exception("Unable to delete faculty Course Outcome")
+        return jsonify({"error": "Course Outcome could not be deleted."}), 500
+
+
+@app.get("/api/faculty/so-assessments/<assessment_id>/responses")
+@require_role("faculty")
+def faculty_so_assessment_responses(assessment_id):
+    try:
+        assessment_id = str(UUID(assessment_id))
+        assessment = admin_supabase.table("so_self_assessments").select(
+            "id, section_id, performance_indicators, rating_scale"
+        ).eq("id", assessment_id).limit(1).execute().data or []
+        if not assessment or not get_faculty_section(assessment[0]["section_id"]):
+            return jsonify({"error": "Assessment not found or not assigned to you."}), 404
+        responses = admin_supabase.table("so_self_assessment_responses").select(
+            "student_profile_id, answers, submitted_at"
+        ).eq("assessment_id", assessment_id).order("submitted_at", desc=True).execute().data or []
+        profile_ids = [row["student_profile_id"] for row in responses]
+        profiles = admin_supabase.table("student_profiles").select(
+            "id, user_id, student_number, program_id"
+        ).in_("id", profile_ids).execute().data if profile_ids else []
+        profiles_by_id = {row["id"]: row for row in (profiles or [])}
+        user_ids = list({row["user_id"] for row in (profiles or [])})
+        users = admin_supabase.table("users").select("id, full_name").in_("id", user_ids).execute().data if user_ids else []
+        user_names = {row["id"]: row.get("full_name", "") for row in (users or [])}
+        program_ids = list({row["program_id"] for row in (profiles or []) if row.get("program_id")})
+        programs = admin_supabase.table("programs").select("id, name").in_("id", program_ids).execute().data if program_ids else []
+        program_names = {row["id"]: row.get("name", "") for row in (programs or [])}
+        result = []
+        for response in responses:
+            profile = profiles_by_id.get(response["student_profile_id"], {})
+            result.append({
+                "student_number": profile.get("student_number", ""),
+                "student_name": user_names.get(profile.get("user_id"), ""),
+                "program": program_names.get(profile.get("program_id"), ""),
+                "answers": response.get("answers") or {},
+                "submitted_at": response.get("submitted_at"),
+            })
+        return jsonify({"responses": result, "performance_indicators": assessment[0].get("performance_indicators") or [], "rating_scale": assessment[0].get("rating_scale") or []}), 200
+    except ValueError:
+        return jsonify({"error": "Invalid assessment ID."}), 400
+    except Exception:
+        app.logger.exception("Unable to load SO response logs")
+        return jsonify({"error": "SO response logs could not be loaded."}), 500
+
+
+@app.get("/api/outcomes/overview")
+@require_roles("department-head", "admin-security")
+def outcomes_overview():
+    """Filtered SO/CO dashboard and response log for department heads/admins."""
+    try:
+        role = normalize_role_name(get_user_role(g.authenticated_user))
+        department_scope_id = None
+        filters = {key: str(request.args.get(key, "")).strip() for key in (
+            "academic_year_id", "program_id", "course_id", "section_id"
+        )}
+        courses_query = admin_supabase.table("courses").select("id, code, title, department_id")
+        if role == "department-head":
+            department_id = _department_head_department_id(g.authenticated_user.id)
+            if not department_id:
+                return jsonify({"error": "Your department profile is incomplete."}), 409
+            department_scope_id = department_id
+            courses_query = courses_query.eq("department_id", department_id)
+        courses = courses_query.order("code").execute().data or []
+        course_by_id = {row["id"]: row for row in courses}
+        course_ids = list(course_by_id)
+        sections = admin_supabase.table("course_sections").select(
+            "id, course_id, academic_year_id, academic_term_id, section_name, faculty_id"
+        ).in_("course_id", course_ids).execute().data if course_ids else []
+        sections = sections or []
+        if filters["academic_year_id"]:
+            sections = [r for r in sections if r.get("academic_year_id") == filters["academic_year_id"]]
+        if filters["course_id"]:
+            sections = [r for r in sections if r.get("course_id") == filters["course_id"]]
+        if filters["section_id"]:
+            sections = [r for r in sections if r["id"] == filters["section_id"]]
+        section_ids = [row["id"] for row in sections]
+        section_by_id = {row["id"]: row for row in sections}
+        faculty_ids = list({row["faculty_id"] for row in sections if row.get("faculty_id")})
+        faculty_profiles = admin_supabase.table("faculty_profiles").select("id, user_id").in_("id", faculty_ids).execute().data if faculty_ids else []
+        faculty_user_ids = list({row["user_id"] for row in (faculty_profiles or [])})
+        faculty_users = admin_supabase.table("users").select("id, full_name").in_("id", faculty_user_ids).execute().data if faculty_user_ids else []
+        faculty_names = {row["id"]: row.get("full_name", "") for row in (faculty_users or [])}
+        faculty_by_id = {row["id"]: faculty_names.get(row["user_id"], "") for row in (faculty_profiles or [])}
+        enrollments = admin_supabase.table("enrollments").select("section_id, student_profile_id").in_("section_id", section_ids).eq("enrollment_status", "active").execute().data if section_ids else []
+        enrollments = enrollments or []
+        enrollment_by_section = {}
+        for row in enrollments:
+            enrollment_by_section.setdefault(row["section_id"], []).append(row["student_profile_id"])
+        profile_ids = list({row["student_profile_id"] for row in enrollments})
+        profiles = admin_supabase.table("student_profiles").select("id, user_id, student_number, program_id").in_("id", profile_ids).execute().data if profile_ids else []
+        profiles = profiles or []
+        profile_by_id = {row["id"]: row for row in profiles}
+        program_ids = list({row["program_id"] for row in profiles if row.get("program_id")})
+        programs_query = admin_supabase.table("programs").select("id, name, code")
+        if department_scope_id:
+            programs_query = programs_query.eq("department_id", department_scope_id)
+        programs = programs_query.execute().data or []
+        if filters["program_id"]:
+            sections_programs = {row["id"] for row in profiles if row.get("program_id") == filters["program_id"]}
+            sections = [row for row in sections if set(enrollment_by_section.get(row["id"], [])) & sections_programs]
+            section_ids = [row["id"] for row in sections]
+            section_by_id = {row["id"]: row for row in sections}
+            enrollments = [row for row in enrollments if row["section_id"] in section_by_id and profile_by_id.get(row["student_profile_id"], {}).get("program_id") == filters["program_id"]]
+        programs_by_id = {row["id"]: row for row in programs}
+        sections = [row for row in sections if row.get("course_id") in course_by_id]
+        section_ids = [row["id"] for row in sections]
+        section_by_id = {row["id"]: row for row in sections}
+        if section_ids:
+            enrollments = [row for row in enrollments if row["section_id"] in section_by_id]
+        active_profile_ids = list({row["student_profile_id"] for row in enrollments})
+        active_enrollment_pairs = {
+            (row["section_id"], row["student_profile_id"]) for row in enrollments
+        }
+        users = admin_supabase.table("users").select("id, full_name").in_("id", list({p["user_id"] for p in profiles if p["id"] in active_profile_ids})).execute().data if active_profile_ids else []
+        student_names = {row["id"]: row.get("full_name", "") for row in (users or [])}
+        academic_years = admin_supabase.table("academic_years").select("id, name").order("name", desc=True).execute().data or []
+        outcome_assessments = admin_supabase.table("so_self_assessments").select("id, section_id, student_outcome_id, title, performance_indicators, rating_scale, status").in_("section_id", section_ids).execute().data if section_ids else []
+        outcome_assessments = outcome_assessments or []
+        assessment_section_by_id = {row["id"]: row["section_id"] for row in outcome_assessments}
+        assessment_ids = [row["id"] for row in outcome_assessments]
+        response_rows = admin_supabase.table("so_self_assessment_responses").select("assessment_id, student_profile_id, answers, submitted_at").in_("assessment_id", assessment_ids).execute().data if assessment_ids else []
+        response_rows = [
+            row for row in (response_rows or [])
+            if (assessment_section_by_id.get(row["assessment_id"]), row["student_profile_id"])
+            in active_enrollment_pairs
+        ]
+        responses_by_assessment = {}
+        for row in response_rows:
+            responses_by_assessment.setdefault(row["assessment_id"], []).append(row)
+        assessment_by_id = {row["id"]: row for row in outcome_assessments}
+        so_ids = list({row["student_outcome_id"] for row in outcome_assessments})
+        so_rows = admin_supabase.table("student_outcomes").select("id, code, description").in_("id", so_ids).execute().data if so_ids else []
+        so_by_id = {row["id"]: row for row in (so_rows or [])}
+        course_rows = []
+        for section in sections:
+            enrolled_ids = [pid for pid in enrollment_by_section.get(section["id"], []) if any(e["section_id"] == section["id"] and e["student_profile_id"] == pid for e in enrollments)]
+            section_assessments = [row for row in outcome_assessments if row["section_id"] == section["id"]]
+            total_expected = len(section_assessments) * len(enrolled_ids)
+            total_submitted = sum(len(responses_by_assessment.get(row["id"], [])) for row in section_assessments)
+            course = course_by_id.get(section["course_id"], {})
+            program_names = sorted({
+                programs_by_id.get(profile_by_id.get(pid, {}).get("program_id"), {}).get("name", "")
+                for pid in enrolled_ids
+            } - {""})
+            course_rows.append({
+                "course_id": section["course_id"], "course_code": course.get("code", ""),
+                "course_title": course.get("title", ""), "section_id": section["id"],
+                "section_name": section.get("section_name", ""),
+                "academic_year_id": section.get("academic_year_id"),
+                "faculty_name": faculty_by_id.get(section.get("faculty_id"), "Unassigned"),
+                "program": ", ".join(program_names),
+                "student_count": len(enrolled_ids), "assessment_count": len(section_assessments),
+                "completion_rate": round(total_submitted / total_expected * 100, 1) if total_expected else 0,
+            })
+        filtered_section_ids = {row["section_id"] for row in course_rows}
+        summary = {
+            so_id: {"so_code": so_by_id.get(so_id, {}).get("code", ""),
+                    "description": so_by_id.get(so_id, {}).get("description", ""),
+                    "score_sum": 0.0, "rating_count": 0, "responses": 0}
+            for so_id in so_ids
+        }
+        response_log = []
+        for assessment in outcome_assessments:
+            if assessment["section_id"] not in filtered_section_ids:
+                continue
+            so = so_by_id.get(assessment["student_outcome_id"], {})
+            scale = assessment.get("rating_scale") or []
+            scale_labels = {str(item.get("value")): item.get("label", "") for item in scale if isinstance(item, dict)}
+            for response in responses_by_assessment.get(assessment["id"], []):
+                profile = profile_by_id.get(response["student_profile_id"], {})
+                program = programs_by_id.get(profile.get("program_id"), {})
+                answers = response.get("answers") or {}
+                numeric = []
+                for answer in answers.values():
+                    try: numeric.append(float(answer))
+                    except (TypeError, ValueError): pass
+                scale_numbers = []
+                for item in scale:
+                    try: scale_numbers.append(float(item.get("value")))
+                    except (TypeError, ValueError, AttributeError): pass
+                low, high = (min(scale_numbers), max(scale_numbers)) if scale_numbers else (0.0, 0.0)
+                normalized_ratings = [((value - low) / (high - low) * 100) if high > low else 0.0 for value in numeric]
+                group = summary.setdefault(so.get("id", assessment["student_outcome_id"]), {"so_code": so.get("code", ""), "description": so.get("description", ""), "score_sum": 0.0, "rating_count": 0, "responses": 0})
+                group["score_sum"] += sum(normalized_ratings)
+                group["rating_count"] += len(normalized_ratings)
+                group["responses"] += 1
+                section = section_by_id.get(assessment["section_id"], {})
+                course = course_by_id.get(section.get("course_id"), {})
+                response_log.append({
+                    "student_name": student_names.get(profile.get("user_id"), ""),
+                    "student_number": profile.get("student_number", ""), "program": program.get("name", ""),
+                    "course_code": course.get("code", ""), "course_title": course.get("title", ""),
+                    "section_name": section.get("section_name", ""), "so_code": so.get("code", ""),
+                    "assessment_title": assessment.get("title", ""), "answers": answers,
+                    "rating_labels": {key: scale_labels.get(str(val), str(val)) for key, val in answers.items()},
+                    "submitted_at": response.get("submitted_at"),
+                })
+        so_summary = [{**row, "average_rating": round(row["score_sum"] / row["rating_count"], 2) if row["rating_count"] else None} for row in summary.values()]
+        selected_course_ids = list({row["course_id"] for row in sections})
+        co_rows = admin_supabase.table("course_outcomes").select("id, course_id, code, description, target_percentage").in_("course_id", selected_course_ids).execute().data if selected_course_ids else []
+        co_by_id = {row["id"]: row for row in (co_rows or [])}
+        attainment_rows = admin_supabase.table("co_attainment").select("section_id, course_outcome_id, attainment_percentage, status").in_("section_id", section_ids).execute().data if section_ids else []
+        co_groups = {}
+        for row in attainment_rows or []:
+            outcome = co_by_id.get(row.get("course_outcome_id"))
+            if not outcome:
+                continue
+            group = co_groups.setdefault(outcome["id"], {"code": outcome["code"], "description": outcome["description"], "target_percentage": float(outcome.get("target_percentage") or 70), "values": []})
+            if row.get("attainment_percentage") is not None:
+                group["values"].append(float(row["attainment_percentage"]))
+        co_summary = [{"code": row["code"], "description": row["description"],
+                       "target_percentage": row["target_percentage"],
+                       "attainment_percentage": round(sum(row["values"]) / len(row["values"]), 2) if row["values"] else None,
+                       "flagged": bool(row["values"] and sum(row["values"]) / len(row["values"]) < row["target_percentage"])}
+                      for row in co_groups.values()]
+        all_course_rows = [{"id": row["id"], "code": row["code"], "title": row["title"]} for row in courses]
+        return jsonify({
+            "filters": {"academic_years": academic_years, "programs": programs, "courses": all_course_rows,
+                        "sections": [{"id": r["section_id"], "name": r["section_name"], "course_id": r["course_id"]} for r in course_rows]},
+            "metrics": {"students": len({row["student_profile_id"] for row in enrollments}), "courses": len({r["course_id"] for r in course_rows}),
+                        "sections": len(course_rows), "faculty": len({r["faculty_name"] for r in course_rows if r["faculty_name"] != "Unassigned"})},
+            "courses": course_rows, "so_summary": so_summary, "co_summary": co_summary,
+            "responses": response_log,
+        }), 200
+    except Exception:
+        app.logger.exception("Unable to load SO/CO overview")
+        return jsonify({"error": "Outcome overview could not be loaded."}), 500
+
+
 @app.get("/api/faculty/sections/<section_id>/attainment")
 @require_role("faculty")
 def get_faculty_section_attainment(section_id):
@@ -3812,6 +4133,326 @@ def get_student_course_outcomes():
         return jsonify({"error": "Course outcome results could not be loaded."}), 500
 
 
+def _so_assessment_payload(assessment, so_by_id=None):
+    so_by_id = so_by_id or {}
+    so = so_by_id.get(assessment.get("student_outcome_id"), {})
+    return {
+        **assessment,
+        "student_outcome": so,
+        "performance_indicators": assessment.get("performance_indicators") or [],
+        "rating_scale": assessment.get("rating_scale") or [],
+    }
+
+
+@app.get("/api/faculty/sections/<section_id>/so-assessments")
+@require_role("faculty")
+def faculty_so_assessments(section_id):
+    if not admin_supabase:
+        return jsonify({"error": "SO assessments are unavailable."}), 503
+    try:
+        section_id = str(UUID(section_id))
+        if not get_faculty_section(section_id):
+            return jsonify({"error": "Section not found or not assigned to you."}), 404
+        rows = admin_supabase.table("so_self_assessments").select(
+            "id, section_id, student_outcome_id, title, due_date, performance_indicators, "
+            "rating_scale, status, created_at, updated_at"
+        ).eq("section_id", section_id).order("created_at", desc=True).execute().data or []
+        so_ids = list({row["student_outcome_id"] for row in rows})
+        so_rows = admin_supabase.table("student_outcomes").select(
+            "id, code, description"
+        ).in_("id", so_ids).execute().data if so_ids else []
+        so_by_id = {row["id"]: row for row in (so_rows or [])}
+        counts = {}
+        active_students = admin_supabase.table("enrollments").select(
+            "student_profile_id"
+        ).eq("section_id", section_id).eq("enrollment_status", "active").execute().data or []
+        student_count = len(active_students)
+        active_student_ids = {row["student_profile_id"] for row in active_students}
+        if rows:
+            response_rows = admin_supabase.table("so_self_assessment_responses").select(
+                "assessment_id, student_profile_id"
+            ).in_("assessment_id", [row["id"] for row in rows]).execute().data or []
+            for response in response_rows:
+                if response["student_profile_id"] in active_student_ids:
+                    counts[response["assessment_id"]] = counts.get(response["assessment_id"], 0) + 1
+        return jsonify({"assessments": [
+            {**_so_assessment_payload(row, so_by_id),
+             "response_count": counts.get(row["id"], 0),
+             "student_count": student_count,
+             "completion_rate": round(counts.get(row["id"], 0) / student_count * 100, 1) if student_count else 0}
+            for row in rows
+        ]}), 200
+    except ValueError:
+        return jsonify({"error": "Invalid section ID."}), 400
+    except Exception:
+        app.logger.exception("Unable to load faculty SO assessments")
+        return jsonify({"error": "SO assessments could not be loaded."}), 500
+
+
+def _validate_so_assessment_data(data):
+    if not isinstance(data, dict):
+        raise ValueError("Assessment data must be an object.")
+    title = str(data.get("title", "")).strip()
+    if not title or len(title) > 160:
+        raise ValueError("Enter an assessment title up to 160 characters.")
+    try:
+        so_id = str(UUID(str(data.get("student_outcome_id", ""))))
+    except (TypeError, ValueError):
+        raise ValueError("Choose a valid Student Outcome.")
+    due_date = str(data.get("due_date") or "").strip() or None
+    if due_date:
+        try:
+            datetime.strptime(due_date, "%Y-%m-%d")
+        except ValueError:
+            raise ValueError("Due date must use YYYY-MM-DD format.")
+    indicators = data.get("performance_indicators")
+    scale = data.get("rating_scale")
+    if not isinstance(indicators, list) or not 1 <= len(indicators) <= 30:
+        raise ValueError("Add between 1 and 30 performance indicators.")
+    clean_indicators = []
+    for item in indicators:
+        text = str(item).strip() if isinstance(item, str) else ""
+        if not text or len(text) > 300:
+            raise ValueError("Each performance indicator must contain 1 to 300 characters.")
+        clean_indicators.append(text)
+    if not isinstance(scale, list) or not 2 <= len(scale) <= 10:
+        raise ValueError("Add between 2 and 10 rating scale levels.")
+    clean_scale = []
+    seen_values = set()
+    for item in scale:
+        if not isinstance(item, dict):
+            raise ValueError("Rating scale levels need a value and label.")
+        try:
+            value = int(item.get("value"))
+        except (TypeError, ValueError):
+            raise ValueError("Rating values must be whole numbers.")
+        label = str(item.get("label", "")).strip()
+        if value in seen_values or not label or len(label) > 80:
+            raise ValueError("Rating scale values must be unique and labels must be 1 to 80 characters.")
+        seen_values.add(value)
+        clean_scale.append({"value": value, "label": label})
+    status = data.get("status", "draft")
+    if status not in {"draft", "open", "closed"}:
+        raise ValueError("Choose a valid assessment status.")
+    return {
+        "student_outcome_id": so_id, "title": title, "due_date": due_date,
+        "performance_indicators": clean_indicators, "rating_scale": clean_scale,
+        "status": status,
+    }
+
+
+@app.post("/api/faculty/sections/<section_id>/so-assessments")
+@require_role("faculty")
+def create_faculty_so_assessment(section_id):
+    if not admin_supabase:
+        return jsonify({"error": "SO assessments are unavailable."}), 503
+    try:
+        section_id = str(UUID(section_id))
+        if not get_faculty_section(section_id):
+            return jsonify({"error": "Section not found or not assigned to you."}), 404
+        section = admin_supabase.table("course_sections").select("course_id").eq(
+            "id", section_id
+        ).limit(1).execute().data or []
+        if not section:
+            return jsonify({"error": "Section not found."}), 404
+        data = _validate_so_assessment_data(request.get_json(silent=True))
+        linked = admin_supabase.table("course_outcomes").select("id").eq(
+            "course_id", section[0]["course_id"]
+        ).execute().data or []
+        co_ids = [row["id"] for row in linked]
+        mappings = admin_supabase.table("course_outcome_student_outcomes").select(
+            "student_outcome_id"
+        ).in_("course_outcome_id", co_ids).eq(
+            "student_outcome_id", data["student_outcome_id"]
+        ).execute().data if co_ids else []
+        if not mappings:
+            return jsonify({"error": "Map this Student Outcome to a Course Outcome before creating its assessment."}), 409
+        result = admin_supabase.table("so_self_assessments").insert({
+            **data, "section_id": section_id, "created_by": str(g.authenticated_user.id),
+        }).execute()
+        rows = result.data or []
+        if not rows:
+            return jsonify({"error": "Assessment could not be saved."}), 500
+        so = admin_supabase.table("student_outcomes").select("id, code, description").eq(
+            "id", data["student_outcome_id"]
+        ).limit(1).execute().data or []
+        return jsonify({"assessment": _so_assessment_payload(rows[0], {so[0]["id"]: so[0]} if so else {})}), 201
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+    except Exception as error:
+        if "duplicate key" in str(error).lower():
+            return jsonify({"error": "An assessment for this Student Outcome already exists in this section."}), 409
+        app.logger.exception("Unable to create faculty SO assessment")
+        return jsonify({"error": "SO assessment could not be saved."}), 500
+
+
+@app.put("/api/faculty/so-assessments/<assessment_id>")
+@require_role("faculty")
+def update_faculty_so_assessment(assessment_id):
+    try:
+        assessment_id = str(UUID(assessment_id))
+        rows = admin_supabase.table("so_self_assessments").select("id, section_id").eq(
+            "id", assessment_id
+        ).limit(1).execute().data or []
+        if not rows:
+            return jsonify({"error": "Assessment not found."}), 404
+        if not get_faculty_section(rows[0]["section_id"]):
+            return jsonify({"error": "Assessment is not in a section assigned to you."}), 403
+        data = _validate_so_assessment_data(request.get_json(silent=True))
+        result = admin_supabase.table("so_self_assessments").update({
+            **data, "updated_at": datetime.now(timezone.utc).isoformat(),
+        }).eq("id", assessment_id).execute().data or []
+        return jsonify({"assessment": result[0] if result else None}), 200
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+    except Exception:
+        app.logger.exception("Unable to update faculty SO assessment")
+        return jsonify({"error": "SO assessment could not be updated."}), 500
+
+
+@app.delete("/api/faculty/so-assessments/<assessment_id>")
+@require_role("faculty")
+def delete_faculty_so_assessment(assessment_id):
+    try:
+        assessment_id = str(UUID(assessment_id))
+        rows = admin_supabase.table("so_self_assessments").select("id, section_id").eq(
+            "id", assessment_id
+        ).limit(1).execute().data or []
+        if not rows:
+            return jsonify({"error": "Assessment not found."}), 404
+        if not get_faculty_section(rows[0]["section_id"]):
+            return jsonify({"error": "Assessment is not in a section assigned to you."}), 403
+        admin_supabase.table("so_self_assessments").delete().eq("id", assessment_id).execute()
+        return jsonify({"status": "deleted"}), 200
+    except ValueError:
+        return jsonify({"error": "Invalid assessment ID."}), 400
+    except Exception:
+        app.logger.exception("Unable to delete faculty SO assessment")
+        return jsonify({"error": "SO assessment could not be deleted."}), 500
+
+
+@app.get("/api/student/so-assessments")
+@require_role("student")
+def student_so_assessments():
+    try:
+        profile = _account_profile("student", g.authenticated_user.id, "id")
+        if not profile:
+            return jsonify({"assessments": [], "profile_complete": False}), 200
+        enrollment_rows = admin_supabase.table("enrollments").select("section_id").eq(
+            "student_profile_id", profile["id"]
+        ).eq("enrollment_status", "active").execute().data or []
+        section_ids = list({row["section_id"] for row in enrollment_rows})
+        if not section_ids:
+            return jsonify({"assessments": [], "profile_complete": True}), 200
+        reviews = admin_supabase.table("course_mapping_reviews").select(
+            "section_id, status"
+        ).in_("section_id", section_ids).execute().data or []
+        verified_ids = [row["section_id"] for row in reviews if row.get("status") == "verified"]
+        if not verified_ids:
+            return jsonify({"assessments": [], "profile_complete": True}), 200
+        rows = admin_supabase.table("so_self_assessments").select(
+            "id, section_id, student_outcome_id, title, due_date, performance_indicators, rating_scale, status"
+        ).in_("section_id", verified_ids).eq("status", "open").order("due_date").execute().data or []
+        today = datetime.now(timezone.utc).date().isoformat()
+        rows = [row for row in rows if not row.get("due_date") or row["due_date"] >= today]
+        response_rows = admin_supabase.table("so_self_assessment_responses").select(
+            "assessment_id"
+        ).eq("student_profile_id", profile["id"]).in_(
+            "assessment_id", [row["id"] for row in rows]
+        ).execute().data if rows else []
+        completed = {row["assessment_id"] for row in (response_rows or [])}
+        rows = [row for row in rows if row["id"] not in completed]
+        section_rows = admin_supabase.table("course_sections").select(
+            "id, course_id, section_name, academic_term_id"
+        ).in_("id", verified_ids).execute().data or []
+        course_ids = list({row["course_id"] for row in section_rows})
+        courses = admin_supabase.table("courses").select("id, code, title").in_(
+            "id", course_ids
+        ).execute().data if course_ids else []
+        terms_by_id = {}
+        term_ids = list({row["academic_term_id"] for row in section_rows if row.get("academic_term_id")})
+        terms = admin_supabase.table("academic_terms").select("id, name, academic_year_id").in_(
+            "id", term_ids
+        ).execute().data if term_ids else []
+        terms_by_id = {row["id"]: row for row in (terms or [])}
+        year_ids = list({row["academic_year_id"] for row in (terms or []) if row.get("academic_year_id")})
+        years = admin_supabase.table("academic_years").select("id, name").in_("id", year_ids).execute().data if year_ids else []
+        year_by_id = {row["id"]: row["name"] for row in (years or [])}
+        course_by_id = {row["id"]: row for row in (courses or [])}
+        section_by_id = {row["id"]: row for row in section_rows}
+        so_ids = list({row["student_outcome_id"] for row in rows})
+        so_rows = admin_supabase.table("student_outcomes").select("id, code, description").in_("id", so_ids).execute().data if so_ids else []
+        so_by_id = {row["id"]: row for row in (so_rows or [])}
+        syllabus_rows = admin_supabase.table("course_syllabi").select("section_id, file_name, storage_path").in_("section_id", verified_ids).execute().data or []
+        syllabus_by_section = {row["section_id"]: row for row in syllabus_rows}
+        result = []
+        for row in rows:
+            section = section_by_id.get(row["section_id"], {})
+            course = course_by_id.get(section.get("course_id"), {})
+            syllabus = syllabus_by_section.get(row["section_id"])
+            term = terms_by_id.get(section.get("academic_term_id"), {})
+            result.append({
+                **_so_assessment_payload(row, so_by_id),
+                "course_code": course.get("code", ""), "course_title": course.get("title", ""),
+                "section_name": section.get("section_name", ""),
+                "academic_term": term.get("name", ""),
+                "academic_year": year_by_id.get(term.get("academic_year_id"), ""),
+                "syllabus_file_name": syllabus.get("file_name") if syllabus else None,
+                "syllabus_url": signed_syllabus_url(syllabus, download=False) if syllabus else None,
+                "syllabus_download_url": signed_syllabus_url(syllabus) if syllabus else None,
+            })
+        return jsonify({"assessments": result, "profile_complete": True}), 200
+    except Exception:
+        app.logger.exception("Unable to load student SO assessments")
+        return jsonify({"error": "SO assessments could not be loaded."}), 500
+
+
+@app.post("/api/student/so-assessments/<assessment_id>/responses")
+@require_role("student")
+def submit_student_so_response(assessment_id):
+    try:
+        assessment_id = str(UUID(assessment_id))
+        profile = _account_profile("student", g.authenticated_user.id, "id")
+        if not profile:
+            return jsonify({"error": "Complete your student profile before submitting."}), 409
+        assessment_rows = admin_supabase.table("so_self_assessments").select(
+            "id, section_id, due_date, performance_indicators, rating_scale, status"
+        ).eq("id", assessment_id).eq("status", "open").limit(1).execute().data or []
+        if not assessment_rows:
+            return jsonify({"error": "This assessment is no longer open."}), 404
+        assessment = assessment_rows[0]
+        enrollment = admin_supabase.table("enrollments").select("id").eq(
+            "section_id", assessment["section_id"]
+        ).eq("student_profile_id", profile["id"]).eq("enrollment_status", "active").limit(1).execute().data or []
+        if not enrollment or not _section_mapping_is_verified(assessment["section_id"]):
+            return jsonify({"error": "This assessment is not available for your verified course section."}), 403
+        if assessment.get("due_date") and assessment["due_date"] < datetime.now(timezone.utc).date().isoformat():
+            return jsonify({"error": "The due date has passed."}), 409
+        data = request.get_json(silent=True) or {}
+        answers = data.get("answers") if isinstance(data, dict) else None
+        indicators = assessment.get("performance_indicators") or []
+        scale_values = {str(item.get("value")) for item in assessment.get("rating_scale") or [] if isinstance(item, dict)}
+        if not isinstance(answers, dict) or len(answers) != len(indicators):
+            return jsonify({"error": "Answer every performance indicator before submitting."}), 400
+        normalized = {}
+        for index in range(len(indicators)):
+            value = str(answers.get(str(index), ""))
+            if value not in scale_values:
+                return jsonify({"error": "Choose a valid rating for every indicator."}), 400
+            normalized[str(index)] = value
+        admin_supabase.table("so_self_assessment_responses").upsert({
+            "assessment_id": assessment_id, "student_profile_id": profile["id"],
+            "answers": normalized, "submitted_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }, on_conflict="assessment_id,student_profile_id").execute()
+        return jsonify({"status": "submitted"}), 201
+    except ValueError:
+        return jsonify({"error": "Invalid assessment ID."}), 400
+    except Exception:
+        app.logger.exception("Unable to save student SO response")
+        return jsonify({"error": "Your response could not be submitted."}), 500
+
+
 def get_faculty_section(section_id):
     profile_result = (
         admin_supabase.table("faculty_profiles")
@@ -3836,11 +4477,10 @@ def get_faculty_section(section_id):
     return sections[0] if sections else None
 
 
-def signed_syllabus_url(record):
+def signed_syllabus_url(record, download=True):
+    options = {"download": record["file_name"]} if download else None
     response = admin_supabase.storage.from_(SYLLABI_BUCKET).create_signed_url(
-        record["storage_path"],
-        900,
-        options={"download": record["file_name"]},
+        record["storage_path"], 900, options=options,
     )
     return response.get("signedURL") or response.get("signedUrl")
 
@@ -3882,7 +4522,8 @@ def get_faculty_syllabus(section_id):
             "syllabus": {
                 "file_name": record["file_name"],
                 "uploaded_at": record["uploaded_at"],
-                "signed_url": signed_syllabus_url(record),
+                "signed_url": signed_syllabus_url(record, download=False),
+                "download_url": signed_syllabus_url(record),
             }
         }), 200
     except Exception:
@@ -4391,7 +5032,19 @@ def faculty_dashboard():
 @app.get("/requirement 1/so-dept-head.html")
 @require_role("department-head")
 def dept_head_dashboard():
-    return render_template("requirement 1/so-dept-head.html")
+    return render_template(
+        "requirement 1/so-dept-head.html",
+        role_label="Department Head", admin_view=False,
+    )
+
+
+@app.get("/requirement 1/so-admin.html")
+@require_role("admin-security")
+def admin_so_dashboard():
+    return render_template(
+        "requirement 1/so-dept-head.html",
+        role_label="Admin & Security", admin_view=True,
+    )
 
 
 @app.get("/requirement 4/ra-faculty.html")
