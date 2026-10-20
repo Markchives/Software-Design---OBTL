@@ -4448,15 +4448,27 @@ def reset_password():
                 "error": "Password reset could not be completed."
             }), 400
 
+        # A password change invalidates this account's remembered-device trust.
+        # Keep any other accounts remembered in the same browser.
+        remembered_accounts = get_remembered_accounts()
+        remembered_accounts = {
+            email: account
+            for email, account in remembered_accounts.items()
+            if str(account.get("user_id")) != str(user_id)
+        }
+        session["remembered_accounts"] = remembered_accounts
+
         # Remove temporary reset authorization after success.
         session.pop("reset_password_user_id", None)
         session.pop("reset_password_access_token", None)
         session.pop("reset_password_refresh_token", None)
 
-        return jsonify({
+        response = jsonify({
             "status": "password_reset",
             "message": "Password updated successfully. Please log in."
-        }), 200
+        })
+        set_remembered_accounts_cookie(response, remembered_accounts)
+        return response, 200
 
     except Exception:
         app.logger.exception("Password reset failed")
