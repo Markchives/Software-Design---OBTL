@@ -188,6 +188,13 @@ def get_signature_url(file_path: str, expires_in: int = 60):
 - Existing single-CO activity links are backfilled into `assessment_activity_course_outcomes`. Attainment remains null with `awaiting_results` status until there is a released result; the migration makes that status and nullable percentage valid in `co_attainment`. For an existing database, apply this after the base schema and `database/requirement_4_assessment_release_and_review.sql`, and before deploying the matching `app.py` changes. `database/schema.sql` contains the equivalent definitions for fresh installations. This migration has not been applied to the live database.
 - Code validation includes Python compilation, clean diff formatting, a mocked calculation check for released-only multi-CO attainment, and browser checks using mocked API responses for multi-CO activity creation and Requirement 4 score display. The live Supabase migration and role-authenticated create/edit/delete, score, release, lock, and attainment flows still need end-to-end verification.
 
+## Requirement 5 Attainment
+
+- A student's CO result is the average of their percentages on released assessment activities mapped to that CO. Class attainment is the percentage of students with released scores for that CO whose individual result meets the CO's syllabus target; unreleased activities do not contribute. CO targets default to 70% but remain configurable per outcome in the syllabus.
+- Faculty can review calculated CO attainment and its contributing released/unreleased activities. Students can view only their own results after both score release and Department Head mapping verification.
+- The Department Head attainment overview uses a server-enforced department scope and reports section-level CO attainment plus aggregated gradebook readiness. Admin views read-only system-wide CO aggregates and cannot change scores, mappings, targets, or attainment.
+- `database/requirement_5_attainment_algorithm.sql` adds the algorithm-version marker used to refresh previously calculated attainment after this formula change. Apply it after the base schema and `database/requirement_2_4_multi_co_assessment_mappings.sql`; the latter is also required for multi-CO activity mappings. Deploy the matching `app.py` and `Static/script.js` after the migrations.
+
 ## Academic terms and course offerings
 
 - Admins can create academic years with exactly three terms named Term 1, Term 2, and Term 3 at `/admin/academic-terms.html`. Year dates and each term's date range are optional; supplied ranges must be complete, sequential, within the year, and non-overlapping.

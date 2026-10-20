@@ -52,15 +52,16 @@
                 </small>
 </div>
 </aside><main class="so-main dh-main sodh-main cm-admin-main" id="mainContent">
-<section class="ra-admin-heading so-page-heading dh-heading cm-admin-heading"><h1>Attainment Calculation</h1><p>System-wide view of calculated Course Outcome attainment across departments. Admin can configure thresholds and report on results, but cannot edit individual attainment calculations.</p></section>
+<section class="ra-admin-heading so-page-heading dh-heading cm-admin-heading"><h1>Attainment Calculation</h1><p>System-wide, read-only Course Outcome attainment calculated from released assessment results. Targets come from each course syllabus.</p></section>
 <section aria-label="Attainment filters" class="ac-filters sodh-filter-card dh-filters cm-filters">
-<div class="ac-filter sodh-filter-group cm-filter"><label for="acYear">School Year</label><select id="acYear"><option>2026–2027</option></select></div>
+<div class="ac-filter sodh-filter-group cm-filter"><label for="acYear">School Year</label><select id="acYear"><option value="">All academic years</option></select></div>
 <div class="ac-filter sodh-filter-group cm-filter"><label for="acDepartment">Department</label><select id="acDepartment"><option value="">All Departments</option></select></div>
 <div class="ac-filter sodh-filter-group cm-filter"><label for="acProgram">Program</label><select id="acProgram"><option value="">All Programs</option></select></div>
 <div class="ac-filter sodh-filter-group cm-filter"><label for="acStatus">Attainment Status</label><select id="acStatus"><option value="">All Statuses</option><option value="on">On Target</option><option value="below">Below Target</option></select></div>
 </section>
+<p aria-live="polite" class="ac-help" id="acAttainmentStatus" role="status"></p>
 <section aria-label="System attainment summary" class="ra-admin-summary sodh-summary-grid dh-summary cm-summary">
-<div class="ra-admin-stat ac-overview-stat sodh-summary-card dh-stat cm-stat"><h2 class="ra-admin-stat-label">System Attainment<br/>Overview</h2><p>2026–2027 • All departments • Read-only results</p></div>
+<div class="ra-admin-stat ac-overview-stat sodh-summary-card dh-stat cm-stat"><h2 class="ra-admin-stat-label">System Attainment<br/>Overview</h2><p>All academic years • All departments • Read-only results</p></div>
 <div class="ra-admin-stat ac-departments sodh-summary-card dh-stat cm-stat"><small class="ra-admin-stat-label sodh-summary-label dh-stat-label">Departments</small><strong class="ra-admin-stat-value sodh-summary-number dh-stat-value">—</strong></div>
 <div class="ra-admin-stat ac-target sodh-summary-card dh-stat cm-stat"><small class="ra-admin-stat-label sodh-summary-label dh-stat-label">COs On Target</small><strong class="ra-admin-stat-value sodh-summary-number dh-stat-value">—</strong></div>
 <div class="ra-admin-stat ac-below sodh-summary-card dh-stat cm-stat"><small class="ra-admin-stat-label sodh-summary-label dh-stat-label">COs Below Target</small><strong class="ra-admin-stat-value sodh-summary-number dh-stat-value">—</strong></div>
@@ -68,7 +69,7 @@
 <div aria-label="Attainment views" class="ac-tabs sodh-tabs dh-tabs cm-tabs" role="tablist">
 <button aria-controls="panel-departments" aria-selected="true" class="ac-tab sodh-tab active dh-tab cm-tab" data-tab="departments" id="tab-departments" role="tab" type="button">Department Overview</button>
 <button aria-controls="panel-courses" aria-selected="false" class="ac-tab sodh-tab dh-tab cm-tab" data-tab="courses" id="tab-courses" role="tab" type="button">Course Attainment</button>
-<button aria-controls="panel-settings" aria-selected="false" class="ac-tab sodh-tab dh-tab cm-tab" data-tab="settings" id="tab-settings" role="tab" type="button">Threshold Settings</button>
+<button aria-controls="panel-settings" aria-selected="false" class="ac-tab sodh-tab dh-tab cm-tab" data-tab="settings" id="tab-settings" role="tab" type="button">Attainment Rules</button>
 </div>
 <section aria-labelledby="tab-departments" class="ac-panel sodh-content-card dh-panel cm-panel" id="panel-departments" role="tabpanel">
 <div class="ac-panel-head sodh-toolbar cm-panel-header"><div><h2>Attainment by Department</h2><p>Aggregated, read-only attainment metrics for system oversight and reporting.</p></div><button class="ac-outline-btn sodh-export-btn" data-export="departments" type="button">Export Summary</button></div>
@@ -82,10 +83,10 @@
 </tbody></table></div><p class="ac-empty" hidden="" id="acCourseEmpty">No matching course outcomes.</p><div class="ac-note">Individual attainment values are read-only. Admin can view and export oversight reports, but cannot change scores, mappings, or calculated outcomes.</div>
 </section>
 <section aria-labelledby="tab-settings" class="ac-panel sodh-content-card dh-panel cm-panel" hidden="" id="panel-settings" role="tabpanel">
-<div class="ac-panel-head sodh-toolbar cm-panel-header"><div><h2>System Attainment Threshold Settings</h2><p>Configure the institution-level target used to classify Course Outcomes.</p></div><span class="ac-setting-tag">System-wide setting</span></div>
-<div class="ac-threshold-body admin-settings-body"><div class="ac-threshold-box admin-settings-highlight"><small>CURRENT ATTAINMENT THRESHOLD</small><strong id="acCurrentThreshold">70%</strong><div class="ac-threshold-track"><span id="acThresholdBar" style="width:70%"></span></div></div>
-<form class="ac-threshold-form admin-settings-form" id="acThresholdForm"><label for="acThresholdInput">New threshold (%)</label><input class="ac-threshold-input" id="acThresholdInput" max="100" min="1" required="" step="1" type="number" value="70"/><p class="ac-help">Suggested institutional target: 70%. Changes affect status classification in this prototype; historical raw scores and individual calculations are not editable here.</p><div class="ac-form-actions"><button class="ac-outline-btn sodh-export-btn" id="acCancel" type="button">Cancel</button><button class="ac-save sodh-export-btn" type="submit">Save Threshold</button></div><p aria-live="polite" class="ac-help" id="acSaveMessage" role="status"></p></form>
-<div class="ac-note"><strong>Control note:</strong> threshold changes should be authorized, timestamped, and audit-logged in production. They do not permit manual alteration of an individual course's attainment value.</div>
+<div class="ac-panel-head sodh-toolbar cm-panel-header"><div><h2>Course Outcome Attainment Rules</h2><p>Read-only summary of how results are calculated and classified.</p></div><span class="ac-setting-tag">System calculation</span></div>
+<div class="ac-threshold-body admin-settings-body"><div class="ac-threshold-box admin-settings-highlight"><small>DEFAULT COURSE OUTCOME TARGET</small><strong>70%</strong><div class="ac-threshold-track"><span style="width:70%"></span></div></div>
+<div class="ac-note"><strong>Per-course targets:</strong> each Course Outcome uses the target configured in the approved syllabus; 70% is the default only. Admin cannot override course targets, raw scores, mappings, or calculated attainment.</div>
+<div class="ac-note"><strong>Calculation:</strong> a student's CO result is the average percentage across released assessments mapped to that CO. Class attainment is the percentage of scored students who meet the CO target. Unreleased assessments are excluded.</div>
 </div>
 </section>
 </main></div>

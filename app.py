@@ -1919,6 +1919,25 @@ def _normalize_assessment_outcome_ids(data, workspace):
     return outcome_ids, None
 
 
+ASSESSMENT_MAPPING_SETUP_ERROR = (
+    "Assessment database setup is incomplete. An administrator must apply "
+    "database/requirement_2_4_multi_co_assessment_mappings.sql in Supabase "
+    "after the base schema and Requirement 4 migration."
+)
+
+
+def _is_assessment_mapping_setup_error(error):
+    code = getattr(error, "code", None)
+    message = str(getattr(error, "message", error)).lower()
+    return (
+        code == "PGRST202"
+        and "create_assessment_activity_with_outcomes" in message
+    ) or (
+        code == "PGRST205"
+        and "assessment_activity_course_outcomes" in message
+    )
+
+
 def _faculty_assessment_workspace(section_id):
     if not get_faculty_section(section_id):
         return None
@@ -2096,6 +2115,9 @@ def _section_mapping_is_verified(section_id):
     return bool(rows and rows[0].get("status") == "verified")
 
 
+ATTAINMENT_ALGORITHM_VERSION = "co-threshold-rate-v1"
+
+
 def _calculate_section_attainment(section_id):
     """Calculate CO class and individual results from saved raw scores."""
     section_rows = (
@@ -2199,37 +2221,47 @@ def _calculate_section_attainment(section_id):
                 "can_view": verified,
                 "calculated_at": datetime.now(timezone.utc).isoformat(),
             })
-        attainment = round(sum(individual) / len(individual), 2) if individual else None
-        status = "awaiting_results" if attainment is None else (
-            "met" if attainment >= target else (
-                "needs_improvement" if attainment < target * 0.85 else "below_target"
-            )
-        )
         contributing = [
             {"id": activity["id"], "title": activity["title"],
              "activity_type": activity["activity_type"],
-             "released_at": activity.get("released_at")}
+             "released_at": activity.get("released_at"),
+             "released": bool(activity.get("released_at"))}
             for activity in activities
             if outcome_id in activity["course_outcome_ids"]
         ]
+        met_student_count = sum(
+            student_attainment >= target for student_attainment in individual
+        )
+        class_attainment = (
+            round(met_student_count / len(individual) * 100, 2)
+            if individual else None
+        )
+        status = "awaiting_results" if class_attainment is None else (
+            "met" if class_attainment >= target else (
+                "needs_improvement"
+                if class_attainment < target * 0.85 else "below_target"
+            )
+        )
         output.append({
             "course_outcome_id": outcome_id,
             "code": outcome["code"],
             "description": outcome["description"],
-            "attainment_percentage": attainment,
+            "attainment_percentage": class_attainment,
             "target_percentage": target,
             "status": status if individual else "awaiting_results",
-            "flagged": bool(individual and attainment < target),
+            "flagged": bool(individual and class_attainment < target),
             "student_count": len(individual),
+            "met_student_count": met_student_count,
             "activities": contributing,
         })
         class_records.append({
             "section_id": section_id,
             "course_outcome_id": outcome_id,
-            "attainment_percentage": attainment,
+            "attainment_percentage": class_attainment,
             "target_percentage": target,
             "status": status,
-            "flagged": bool(individual and attainment < target),
+            "flagged": bool(individual and class_attainment < target),
+            "version": ATTAINMENT_ALGORITHM_VERSION,
             "calculated_at": datetime.now(timezone.utc).isoformat(),
         })
     if class_records:
@@ -2257,7 +2289,9 @@ def get_faculty_assessment_workspace(section_id):
         return jsonify(workspace), 200
     except ValueError:
         return jsonify({"error": "Invalid section ID."}), 400
-    except Exception:
+    except Exception as error:
+        if _is_assessment_mapping_setup_error(error):
+            return jsonify({"error": ASSESSMENT_MAPPING_SETUP_ERROR}), 503
         app.logger.exception("Unable to load faculty assessment workspace")
         return jsonify({"error": "Assessment records could not be loaded."}), 500
 
@@ -2352,6 +2386,8 @@ def create_faculty_assessment(section_id):
     except Exception as error:
         if "gradebook is locked" in str(error).lower():
             return jsonify({"error": "This section's gradebook is locked."}), 409
+        if _is_assessment_mapping_setup_error(error):
+            return jsonify({"error": ASSESSMENT_MAPPING_SETUP_ERROR}), 503
         app.logger.exception("Unable to create faculty assessment")
         return jsonify({"error": "Assessment could not be created."}), 500
 
@@ -2452,6 +2488,8 @@ def update_faculty_assessment(assessment_id):
             return jsonify({
                 "error": "Maximum score cannot be lower than a score already entered."
             }), 409
+        if _is_assessment_mapping_setup_error(error):
+            return jsonify({"error": ASSESSMENT_MAPPING_SETUP_ERROR}), 503
         app.logger.exception("Unable to update faculty assessment")
         return jsonify({"error": "Assessment could not be updated."}), 500
 
@@ -2484,7 +2522,9 @@ def delete_faculty_assessment(assessment_id):
         return jsonify({"status": "deleted"}), 200
     except ValueError:
         return jsonify({"error": "Invalid assessment ID."}), 400
-    except Exception:
+    except Exception as error:
+        if _is_assessment_mapping_setup_error(error):
+            return jsonify({"error": ASSESSMENT_MAPPING_SETUP_ERROR}), 503
         app.logger.exception("Unable to delete faculty assessment")
         return jsonify({"error": "Assessment could not be deleted."}), 500
 
@@ -2998,6 +3038,503 @@ def get_faculty_section_attainment(section_id):
     except Exception:
         app.logger.exception("Unable to load faculty CO attainment")
         return jsonify({"error": "Attainment could not be calculated."}), 500
+
+
+@app.get("/api/attainment/overview")
+@require_roles("department-head", "admin-security")
+def get_attainment_overview():
+    if not admin_supabase:
+        return jsonify({"error": "Attainment records are unavailable."}), 503
+    try:
+        role = normalize_role_name(get_user_role(g.authenticated_user))
+        department_scope_id = None
+        if role == "department-head":
+            department_scope_id = _department_head_department_id(
+                g.authenticated_user.id
+            )
+            if not department_scope_id:
+                return jsonify({
+                    "error": "Your department profile is incomplete."
+                }), 409
+
+        filters = {
+            key: str(request.args.get(key, "")).strip()
+            for key in (
+                "academic_year_id", "department_id", "program_id",
+                "course_id", "section_id",
+            )
+        }
+        for key, value in filters.items():
+            if value:
+                try:
+                    filters[key] = str(UUID(value))
+                except ValueError:
+                    return jsonify({"error": "An attainment filter is invalid."}), 400
+
+        departments = (
+            admin_supabase.table("departments")
+            .select("id, name")
+            .order("name")
+            .execute()
+            .data
+            or []
+        )
+        if department_scope_id:
+            departments = [row for row in departments if row["id"] == department_scope_id]
+        department_ids = [row["id"] for row in departments]
+        course_department_ids = department_ids
+        if role != "department-head" and filters["department_id"]:
+            if filters["department_id"] not in department_ids:
+                return jsonify({"error": "Department was not found."}), 404
+            course_department_ids = [filters["department_id"]]
+
+        courses_query = admin_supabase.table("courses").select(
+            "id, code, title, department_id"
+        )
+        if course_department_ids:
+            courses_query = courses_query.in_("department_id", course_department_ids)
+        else:
+            courses_query = courses_query.eq(
+                "department_id", "00000000-0000-0000-0000-000000000000"
+            )
+        courses = courses_query.order("code").execute().data or []
+        course_by_id = {row["id"]: row for row in courses}
+        course_ids = list(course_by_id)
+
+        programs_query = admin_supabase.table("programs").select(
+            "id, name, code, department_id"
+        )
+        if course_department_ids:
+            programs_query = programs_query.in_("department_id", course_department_ids)
+        else:
+            programs_query = programs_query.eq(
+                "department_id", "00000000-0000-0000-0000-000000000000"
+            )
+        programs = programs_query.order("name").execute().data or []
+        program_by_id = {row["id"]: row for row in programs}
+        if filters["program_id"] and filters["program_id"] not in program_by_id:
+            return jsonify({"error": "Program is outside your access scope."}), 403
+
+        academic_years = (
+            admin_supabase.table("academic_years")
+            .select("id, name")
+            .order("name", desc=True)
+            .execute()
+            .data
+            or []
+        )
+        sections_query = admin_supabase.table("course_sections").select(
+            "id, course_id, academic_year_id, section_name, faculty_id"
+        )
+        if course_ids:
+            sections_query = sections_query.in_("course_id", course_ids)
+        else:
+            sections_query = sections_query.eq(
+                "course_id", "00000000-0000-0000-0000-000000000000"
+            )
+        if filters["academic_year_id"]:
+            sections_query = sections_query.eq(
+                "academic_year_id", filters["academic_year_id"]
+            )
+        if filters["course_id"]:
+            sections_query = sections_query.eq("course_id", filters["course_id"])
+        if filters["section_id"]:
+            sections_query = sections_query.eq("id", filters["section_id"])
+        sections = sections_query.execute().data or []
+        if filters["section_id"] and not sections:
+            return jsonify({"error": "Section is outside your access scope."}), 404
+        section_ids = [row["id"] for row in sections]
+
+        enrollments = (
+            admin_supabase.table("enrollments")
+            .select("section_id, student_profile_id")
+            .in_("section_id", section_ids)
+            .eq("enrollment_status", "active")
+            .execute()
+            .data
+            if section_ids else []
+        ) or []
+        profile_ids = list({
+            row["student_profile_id"] for row in enrollments
+            if row.get("student_profile_id")
+        })
+        profiles = (
+            admin_supabase.table("student_profiles")
+            .select("id, program_id")
+            .in_("id", profile_ids)
+            .execute()
+            .data
+            if profile_ids else []
+        ) or []
+        profile_by_id = {row["id"]: row for row in profiles}
+        if filters["program_id"]:
+            eligible_profiles = {
+                row["id"] for row in profiles
+                if row.get("program_id") == filters["program_id"]
+            }
+            eligible_sections = {
+                row["section_id"] for row in enrollments
+                if row["student_profile_id"] in eligible_profiles
+            }
+            sections = [
+                row for row in sections if row["id"] in eligible_sections
+            ]
+            section_ids = [row["id"] for row in sections]
+            enrollments = [
+                row for row in enrollments
+                if row["section_id"] in eligible_sections
+                and row["student_profile_id"] in eligible_profiles
+            ]
+        section_by_id = {row["id"]: row for row in sections}
+        enrollments = [
+            row for row in enrollments
+            if row["section_id"] in section_by_id
+        ]
+        enrollments_by_section = {}
+        for enrollment in enrollments:
+            enrollments_by_section.setdefault(
+                enrollment["section_id"], set()
+            ).add(enrollment["student_profile_id"])
+
+        outcome_rows = (
+            admin_supabase.table("course_outcomes")
+            .select("id, course_id, code, description, target_percentage")
+            .in_("course_id", course_ids)
+            .order("code")
+            .execute()
+            .data
+            if course_ids else []
+        ) or []
+        outcomes_by_course = {}
+        for outcome in outcome_rows:
+            outcomes_by_course.setdefault(outcome["course_id"], []).append(outcome)
+
+        saved_attainment = (
+            admin_supabase.table("co_attainment")
+            .select("section_id, course_outcome_id, version")
+            .in_("section_id", section_ids)
+            .execute()
+            .data
+            if section_ids else []
+        ) or []
+        saved_by_key = {
+            (row["section_id"], row["course_outcome_id"]): row
+            for row in saved_attainment
+        }
+        stale_sections = set()
+        for section in sections:
+            for outcome in outcomes_by_course.get(section["course_id"], []):
+                record = saved_by_key.get((section["id"], outcome["id"]))
+                if (
+                    not record
+                    or record.get("version") != ATTAINMENT_ALGORITHM_VERSION
+                ):
+                    stale_sections.add(section["id"])
+                    break
+        for section_id in stale_sections:
+            _calculate_section_attainment(section_id)
+
+        attainment_rows = (
+            admin_supabase.table("co_attainment")
+            .select(
+                "section_id, course_outcome_id, attainment_percentage, "
+                "target_percentage, status, flagged"
+            )
+            .in_("section_id", section_ids)
+            .execute()
+            .data
+            if section_ids else []
+        ) or []
+        attainment_by_key = {
+            (row["section_id"], row["course_outcome_id"]): row
+            for row in attainment_rows
+        }
+        activities = (
+            admin_supabase.table("assessment_activities")
+            .select(
+                "id, section_id, course_outcome_id, title, activity_type, "
+                "max_score, released_at"
+            )
+            .in_("section_id", section_ids)
+            .execute()
+            .data
+            if section_ids else []
+        ) or []
+        _assessment_outcomes_by_activity(activities)
+        activities_by_section = {}
+        for activity in activities:
+            activities_by_section.setdefault(
+                activity["section_id"], []
+            ).append(activity)
+
+        faculty_ids = list({
+            row["faculty_id"] for row in sections if row.get("faculty_id")
+        })
+        faculty_profiles = (
+            admin_supabase.table("faculty_profiles")
+            .select("id, user_id")
+            .in_("id", faculty_ids)
+            .execute()
+            .data
+            if faculty_ids else []
+        ) or []
+        faculty_user_ids = list({
+            row["user_id"] for row in faculty_profiles if row.get("user_id")
+        })
+        faculty_users = (
+            admin_supabase.table("users")
+            .select("id, full_name")
+            .in_("id", faculty_user_ids)
+            .execute()
+            .data
+            if faculty_user_ids else []
+        ) or []
+        full_name_by_user = {
+            row["id"]: row.get("full_name", "") for row in faculty_users
+        }
+        faculty_name_by_profile = {
+            row["id"]: full_name_by_user.get(row.get("user_id"), "")
+            for row in faculty_profiles
+        }
+        department_by_id = {row["id"]: row for row in departments}
+        gradebooks = (
+            admin_supabase.table("gradebooks")
+            .select("section_id, status")
+            .in_("section_id", section_ids)
+            .execute()
+            .data
+            if section_ids else []
+        ) or []
+        gradebook_by_section = {
+            row["section_id"]: row.get("status", "draft")
+            for row in gradebooks
+        }
+        mapping_reviews = (
+            admin_supabase.table("course_mapping_reviews")
+            .select("section_id, status")
+            .in_("section_id", section_ids)
+            .execute()
+            .data
+            if section_ids else []
+        ) or []
+        mapping_status_by_section = {
+            row["section_id"]: row.get("status", "pending_review")
+            for row in mapping_reviews
+        }
+        approval_by_section = {}
+        if role == "department-head":
+            activity_ids = [row["id"] for row in activities]
+            score_rows = (
+                admin_supabase.table("raw_assessment_scores")
+                .select("assessment_activity_id, student_profile_id")
+                .in_("assessment_activity_id", activity_ids)
+                .execute()
+                .data
+                if activity_ids else []
+            ) or []
+            score_keys = {
+                (row["assessment_activity_id"], row["student_profile_id"])
+                for row in score_rows
+            }
+            flags = (
+                admin_supabase.table("assessment_review_flags")
+                .select("section_id, status")
+                .in_("section_id", section_ids)
+                .in_("status", ["open", "responded"])
+                .execute()
+                .data
+                if section_ids else []
+            ) or []
+            open_flags_by_section = {}
+            for flag in flags:
+                open_flags_by_section[flag["section_id"]] = (
+                    open_flags_by_section.get(flag["section_id"], 0) + 1
+                )
+            for section in sections:
+                section_id = section["id"]
+                section_activities = activities_by_section.get(section_id, [])
+                active_student_ids = enrollments_by_section.get(section_id, set())
+                missing_score_count = sum(
+                    1
+                    for activity in section_activities
+                    for student_id in active_student_ids
+                    if (activity["id"], student_id) not in score_keys
+                )
+                below_target_count = sum(
+                    1
+                    for outcome in outcomes_by_course.get(section["course_id"], [])
+                    if (
+                        attainment_by_key.get((section_id, outcome["id"]), {})
+                        .get("flagged")
+                    )
+                )
+                mapping_status = mapping_status_by_section.get(
+                    section_id, "pending_review"
+                )
+                gradebook_status = gradebook_by_section.get(section_id, "draft")
+                open_query_count = open_flags_by_section.get(section_id, 0)
+                if gradebook_status == "locked":
+                    recommendation = "Locked; results finalized"
+                elif mapping_status != "verified":
+                    recommendation = "Verify mappings before CQI review"
+                elif missing_score_count or open_query_count:
+                    recommendation = "Resolve missing scores or open queries"
+                else:
+                    recommendation = "Ready for review"
+                approval_by_section[section_id] = {
+                    "missing_score_count": missing_score_count,
+                    "open_query_count": open_query_count,
+                    "below_target_count": below_target_count,
+                    "gradebook_status": gradebook_status,
+                    "mapping_status": mapping_status,
+                    "recommendation": recommendation,
+                }
+
+        rows = []
+        course_programs = {}
+        for section in sections:
+            course = course_by_id.get(section["course_id"], {})
+            department = department_by_id.get(course.get("department_id"), {})
+            section_program_ids = {
+                profile_by_id.get(profile_id, {}).get("program_id")
+                for profile_id in enrollments_by_section.get(section["id"], set())
+            }
+            section_programs = [
+                program_by_id[program_id]["name"]
+                for program_id in section_program_ids
+                if program_id in program_by_id
+            ]
+            course_programs.setdefault(course.get("id"), set()).update(
+                program_id for program_id in section_program_ids if program_id
+            )
+            section_activities = activities_by_section.get(section["id"], [])
+            approval = approval_by_section.get(section["id"], {})
+            for outcome in outcomes_by_course.get(section["course_id"], []):
+                attainment = attainment_by_key.get(
+                    (section["id"], outcome["id"]), {}
+                )
+                linked_activities = [
+                    activity for activity in section_activities
+                    if outcome["id"] in activity.get("course_outcome_ids", [])
+                ]
+                rows.append({
+                    "department_id": course.get("department_id"),
+                    "department_name": department.get("name", ""),
+                    "program": ", ".join(sorted(section_programs)),
+                    "course_id": course.get("id"),
+                    "course_code": course.get("code", ""),
+                    "course_title": course.get("title", ""),
+                    "section_id": section["id"],
+                    "section_name": section.get("section_name", ""),
+                    "academic_year_id": section.get("academic_year_id"),
+                    "faculty_name": faculty_name_by_profile.get(
+                        section.get("faculty_id"), "Unassigned"
+                    ) or "Unassigned",
+                    "course_outcome_id": outcome["id"],
+                    "code": outcome["code"],
+                    "description": outcome["description"],
+                    "attainment_percentage": attainment.get(
+                        "attainment_percentage"
+                    ),
+                    "target_percentage": float(
+                        outcome.get("target_percentage") or 70
+                    ),
+                    "status": attainment.get("status", "awaiting_results"),
+                    "flagged": bool(attainment.get("flagged", False)),
+                    "student_count": len(
+                        enrollments_by_section.get(section["id"], set())
+                    ),
+                    "activities": [{
+                        "title": activity.get("title", ""),
+                        "activity_type": activity.get("activity_type", ""),
+                        "released": bool(activity.get("released_at")),
+                    } for activity in linked_activities],
+                    **approval,
+                })
+
+        department_groups = {}
+        for row in rows:
+            group = department_groups.setdefault(row["department_id"], {
+                "id": row["department_id"],
+                "name": row["department_name"],
+                "program_ids": set(),
+                "course_ids": set(),
+                "total_cos": 0,
+                "on_target": 0,
+                "below_target": 0,
+                "attainments": [],
+            })
+            group["program_ids"].update(
+                course_programs.get(row["course_id"], set())
+            )
+            group["course_ids"].add(row["course_id"])
+            group["total_cos"] += 1
+            if row["status"] == "met":
+                group["on_target"] += 1
+            elif row["flagged"]:
+                group["below_target"] += 1
+            if row["attainment_percentage"] is not None:
+                group["attainments"].append(
+                    float(row["attainment_percentage"])
+                )
+        department_summaries = [{
+            "id": group["id"],
+            "name": group["name"],
+            "program_count": len(group["program_ids"]),
+            "course_count": len(group["course_ids"]),
+            "total_cos": group["total_cos"],
+            "on_target": group["on_target"],
+            "below_target": group["below_target"],
+            "average_attainment": (
+                round(sum(group["attainments"]) / len(group["attainments"]), 2)
+                if group["attainments"] else None
+            ),
+        } for group in department_groups.values()]
+        return jsonify({
+            "role": role,
+            "filters": {
+                "academic_years": academic_years,
+                "departments": departments,
+                "programs": programs,
+                "courses": [
+                    {"id": row["id"], "code": row["code"], "title": row["title"]}
+                    for row in courses
+                ],
+                "sections": [{
+                    "id": row["id"],
+                    "name": row["section_name"],
+                    "course_id": row["course_id"],
+                    "academic_year_id": row.get("academic_year_id"),
+                } for row in sections],
+            },
+            "metrics": {
+                "departments": len(department_summaries),
+                "on_target": sum(
+                    row["status"] == "met" for row in rows
+                ),
+                "below_target": sum(row["flagged"] for row in rows),
+            },
+            "departments_summary": department_summaries,
+            "rows": rows,
+            "approval_rows": [{
+                "section_id": section["id"],
+                "course_id": section["course_id"],
+                "course_code": course_by_id.get(
+                    section["course_id"], {}
+                ).get("code", ""),
+                "course_title": course_by_id.get(
+                    section["course_id"], {}
+                ).get("title", ""),
+                "section_name": section.get("section_name", ""),
+                "faculty_name": faculty_name_by_profile.get(
+                    section.get("faculty_id"), "Unassigned"
+                ) or "Unassigned",
+                **approval_by_section.get(section["id"], {}),
+            } for section in sections if role == "department-head"],
+        }), 200
+    except Exception:
+        app.logger.exception("Unable to load attainment overview")
+        return jsonify({"error": "Attainment overview could not be loaded."}), 500
 
 
 def _department_head_section(section_id, department_id):
@@ -4130,7 +4667,11 @@ def get_student_course_outcomes():
                     "attainment_percentage": record.get("attainment_percentage") if record else None,
                     "status": record.get("status") if record else "awaiting_results",
                     "target_percentage": float(outcome.get("target_percentage") or 70),
-                    "release_status": "Released" if record else "Awaiting Results",
+                    "release_status": (
+                        "Released"
+                        if record and record.get("attainment_percentage") is not None
+                        else "Not Released"
+                    ),
                 })
         return jsonify({"outcomes": results, "profile_complete": True}), 200
     except Exception:

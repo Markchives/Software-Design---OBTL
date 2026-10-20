@@ -87,7 +87,7 @@
             });
             content.appendChild(list);
             const note = document.createElement('p'); note.className = 'ac-breakdown-note';
-            note.textContent = 'Assessment weights and individual contribution calculations are not available in this demo.';
+            note.textContent = 'Only released mapped assessment results are included. Each scored student’s CO score is the average of their released assessment percentages; class attainment is the share meeting the CO target.';
             content.appendChild(note);
             previousFocus = button;
             modal.hidden = false;
@@ -122,14 +122,20 @@
     if (!page || !sectionSelect || !outcomeBody || !activityBody) return;
     async function load(sectionId) {
         outcomeBody.replaceChildren(); activityBody.replaceChildren();
-        if (!sectionId) return;
+        const summary = page.querySelectorAll('.ac-attainment-content > .so-summary-grid .so-summary-number');
+        if (summary.length >= 3) summary.forEach(item => { item.textContent = '—'; });
+        if (!sectionId) {
+            message.textContent = 'Select a course section to view its attainment.';
+            return;
+        }
         message.textContent = 'Calculating course outcomes...';
         try {
             const response = await fetch('/api/faculty/sections/' + encodeURIComponent(sectionId) + '/attainment', {
                 credentials: 'same-origin', headers: { Accept: 'application/json' }
             });
-            const data = await response.json().catch(() => ({}));
-            if (!response.ok) throw new Error(data.error || 'Attainment could not be loaded.');
+            const data = await response.json().catch(() => null);
+            if (!response.ok) throw new Error(data?.error || `Attainment request failed (HTTP ${response.status}).`);
+            if (!data) throw new Error(`The server returned an invalid response (HTTP ${response.status}).`);
             const section = data.section || {};
             window.syncEduMetricsWorkspaceSection?.(sectionId, section);
             const heading = page.querySelector('.cw-hero h2');
@@ -140,9 +146,20 @@
             (data.outcomes || []).forEach(item => {
                 const tr = document.createElement('tr');
                 const activities = (item.activities || []).map(activity => {
-                    const chip = document.createElement('span'); chip.className = 'ac-co-chip'; chip.textContent = activity.title; return chip;
+                    const chip = document.createElement('span');
+                    chip.className = 'ac-co-chip';
+                    chip.textContent = activity.title + (activity.released ? ' · Released' : ' · Not released');
+                    return chip;
                 });
-                const values = [item.code, item.description, activities, item.attainment_percentage == null ? 'Awaiting results' : Number(item.attainment_percentage).toFixed(1) + '%', Number(item.target_percentage).toFixed(1) + '%', item.status === 'met' ? 'Met' : item.status === 'awaiting_results' ? 'Awaiting results' : 'Needs improvement'];
+                const resultText = item.attainment_percentage == null
+                    ? 'Awaiting results'
+                    : Number(item.attainment_percentage).toFixed(1) + '% (' +
+                        item.met_student_count + '/' + item.student_count + ' students)';
+                const statusText = item.status === 'met' ? 'Met' :
+                    item.status === 'awaiting_results' ? 'Awaiting results' :
+                        item.status === 'needs_improvement' ? 'Needs improvement' : 'Below target';
+                const values = [item.code, item.description, activities, resultText,
+                    Number(item.target_percentage).toFixed(1) + '%', statusText];
                 values.forEach(value => {
                     const td = document.createElement('td');
                     if (Array.isArray(value)) value.forEach(chip => td.appendChild(chip)); else td.textContent = value;
@@ -156,14 +173,38 @@
             (data.assessments || []).forEach(item => {
                 const scores = Object.values(item.scores || {}).filter(score => score && score.percentage != null);
                 const average = scores.length ? scores.reduce((sum, score) => sum + Number(score.percentage), 0) / scores.length : null;
-                const values = [item.title, item.activity_type, scores.length + ' score(s) entered' + (average == null ? '' : ' · average ' + average.toFixed(1) + '%'), item.outcome_code || '—', scores.length ? 'Included in attainment' : 'Awaiting scores'];
+                const released = Boolean(item.released_at);
+                const values = [
+                    item.title,
+                    item.activity_type,
+                    scores.length + ' score(s) entered' +
+                        (average == null ? '' : ' · average ' + average.toFixed(1) + '%'),
+                    (item.outcome_codes || []).join(', ') || '—',
+                    released ? 'Included in attainment' : 'Not released · excluded'
+                ];
                 const tr = document.createElement('tr');
                 values.forEach(value => { const td = document.createElement('td'); td.textContent = value; tr.appendChild(td); });
                 activityBody.appendChild(tr);
             });
-            const summary = page.querySelectorAll('.ac-attainment-content > .so-summary-grid .so-summary-number');
             if (summary.length >= 3) { summary[0].textContent = String((data.outcomes || []).length); summary[1].textContent = String(onTarget); summary[2].textContent = String(belowTarget); }
-            message.textContent = 'Mapping status: ' + data.mapping_status + '. CO attainment recalculates whenever saved scores change.';
+            if (!(data.outcomes || []).length) {
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 7;
+                cell.textContent = 'No Course Outcomes are configured for this course.';
+                row.appendChild(cell);
+                outcomeBody.appendChild(row);
+            }
+            if (!(data.assessments || []).length) {
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 5;
+                cell.textContent = 'No assessment activities are configured for this section.';
+                row.appendChild(cell);
+                activityBody.appendChild(row);
+            }
+            message.textContent = 'Mapping status: ' + data.mapping_status +
+                '. Class attainment is the share of students with released mapped scores meeting each CO target.';
         } catch (error) { message.textContent = error.message; }
     }
     fetch('/api/faculty/sections', { credentials: 'same-origin', headers: { Accept: 'application/json' } })
@@ -9768,7 +9809,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 
-/* AC DEPARTMENT HEAD — independent tab, filter and assessment controller */
+/* AC DEPARTMENT HEAD — department-scoped attainment and gradebook readiness. */
 (function () {
     "use strict";
     function initAcDepartmentHead() {
@@ -9779,6 +9820,17 @@ document.addEventListener("DOMContentLoaded", function () {
         const panels = [byId("acDhPanelAttainment"), byId("acDhPanelApproval")];
         if (tabs.some(tab => !tab) || panels.some(panel => !panel)) return;
         page.dataset.acDhInitialized = "true";
+        const year = byId("acDhYear");
+        const program = byId("acDhProgram");
+        const course = byId("acDhCourse");
+        const section = byId("acDhSection");
+        const search = byId("acDhSearch");
+        const status = document.createElement("p");
+        status.id = "acDhStatus";
+        status.className = "ac-help";
+        status.setAttribute("role", "status");
+        status.setAttribute("aria-live", "polite");
+        byId("acDhPanelAttainment").before(status);
         function activate(index) {
             tabs.forEach((tab, i) => {
                 const selected = i === index;
@@ -9791,7 +9843,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
         tabs.forEach((tab, index) => {
-            tab.addEventListener("click", event => { event.preventDefault(); activate(index); });
+            tab.addEventListener("click", () => activate(index));
             tab.addEventListener("keydown", event => {
                 if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
                 event.preventDefault();
@@ -9800,65 +9852,197 @@ document.addEventListener("DOMContentLoaded", function () {
                 tabs[next].focus();
             });
         });
-        const search = byId("acDhSearch");
-        const course = byId("acDhCourse");
-        const section = byId("acDhSection");
-        const department = byId("acDhDepartment");
-        const program = byId("acDhProgram");
-        const year = byId("acDhYear");
-        const attainmentRows = [...byId("acDhAttainmentRows").rows];
-        const approvalRows = [...byId("acDhApprovalRows").rows];
+
+        function setOptions(select, items, label, valueKey, textForItem) {
+            const selected = select.value;
+            select.replaceChildren(new Option(label, ""));
+            items.forEach(item => select.add(new Option(textForItem(item), item[valueKey])));
+            if (items.some(item => item[valueKey] === selected)) select.value = selected;
+        }
+        function appendRow(tbody, values, attributes) {
+            const row = document.createElement("tr");
+            Object.entries(attributes || {}).forEach(([key, value]) => { row.dataset[key] = value; });
+            values.forEach(value => {
+                const cell = document.createElement("td");
+                cell.textContent = value == null || value === "" ? "—" : String(value);
+                row.appendChild(cell);
+            });
+            tbody.appendChild(row);
+            return row;
+        }
         function filterRows() {
             const term = search.value.trim().toLowerCase();
-            const courseValue = course.value;
-            const sectionValue = section.value;
-            function apply(rows) {
-                let visible = 0;
-                rows.forEach(row => {
-                    const matches = (!term || row.textContent.toLowerCase().includes(term)) &&
-                        (!courseValue || row.dataset.course === courseValue) &&
-                        (!sectionValue || row.dataset.section === sectionValue);
-                    row.hidden = !matches;
-                    if (matches) visible++;
+            const courseId = course.value;
+            const sectionId = section.value;
+            const apply = tbody => {
+                let count = 0;
+                [...tbody.rows].forEach(row => {
+                    const visible = (!term || row.textContent.toLowerCase().includes(term)) &&
+                        (!courseId || row.dataset.course === courseId) &&
+                        (!sectionId || row.dataset.section === sectionId);
+                    row.hidden = !visible;
+                    if (visible) count++;
                 });
-                return visible;
-            }
-            const visibleAttainment = apply(attainmentRows);
-            const visibleApproval = apply(approvalRows);
-            byId("acDhEmptyAttainment").hidden = visibleAttainment !== 0;
-            byId("acDhEmptyApproval").hidden = visibleApproval !== 0;
-            const filtered = attainmentRows.filter(row => !row.hidden);
-            byId("acDhTotal").textContent = String(filtered.length);
-            byId("acDhMet").textContent = String(filtered.filter(row => row.dataset.status === "met").length);
-            byId("acDhBelow").textContent = String(filtered.filter(row => row.dataset.status === "below").length);
+                return count;
+            };
+            const visibleOutcomes = apply(byId("acDhAttainmentRows"));
+            const visibleSections = apply(byId("acDhApprovalRows"));
+            byId("acDhEmptyAttainment").hidden = visibleOutcomes !== 0;
+            byId("acDhEmptyApproval").hidden = visibleSections !== 0;
+            const rows = [...byId("acDhAttainmentRows").rows].filter(row => !row.hidden);
+            byId("acDhTotal").textContent = String(rows.length);
+            byId("acDhMet").textContent = String(rows.filter(row => row.dataset.status === "met").length);
+            byId("acDhBelow").textContent = String(rows.filter(row => row.dataset.flagged === "true").length);
         }
-        [search, course, section].forEach(input => input.addEventListener(input === search ? "input" : "change", filterRows));
-        byId("acDhReset").addEventListener("click", () => {
-            search.value = "";
+        function render(data) {
+            setOptions(year, data.filters.academic_years || [], "All School Years", "id", item => item.name);
+            setOptions(program, data.filters.programs || [], "All Programs", "id",
+                item => [item.code, item.name].filter(Boolean).join(" · "));
+            setOptions(course, data.filters.courses || [], "All Courses", "id",
+                item => [item.code, item.title].filter(Boolean).join(" · "));
+            setOptions(section, data.filters.sections || [], "All Sections", "id",
+                item => item.name);
+            const department = (data.filters.departments || [])[0];
+            byId("acDhTotal").textContent = "0";
+            byId("acDhMet").textContent = "0";
+            byId("acDhBelow").textContent = "0";
+            const departmentTitle = page.querySelector(".ac-dh-course-title");
+            const departmentSubtitle = page.querySelector(".ac-dh-course-subtitle");
+            if (departmentTitle) departmentTitle.textContent = department?.name || "Department Attainment";
+            if (departmentSubtitle) departmentSubtitle.textContent = "Department-scoped CO results";
+
+            const attainmentBody = byId("acDhAttainmentRows");
+            attainmentBody.replaceChildren();
+            (data.rows || []).forEach(item => {
+                const attainment = item.attainment_percentage == null
+                    ? "Awaiting results"
+                    : Number(item.attainment_percentage).toFixed(1) + "%";
+                const statusLabel = item.status === "met" ? "On target" :
+                    item.status === "awaiting_results" ? "Awaiting results" : "Below target";
+                const activities = (item.activities || []).map(activity =>
+                    activity.title + " (" + (activity.released ? "released" : "not released") + ")"
+                ).join(", ") || "No mapped activities";
+                const row = appendRow(attainmentBody, [
+                    [item.course_code, item.course_title].filter(Boolean).join(" · "),
+                    item.section_name,
+                    item.faculty_name,
+                    item.code + " — " + item.description,
+                    activities,
+                    attainment,
+                    Number(item.target_percentage).toFixed(1) + "%",
+                    statusLabel,
+                    item.gradebook_status || "—"
+                ], {
+                    course: item.course_id || "",
+                    section: item.section_id || "",
+                    status: item.status || "awaiting_results",
+                    flagged: String(Boolean(item.flagged)),
+                    code: item.code || "",
+                    courseName: item.course_title || item.course_code || "",
+                    faculty: item.faculty_name || "",
+                    activities: JSON.stringify(item.activities || [])
+                });
+                const action = document.createElement("td");
+                const button = document.createElement("button");
+                button.className = "ac-dh-view";
+                button.type = "button";
+                button.textContent = "Breakdown";
+                action.appendChild(button);
+                row.appendChild(action);
+            });
+            const approvalBody = byId("acDhApprovalRows");
+            approvalBody.replaceChildren();
+            (data.approval_rows || []).forEach(item => {
+                appendRow(approvalBody, [
+                    [item.course_code, item.course_title].filter(Boolean).join(" · ") +
+                        " / " + item.section_name,
+                    item.faculty_name,
+                    item.missing_score_count,
+                    item.open_query_count,
+                    item.below_target_count,
+                    item.recommendation + " · Gradebook: " + item.gradebook_status +
+                        " · Mapping: " + item.mapping_status
+                ], { course: item.course_id || "", section: item.section_id || "" });
+            });
+            filterRows();
+        }
+        async function load() {
+            status.textContent = "Loading department attainment...";
+            const params = new URLSearchParams();
+            [
+                ["academic_year_id", year.value],
+                ["program_id", program.value],
+                ["course_id", course.value],
+                ["section_id", section.value]
+            ].forEach(([key, value]) => { if (value) params.set(key, value); });
+            try {
+                const response = await fetch("/api/attainment/overview?" + params, {
+                    credentials: "same-origin", headers: { Accept: "application/json" }
+                });
+                const data = await response.json().catch(() => null);
+                if (!response.ok) throw new Error(data?.error || `Attainment request failed (HTTP ${response.status}).`);
+                if (!data) throw new Error(`The server returned an invalid response (HTTP ${response.status}).`);
+                render(data);
+                status.textContent = (data.rows || []).length
+                    ? "Showing released-score results within your department scope."
+                    : "No Course Outcome attainment records are available for these filters.";
+            } catch (error) {
+                status.textContent = error.message;
+                byId("acDhAttainmentRows").replaceChildren();
+                byId("acDhApprovalRows").replaceChildren();
+                byId("acDhEmptyAttainment").hidden = true;
+                byId("acDhEmptyApproval").hidden = true;
+            }
+        }
+        year.addEventListener("change", () => {
             course.value = "";
             section.value = "";
-            department.value = "";
+            load();
+        });
+        program.addEventListener("change", () => {
+            course.value = "";
+            section.value = "";
+            load();
+        });
+        course.addEventListener("change", () => {
+            section.value = "";
+            load();
+        });
+        section.addEventListener("change", load);
+        search.addEventListener("input", filterRows);
+        byId("acDhReset").addEventListener("click", () => {
+            search.value = "";
+            year.value = "";
             program.value = "";
-            year.selectedIndex = 0;
-            filterRows();
+            course.value = "";
+            section.value = "";
+            load();
         });
         const dialog = byId("acDhDialog");
         page.addEventListener("click", event => {
             const button = event.target.closest(".ac-dh-view");
             if (!button || !button.closest("#acDhAttainmentRows")) return;
             const row = button.closest("tr");
-            byId("acDhDialogTitle").textContent = row.dataset.co + " — Assessment Breakdown";
-            byId("acDhDialogDetails").textContent =
-                row.dataset.course + " · " + row.dataset.section + "\n" +
-                "Faculty: " + row.dataset.faculty + "\n\n" +
-                row.dataset.assessments + "\n\n" +
-                "These are illustrative assessment inputs, not verified gradebook records.";
+            const activityList = JSON.parse(row.dataset.activities || "[]");
+            byId("acDhDialogTitle").textContent = row.dataset.code + " — Assessment Breakdown";
+            byId("acDhDialogDetails").textContent = [
+                row.dataset.courseName + " · " + row.cells[1].textContent,
+                "Faculty: " + row.dataset.faculty,
+                "Mapped assessments:",
+                ...activityList.map(activity =>
+                    "• " + activity.title + " — " +
+                    (activity.released ? "released and included" : "not released; excluded")
+                ),
+                "Only released mapped scores contribute to attainment."
+            ].join("\n");
             if (typeof dialog.showModal === "function") dialog.showModal();
         });
-        [byId("acDhDialogClose"), byId("acDhDialogDone")].forEach(button => button.addEventListener("click", () => dialog.close()));
+        [byId("acDhDialogClose"), byId("acDhDialogDone")].forEach(button =>
+            button.addEventListener("click", () => dialog.close())
+        );
         dialog.addEventListener("click", event => { if (event.target === dialog) dialog.close(); });
         activate(window.location.hash === "#gradebook-approval" ? 1 : 0);
-        filterRows();
+        load();
     }
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initAcDepartmentHead);
     else initAcDepartmentHead();
@@ -10166,79 +10350,219 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!document.body.classList.contains("ac-admin-page")) return;
 
         (() => {
+            const byId = id => document.getElementById(id);
             const tabs = [...document.querySelectorAll('.ac-tab')];
             const panels = [...document.querySelectorAll('.ac-panel')];
-            const dept = document.getElementById('acDepartment');
-            const status = document.getElementById('acStatus');
-            const search = document.getElementById('acSearch');
-            const courseRows = [...document.querySelectorAll('#acCourseTable tbody tr')];
-            const deptRows = [...document.querySelectorAll('#acDepartmentTable tbody tr')];
-            const input = document.getElementById('acThresholdInput');
-            const current = document.getElementById('acCurrentThreshold');
-            const bar = document.getElementById('acThresholdBar');
-            let threshold = 70;
+            const year = byId('acYear');
+            const dept = byId('acDepartment');
+            const program = byId('acProgram');
+            const attainmentStatus = byId('acStatus');
+            const search = byId('acSearch');
+            const deptBody = document.querySelector('#acDepartmentTable tbody');
+            const courseBody = document.querySelector('#acCourseTable tbody');
+            const statusMessage = byId('acAttainmentStatus');
+            let detailDepartmentId = '';
+            let overview = null;
             function showTab(id) {
                 tabs.forEach(tab => { const selected = tab.dataset.tab === id; tab.setAttribute('aria-selected', String(selected)); tab.classList.toggle('active', selected); tab.tabIndex = selected ? 0 : -1; });
                 panels.forEach(panel => panel.hidden = panel.id !== 'panel-' + id);
             }
             tabs.forEach(tab => tab.addEventListener('click', () => showTab(tab.dataset.tab)));
-            function applyFilters() {
-                const selected = dept.value;
-                const selectedStatus = status.value;
-                const q = search.value.toLowerCase().trim();
-                let visible = 0;
-                courseRows.forEach(row => {
-                    const score = Number(row.dataset.attain);
-                    const match = (!selected || row.dataset.dept === selected) && (!selectedStatus || (selectedStatus === 'on' ? score >= threshold : score < threshold)) && row.textContent.toLowerCase().includes(q);
-                    row.hidden = !match; if (match) visible++;
-                    const badge = row.querySelector('.ac-pill:not(.source)');
-                    badge.className = 'ac-pill ' + (score >= threshold ? 'good' : 'bad');
-                    badge.textContent = score >= threshold ? 'On Target' : 'Below Target';
-                    row.cells[5].textContent = threshold + '%';
-                });
-                deptRows.forEach(row => { row.hidden = !!selected && row.dataset.dept !== selected; });
-                document.getElementById('acResultCount').textContent = visible + ' result(s)';
-                document.getElementById('acCourseEmpty').hidden = visible !== 0;
-                document.getElementById('acDeptEmpty').hidden = deptRows.some(row => !row.hidden);
-            }
-            [dept, status, search].forEach(el => el.addEventListener(el === search ? 'input' : 'change', applyFilters));
             const deptDialog = document.getElementById('acDeptDialog');
             const deptDialogTitle = document.getElementById('acDeptDialogTitle');
             const deptDialogSummary = document.getElementById('acDeptDialogSummary');
             const deptDialogCourses = document.getElementById('acDeptDialogCourses');
-            let detailDepartment = '';
-            document.querySelectorAll('#acDepartmentTable [data-department]').forEach(button => button.addEventListener('click', () => {
+            function setOptions(select, items, label, valueKey, textForItem) {
+                const selected = select.value;
+                select.replaceChildren(new Option(label, ''));
+                items.forEach(item => select.add(new Option(textForItem(item), item[valueKey])));
+                if (items.some(item => item[valueKey] === selected)) select.value = selected;
+            }
+            function addCell(row, value) {
+                const cell = document.createElement('td');
+                cell.textContent = value == null || value === '' ? '—' : String(value);
+                row.appendChild(cell);
+                return cell;
+            }
+            function filteredCourseRows() {
+                const term = search.value.trim().toLowerCase();
+                return [...courseBody.rows].filter(row => {
+                    const scoreMatches = !attainmentStatus.value ||
+                        (attainmentStatus.value === 'on'
+                            ? row.dataset.status === 'met'
+                            : row.dataset.flagged === 'true');
+                    const matches = scoreMatches && (!term || row.textContent.toLowerCase().includes(term));
+                    row.hidden = !matches;
+                    return matches;
+                });
+            }
+            function applyFilters() {
+                const selectedDepartment = dept.value;
+                [...deptBody.rows].forEach(row => {
+                    row.hidden = Boolean(selectedDepartment) && row.dataset.department !== selectedDepartment;
+                });
+                const visibleCourses = filteredCourseRows();
+                byId('acResultCount').textContent = visibleCourses.length + ' result(s)';
+                byId('acCourseEmpty').hidden = visibleCourses.length !== 0;
+                byId('acDeptEmpty').hidden = [...deptBody.rows].some(row => !row.hidden);
+                const header = document.querySelector('.ac-overview-stat p');
+                const selectedYear = year.selectedOptions[0]?.textContent || 'All academic years';
+                if (header) header.textContent = selectedYear + ' • ' +
+                    (dept.selectedOptions[0]?.textContent || 'All departments') + ' • Read-only results';
+            }
+            function render(data) {
+                overview = data;
+                setOptions(year, data.filters.academic_years || [], 'All academic years', 'id', item => item.name);
+                setOptions(dept, data.filters.departments || [], 'All departments', 'id', item => item.name);
+                setOptions(program, data.filters.programs || [], 'All programs', 'id',
+                    item => [item.code, item.name].filter(Boolean).join(' · '));
+                deptBody.replaceChildren();
+                (data.departments_summary || []).forEach(item => {
+                    const row = document.createElement('tr');
+                    row.dataset.department = item.id;
+                    [
+                        item.name,
+                        item.program_count,
+                        item.course_count,
+                        item.total_cos,
+                        item.on_target,
+                        item.below_target,
+                        item.average_attainment == null ? 'Awaiting results' : Number(item.average_attainment).toFixed(1) + '%'
+                    ].forEach(value => addCell(row, value));
+                    const actionCell = document.createElement('td');
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'ac-outline-btn sodh-export-btn';
+                    button.dataset.department = item.id;
+                    button.textContent = 'View Details';
+                    actionCell.appendChild(button);
+                    row.appendChild(actionCell);
+                    deptBody.appendChild(row);
+                });
+                courseBody.replaceChildren();
+                (data.rows || []).forEach(item => {
+                    const row = document.createElement('tr');
+                    row.dataset.department = item.department_id || '';
+                    row.dataset.status = item.status || 'awaiting_results';
+                    row.dataset.flagged = String(Boolean(item.flagged));
+                    row.dataset.attain = item.attainment_percentage == null ? '' : String(item.attainment_percentage);
+                    const statusText = item.status === 'met' ? 'On Target' :
+                        item.status === 'awaiting_results' ? 'Awaiting Results' :
+                            item.status === 'needs_improvement' ? 'Needs Improvement' : 'Below Target';
+                    [
+                        item.department_name,
+                        [item.course_code, item.course_title, item.section_name].filter(Boolean).join(' · '),
+                        item.faculty_name,
+                        item.code + ' — ' + item.description,
+                        item.attainment_percentage == null ? 'Awaiting results' : Number(item.attainment_percentage).toFixed(1) + '%',
+                        Number(item.target_percentage).toFixed(1) + '%',
+                        statusText,
+                        'Released assessment results'
+                    ].forEach(value => addCell(row, value));
+                    courseBody.appendChild(row);
+                });
+                const summaries = document.querySelectorAll('.ra-admin-summary .ra-admin-stat-value');
+                if (summaries.length >= 3) {
+                    summaries[0].textContent = String(data.metrics?.departments ?? 0);
+                    summaries[1].textContent = String(data.metrics?.on_target ?? 0);
+                    summaries[2].textContent = String(data.metrics?.below_target ?? 0);
+                }
+                const totalCourse = byId('acResultCount');
+                if (totalCourse) totalCourse.textContent = String((data.rows || []).length) + ' result(s)';
+                applyFilters();
+            }
+            async function load() {
+                statusMessage.textContent = 'Loading attainment records...';
+                const params = new URLSearchParams();
+                [
+                    ['academic_year_id', year.value],
+                    ['department_id', dept.value],
+                    ['program_id', program.value]
+                ].forEach(([key, value]) => { if (value) params.set(key, value); });
+                try {
+                    const response = await fetch('/api/attainment/overview?' + params, {
+                        credentials: 'same-origin', headers: { Accept: 'application/json' }
+                    });
+                    const data = await response.json().catch(() => null);
+                    if (!response.ok) throw new Error(data?.error || `Attainment request failed (HTTP ${response.status}).`);
+                    if (!data) throw new Error(`The server returned an invalid response (HTTP ${response.status}).`);
+                    render(data);
+                    statusMessage.textContent = (data.rows || []).length
+                        ? 'Showing read-only attainment calculated from released assessment results.'
+                        : 'No Course Outcome attainment records are available for these filters.';
+                } catch (error) {
+                    statusMessage.textContent = error.message;
+                    deptBody.replaceChildren();
+                    courseBody.replaceChildren();
+                    byId('acDeptEmpty').hidden = true;
+                    byId('acCourseEmpty').hidden = true;
+                }
+            }
+            year.addEventListener('change', load);
+            dept.addEventListener('change', () => {
+                program.value = '';
+                load();
+            });
+            program.addEventListener('change', load);
+            [attainmentStatus, search].forEach(input =>
+                input.addEventListener(input === search ? 'input' : 'change', applyFilters)
+            );
+            deptBody.addEventListener('click', event => {
+                const button = event.target.closest('[data-department]');
+                if (!button || !button.closest('#acDepartmentTable')) return;
                 const row = button.closest('tr');
                 if (!row || !deptDialog) return;
-                detailDepartment = button.dataset.department;
-                deptDialogTitle.textContent = detailDepartment + ' — Attainment Details';
+                detailDepartmentId = row.dataset.department;
+                deptDialogTitle.textContent = row.cells[0].textContent + ' — Attainment Details';
                 deptDialogSummary.replaceChildren();
-                [['Programs', row.cells[1].textContent.trim()], ['Total COs', row.cells[3].textContent.trim()], ['Average Attainment', row.cells[6].querySelector('strong')?.textContent.trim() || '—']].forEach(([label, value]) => {
+                [['Programs', row.cells[1].textContent], ['Courses', row.cells[2].textContent],
+                    ['Total COs', row.cells[3].textContent], ['On Target', row.cells[4].textContent],
+                    ['Below Target', row.cells[5].textContent], ['Average Attainment', row.cells[6].textContent]
+                ].forEach(([label, value]) => {
                     const card = document.createElement('div');
                     const caption = document.createElement('small'); caption.textContent = label;
                     const number = document.createElement('strong'); number.textContent = value;
                     card.append(caption, number); deptDialogSummary.append(card);
                 });
                 deptDialogCourses.replaceChildren();
-                const matches = courseRows.filter(course => course.dataset.dept === detailDepartment);
-                matches.forEach(course => {
-                    const item = document.createElement('div'); item.className = 'ac-dialog-course';
-                    const name = document.createElement('strong'); name.textContent = course.cells[1].textContent.trim().replace(/\s+/g, ' ');
-                    const detail = document.createElement('small'); detail.textContent = course.cells[3].textContent.trim().replace(/\s+/g, ' ') + ' · ' + course.cells[4].textContent.trim() + ' attainment';
-                    item.append(name, detail); deptDialogCourses.append(item);
-                });
-                if (!matches.length) { const empty = document.createElement('p'); empty.textContent = 'No individual course records are available in this demo for this department.'; deptDialogCourses.append(empty); }
+                (overview?.rows || []).filter(item => item.department_id === detailDepartmentId)
+                    .forEach(item => {
+                        const entry = document.createElement('div');
+                        entry.className = 'ac-dialog-course';
+                        const title = document.createElement('strong');
+                        title.textContent = [item.course_code, item.course_title, item.section_name, item.code]
+                            .filter(Boolean).join(' · ');
+                        const detail = document.createElement('small');
+                        detail.textContent = item.attainment_percentage == null
+                            ? 'Awaiting released results'
+                            : Number(item.attainment_percentage).toFixed(1) + '% attainment · ' +
+                                Number(item.target_percentage).toFixed(1) + '% target';
+                        entry.append(title, detail);
+                        deptDialogCourses.append(entry);
+                    });
                 deptDialog.showModal();
-            }));
+            });
             ['acDeptDialogClose', 'acDeptDialogDismiss'].forEach(id => document.getElementById(id)?.addEventListener('click', () => deptDialog.close()));
             deptDialog?.addEventListener('click', event => { if (event.target === deptDialog) deptDialog.close(); });
             document.getElementById('acDeptDialogViewCourses')?.addEventListener('click', () => {
-                dept.value = detailDepartment; showTab('courses'); applyFilters(); deptDialog.close();
+                dept.value = detailDepartmentId; showTab('courses'); deptDialog.close(); load();
             });
-            document.getElementById('acCancel').addEventListener('click', () => { input.value = threshold; document.getElementById('acSaveMessage').textContent = ''; });
-            document.getElementById('acThresholdForm').addEventListener('submit', e => { e.preventDefault(); const value = Number(input.value); if (!Number.isInteger(value) || value < 1 || value > 100) { document.getElementById('acSaveMessage').textContent = 'Enter a whole number from 1 to 100.'; return; } threshold = value; current.textContent = value + '%'; bar.style.width = value + '%'; document.getElementById('acSaveMessage').textContent = 'Threshold updated for this page preview only.'; applyFilters(); });
-            document.querySelectorAll('[data-export]').forEach(button => button.addEventListener('click', () => { const table = document.getElementById(button.dataset.export === 'departments' ? 'acDepartmentTable' : 'acCourseTable'); const lines = [...table.rows].filter(row => !row.hidden).map(row => [...row.cells].slice(0, button.dataset.export === 'departments' ? -1 : undefined).map(cell => '"' + cell.innerText.replaceAll('"', '""').replaceAll('\n', ' ').trim() + '"').join(',')); const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'edumetrics-' + button.dataset.export + '-attainment.csv'; a.click(); URL.revokeObjectURL(url); }));
-            applyFilters();
+            document.querySelectorAll('[data-export]').forEach(button => button.addEventListener('click', () => {
+                const table = document.getElementById(button.dataset.export === 'departments' ? 'acDepartmentTable' : 'acCourseTable');
+                const lines = [...table.rows].filter(row => !row.hidden).map(row =>
+                    [...row.cells].slice(0, button.dataset.export === 'departments' ? -1 : undefined)
+                        .map(cell => '"' + cell.innerText.replaceAll('"', '""').replaceAll('\n', ' ').trim() + '"')
+                        .join(',')
+                );
+                const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const anchor = document.createElement('a');
+                anchor.href = url;
+                anchor.download = 'edumetrics-' + button.dataset.export + '-attainment.csv';
+                anchor.click();
+                URL.revokeObjectURL(url);
+            }));
+            load();
         })();
 
     }
