@@ -1305,6 +1305,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     record_id TEXT,
     details TEXT,
     ip_address TEXT,
+    level TEXT NOT NULL DEFAULT 'INFO',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -1325,3 +1326,4 @@ CREATE INDEX IF NOT EXISTS idx_student_co_attainment_student_id ON student_co_at
 CREATE INDEX IF NOT EXISTS idx_cqi_action_plans_section_id ON cqi_action_plans (section_id);
 CREATE INDEX IF NOT EXISTS idx_gradebooks_status ON gradebooks (status);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs (user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs (created_at DESC);

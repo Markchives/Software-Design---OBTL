@@ -10582,17 +10582,93 @@ document.addEventListener("DOMContentLoaded", function () {
     else init();
 })();
 
-/* GL Admin — frontend page controller */
+/* GL Admin — live system history */
 (function () {
-    function init() {
+    async function init() {
         if (!document.body.classList.contains("gl-admin-page")) return;
 
-        const sections = [...document.querySelectorAll('[data-panel]')]; document.querySelectorAll('[data-tab]').forEach(button => button.addEventListener('click', () => { document.querySelectorAll('[data-tab]').forEach(b => { b.setAttribute('aria-selected', String(b === button)); b.classList.toggle('active', b === button) }); sections.forEach(s => s.hidden = s.dataset.panel !== button.dataset.tab) })); document.querySelectorAll('.gl-admin-query,.gl-admin-level').forEach(input => input.addEventListener('input', () => { const panel = input.closest('[data-panel]'); const q = (panel.querySelector('.gl-admin-query')?.value || '').toLowerCase(); const level = (panel.querySelector('.gl-admin-level')?.value || '').toLowerCase(); panel.querySelectorAll('tbody tr').forEach(row => { const t = row.innerText.toLowerCase(); row.hidden = !(t.includes(q) && t.includes(level)) }) })); document.querySelectorAll('[data-export]').forEach(button => button.addEventListener('click', () => { const panel = button.closest('[data-panel]'); const lines = [...panel.querySelectorAll('tr')].filter(r => !r.hidden).map(r => [...r.querySelectorAll('th,td')].map(c => '"' + c.innerText.replaceAll('"', '""').replaceAll('\n', ' ') + '"').join(',')); const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'edumetrics-' + panel.dataset.panel + '-sample.csv'; a.click(); URL.revokeObjectURL(url) })); const modal = document.getElementById('glDialog'); document.querySelectorAll('[data-detail]').forEach(button => button.addEventListener('click', () => { const cells = [...button.closest('tr').cells]; document.getElementById('glDialogTitle').textContent = button.dataset.detail.startsWith('reset') ? 'Password Reset Request' : 'Operation Details'; const labels = button.dataset.detail.startsWith('reset') ? ['Request ID', 'User', 'Requested At', 'Verification', 'Status', 'Reviewed By'] : ['Timestamp', 'Actor', 'Operation', 'Module', 'Record ID', 'Result']; document.getElementById('glDialogBody').replaceChildren(...cells.slice(0, labels.length).map((cell, i) => { const box = document.createElement('div'); const small = document.createElement('small'); small.textContent = labels[i]; const strong = document.createElement('strong'); strong.textContent = cell.innerText; box.append(small, strong); return box })); modal.hidden = false })); document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => modal.hidden = true)); modal.addEventListener('click', e => { if (e.target === modal) modal.hidden = true }); document.addEventListener('keydown', e => { if (e.key === 'Escape') modal.hidden = true });
+        const rows = document.getElementById("glAdminLogRows");
+        const status = document.getElementById("glAdminStatus");
+        const count = document.getElementById("glAdminLogCount");
+        const search = document.querySelector(".gl-admin-query");
+        const level = document.querySelector(".gl-admin-level");
+        const panel = document.querySelector('[data-panel="logs"]');
+        if (!rows || !panel) return;
+
+        function filterRows() {
+            const query = (search?.value || "").trim().toLowerCase();
+            const selectedLevel = (level?.value || "").toUpperCase();
+            rows.querySelectorAll("tr[data-event]").forEach(row => {
+                row.hidden = !(row.textContent.toLowerCase().includes(query)
+                    && (!selectedLevel || row.dataset.level === selectedLevel));
+            });
+        }
+
+        search?.addEventListener("input", filterRows);
+        level?.addEventListener("change", filterRows);
+        panel.querySelector('[data-export="logs"]')?.addEventListener("click", () => {
+            const lines = [...panel.querySelectorAll("table tr")]
+                .filter(row => !row.hidden)
+                .map(row => [...row.querySelectorAll("th,td")]
+                    .map(cell => '"' + cell.innerText.replaceAll('"', '""').replaceAll("\n", " ") + '"').join(","));
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(new Blob([lines.join("\r\n")], { type: "text/csv;charset=utf-8" }));
+            link.href = url;
+            link.download = "edumetrics-system-history.csv";
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        });
+
+        try {
+            const response = await fetch("/api/admin/system-history", {
+                credentials: "same-origin",
+                headers: { Accept: "application/json" }
+            });
+            const payload = await response.json();
+            if (!response.ok) throw new Error(payload.error || "Could not load system history.");
+
+            const events = Array.isArray(payload.events) ? payload.events : [];
+            count.textContent = String(payload.count ?? events.length);
+            rows.replaceChildren();
+            for (const event of events) {
+                const row = document.createElement("tr");
+                row.dataset.event = "true";
+                row.dataset.level = String(event.level || "INFO").toUpperCase();
+                const timestamp = event.timestamp ? new Date(event.timestamp).toLocaleString() : "—";
+                for (const value of [timestamp, event.level || "INFO", event.event, event.actor, event.record, event.details]) {
+                    const cell = document.createElement("td");
+                    cell.textContent = value == null || value === "" ? "—" : String(value);
+                    row.appendChild(cell);
+                }
+                rows.appendChild(row);
+            }
+            if (!events.length) {
+                const row = document.createElement("tr");
+                row.className = "gl-admin-empty-row";
+                const cell = document.createElement("td");
+                cell.colSpan = 6;
+                cell.textContent = "No system history has been recorded yet.";
+                row.appendChild(cell);
+                rows.appendChild(row);
+            }
+            status.textContent = `Showing ${events.length} most recent system event${events.length === 1 ? "" : "s"}.`;
+            filterRows();
+        } catch (error) {
+            count.textContent = "0";
+            rows.replaceChildren();
+            const row = document.createElement("tr");
+            const cell = document.createElement("td");
+            cell.colSpan = 6;
+            cell.textContent = "System history could not be loaded.";
+            row.appendChild(cell);
+            rows.appendChild(row);
+            status.textContent = error.message;
+        }
     }
+
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
     else init();
 })();
-
 /* RP Admin — frontend page controller */
 (function () {
     function init() {
