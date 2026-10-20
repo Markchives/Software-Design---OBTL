@@ -978,6 +978,11 @@ def create_department_offering():
         message = str(error).lower()
         if "duplicate key" in message or "unique" in message:
             return jsonify({"error": "That section name already exists for this course and term."}), 409
+        if 'column reference "department_id" is ambiguous' in message:
+            app.logger.exception("Course-offering RPC has an ambiguous department identifier")
+            return jsonify({
+                "error": "The database offering function needs an update. Apply database/academic_offering_rpc_fix.sql in the Supabase SQL Editor, then retry."
+            }), 503
         app.logger.exception("Unable to create course offering")
         return jsonify({"error": "Course offering could not be created."}), 500
 
