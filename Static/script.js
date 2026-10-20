@@ -1354,66 +1354,6 @@ function toggleLoginPassword() {
     togglePassword("loginPassword", document.querySelector(".password-toggle"));
 }
 
-/* Registration: use the existing department field for the role-specific dropdown. */
-(function () {
-    function initializeRegistrationChoice() {
-        if (!document.body.classList.contains('registration-page')) return;
-        const field = document.getElementById('department');
-        if (!field || field.tagName !== 'INPUT') return;
-        const role = new URLSearchParams(window.location.search).get('role') ||
-            sessionStorage.getItem('selectedRole') || 'student';
-        const engineeringPrograms = [
-            ['BSCE', 'BS Civil Engineering'],
-            ['BSCpE', 'BS Computer Engineering'],
-            ['BSEE', 'BS Electrical Engineering'],
-            ['BSECE', 'BS Electronics Engineering'],
-            ['BSME', 'BS Mechanical Engineering'],
-            ['BSIE', 'BS Industrial Engineering'],
-            ['BSChE', 'BS Chemical Engineering']
-        ];
-        const departments = [
-            ['College of Engineering', 'College of Engineering'],
-            ['College of Computer Studies', 'College of Computer Studies'],
-            ['College of Business and Accountancy', 'College of Business and Accountancy'],
-            ['College of Arts and Sciences', 'College of Arts and Sciences'],
-            ['College of Education', 'College of Education'],
-            ['College of Architecture', 'College of Architecture'],
-            ['College of Tourism and Hospitality Management', 'College of Tourism and Hospitality Management']
-        ];
-        const isAdmin = role === 'admin-security';
-        const isStaff = role === 'faculty' || role === 'department-head' || role === 'dept-head';
-        if (!isAdmin && !isStaff && role !== 'student') return;
-        const label = isAdmin ? 'Select Role' : isStaff ? 'Select Department' : 'Select Engineering Program';
-        const options = isAdmin ? [
-            ['IT Administrator', 'IT Administrator'],
-            ['Systems Administrator', 'Systems Administrator'],
-            ['Network Administrator', 'Network Administrator'],
-            ['IT Security Officer', 'IT Security Officer'],
-            ['Technical Support Specialist', 'Technical Support Specialist'],
-            ['Database Administrator', 'Database Administrator']
-        ] : isStaff ? departments : engineeringPrograms;
-        const select = document.createElement('select');
-        for (const attribute of field.attributes) {
-            if (!['type', 'placeholder', 'autocomplete', 'value'].includes(attribute.name)) {
-                select.setAttribute(attribute.name, attribute.value);
-            }
-        }
-        select.setAttribute('aria-label', label);
-        select.required = true;
-        const placeholder = new Option(label, '');
-        placeholder.disabled = true;
-        placeholder.selected = true;
-        select.add(placeholder);
-        options.forEach(([value, text]) => select.add(new Option(text, value)));
-        field.replaceWith(select);
-    }
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializeRegistrationChoice);
-    } else {
-        initializeRegistrationChoice();
-    }
-})();
-
 /* REGISTRATION PASSWORD */
 function toggleSignupPassword(inputId, button) {
     togglePassword(inputId, button);
@@ -6280,17 +6220,23 @@ document.addEventListener("DOMContentLoaded", function () {
         menu.className = 'so-account-menu';
         menu.hidden = true;
         const profile = document.createElement('a');
+        const templatesRoot = window.location.pathname.split('/Templates/')[0];
         const currentFile = decodeURIComponent(window.location.pathname).split('/').pop().toLowerCase();
+        const normalizeMenuRole = value => ({ 'department-head': 'dept-head', 'department_head': 'dept-head', 'admin-security': 'admin' }[value] || value);
         const roleFromPage = /(?:^|-)admin(?:\.html)?$/.test(currentFile.replace(/\.html$/, '')) || document.body.classList.contains('cm-admin-page') || /-admin-page/.test(document.body.className)
             ? 'admin'
             : /-dept-head(?:\.html)?$/.test(currentFile) ? 'dept-head'
                 : /-faculty(?:\.html)?$/.test(currentFile) ? 'faculty'
                     : '';
+        const menuRole = normalizeMenuRole(roleFromPage || new URLSearchParams(location.search).get('role') || sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || document.body.dataset.role || 'student');
         if (roleFromPage) {
             sessionStorage.setItem('edumetricsRole', roleFromPage);
             sessionStorage.setItem('userRole', roleFromPage);
         }
-        const accountUrl = new URL('/account-settings', window.location.origin);
+        const accountUrl = new URL(window.location.pathname.includes('/Templates/')
+            ? templatesRoot + '/Templates/main/account-settings.html'
+            : '/account-settings', window.location.origin);
+        accountUrl.searchParams.set('role', menuRole);
         profile.href = accountUrl.href;
         profile.textContent = 'Profile';
         const logout = document.createElement('a');
@@ -6472,7 +6418,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!page) return;
         const normalize = value => ({ 'department-head': 'dept-head', 'department_head': 'dept-head', 'depthead': 'dept-head', 'admin-security': 'admin' }[value] || value);
         const params = new URLSearchParams(location.search);
-        const raw = page.dataset.role || params.get('role') || sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || sessionStorage.getItem('verifiedRole') || 'student';
+        const raw = params.get('role') || sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || sessionStorage.getItem('verifiedRole') || page.dataset.role || 'student';
         const role = normalize(raw.toLowerCase());
         const selected = ['student', 'faculty', 'dept-head', 'admin'].includes(role) ? role : 'student';
         const roleNames = { student: 'Student', faculty: 'Faculty', 'dept-head': 'Department Head', admin: 'Admin' };
@@ -7845,4 +7791,1541 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initPasswordRecovery);
     else initPasswordRecovery();
+})();
+
+/* Registration page: role-aware fields, API options and validation (shared). */
+(function () {
+  if (!document.getElementById("registrationForm")) return;
+
+
+        /* ROLE */
+        const registrationParams =
+            new URLSearchParams(
+                window.location.search
+            );
+
+        const validRegistrationRoles = [
+            "student",
+            "faculty",
+            "department-head",
+            "admin-security"
+        ];
+
+        const registrationRoleNames = {
+            "student":
+                "Student",
+
+            "faculty":
+                "Faculty",
+
+            "department-head":
+                "Department Head",
+
+            "admin-security":
+                "Admin & Security"
+
+        };
+
+        const requestedRegistrationRole =
+            registrationParams.get("role") ||
+            sessionStorage.getItem("selectedRole") ||
+            "student";
+
+        let currentRegistrationRole =
+            validRegistrationRoles.includes(
+                requestedRegistrationRole
+            )
+                ? requestedRegistrationRole
+                : "student";
+
+        const registrationHeaderRole =
+            document.getElementById(
+                "registrationHeaderRole"
+            );
+
+        let registrationOptionsRequest = 0;
+
+        function resetSelect(select, placeholderText) {
+            if (!select) return;
+            const placeholder = document.createElement("option");
+            placeholder.value = "";
+            placeholder.disabled = true;
+            placeholder.selected = true;
+            placeholder.textContent = placeholderText;
+            select.replaceChildren(placeholder);
+        }
+
+        async function loadRegistrationOptions(role) {
+            const select = document.getElementById("department");
+            const error = document.getElementById("departmentError");
+            const studentDepartment = document.getElementById("studentDepartment");
+            const studentDepartmentError = document.getElementById("studentDepartmentError");
+            if (!select) return;
+
+            const requestId = ++registrationOptionsRequest;
+            resetSelect(select, role === "student" ? "Select Program" : "Select College");
+            select.disabled = role === "student";
+            if (error) error.textContent = "";
+            if (studentDepartmentError) studentDepartmentError.textContent = "";
+
+            if (role === "admin-security") return;
+
+            try {
+                if (role === "student") {
+                    resetSelect(studentDepartment, "Select College");
+                    studentDepartment.disabled = true;
+                }
+                const response = await fetch(
+                    "/api/registration-options/" + encodeURIComponent(role),
+                    { headers: { Accept: "application/json" }, credentials: "same-origin" }
+                );
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.error || "Registration options could not be loaded.");
+                }
+                if (requestId !== registrationOptionsRequest) return;
+
+                const optionsSelect = role === "student" ? studentDepartment : select;
+                (result.options || []).forEach(item => {
+                    optionsSelect.add(new Option(item.label, role === "student" ? item.id : item.value));
+                });
+
+                if (!result.options || !result.options.length) {
+                    throw new Error("No options are configured for this role yet.");
+                }
+                if (role === "student") studentDepartment.disabled = false;
+                else select.disabled = false;
+            } catch (requestError) {
+                if (requestId === registrationOptionsRequest && error) {
+                    if (role === "student" && studentDepartmentError) {
+                        studentDepartmentError.textContent = requestError.message;
+                    } else {
+                        error.textContent = requestError.message;
+                    }
+                }
+            }
+        }
+
+        async function loadStudentPrograms(departmentId) {
+            const select = document.getElementById("department");
+            const error = document.getElementById("departmentError");
+            const requestId = ++registrationOptionsRequest;
+            resetSelect(select, departmentId ? "Loading programs..." : "Select Program");
+            select.disabled = true;
+            if (error) error.textContent = "";
+            if (!departmentId) return;
+
+            try {
+                const response = await fetch(
+                    "/api/registration-options/student/" +
+                    encodeURIComponent(departmentId) + "/programs",
+                    { headers: { Accept: "application/json" }, credentials: "same-origin" }
+                );
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.error || "Programs could not be loaded.");
+                }
+                if (requestId !== registrationOptionsRequest) return;
+                resetSelect(select, "Select Program");
+                (result.options || []).forEach(item => {
+                    select.add(new Option(item.label, item.id));
+                });
+                if (!result.options || !result.options.length) {
+                    throw new Error("No programs are configured for this college yet.");
+                }
+                select.disabled = false;
+            } catch (requestError) {
+                if (requestId === registrationOptionsRequest && error) {
+                    error.textContent = requestError.message;
+                }
+            }
+        }
+
+        function updateRegistrationRole(role) {
+            currentRegistrationRole =
+                validRegistrationRoles.includes(role)
+                    ? role
+                    : "student";
+
+            /* UPDATE ROLE IN HEADER */
+            if (registrationHeaderRole) {
+                registrationHeaderRole.textContent =
+                    registrationRoleNames[
+                    currentRegistrationRole
+                    ];
+            }
+
+            /* UPDATE ROLE-SPECIFIC REGISTRATION FIELDS */
+            const roleIdNumber =
+                document.getElementById(
+                    "idNumber"
+                );
+
+            const roleDepartment =
+                document.getElementById(
+                    "department"
+                );
+            const studentDepartmentGroup = document.getElementById("studentDepartmentGroup");
+            const departmentSelectGroup = document.getElementById("departmentSelectGroup");
+            const studentDepartment = document.getElementById("studentDepartment");
+            const roleDepartmentGroup = roleDepartment
+                ? roleDepartment.closest(".form-group")
+                : null;
+            const departmentRequired =
+                currentRegistrationRole !== "admin-security";
+
+            if (roleDepartmentGroup) {
+                roleDepartmentGroup.hidden = !departmentRequired;
+            }
+            if (roleDepartment) {
+                roleDepartment.required = departmentRequired;
+            }
+            if (studentDepartmentGroup) {
+                studentDepartmentGroup.hidden = currentRegistrationRole !== "student";
+            }
+            if (studentDepartment) {
+                studentDepartment.required = currentRegistrationRole === "student";
+            }
+            if (departmentSelectGroup) {
+                departmentSelectGroup.hidden =
+                    currentRegistrationRole === "admin-security";
+            }
+            if (roleDepartment) {
+                roleDepartment.setAttribute(
+                    "aria-label",
+                    currentRegistrationRole === "student" ? "Program" : "Department"
+                );
+            }
+
+
+            if (currentRegistrationRole === "student") {
+                if (roleIdNumber) {
+                    roleIdNumber.placeholder =
+                        "Student ID Number";
+                }
+                if (roleDepartment) {
+                    roleDepartment.placeholder =
+                        "Program";
+                }
+            }
+
+            else if (
+                currentRegistrationRole === "faculty" ||
+                currentRegistrationRole === "department-head"
+            ) {
+
+                if (roleIdNumber) {
+                    roleIdNumber.placeholder =
+                        "Employee ID Number";
+                }
+
+                if (roleDepartment) {
+                    roleDepartment.placeholder =
+                        "Department";
+                }
+            }
+
+            else if (
+                currentRegistrationRole === "admin-security"
+            ) {
+
+                if (roleIdNumber) {
+                    roleIdNumber.placeholder =
+                        "Employee ID Number";
+                }
+
+                if (roleDepartment) {
+                    roleDepartment.placeholder =
+                        "Role";
+                }
+            }
+
+            sessionStorage.setItem(
+                "selectedRole",
+                currentRegistrationRole
+            );
+
+            document.title =
+                "EduMetrics | " +
+                registrationRoleNames[
+                currentRegistrationRole
+                ] +
+                " Registration";
+
+            loadRegistrationOptions(currentRegistrationRole);
+
+        }
+
+        updateRegistrationRole(
+            currentRegistrationRole
+        );
+
+        /* FORM ELEMENTS */
+        const registrationForm =
+            document.getElementById(
+                "registrationForm"
+            );
+
+        const firstName =
+            document.getElementById(
+                "firstName"
+            );
+
+        const lastName =
+            document.getElementById(
+                "lastName"
+            );
+
+        const idNumber =
+            document.getElementById(
+                "idNumber"
+            );
+
+        const department =
+            document.getElementById(
+                "department"
+            );
+        const studentDepartment =
+            document.getElementById("studentDepartment");
+
+        if (studentDepartment) {
+            studentDepartment.addEventListener("change", () => {
+                clearRegistrationError(studentDepartment, "studentDepartmentError");
+                loadStudentPrograms(studentDepartment.value);
+            });
+        }
+        if (department) {
+            department.addEventListener("change", () => {
+                clearRegistrationError(department, "departmentError");
+            });
+        }
+
+        const signupEmail =
+            document.getElementById(
+                "signupEmail"
+            );
+
+        const signupPassword =
+            document.getElementById(
+                "signupPassword"
+            );
+
+        const confirmPassword =
+            document.getElementById(
+                "confirmPassword"
+            );
+
+        const termsAgreement =
+            document.getElementById(
+                "termsAgreement"
+            );
+
+        /* EMAIL VALIDATION*/
+        function validRegistrationEmail(email) {
+            return (
+                /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+            ).test(email);
+        }
+
+        /* PASSWORD VALIDATION*/
+        function validateRegistrationPassword(
+            password
+        ) {
+            return {
+                length:
+                    password.length >= 8,
+                uppercase:
+                    /[A-Z]/.test(password),
+                lowercase:
+                    /[a-z]/.test(password),
+                number:
+                    /[0-9]/.test(password),
+                special:
+                    /[^A-Za-z0-9]/.test(password)
+            };
+        }
+
+        /* PASS REQUIREMENTS */
+        const lengthRequirement =
+            document.getElementById(
+                "lengthRequirement"
+            );
+
+        const uppercaseRequirement =
+            document.getElementById(
+                "uppercaseRequirement"
+            );
+
+        const lowercaseRequirement =
+            document.getElementById(
+                "lowercaseRequirement"
+            );
+
+        const numberRequirement =
+            document.getElementById(
+                "numberRequirement"
+            );
+
+        const specialRequirement =
+            document.getElementById(
+                "specialRequirement"
+            );
+
+        /* UPDATE PASSWORD */
+        function updateRequirement(
+            element,
+            passed,
+            text
+        ) {
+            if (!element) {
+                return;
+            }
+
+            if (passed) {
+
+                element.textContent =
+                    "✓ " + text;
+
+                element.classList.add(
+                    "requirement-passed"
+                );
+            }
+            else {
+                element.textContent =
+                    "○ " + text;
+
+                element.classList.remove(
+                    "requirement-passed"
+                );
+            }
+        }
+
+        /* LIVE PASSWORD REQ */
+        function updatePasswordRequirements() {
+            const result =
+                validateRegistrationPassword(
+                    signupPassword.value
+                );
+
+            updateRequirement(
+                lengthRequirement,
+                result.length,
+                "8 or more characters"
+            );
+
+            updateRequirement(
+                uppercaseRequirement,
+                result.uppercase,
+                "At least one uppercase letter"
+            );
+
+            updateRequirement(
+                lowercaseRequirement,
+                result.lowercase,
+                "At least one lowercase letter"
+            );
+
+            updateRequirement(
+                numberRequirement,
+                result.number,
+                "At least one number"
+            );
+
+            updateRequirement(
+                specialRequirement,
+                result.special,
+                "At least one special character"
+            );
+
+        }
+
+        signupPassword.addEventListener(
+            "input",
+            updatePasswordRequirements
+        );
+
+        /* PASSWORD SHOW/HIDE */
+        function toggleRegistrationPassword(
+            inputId,
+            button
+        ) {
+            const input =
+                document.getElementById(
+                    inputId
+                );
+
+            if (!input) {
+                return;
+            }
+
+            if (
+                input.type === "password"
+            ) {
+                input.type =
+                    "text";
+                button.setAttribute(
+                    "aria-label",
+                    "Hide password"
+                );
+            }
+            else {
+                input.type =
+                    "password";
+
+                button.setAttribute(
+                    "aria-label",
+                    "Show password"
+                );
+            }
+        }
+
+        /* ERROR */
+        function setRegistrationError(
+            input,
+            errorId,
+            message
+        ) {
+            const error =
+                document.getElementById(
+                    errorId
+                );
+
+            if (input) {
+
+                input.classList.add(
+                    "input-error"
+                );
+            }
+
+            if (error) {
+                error.textContent =
+                    message;
+            }
+        }
+
+        function clearRegistrationError(
+            input,
+            errorId
+        ) {
+
+            const error =
+                document.getElementById(
+                    errorId
+                );
+
+            if (input) {
+                input.classList.remove(
+                    "input-error"
+                );
+            }
+
+            if (error) {
+                error.textContent =
+                    "";
+            }
+        }
+
+        function clearRegistrationErrors() {
+            clearRegistrationError(
+                firstName,
+                "firstNameError"
+            );
+
+            clearRegistrationError(
+                lastName,
+                "lastNameError"
+            );
+
+            clearRegistrationError(
+                idNumber,
+                "idNumberError"
+            );
+
+            clearRegistrationError(
+                department,
+                "departmentError"
+            );
+            clearRegistrationError(
+                studentDepartment,
+                "studentDepartmentError"
+            );
+
+            clearRegistrationError(
+                signupEmail,
+                "signupEmailError"
+            );
+
+            clearRegistrationError(
+                signupPassword,
+                "signupPasswordError"
+            );
+
+            clearRegistrationError(
+                confirmPassword,
+                "confirmPasswordError"
+            );
+
+            const termsError =
+                document.getElementById(
+                    "termsError"
+                );
+
+            if (termsError) {
+                termsError.textContent =
+                    "";
+            }
+        }
+
+        /* CLEAR FIELD ERROR */
+        firstName.addEventListener(
+            "input",
+            function () {
+                clearRegistrationError(
+                    firstName,
+                    "firstNameError"
+                );
+            }
+        );
+        lastName.addEventListener(
+            "input",
+            function () {
+
+                clearRegistrationError(
+                    lastName,
+                    "lastNameError"
+                );
+            }
+        );
+
+        idNumber.addEventListener(
+            "input",
+            function () {
+
+                clearRegistrationError(
+                    idNumber,
+                    "idNumberError"
+                );
+            }
+        );
+
+        document.getElementById("department").addEventListener(
+            "change",
+            function () {
+                clearRegistrationError(
+                    document.getElementById("department"),
+                    "departmentError"
+                );
+            }
+        );
+
+        signupEmail.addEventListener(
+            "input",
+            function () {
+                clearRegistrationError(
+                    signupEmail,
+                    "signupEmailError"
+                );
+            }
+        );
+
+        signupPassword.addEventListener(
+            "input",
+            function () {
+
+                clearRegistrationError(
+                    signupPassword,
+                    "signupPasswordError"
+                );
+            }
+        );
+
+        confirmPassword.addEventListener(
+            "input",
+            function () {
+                clearRegistrationError(
+                    confirmPassword,
+                    "confirmPasswordError"
+                );
+            }
+        );
+
+        termsAgreement.addEventListener(
+            "change",
+            function () {
+
+                const termsError =
+                    document.getElementById(
+                        "termsError"
+                    );
+
+                if (termsError) {
+                    termsError.textContent =
+                        "";
+                }
+            }
+        );
+
+        /* SUBMIT */
+        registrationForm.addEventListener(
+            "submit",
+            async function (event) {
+                event.preventDefault();
+                clearRegistrationErrors();
+                const first =
+                    firstName.value.trim();
+                const last =
+                    lastName.value.trim();
+                const accountId =
+                    idNumber.value.trim();
+                const currentDepartmentField =
+                    document.getElementById("department");
+
+                const selectedProgramId =
+                    currentRegistrationRole === "student" && currentDepartmentField
+                        ? currentDepartmentField.value.trim()
+                        : "";
+                const selectedDepartment =
+                    currentRegistrationRole === "student" && currentDepartmentField && selectedProgramId
+                        ? currentDepartmentField.selectedOptions[0]?.textContent.trim() || ""
+                        : currentDepartmentField
+                        ? currentDepartmentField.value.trim()
+                        : "";
+                const selectedDepartmentId =
+                    currentRegistrationRole === "student" && studentDepartment
+                        ? studentDepartment.value.trim()
+                        : "";
+
+                const email =
+                    signupEmail.value.trim();
+                const password =
+                    signupPassword.value;
+                const confirmation =
+                    confirmPassword.value;
+                const passwordResult =
+                    validateRegistrationPassword(
+                        password
+                    );
+
+                let formIsValid =
+                    true;
+
+                /* FIRST NAME */
+                if (!first) {
+                    setRegistrationError(
+                        firstName,
+                        "firstNameError",
+                        "First name is required."
+                    );
+
+                    formIsValid =
+                        false;
+                }
+
+                /* LAST NAME */
+                if (!last) {
+                    setRegistrationError(
+                        lastName,
+                        "lastNameError",
+                        "Last name is required."
+                    );
+
+                    formIsValid =
+                        false;
+                }
+
+                /* ID NUMBER */
+                if (!accountId) {
+                    const idNumberLabel =
+                        currentRegistrationRole === "student"
+                            ? "Student ID number"
+                            : "Employee ID number";
+
+                    setRegistrationError(
+                        idNumber,
+                        "idNumberError",
+                        idNumberLabel + " is required."
+                    );
+
+                    formIsValid =
+                        false;
+                }
+
+                /* DEPARTMENT / PROGRAM */
+                if (currentRegistrationRole === "student" && !selectedDepartmentId) {
+                    setRegistrationError(
+                        studentDepartment,
+                        "studentDepartmentError",
+                        "Select your college."
+                    );
+                    formIsValid = false;
+                }
+
+                if (
+                    currentRegistrationRole !== "admin-security" &&
+                    !selectedDepartment
+                ) {
+                    let secondaryFieldLabel =
+                        "Program";
+                    if (
+                        currentRegistrationRole === "faculty" ||
+                        currentRegistrationRole === "department-head"
+                    ) {
+                        secondaryFieldLabel =
+                            "Department";
+                    }
+
+                    else if (
+                        currentRegistrationRole === "admin-security"
+                    ) {
+                        secondaryFieldLabel =
+                            "Role";
+                    }
+
+                    setRegistrationError(
+                        currentDepartmentField,
+                        "departmentError",
+                        secondaryFieldLabel + " is required."
+                    );
+
+                    formIsValid =
+                        false;
+                }
+
+                /* EMAIL */
+                if (!email) {
+                    setRegistrationError(
+                        signupEmail,
+                        "signupEmailError",
+                        "Email is required."
+                    );
+                    formIsValid =
+                        false;
+                }
+                else if (
+                    !validRegistrationEmail(
+                        email
+                    )
+                ) {
+                    setRegistrationError(
+                        signupEmail,
+                        "signupEmailError",
+                        "Enter a valid email address."
+                    );
+                    formIsValid =
+                        false;
+                }
+
+                /* PASSWORD */
+                if (!password) {
+                    setRegistrationError(
+                        signupPassword,
+                        "signupPasswordError",
+                        "Password is required."
+                    );
+                    formIsValid =
+                        false;
+                }
+                else if (
+                    !passwordResult.length ||
+                    !passwordResult.uppercase ||
+                    !passwordResult.lowercase ||
+                    !passwordResult.number ||
+                    !passwordResult.special
+                ) {
+
+                    setRegistrationError(
+                        signupPassword,
+                        "signupPasswordError",
+                        "Password does not meet all requirements."
+                    );
+
+                    formIsValid =
+                        false;
+                }
+
+                /* CONFIRM PASSWORD */
+                if (!confirmation) {
+
+                    setRegistrationError(
+                        confirmPassword,
+                        "confirmPasswordError",
+                        "Please confirm your password."
+                    );
+                    formIsValid =
+                        false;
+                }
+                else if (
+                    password !== confirmation
+                ) {
+                    setRegistrationError(
+                        confirmPassword,
+                        "confirmPasswordError",
+                        "Passwords do not match."
+                    );
+                    formIsValid =
+                        false;
+                }
+
+                /* TERMS */
+                if (
+                    !termsAgreement.checked
+                ) {
+                    const termsError =
+                        document.getElementById(
+                            "termsError"
+                        );
+                    if (termsError) {
+                        termsError.textContent =
+                            "Please agree to the Terms and Conditions.";
+
+                    }
+                    formIsValid =
+                        false;
+                }
+
+                /* STOP WHEN INVALID */
+                if (!formIsValid) {
+                    return;
+                }
+
+                /* SAVE TEMPORARY REGISTRATION DETAILS */
+                sessionStorage.setItem("signupFirstName", first);
+                sessionStorage.setItem("signupLastName", last);
+                sessionStorage.setItem("signupIdNumber", accountId);
+                sessionStorage.setItem("signupDepartment", selectedDepartment);
+                sessionStorage.setItem("signupDepartmentId", selectedDepartmentId);
+                sessionStorage.setItem("signupProgramId", selectedProgramId);
+                sessionStorage.setItem("verificationEmail", email);
+                sessionStorage.setItem("verificationRole", currentRegistrationRole);
+                sessionStorage.setItem("verificationPurpose", "signup");
+
+                /* REQUEST REAL EMAIL VERIFICATION FROM FLASK */
+                const submitButton = registrationForm.querySelector(
+                    'button[type="submit"]'
+                );
+
+                if (submitButton) {
+                    submitButton.disabled = true;
+                }
+
+                try {
+                    const response = await fetch(
+                        "/api/auth/register",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                firstName: first,
+                                lastName: last,
+                                idNumber: accountId,
+                                department: selectedDepartment,
+                                departmentId: selectedDepartmentId,
+                                programId: selectedProgramId,
+                                email: email,
+                                password: password,
+                                role: currentRegistrationRole
+                            })
+                        }
+                    );
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        const error = new Error(
+                            result.error || "Registration could not be completed."
+                        );
+                        error.isExistingAccount =
+                            response.status === 409 &&
+                            result.error === "Account Already Exists";
+                        throw error;
+                    }
+
+                    sessionStorage.setItem("verificationEmail", email);
+                    sessionStorage.setItem("verificationPurpose", "signup");
+                    sessionStorage.setItem("verificationType", "signup");
+
+                    window.location.href = "/verification-signup.html";
+
+                } catch (error) {
+                    openRegistrationModal();
+
+                    if (registrationModalTitle) {
+                        registrationModalTitle.textContent =
+                            error.isExistingAccount
+                                ? "Account Already Exists"
+                                : "Registration Error";
+                    }
+
+                    if (registrationModalMessage) {
+                        registrationModalMessage.textContent =
+                            error.message ||
+                            "Could not connect to the authentication server.";
+                    }
+                } finally {
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                    }
+                }
+                /*PASSWORD IS NOT SAVED IN
+                    sessionStorage.*/
+
+            }
+        );
+
+
+        /* MODAL*/
+        const registrationModal =
+            document.getElementById(
+                "registrationModal"
+            );
+        const registrationModalTitle =
+            document.getElementById(
+                "registrationModalTitle"
+            );
+        const registrationModalMessage =
+            document.getElementById(
+                "registrationModalMessage"
+            );
+        const registrationModalButton =
+            document.getElementById(
+                "registrationModalButton"
+            );
+
+        /* OPEN MODAL */
+        function openRegistrationModal() {
+            if (!registrationModal) {
+                return;
+            }
+            registrationModal.classList.add(
+                "show"
+            );
+            registrationModal.setAttribute(
+                "aria-hidden",
+                "false"
+            );
+        }
+
+        /* CLODE MODAL */
+        function closeRegistrationModal() {
+            if (!registrationModal) {
+                return;
+            }
+            registrationModal.classList.remove(
+                "show"
+            );
+            registrationModal.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+        }
+
+        /* TERMS */
+        function showTerms(event) {
+            if (event) {
+                event.preventDefault();
+            }
+            registrationModalTitle.textContent =
+                "Terms and Conditions";
+            registrationModalMessage.textContent =
+                "By creating an EduMetrics account, " +
+                "you agree to follow the rules and " +
+                "policies established for the system.";
+            registrationModalButton.textContent =
+                "I Understand";
+            openRegistrationModal();
+        }
+
+        /* ACCEPT TERMS */
+        function acceptRegistrationTerms() {
+            termsAgreement.checked =
+                true;
+            const termsError =
+                document.getElementById(
+                    "termsError"
+                );
+
+            if (termsError) {
+                termsError.textContent =
+                    "";
+            }
+            closeRegistrationModal();
+        }
+
+        /* SETTING MESSAGE */
+        function showRegistrationMessage(
+            title,
+            message
+        ) {
+            registrationModalTitle.textContent =
+                title;
+            registrationModalMessage.textContent =
+                message;
+            registrationModalButton.textContent =
+                "Close";
+            openRegistrationModal();
+        }
+
+        /* CLICK OUTSIDE MODAL */
+        registrationModal.addEventListener(
+            "click",
+            function (event) {
+                if (
+                    event.target ===
+                    registrationModal
+                ) {
+                    closeRegistrationModal();
+                }
+            }
+        );
+
+        /* ESC CLOSE*/
+        document.addEventListener(
+            "keydown",
+            function (event) {
+                if (
+                    event.key === "Escape"
+                ) {
+
+                    closeRegistrationModal();
+                }
+            }
+        );
+    
+
+        // Bind registration actions in the shared script; no inline HTML handlers.
+        document.querySelector('.registration-page .header-action')?.addEventListener('click', () =>
+            showRegistrationMessage('Support', 'Support options will be available once this section is connected.'));
+        document.querySelectorAll('.registration-page .password-toggle').forEach(button => {
+            button.addEventListener('click', () => {
+                const input = button.closest('.input-wrapper')?.querySelector('input[type="password"], input[type="text"]');
+                if (input) toggleRegistrationPassword(input.id, button);
+            });
+        });
+        document.querySelector('.registration-page .terms-option a')?.addEventListener('click', showTerms);
+        document.querySelector('.registration-page .registration-modal-close')?.addEventListener('click', closeRegistrationModal);
+        document.getElementById('registrationModalButton')?.addEventListener('click', () => {
+            if (registrationModalButton.textContent.trim() === 'Close') closeRegistrationModal();
+            else acceptRegistrationTerms();
+        });
+
+})();
+
+/* Account Approvals: pending requests and reviewer decisions. */
+(function () {
+  "use strict";
+  function initApprovalWorkspace() {
+    const page = document.querySelector('body.approval-workspace-page');
+    if (!page || page.dataset.workspaceInitialized) return;
+    page.dataset.workspaceInitialized = 'true';
+    const rawRole = (page.dataset.reviewerRole || '').toLowerCase();
+    const queryRole = (new URLSearchParams(location.search).get('role') || '').toLowerCase();
+    const savedRole = (sessionStorage.getItem('edumetricsRole') || sessionStorage.getItem('userRole') || '').toLowerCase();
+    const chosenRole = [rawRole, queryRole, savedRole].find(value => ['department-head', 'department_head', 'dept-head', 'admin', 'admin-security', 'admin_security'].includes(value)) || 'admin';
+    const role = ['department-head', 'department_head', 'dept-head'].includes(chosenRole) ? 'dept-head' : 'admin';
+    const nav = page.querySelector('.so-nav[data-approval-nav="' + role + '"]');
+    if (nav) nav.hidden = false;
+    const label = page.querySelector('#approvalReviewerLabel');
+    const name = page.querySelector('#approvalReviewerName');
+    const avatar = page.querySelector('#approvalReviewerAvatar');
+    const description = page.querySelector('#approvalDescription');
+    if (label) label.textContent = role === 'admin' ? 'Admin & Security' : 'Department Head';
+    if (name) name.textContent = role === 'admin' ? 'System Administrator' : 'Department Head';
+    if (avatar) avatar.textContent = role === 'admin' ? 'AD' : 'DH';
+    if (description) description.textContent = role === 'admin' ? 'Review Department Head registrations awaiting approval.' : 'Review Faculty registrations awaiting approval.';
+  }
+  function initAccountApprovals() {
+    const approvalStatus = document.getElementById("approvalStatus");
+    const approvalList = document.getElementById("approvalList");
+    if (!approvalStatus || !approvalList || approvalList.dataset.approvalsInitialized) return;
+    approvalList.dataset.approvalsInitialized = "true";
+
+    async function loadRequests() {
+      approvalStatus.textContent = "Loading requests...";
+      approvalStatus.classList.remove("approval-error");
+      approvalList.replaceChildren();
+      try {
+        const response = await fetch("/api/account-role-requests", {
+          headers: { Accept: "application/json" },
+          credentials: "same-origin"
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || "Requests could not be loaded.");
+        const requests = Array.isArray(result.requests) ? result.requests : [];
+        if (!requests.length) {
+          approvalStatus.textContent = "There are no pending requests.";
+          return;
+        }
+        approvalStatus.textContent = requests.length + " pending request" + (requests.length === 1 ? "" : "s");
+        requests.forEach((request) => {
+          const profile = request.profile_data || {};
+          const card = document.createElement("article");
+          card.className = "approval-request";
+          const details = document.createElement("div");
+          const title = document.createElement("h2");
+          title.textContent = profile.full_name || profile.email || "Account request";
+          const metadata = document.createElement("div");
+          metadata.className = "approval-details";
+          [
+            ["Role", request.requested_role],
+            ["Email", profile.email],
+            ["ID", profile.id_number],
+            ["Department / Program", profile.department_name || profile.program_name || profile.department_or_program],
+            ["Submitted", request.submitted_at]
+          ].forEach(([label, value]) => {
+            if (!value) return;
+            const item = document.createElement("span");
+            item.textContent = label + ": " + value;
+            metadata.appendChild(item);
+          });
+          details.append(title, metadata);
+          const actions = document.createElement("div");
+          actions.className = "approval-actions";
+          const approve = document.createElement("button");
+          approve.className = "approval-accept";
+          approve.type = "button";
+          approve.textContent = "Approve";
+          approve.addEventListener("click", () => decide(request.id, "approved"));
+          const reject = document.createElement("button");
+          reject.className = "approval-reject";
+          reject.type = "button";
+          reject.textContent = "Reject";
+          reject.addEventListener("click", () => {
+            const reason = window.prompt("Reason for rejection:");
+            if (reason === null) return;
+            decide(request.id, "rejected", reason.trim());
+          });
+          actions.append(approve, reject);
+          card.append(details, actions);
+          approvalList.appendChild(card);
+        });
+      } catch (error) {
+        approvalStatus.textContent = error.message;
+        approvalStatus.classList.add("approval-error");
+      }
+    }
+
+    async function decide(requestId, decision, reason = "") {
+      const buttons = approvalList.querySelectorAll("button");
+      buttons.forEach(button => { button.disabled = true; });
+      try {
+        const response = await fetch("/api/account-role-requests/" + encodeURIComponent(requestId) + "/decision", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ decision, reason })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || "Decision could not be saved.");
+        await loadRequests();
+      } catch (error) {
+        approvalStatus.textContent = error.message;
+        approvalStatus.classList.add("approval-error");
+      } finally {
+        buttons.forEach(button => { if (button.isConnected) button.disabled = false; });
+      }
+    }
+
+    loadRequests();
+    return loadRequests;
+  }
+  function setupApprovalNotifications() {
+    const admin = !!document.querySelector('body.cm-admin-page');
+    const dept = !!document.querySelector('body.ed-dashboard-page[data-dashboard-role="dept-head"]') ||
+      (document.querySelector('body.ed-dashboard-page') &&
+       (new URLSearchParams(location.search).get('role') === 'dept-head'));
+    if (!admin && !dept) return;
+    const bell = document.querySelector('.so-notification-btn');
+    if (!bell || bell.dataset.approvalBellInitialized) return;
+    bell.dataset.approvalBellInitialized = 'true';
+    let dialog = document.getElementById('eduApprovalDialog');
+    if (!dialog) {
+      dialog = document.createElement('dialog');
+      dialog.id = 'eduApprovalDialog';
+      dialog.className = 'edu-approval-dialog';
+      dialog.setAttribute('aria-labelledby', 'eduApprovalTitle');
+      dialog.innerHTML = '<div class="edu-approval-heading"><div><h2 id="eduApprovalTitle">Account approval requests</h2><p>Review ' +
+        (admin ? 'Department Head' : 'Faculty') +
+        ' registrations awaiting approval.</p></div><button type="button" class="edu-approval-close" aria-label="Close">×</button></div><p id="approvalStatus" class="approval-status" role="status"></p><div id="approvalList" class="approval-list"></div>';
+      document.body.appendChild(dialog);
+      dialog.querySelector('.edu-approval-close').addEventListener('click', () => dialog.close());
+      dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); });
+    }
+    const refresh = initAccountApprovals();
+    function open() {
+      if (!dialog.open) dialog.showModal();
+      if (refresh) refresh();
+    }
+    bell.addEventListener('click', open);
+
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => {
+    initApprovalWorkspace();
+    if (document.getElementById('approvalList')) initAccountApprovals();
+    setupApprovalNotifications();
+  }, { once: true });
+  else { initApprovalWorkspace(); if (document.getElementById('approvalList')) initAccountApprovals(); setupApprovalNotifications(); }
+  document.addEventListener('edumetrics:nav-ready', setupApprovalNotifications);
+})();
+
+/* Profile completion — moved from the page into the shared script. */
+(function () {
+  function initProfileCompletion() {
+    const form = document.getElementById("profileForm");
+    if (!form || form.dataset.profileInitialized === "true") return;
+    form.dataset.profileInitialized = "true";
+    const profileForm = document.getElementById("profileForm");
+        const profileRole = profileForm.dataset.role;
+        const departmentSelect = document.getElementById("profileDepartment");
+        const collegeSelect = document.getElementById("profileCollege");
+        const programSelect = document.getElementById("profileProgram");
+        const profileError = document.getElementById("profileError");
+        let studentProgramRequest = 0;
+    
+        async function loadProfileOptions() {
+          const select = profileRole === "student" ? collegeSelect : departmentSelect;
+          if (!select) return;
+          const errorMessage = document.getElementById(
+            profileRole === "student" ? "profileCollegeError" : "profileOptionsError"
+          );
+          try {
+            const response = await fetch("/api/registration-options/" + encodeURIComponent(profileRole), {
+              headers: { Accept: "application/json" },
+              credentials: "same-origin"
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || "Options could not be loaded.");
+            if (!Array.isArray(result.options) || result.options.length === 0) {
+              throw new Error("No colleges or departments are available. Please contact an administrator.");
+            }
+            select.replaceChildren(new Option(
+              profileRole === "student" ? "Select College" : "Select Department",
+              ""
+            ));
+            result.options.forEach(option => {
+              select.add(new Option(option.label, profileRole === "student" ? option.id : option.value));
+            });
+            select.disabled = false;
+          } catch (error) {
+            errorMessage.textContent = error.message;
+          }
+        }
+    
+        async function loadStudentPrograms(departmentId) {
+          const errorMessage = document.getElementById("profileProgramError");
+          const requestId = ++studentProgramRequest;
+          programSelect.replaceChildren(new Option(
+            departmentId ? "Loading programs..." : "Select Program",
+            ""
+          ));
+          programSelect.disabled = true;
+          errorMessage.textContent = "";
+          if (!departmentId) return;
+    
+          try {
+            const response = await fetch(
+              "/api/registration-options/student/" +
+              encodeURIComponent(departmentId) + "/programs",
+              { headers: { Accept: "application/json" }, credentials: "same-origin" }
+            );
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || "Programs could not be loaded.");
+            if (requestId !== studentProgramRequest) return;
+            if (!Array.isArray(result.options) || result.options.length === 0) {
+              throw new Error("No programs are configured for this college yet.");
+            }
+            programSelect.replaceChildren(new Option("Select Program", ""));
+            result.options.forEach(option => {
+              programSelect.add(new Option(option.label, option.id));
+            });
+            programSelect.disabled = false;
+          } catch (error) {
+            if (requestId === studentProgramRequest) errorMessage.textContent = error.message;
+          }
+        }
+    
+        if (collegeSelect) {
+          collegeSelect.addEventListener("change", () => {
+            document.getElementById("profileCollegeError").textContent = "";
+            loadStudentPrograms(collegeSelect.value);
+          });
+        }
+    
+        loadProfileOptions();
+    
+        profileForm.addEventListener("submit", async event => {
+          event.preventDefault();
+          if (!profileForm.reportValidity()) return;
+    
+          const formData = new FormData(profileForm);
+          const button = profileForm.querySelector("button[type='submit']");
+          button.disabled = true;
+          profileError.hidden = true;
+          try {
+            const response = await fetch("/api/auth/complete-profile", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Accept: "application/json" },
+              credentials: "same-origin",
+              body: JSON.stringify({
+                fullName: formData.get("fullName"),
+                idNumber: formData.get("idNumber"),
+                department: profileRole === "student"
+                  ? programSelect.selectedOptions[0]?.textContent || ""
+                  : formData.get("department") || "",
+                departmentId: formData.get("departmentId") || "",
+                programId: formData.get("programId") || ""
+              })
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || "Profile could not be saved.");
+            if (result.status === "approval_pending" && ["faculty", "dept-head"].includes(profileRole)) {
+              // A one-time UI marker; the server remains the authority on account status.
+              sessionStorage.setItem("edumetricsPendingApprovalNotice", profileRole);
+              window.location.href = "/account-pending.html?role=" + encodeURIComponent(profileRole);
+            } else if (result.status === "approval_pending") {
+              // Never present a Faculty/Department Head approval popup to Admin or Student.
+              window.location.href = "/account-pending.html";
+            } else {
+              sessionStorage.removeItem("edumetricsPendingApprovalNotice");
+              window.location.href = "/main/dashboard.html";
+            }
+          } catch (error) {
+            profileError.textContent = error.message;
+            profileError.hidden = false;
+          } finally {
+            button.disabled = false;
+          }
+        });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initProfileCompletion, { once: true });
+  else initProfileCompletion();
+})();
+
+/* Account pending notice: shown once after a successful Faculty/Dept Head profile submission. */
+(function () {
+  function initPendingNotice() {
+    if (!document.querySelector('.account-pending-page')) return;
+    const role = new URLSearchParams(window.location.search).get('role');
+    const submittedRole = sessionStorage.getItem('edumetricsPendingApprovalNotice');
+    sessionStorage.removeItem('edumetricsPendingApprovalNotice');
+    if (!['faculty', 'dept-head'].includes(role) || submittedRole !== role) return;
+    if (document.getElementById('eduPendingNotice')) return;
+
+    const approver = role === 'faculty' ? 'your Department Head' : 'Admin & Security';
+    const roleLabel = role === 'faculty' ? 'Faculty' : 'Department Head';
+    const dialog = document.createElement('dialog');
+    dialog.id = 'eduPendingNotice';
+    dialog.className = 'edu-approval-dialog edu-status-dialog';
+    const title = document.createElement('h2');
+    title.textContent = 'Account awaiting approval';
+    const message = document.createElement('p');
+    message.textContent = 'Your ' + roleLabel + ' account is pending approval by ' + approver + '. You can sign in after your account is approved.';
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'approval-accept';
+    button.textContent = 'OK';
+    button.addEventListener('click', () => dialog.close());
+    dialog.append(title, message, button);
+    document.body.appendChild(dialog);
+    dialog.showModal();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initPendingNotice, { once: true });
+  else initPendingNotice();
+})();
+
+/* Login page: use the existing shared auth helpers and modal. */
+(function () {
+    function initLoginPage() {
+        const form = document.getElementById("loginForm");
+        if (!form || form.dataset.initialized === "true") return;
+        form.dataset.initialized = "true";
+        const emailField = document.getElementById("loginEmail");
+        const passwordField = document.getElementById("loginPassword");
+        const params = new URLSearchParams(location.search);
+        const rawRole = params.get("role") || "student";
+        const role = ({"dept-head":"department-head", "department_head":"department-head"})[rawRole] || rawRole;
+        const roleNames = {student:"Student",faculty:"Faculty","department-head":"Department Head","admin-security":"Admin & Security"};
+        const selectedRole = roleNames[role] ? role : "student";
+        const label = document.getElementById("loginRoleLabel");
+        if (label) label.textContent = roleNames[selectedRole];
+        document.title = "EduMetrics | " + roleNames[selectedRole] + " Log In";
+        const register = document.getElementById("createAccountLink");
+        if (register) register.href = "/register?role=" + encodeURIComponent(selectedRole);
+        const forgot = document.getElementById("forgotPasswordLink");
+        if (forgot) forgot.href = "/forgot-password.html?role=" + encodeURIComponent(selectedRole);
+        const toggle = document.querySelector(".login-page .password-toggle");
+        if (toggle) toggle.addEventListener("click", toggleLoginPassword);
+        document.querySelectorAll(".login-page .social-icon-button").forEach(button => button.addEventListener("click", () => {
+            socialLogin(button.getAttribute("aria-label").includes("Google") ? "Google" : "Microsoft");
+        }));
+        const support = document.querySelector(".login-page .header-action");
+        if (support) support.addEventListener("click", () => showLoginModal("Support", "Support options will be available once this section is connected.", "!"));
+        document.querySelectorAll(".login-page .modal-close-button, .login-page .modal-primary-button").forEach(button => button.addEventListener("click", closeLoginModal));
+        const oauthError = params.get("oauth_error");
+        const oauthMessage = document.getElementById("oauthErrorMessage");
+        if (oauthError === "account_exists" && oauthMessage) {
+            oauthMessage.textContent = "Account Already Exists. Please use your account.";
+            oauthMessage.hidden = false;
+        }
+        form.addEventListener("submit", async event => {
+            event.preventDefault();
+            const email = emailField.value.trim();
+            const password = passwordField.value;
+            const emailError = document.getElementById("loginEmailError");
+            const passwordError = document.getElementById("loginPasswordError");
+            emailError.textContent = passwordError.textContent = "";
+            emailField.classList.remove("input-error");
+            passwordField.classList.remove("input-error");
+            let valid = true;
+            if (!isValidEmail(email)) {
+                emailError.textContent = email ? "Please enter a valid email address." : "Please enter your email.";
+                emailField.classList.add("input-error"); valid = false;
+            }
+            if (!password) { passwordError.textContent = "Please enter your password."; passwordField.classList.add("input-error"); valid = false; }
+            if (!valid) return;
+            sessionStorage.setItem("verificationEmail", email);
+            sessionStorage.setItem("verificationRole", selectedRole);
+            sessionStorage.setItem("verificationPurpose", "login");
+            const rememberMe = !!document.getElementById("rememberMe")?.checked;
+            sessionStorage.setItem("rememberMe", String(rememberMe));
+            if (["5500", "5501"].includes(location.port)) {
+                location.href = "verification-login.html?role=" + encodeURIComponent(selectedRole);
+                return;
+            }
+            try {
+                const response = await fetch("/api/auth/login", {
+                    method: "POST", headers: {"Content-Type":"application/json"},
+                    body: JSON.stringify({email, password, role:selectedRole, rememberMe})
+                });
+                const result = await response.json();
+                if (!response.ok) {
+                    if (result.locked) showLoginModal("Login temporarily locked", `Too many failed password attempts. Please try again in ${result.retry_after || 30} seconds.`, "!");
+                    else showLoginModal("Login failed", result.error || "Unable to log in.", "!");
+                    return;
+                }
+                if (result.status === "verification_required") {
+                    sessionStorage.setItem("verificationPurpose", "signup");
+                    location.href = "verification-signup.html?role=" + encodeURIComponent(selectedRole);
+                } else if (result.status === "approval_pending") {
+                    if (["faculty", "department-head"].includes(selectedRole)) {
+                        showLoginModal("Account awaiting approval", result.message || "Your account is waiting for approval.", "!");
+                    } else {
+                        showLoginModal("Login unavailable", "This account cannot log in yet. Please contact support if this is unexpected.", "!");
+                    }
+                } else if (result.status === "login_otp_required") {
+                    sessionStorage.setItem("verificationPurpose", "login");
+                    location.href = "verification-login.html?role=" + encodeURIComponent(selectedRole);
+                } else if (result.status === "authenticated") {
+                    location.href = "/main/dashboard.html";
+                } else {
+                    showLoginModal("Login", result.message || "Unexpected login response.", "!");
+                }
+            } catch (error) {
+                showLoginModal("Connection error", "Could not connect to the login service. Please try again.", "!");
+            }
+        });
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initLoginPage, {once:true});
+    else initLoginPage();
 })();

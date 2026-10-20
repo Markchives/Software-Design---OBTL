@@ -6,18 +6,50 @@
   <title>Account Pending Approval | EduMetrics</title>
   <link rel="stylesheet" href="/Static/style.css"/>
 </head>
-<body class="so-student-page">
-  <header class="so-topbar">
-    <div class="so-brand">
-      <div class="so-brand-logo">Edu<span>Metrics</span></div>
-      <div class="so-brand-subtitle">Academic Assessment &amp; Grading System</div>
-    </div>
+<body class="auth-page registration-page account-pending-page">
+  <header class="site-header auth-site-header">
+    <a href="/" class="brand-area auth-header-brand" aria-label="EduMetrics home">
+      <div class="brand"><span>Edu</span>Metrics</div>
+      <p>Academic Assessment &amp; Grading System</p>
+    </a>
   </header>
-  <div class="so-header-lines"><div class="so-header-blue"></div><div class="so-header-gold"></div></div>
-  <main class="so-main" style="max-width:720px;margin:40px auto;padding:24px;">
-    <h1>Account awaiting approval</h1>
-    <p>Your profile request was submitted. You’ll be able to access your role’s workspace after an authorized administrator approves it.</p>
-    <a class="sc-action-secondary" href="/login%20page.html">Return to sign in</a>
+  <main class="auth-container registration-main">
+    <div class="registration-stage">
+      <section class="auth-card registration-card" aria-labelledby="pendingTitle">
+        <div class="auth-form-panel registration-form-panel">
+          <div class="form-heading">
+            <h2 id="pendingTitle">Account awaiting approval</h2>
+            <p>Your profile request was submitted. You’ll be able to access your role’s workspace after an authorized administrator approves it.</p>
+          </div>
+          <a class="primary-auth-button" href="/login%20page.html">Return to sign in</a>
+        </div>
+        <div class="auth-brand-panel registration-brand-panel">
+          <div class="auth-logo"><span class="gold-text">Edu</span>Metrics</div>
+          <p class="auth-brand-subtitle">Academic Assessment &amp; Grading System</p>
+          <div class="auth-gold-line"></div>
+          <h2 class="brand-heading">Measure Learning.<br/>Improve <span class="gold-text">Outcomes.</span></h2>
+          <div class="brand-features">
+            <div class="brand-feature">
+              <img src="/Static/images/icons/curriculum mapping.png" alt="" class="brand-feature-icon-image"/>
+              <span>Curriculum Mapping</span>
+            </div>
+            <div class="brand-feature">
+              <img src="/Static/images/icons/assessment &amp; grading.png" alt="" class="brand-feature-icon-image"/>
+              <span>Assessment &amp; Grading</span>
+            </div>
+            <div class="brand-feature">
+              <img src="/Static/images/icons/outcome attainment.png" alt="" class="brand-feature-icon-image"/>
+              <span>Outcome Attainment</span>
+            </div>
+            <div class="brand-feature">
+              <img src="/Static/images/icons/cqi analytics.png" alt="" class="brand-feature-icon-image"/>
+              <span>CQI Analytics</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
   </main>
+  <script src="/Static/script.js" defer></script>
 </body>
 </html>

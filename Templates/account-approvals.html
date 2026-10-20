@@ -1,131 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Account Approvals | EduMetrics</title>
-  <link rel="stylesheet" href="/Static/style.css"/>
-  <style>
-    .approval-main{max-width:1100px;margin:24px auto;padding:24px;color:#173f70}
-    .approval-header{display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:3px solid #efbd00;padding-bottom:16px}
-    .approval-header h1{margin:0;font-size:28px}
-    .approval-header a{color:#17477d;font-weight:700}
-    .approval-status{padding:18px 0;color:#526d89}
-    .approval-list{display:grid;gap:12px}
-    .approval-request{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;padding:18px;border:1px solid #d8e4ef;border-radius:8px;background:#fff}
-    .approval-request h2{margin:0 0 8px;font-size:18px}
-    .approval-details{display:flex;flex-wrap:wrap;gap:8px 20px;color:#526d89;font-size:13px}
-    .approval-actions{display:flex;gap:8px}
-    .approval-actions button{border:1px solid #17477d;border-radius:4px;padding:9px 13px;font:inherit;font-weight:700;cursor:pointer}
-    .approval-accept{background:#17477d;color:#fff}
-    .approval-reject{background:#fff;color:#8a2635;border-color:#b34a56!important}
-    .approval-error{color:#8a2635}
-    @media(max-width:650px){.approval-main{padding:16px}.approval-request{grid-template-columns:1fr}.approval-actions button{flex:1}}
-  </style>
+  <link rel="stylesheet" href="/Static/style.css">
+  <script src="/Static/script.js" defer></script>
 </head>
-<body class="so-student-page" data-reviewer-role="{{ reviewer_role }}">
+<body class="so-student-page dept-head-unified approval-workspace-page" data-reviewer-role="{{ reviewer_role }}">
   <header class="so-topbar">
-    <div class="so-brand">
-      <div class="so-brand-logo">Edu<span>Metrics</span></div>
-      <div class="so-brand-subtitle">Academic Assessment &amp; Grading System</div>
+    <div class="so-brand"><div class="so-brand-logo">Edu<span>Metrics</span></div><div class="so-brand-subtitle">Academic Assessment &amp; Grading System</div></div>
+    <div class="so-user-area">
+      <div class="edu-header-calendar-wrap"><button type="button" class="edu-header-calendar-btn" aria-label="Open calendar" aria-expanded="false"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewBox="0 0 24 24"><rect height="16" rx="2" width="18" x="3" y="5"></rect><path d="M7 3v4M17 3v4M3 10h18"></path></svg></button><div class="edu-header-calendar-popup" hidden><label>Calendar <input type="date" aria-label="Choose calendar date"></label><p>Academic events are not connected yet.</p></div></div>
+      <button type="button" class="so-notification-btn" aria-label="Notifications"><img class="so-notification-image" src="/Static/images/sidebar/notif.png" alt=""><span class="so-notification-dot"></span></button>
+      <div class="so-user-info"><strong id="approvalReviewerName">Account Reviewer</strong><span id="approvalReviewerLabel">Reviewer</span></div><div class="so-avatar" aria-hidden="true" id="approvalReviewerAvatar">AR</div><span class="so-online-dot" aria-hidden="true"></span>
     </div>
   </header>
   <div class="so-header-lines"><div class="so-header-blue"></div><div class="so-header-gold"></div></div>
-  <main class="approval-main">
-    <div class="approval-header">
-      <h1>Account approval requests</h1>
-      <a href="/main/dashboard.html">Dashboard</a>
-    </div>
-    <p id="approvalStatus" class="approval-status" role="status">Loading requests...</p>
-    <section id="approvalList" class="approval-list" aria-label="Pending account requests"></section>
-  </main>
-  <script>
-    const approvalStatus = document.getElementById("approvalStatus");
-    const approvalList = document.getElementById("approvalList");
-
-    async function loadRequests() {
-      approvalStatus.textContent = "Loading requests...";
-      approvalStatus.classList.remove("approval-error");
-      approvalList.replaceChildren();
-      try {
-        const response = await fetch("/api/account-role-requests", {
-          headers: { Accept: "application/json" },
-          credentials: "same-origin"
-        });
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || "Requests could not be loaded.");
-        const requests = Array.isArray(result.requests) ? result.requests : [];
-        if (!requests.length) {
-          approvalStatus.textContent = "There are no pending requests.";
-          return;
-        }
-        approvalStatus.textContent = requests.length + " pending request" + (requests.length === 1 ? "" : "s");
-        requests.forEach((request) => {
-          const profile = request.profile_data || {};
-          const card = document.createElement("article");
-          card.className = "approval-request";
-          const details = document.createElement("div");
-          const title = document.createElement("h2");
-          title.textContent = profile.full_name || profile.email || "Account request";
-          const metadata = document.createElement("div");
-          metadata.className = "approval-details";
-          [
-            ["Role", request.requested_role],
-            ["Email", profile.email],
-            ["ID", profile.id_number],
-            ["Department / Program", profile.department_name || profile.program_name || profile.department_or_program],
-            ["Submitted", request.submitted_at]
-          ].forEach(([label, value]) => {
-            if (!value) return;
-            const item = document.createElement("span");
-            item.textContent = label + ": " + value;
-            metadata.appendChild(item);
-          });
-          details.append(title, metadata);
-          const actions = document.createElement("div");
-          actions.className = "approval-actions";
-          const approve = document.createElement("button");
-          approve.className = "approval-accept";
-          approve.type = "button";
-          approve.textContent = "Approve";
-          approve.addEventListener("click", () => decide(request.id, "approved"));
-          const reject = document.createElement("button");
-          reject.className = "approval-reject";
-          reject.type = "button";
-          reject.textContent = "Reject";
-          reject.addEventListener("click", () => {
-            const reason = window.prompt("Reason for rejection:");
-            if (reason === null) return;
-            decide(request.id, "rejected", reason.trim());
-          });
-          actions.append(approve, reject);
-          card.append(details, actions);
-          approvalList.appendChild(card);
-        });
-      } catch (error) {
-        approvalStatus.textContent = error.message;
-        approvalStatus.classList.add("approval-error");
-      }
-    }
-
-    async function decide(requestId, decision, reason = "") {
-      try {
-        const response = await fetch("/api/account-role-requests/" + encodeURIComponent(requestId) + "/decision", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          credentials: "same-origin",
-          body: JSON.stringify({ decision, reason })
-        });
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || "Decision could not be saved.");
-        await loadRequests();
-      } catch (error) {
-        approvalStatus.textContent = error.message;
-        approvalStatus.classList.add("approval-error");
-      }
-    }
-
-    loadRequests();
-  </script>
+  <div class="so-shell ra-admin-shell">
+    <aside class="so-sidebar">
+<nav aria-label="Administrator navigation" class="so-nav" data-approval-nav="admin" hidden="">
+<a class="so-nav-item" href="/Templates/requirement 2/cm-admin.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="/Static/images/sidebar/home-white.png"/></span><span>Dashboard</span></a>
+<a class="so-nav-item" href="/Templates/requirement 7/gl-admin.html"><span class="so-nav-icon"><img alt="" class="so-nav-image" src="/Static/images/sidebar/sr.png"/></span><span>System Records</span></a>
+<a aria-current="page" class="so-nav-item active" href="/account-approvals.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="/Static/images/sidebar/acreq.png"/></span><span>Account Requests</span></a>
+<div class="so-nav-group"><details><summary class="so-nav-item so-products"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="/Static/images/sidebar/ws-white.png"/></span><span>Workflow</span></summary><div class="so-subnav">
+<a href="/Templates/requirement 4/ra-admin.html">Raw Entry</a><a href="/Templates/requirement 5/ac-admin.html">Attainment Calculation</a><a href="/Templates/requirement 6/cqi-admin.html">CQI Action Planning</a><a href="/Templates/requirement 8/rp-admin.html">Compliance Report</a>
+</div></details></div>
+<a class="so-nav-item" href="/Templates/main/platform.html?role=admin"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="/Static/images/sidebar/pl-white.png"/></span><span>Platform</span></a>
+<a class="so-nav-item" href="/Templates/main/resources.html?role=admin"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="/Static/images/sidebar/rs-white.png"/></span><span>Resources</span></a>
+<a class="so-nav-item" href="/Templates/main/about us.html?role=admin"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="/Static/images/sidebar/au-white.png"/></span><span>About Us</span></a>
+</nav>
+<nav aria-label="Department Head navigation" class="so-nav" data-approval-nav="dept-head" hidden="">
+<a class="so-nav-item" href="/Templates/main/dashboard.html?role=dept-head"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="/Static/images/sidebar/home-white.png"/></span><span>Dashboard</span></a><a aria-current="page" class="so-nav-item active" href="/account-approvals.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="/Static/images/sidebar/notif.png"/></span><span>Account Requests</span></a>
+<a class="so-nav-item" href="/Templates/main/platform.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="/Static/images/sidebar/pl-white.png"/></span><span>Platform</span></a>
+<div class="so-nav-group">
+<details><summary class="so-nav-item so-products" ><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="/Static/images/sidebar/ws-white.png"/></span><span>Workflow</span></summary>
+<div class="so-subnav"><a href="/Templates/requirement 1/so-dept-head.html">Syllabus &amp; Outcomes</a><a href="/Templates/requirement 2/cm-dept-head.html">Curriculum Mapping</a><a href="/Templates/requirement 3/cr-dept-head.html">Class Roster</a><a href="/Templates/requirement 4/ra-dept-head.html">Assessment Entry</a><a href="/Templates/requirement 5/ac-dept-head.html">Attainment</a><a href="/Templates/requirement 6/cqi-dept-head.html">CQI Planning</a><a href="/Templates/requirement 7/gl-dept-head.html">Gradebook</a><a href="/Templates/requirement 8/rp-dept-head.html">Compliance Report</a></div>
+</details>
+</div>
+<a class="so-nav-item" href="/Templates/main/resources.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="/Static/images/sidebar/rs-white.png"/></span><span>Resources</span></a>
+<a class="so-nav-item" href="/Templates/main/about us.html"><span class="so-nav-icon so-nav-image-wrap"><img alt="" class="so-nav-image" src="/Static/images/sidebar/au-white.png"/></span><span>About Us</span></a>
+</nav>
+      <div class="so-sidebar-brand"><div class="so-sidebar-logo">Edu<span>Metrics</span></div><small>Academic Assessment &amp; Grading System</small></div>
+    </aside>
+    <main class="dh-main cm-admin-main sodh-main approval-workspace-main">
+      <section class="dh-heading cm-admin-heading so-page-heading"><h1>Account Approvals</h1><p>Review pending registrations and manage account access requests.</p></section>
+      <section class="dh-panel cm-panel sodh-content-card approval-workspace-panel" aria-labelledby="approvalHeading">
+        <div class="cm-panel-header sodh-toolbar"><div><h2 id="approvalHeading">Pending account requests</h2><p id="approvalDescription">Accounts awaiting your review and decision.</p></div></div>
+        <p id="approvalStatus" class="approval-status" role="status">Loading requests...</p>
+        <section id="approvalList" class="approval-list" aria-label="Pending account requests"></section>
+      </section>
+    </main>
+  </div>
 </body>
 </html>

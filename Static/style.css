@@ -5532,3 +5532,38 @@ body.sd-compose-open{overflow:hidden}
 }
 /* Prevent wide content from enlarging the central grid track. */
 body:is(.so-student-page,.dept-head-unified) .so-shell > :is(.so-main,.dh-main) { min-width:0; }
+
+/* Account Approvals: reuse the shared Admin/Department Head dashboard shell. */
+/* Account Requests workspace: dashboard shell and shared approval components. */
+.approval-workspace-page .so-nav[hidden]{display:none!important}
+.approval-workspace-page .approval-workspace-main{min-width:0;overflow-y:auto}
+.approval-workspace-page .approval-workspace-panel{min-height:320px;padding:22px 24px;display:flex;flex-direction:column;gap:0}
+.approval-workspace-page .approval-status{padding:14px 0 18px;color:#526d89;font-size:14px}
+.approval-workspace-page .approval-list{display:grid;gap:12px;min-width:0}
+.approval-workspace-page .approval-request{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:20px 22px;border:1px solid #d8e4ef;border-radius:10px;background:#fff}
+.approval-workspace-page .approval-request>div:first-child{flex:1;min-width:0}
+.approval-workspace-page .approval-request h2{margin:0 0 10px;color:#004179;font-size:18px;font-weight:750;line-height:1.35}
+.approval-workspace-page .approval-details{display:flex;flex-wrap:wrap;gap:7px 20px;color:#526d89;font-size:13px;line-height:1.6;overflow-wrap:anywhere}
+.approval-workspace-page .approval-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.approval-workspace-page .approval-actions button{min-height:40px;padding:9px 18px;border:1px solid #17477d;border-radius:7px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.approval-workspace-page .approval-accept{background:#17477d;color:#fff}
+.approval-workspace-page .approval-reject{background:#fff;color:#8a2635;border-color:#b34a56!important}
+.approval-workspace-page .approval-actions button:disabled{opacity:.55;cursor:wait}
+.approval-workspace-page .approval-error{color:#8a2635}
+@media(max-width:750px){.approval-workspace-page .approval-workspace-panel{padding:16px}.approval-workspace-page .approval-request{align-items:stretch;flex-direction:column;gap:14px}.approval-workspace-page .approval-actions button{flex:1}}
+
+/* Pending approval uses the existing registration/login card and button styles. */
+.account-pending-page .registration-form-panel .primary-auth-button{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;}
+.account-pending-page .registration-form-panel .form-heading p{line-height:1.5;}
+
+
+/* Shared account approval dialog: uses existing approval list and button styles. */
+.edu-approval-dialog{width:min(760px,calc(100vw - 32px));max-height:min(82vh,760px);margin:auto;padding:26px;border:1px solid #d8e4ef;border-radius:16px;background:#fff;color:#004179;box-shadow:0 20px 60px rgba(0,35,70,.25);overflow:auto}
+.edu-approval-dialog::backdrop{background:rgba(4,24,49,.65)}
+.edu-approval-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;border-bottom:3px solid #f4c300;padding-bottom:14px}
+.edu-approval-heading h2,.edu-status-dialog h2{font-size:24px;margin:0 0 6px}
+.edu-approval-heading p,.edu-status-dialog p{color:#526d89;font-size:15px;margin:0}
+.edu-approval-close{border:0;background:transparent;color:#004179;font-size:30px;line-height:1;cursor:pointer}
+.edu-status-dialog{text-align:center;max-width:450px}
+.edu-status-dialog .approval-accept{margin-top:22px;padding:10px 26px;border:0;border-radius:8px;cursor:pointer}
+@media(max-width:650px){.edu-approval-dialog{padding:18px}.edu-approval-heading h2{font-size:20px}}

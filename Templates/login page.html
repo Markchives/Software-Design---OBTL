@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="../Static/style.css">
 </head>
 
-<body class="auth-page">
+<body class="auth-page login-page">
 
     <!-- HEADER -->
     <header class="site-header auth-site-header">
@@ -28,7 +28,7 @@
         <div class="top-actions auth-header-actions">
 
             <!-- SUPPORT -->
-            <button type="button" class="text-btn header-action" onclick="showHeaderMessage('Support')">
+            <button type="button" class="text-btn header-action">
                 <img src="../Static/images/icons/support.png" alt="" class="header-action-icon">
 
                 <span>Help &amp; Support</span>
@@ -133,14 +133,14 @@
                     <div class="social-login social-login-icons">
 
                         <!-- GOOGLE -->
-                        <button type="button" class="social-button social-icon-button" onclick="socialLogin('Google')"
+                        <button type="button" class="social-button social-icon-button"
                             aria-label="Continue with Google">
                             <img src="../Static/images/icons/gmail.png" alt="Google">
                         </button>
 
                         <!-- MICROSOFT -->
                         <button type="button" class="social-button social-icon-button"
-                            onclick="socialLogin('Microsoft')" aria-label="Continue with Microsoft">
+                             aria-label="Continue with Microsoft">
                             <img src="../Static/images/icons/microsoft.png" alt="Microsoft">
                         </button>
 
@@ -148,7 +148,7 @@
 
                     <!-- OAUTH ERROR MESSAGE -->
                     <div id="oauthErrorMessage" role="alert"
-                        style="display: none; color: #b42318; text-align: center; margin: 12px auto; font-size: 14px; font-weight: 600;">
+                        hidden>
                     </div>
 
                     <!-- DIVIDER -->
@@ -202,7 +202,7 @@
                                     placeholder="Enter your password" autocomplete="current-password" required>
 
                                 <!-- SHOW / HIDE PASSWORD -->
-                                <button type="button" class="password-toggle" onclick="toggleLoginPassword()"
+                                <button type="button" class="password-toggle"
                                     aria-label="Show password">
                                     <svg viewBox="0 0 24 24" aria-hidden="true">
                                         <path d="M2.5 12s3.5-5 9.5-5 9.5 5 9.5 5-3.5 5-9.5 5-9.5-5-9.5-5z"></path>
@@ -262,7 +262,7 @@
         <div class="auth-modal-box">
 
             <!-- CLOSE -->
-            <button type="button" class="modal-close-button" onclick="closeLoginModal()" aria-label="Close">
+            <button type="button" class="modal-close-button" aria-label="Close">
                 ×
             </button>
 
@@ -282,479 +282,13 @@
             </p>
 
             <!-- OK -->
-            <button type="button" class="modal-primary-button" onclick="closeLoginModal()">
+            <button type="button" class="modal-primary-button">
                 OK
             </button>
         </div>
     </div>
-
-    <!--LOGIN JS -->
-    <script>
-
-        /* HEADER */
-        function showHeaderMessage(section) {
-            showLoginModal(
-                section,
-                section +
-                " options will be available once this section is connected.",
-                "!"
-            );
-        }
-
-        /* ACCOUNT ROLE */
-
-        const params = new URLSearchParams(window.location.search);
-        let role = params.get("role") || "student";
-
-        if (role === "dept-head" || role === "department_head") {
-            role = "department-head";
-        }
-
-
-        const roleNames = {
-            "student": "Student",
-            "faculty": "Faculty",
-            "department-head": "Department Head",
-            "admin-security": "Admin & Security"
-        };
-
-        const loginRoleLabel =
-            document.getElementById("loginRoleLabel");
-
-        if (loginRoleLabel) {
-            loginRoleLabel.textContent =
-                roleNames[role] || "Student";
-        }
-
-        const createAccountLink =
-            document.getElementById("createAccountLink");
-
-        if (createAccountLink) {
-            const params = new URLSearchParams(window.location.search);
-            const role = params.get("role");
-
-            createAccountLink.href = role
-                ? `/register?role=${encodeURIComponent(role)}`
-                : "/register";
-        }
-
-        /*ELEMENTS */
-        const loginForm =
-            document.getElementById("loginForm");
-
-        const loginEmail =
-            document.getElementById("loginEmail");
-
-        const loginPassword =
-            document.getElementById("loginPassword");
-
-
-        /* SHOW PASSWORD */
-        function toggleLoginPassword() {
-            const button =
-                document.querySelector(
-                    ".password-toggle"
-                );
-
-            if (
-                loginPassword.type === "password"
-            ) {
-                loginPassword.type = "text";
-                button.setAttribute(
-                    "aria-label",
-                    "Hide password"
-                );
-
-            } else {
-                loginPassword.type = "password";
-                button.setAttribute(
-                    "aria-label",
-                    "Show password"
-                );
-            }
-        }
-
-        /* EMAIL VALIDATION */
-        function isValidEmail(email) {
-            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-        }
-
-        /* CLEAR ERRORS */
-        function clearLoginErrors() {
-
-            document
-                .getElementById(
-                    "loginEmailError"
-                )
-                .textContent = "";
-
-            document
-                .getElementById(
-                    "loginPasswordError"
-                )
-                .textContent = "";
-
-            loginEmail.classList.remove(
-                "input-error"
-            );
-
-            loginPassword.classList.remove(
-                "input-error"
-            );
-        }
-
-        /* LOGIN FORM SUBMISSION*/
-        loginForm.addEventListener(
-            "submit",
-            async function (event) {
-
-                event.preventDefault();
-                clearLoginErrors();
-                const email =
-                    loginEmail.value.trim();
-                const password =
-                    loginPassword.value;
-                let valid = true;
-
-                /* EMAIL*/
-                if (!email) {
-
-                    document
-                        .getElementById(
-                            "loginEmailError"
-                        )
-                        .textContent =
-                        "Please enter your email.";
-
-                    loginEmail.classList.add(
-                        "input-error"
-                    );
-                    valid = false;
-                }
-                else if (
-                    !isValidEmail(email)
-                ) {
-
-                    document
-                        .getElementById(
-                            "loginEmailError"
-                        )
-                        .textContent =
-                        "Please enter a valid email address.";
-
-                    loginEmail.classList.add(
-                        "input-error"
-                    );
-                    valid = false;
-                }
-
-                /* PASSWORD */
-                if (!password) {
-                    document
-                        .getElementById(
-                            "loginPasswordError"
-                        )
-                        .textContent =
-                        "Please enter your password.";
-                    loginPassword.classList.add(
-                        "input-error"
-                    );
-                    valid = false;
-                }
-
-                /* STOP IF INVALID */
-                if (!valid) {
-                    return;
-                }
-
-                /* SAVE LOGIN INFORMATION */
-
-                sessionStorage.setItem(
-                    "verificationEmail",
-                    email
-                );
-
-                sessionStorage.setItem(
-                    "verificationRole",
-                    role
-                );
-
-                sessionStorage.setItem(
-                    "verificationPurpose",
-                    "login"
-                );
-
-                /* Live Server preview only; does not authenticate or send an OTP. */
-                if (["5500", "5501"].includes(window.location.port)) {
-                    sessionStorage.setItem("rememberMe", String(document.getElementById("rememberMe").checked));
-                    window.location.href = "verification-login.html?role=" + encodeURIComponent(role);
-                    return;
-                }
-
-                try {
-                    const rememberMe = document.getElementById("rememberMe").checked;
-
-                    sessionStorage.setItem("rememberMe", String(rememberMe));
-
-                    const response = await fetch("/api/auth/login", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            email: email,
-                            password: password,
-                            role: role,
-                            rememberMe: sessionStorage.getItem("rememberMe") === "true"
-                        })
-                    });
-
-                    const result = await response.json();
-
-
-                    if (!response.ok) {
-                        if (result.locked) {
-                            showLoginModal(
-                                "Login temporarily locked",
-                                `Too many failed password attempts. Please try again in ${result.retry_after || 30} seconds.`,
-                                "!"
-                            );
-                        } else {
-                            showLoginModal(
-                                "Login failed",
-                                result.error || "Unable to log in.",
-                                "!"
-                            );
-                        }
-                        return;
-                    }
-
-
-                    if (result.status === "verification_required") {
-                        sessionStorage.setItem("verificationEmail", email);
-                        sessionStorage.setItem("verificationPurpose", "signup");
-                        window.location.href = "verification-signup.html?role=" + encodeURIComponent(role);
-                        return;
-                    }
-
-                    if (result.status === "approval_pending") {
-                        showLoginModal(
-                            "Account awaiting approval",
-                            result.message || "Your account is waiting for approval.",
-                            "!"
-                        );
-                        return;
-                    }
-
-                    if (result.status === "login_otp_required") {
-                        sessionStorage.setItem("verificationEmail", email);
-                        sessionStorage.setItem("verificationPurpose", "login");
-                        window.location.href = "verification-login.html?role=" + encodeURIComponent(role);
-                        return;
-                    }
-
-
-                    if (result.status === "authenticated") {
-                        // A remembered device is already authenticated by the backend.
-                        window.location.href = "/main/dashboard.html";
-                        return;
-                    }
-
-
-                    showLoginModal(
-                        "Login",
-                        result.message || "Unexpected login response.",
-                        "!"
-                    );
-
-                } catch (error) {
-                    showLoginModal(
-                        "Connection error",
-                        "Could not connect to the login service. Please try again.",
-                        "!"
-                    );
-                }
-
-
-            }
-        );
-
-        /* SOCIAL LOGIN */
-        function socialLogin(provider) {
-            sessionStorage.removeItem("edumetrics-current-profile-email");
-            sessionStorage.removeItem("verifiedEmail");
-            sessionStorage.removeItem("verificationEmail");
-
-            /* Save the same login verification context used by the normal login flow. */
-            sessionStorage.setItem(
-                "verificationRole",
-                role
-            );
-
-            sessionStorage.setItem(
-                "verificationPurpose",
-                "login"
-            );
-
-            if (provider === "Google") {
-                sessionStorage.setItem(
-                    "verificationProvider",
-                    "google"
-                );
-
-                window.location.href =
-                    "verification-gmail-login.html";
-                return;
-            }
-
-            if (provider === "Microsoft") {
-                sessionStorage.setItem(
-                    "verificationProvider",
-                    "microsoft"
-                );
-
-                window.location.href =
-                    "verification-ms-login.html";
-            }
-        }
-
-        /* FORGOT PASSWORD */
-        function handleForgotPassword(event) {
-            event.preventDefault();
-
-            const currentParams = new URLSearchParams(
-                window.location.search
-            );
-
-            const selectedRole = currentParams.get("role") || role;
-
-            alert("Selected role: " + selectedRole);
-
-            window.location.href =
-                "forgot-password.html?role=" +
-                encodeURIComponent(selectedRole);
-        }
-
-
-
-
-        /* SHOW MODAL */
-        function showLoginModal(
-            title,
-            message,
-            icon
-        ) {
-
-            const modal =
-                document.getElementById(
-                    "loginMessageModal"
-                );
-
-            document.getElementById(
-                "loginModalTitle"
-            ).textContent =
-                title;
-
-            document.getElementById(
-                "loginModalMessage"
-            ).textContent =
-                message;
-
-            document.getElementById(
-                "loginModalIcon"
-            ).textContent =
-                icon;
-
-            modal.classList.add(
-                "show"
-            );
-
-            modal.setAttribute(
-                "aria-hidden",
-                "false"
-            );
-        }
-
-        /* CLOSE MODAL */
-
-        function closeLoginModal() {
-
-            const modal =
-                document.getElementById(
-                    "loginMessageModal"
-                );
-
-            modal.classList.remove(
-                "show"
-            );
-
-            modal.setAttribute(
-                "aria-hidden",
-                "true"
-            );
-        }
-
-        /* CLICK OURSIDE MODAL */
-        document.addEventListener(
-            "click",
-            function (event) {
-
-                const modal =
-                    document.getElementById(
-                        "loginMessageModal"
-                    );
-
-                if (
-                    event.target === modal
-                ) {
-                    closeLoginModal();
-                }
-            }
-        );
-
-        /* ESC TO CLOSE */
-        document.addEventListener(
-            "keydown",
-            function (event) {
-                if (
-                    event.key === "Escape"
-                ) {
-                    closeLoginModal();
-                }
-            }
-        );
-
-        document.getElementById("forgotPasswordLink").addEventListener("click", function (event) {
-            event.preventDefault();
-
-            const currentParams = new URLSearchParams(window.location.search);
-            const selectedRole = currentParams.get("role") || "student";
-
-            window.location.href =
-                "forgot-password.html?role=" +
-                encodeURIComponent(selectedRole);
-        });
-
-
-        document.addEventListener("DOMContentLoaded", function () {
-            const params = new URLSearchParams(window.location.search);
-            const errorType = params.get("oauth_error");
-            const errorMessage = document.getElementById("oauthErrorMessage");
-
-            if (errorType === "account_exists" && errorMessage) {
-                errorMessage.textContent =
-                    "Account Already Exists. Please use your account.";
-
-                errorMessage.style.display = "block";
-            }
-        });
-
-
-    </script>
-
     <!-- SHARED JAVASCRIPT -->
     <script src="../Static/script.js"></script>
 
 </body>
-
 </html>

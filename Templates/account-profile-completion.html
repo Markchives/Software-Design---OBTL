@@ -79,7 +79,7 @@
                   <svg viewBox="0 0 24 24"><path d="M3 9l9-5 9 5-9 5-9-5z"></path><path d="M6 11.5V16c3.5 2.4 8.5 2.4 12 0v-4.5"></path></svg>
                 </span>
                 <select id="profileProgram" name="programId" aria-label="Program" required disabled>
-                  <option value="" selected>Select College First</option>
+                  <option value="" selected>Select Program</option>
                 </select>
               </div>
               <small class="form-error" id="profileProgramError" role="status"></small>
@@ -130,122 +130,6 @@
       </section>
     </div>
   </main>
-
-  <script>
-    const profileForm = document.getElementById("profileForm");
-    const profileRole = profileForm.dataset.role;
-    const departmentSelect = document.getElementById("profileDepartment");
-    const collegeSelect = document.getElementById("profileCollege");
-    const programSelect = document.getElementById("profileProgram");
-    const profileError = document.getElementById("profileError");
-    let studentProgramRequest = 0;
-
-    async function loadProfileOptions() {
-      const select = profileRole === "student" ? collegeSelect : departmentSelect;
-      if (!select) return;
-      const errorMessage = document.getElementById(
-        profileRole === "student" ? "profileCollegeError" : "profileOptionsError"
-      );
-      try {
-        const response = await fetch("/api/registration-options/" + encodeURIComponent(profileRole), {
-          headers: { Accept: "application/json" },
-          credentials: "same-origin"
-        });
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || "Options could not be loaded.");
-        if (!Array.isArray(result.options) || result.options.length === 0) {
-          throw new Error("No colleges or departments are available. Please contact an administrator.");
-        }
-        select.replaceChildren(new Option(
-          profileRole === "student" ? "Select College" : "Select Department",
-          ""
-        ));
-        result.options.forEach(option => {
-          select.add(new Option(option.label, profileRole === "student" ? option.id : option.value));
-        });
-        select.disabled = false;
-      } catch (error) {
-        errorMessage.textContent = error.message;
-      }
-    }
-
-    async function loadStudentPrograms(departmentId) {
-      const errorMessage = document.getElementById("profileProgramError");
-      const requestId = ++studentProgramRequest;
-      programSelect.replaceChildren(new Option(
-        departmentId ? "Loading programs..." : "Select College First",
-        ""
-      ));
-      programSelect.disabled = true;
-      errorMessage.textContent = "";
-      if (!departmentId) return;
-
-      try {
-        const response = await fetch(
-          "/api/registration-options/student/" +
-          encodeURIComponent(departmentId) + "/programs",
-          { headers: { Accept: "application/json" }, credentials: "same-origin" }
-        );
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || "Programs could not be loaded.");
-        if (requestId !== studentProgramRequest) return;
-        if (!Array.isArray(result.options) || result.options.length === 0) {
-          throw new Error("No programs are configured for this college yet.");
-        }
-        programSelect.replaceChildren(new Option("Select Program", ""));
-        result.options.forEach(option => {
-          programSelect.add(new Option(option.label, option.id));
-        });
-        programSelect.disabled = false;
-      } catch (error) {
-        if (requestId === studentProgramRequest) errorMessage.textContent = error.message;
-      }
-    }
-
-    if (collegeSelect) {
-      collegeSelect.addEventListener("change", () => {
-        document.getElementById("profileCollegeError").textContent = "";
-        loadStudentPrograms(collegeSelect.value);
-      });
-    }
-
-    loadProfileOptions();
-
-    profileForm.addEventListener("submit", async event => {
-      event.preventDefault();
-      if (!profileForm.reportValidity()) return;
-
-      const formData = new FormData(profileForm);
-      const button = profileForm.querySelector("button[type='submit']");
-      button.disabled = true;
-      profileError.hidden = true;
-      try {
-        const response = await fetch("/api/auth/complete-profile", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          credentials: "same-origin",
-          body: JSON.stringify({
-            fullName: formData.get("fullName"),
-            idNumber: formData.get("idNumber"),
-            department: profileRole === "student"
-              ? programSelect.selectedOptions[0]?.textContent || ""
-              : formData.get("department") || "",
-            departmentId: formData.get("departmentId") || "",
-            programId: formData.get("programId") || ""
-          })
-        });
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || "Profile could not be saved.");
-        window.location.href = result.status === "approval_pending"
-          ? "/account-pending.html"
-          : "/main/dashboard.html";
-      } catch (error) {
-        profileError.textContent = error.message;
-        profileError.hidden = false;
-      } finally {
-        button.disabled = false;
-      }
-    });
-  </script>
+  <script src="/Static/script.js" defer></script>
 </body>
 </html>
