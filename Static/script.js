@@ -7381,12 +7381,6 @@ document.addEventListener("DOMContentLoaded", function () {
             'department-head': 'Department Head',
             'admin-security': 'Admin'
         };
-        const photoRoleNames = {
-            student: 'student',
-            faculty: 'faculty',
-            'department-head': 'dept-head',
-            'admin-security': 'admin'
-        };
         function applyHeaderProfile(account) {
             if (!account || !roleDisplayNames[account.role]) {
                 throw new Error('The account profile response is invalid.');
@@ -7398,13 +7392,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (roleLabel) roleLabel.textContent = roleDisplayNames[account.role];
             info?.classList.add('ed-header-identity-ready');
 
-            const photoKey = 'edumetrics-' + photoRoleNames[account.role] + '-profile-photo';
-            let photoData = '';
-            try {
-                photoData = localStorage.getItem(photoKey) || '';
-            } catch (storageError) {
-                console.warn('Unable to read the saved profile photo.', storageError);
-            }
+            const photoData = String(account.profile_photo_url || '');
             if (photoData) {
                 let avatarPhoto = avatar.querySelector('.account-avatar-photo');
                 if (!avatarPhoto) {
@@ -7417,6 +7405,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 avatarPhoto.src = photoData;
                 avatar.querySelectorAll(':scope > :not(.account-avatar-photo)').forEach(child => {
                     child.hidden = true;
+                });
+            } else {
+                avatar.querySelector('.account-avatar-photo')?.remove();
+                avatar.querySelectorAll(':scope > :not(.account-avatar-photo)').forEach(child => {
+                    child.hidden = false;
                 });
             }
         }
@@ -7670,6 +7663,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 Object.entries(values).forEach(([id, value]) => {
                     if (accountFields[id]) accountFields[id].textContent = value || 'Not available';
                 });
+                if (profile.profile_photo_url) showPhoto(profile.profile_photo_url);
+                else clearPhoto();
                 const accountName = page.querySelector('#accountName');
                 if (accountName) {
                     accountName.textContent = profile.full_name || label + ' Account';
@@ -7692,21 +7687,16 @@ document.addEventListener("DOMContentLoaded", function () {
         const photoInput = page.querySelector('#accountPhotoInput');
         const photo = page.querySelector('#accountProfileImage');
         const photoMessage = page.querySelector('#accountPhotoMessage');
-        const photoKey = 'edumetrics-' + selected + '-profile-photo';
         const photoDialog = page.querySelector('#accountPhotoDialog');
         page.querySelector('#accountEditPhotoButton')?.addEventListener('click', () => photoDialog?.showModal());
         page.querySelector('#accountClosePhotoButton')?.addEventListener('click', () => photoDialog?.close());
         page.querySelector('#accountUploadPhotoButton')?.addEventListener('click', () => { photoDialog?.close(); photoInput?.click(); });
-        page.querySelector('#accountRemovePhotoButton')?.addEventListener('click', () => {
-            try { localStorage.removeItem(photoKey); } catch (_) {}
+        function clearPhoto() {
             if (photo) { photo.removeAttribute('src'); photo.hidden = true; }
             const avatar = page.querySelector('.so-topbar .so-avatar');
             avatar?.querySelector('.account-avatar-photo')?.remove();
-            avatar?.querySelector('.sd-icon-placeholder')?.removeAttribute('hidden');
-            if (photoInput) photoInput.value = '';
-            if (photoMessage) photoMessage.textContent = '';
-            photoDialog?.close();
-        });
+            avatar?.querySelectorAll(':scope > :not(.account-avatar-photo)').forEach(child => { child.hidden = false; });
+        }
         function showPhoto(data) {
             if (!photo || !data) return;
             photo.src = data;
@@ -7719,8 +7709,23 @@ document.addEventListener("DOMContentLoaded", function () {
                 avatarPhoto.src = data;
             }
         }
-        try { showPhoto(localStorage.getItem(photoKey)); } catch (_) { }
-        photoInput?.addEventListener('change', () => {
+        page.querySelector('#accountRemovePhotoButton')?.addEventListener('click', async () => {
+            if (photoMessage) photoMessage.textContent = 'Removing profile photo...';
+            try {
+                const response = await fetch('/api/account/profile-photo', {
+                    method: 'DELETE', credentials: 'same-origin',
+                    headers: { Accept: 'application/json' }
+                });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(result.error || 'Profile photo could not be removed.');
+                clearPhoto();
+                if (photoMessage) photoMessage.textContent = 'Profile photo removed.';
+                photoDialog?.close();
+            } catch (error) {
+                if (photoMessage) photoMessage.textContent = error.message;
+            }
+        });
+        photoInput?.addEventListener('change', async () => {
             const file = photoInput.files?.[0];
             if (!file) return;
             if (photoMessage) photoMessage.textContent = '';
@@ -7729,12 +7734,23 @@ document.addEventListener("DOMContentLoaded", function () {
                 photoInput.value = '';
                 return;
             }
-            const reader = new FileReader();
-            reader.onload = () => {
-                try { localStorage.setItem(photoKey, String(reader.result)); showPhoto(String(reader.result)); if (photoMessage) photoMessage.textContent = ''; }
-                catch (_) { photoMessage.textContent = 'Unable to save photo in this browser.'; }
-            };
-            reader.readAsDataURL(file);
+            if (photoMessage) photoMessage.textContent = 'Saving profile photo...';
+            try {
+                const body = new FormData();
+                body.append('photo', file);
+                const response = await fetch('/api/account/profile-photo', {
+                    method: 'POST', credentials: 'same-origin',
+                    headers: { Accept: 'application/json' }, body
+                });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(result.error || 'Profile photo could not be saved.');
+                showPhoto(result.profile_photo_url);
+                if (photoMessage) photoMessage.textContent = 'Profile photo updated.';
+                photoInput.value = '';
+                photoDialog?.close();
+            } catch (error) {
+                if (photoMessage) photoMessage.textContent = error.message;
+            }
         });
         const form = page.querySelector('#changePasswordForm');
         page.querySelectorAll('[data-account-password-toggle]').forEach(button => button.addEventListener('click', () => {
@@ -7742,16 +7758,36 @@ document.addEventListener("DOMContentLoaded", function () {
             field.type = field.type === 'password' ? 'text' : 'password';
             button.setAttribute('aria-label', (field.type === 'password' ? 'Show' : 'Hide') + ' password');
         }));
-        form?.addEventListener('submit', event => {
+        form?.addEventListener('submit', async event => {
             event.preventDefault();
             const current = form.elements.currentPassword.value;
             const next = form.elements.newPassword.value;
             const confirm = form.elements.confirmPassword.value;
             const message = page.querySelector('#passwordMessage');
-            if (!current || !next || !confirm) message.textContent = 'Complete all password fields.';
-            else if (next !== confirm) message.textContent = 'New password and confirmation do not match.';
-            else if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(next)) message.textContent = 'Use at least 8 characters with a letter, number, and special character.';
-            else message.textContent = 'Password changes require the connected Flask backend. No changes were saved.';
+            if (!current || !next || !confirm) { message.textContent = 'Complete all password fields.'; return; }
+            if (next !== confirm) { message.textContent = 'New password and confirmation do not match.'; return; }
+            if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(next)) {
+                message.textContent = 'Use at least 8 characters with a letter, number, and special character.';
+                return;
+            }
+            const submit = form.querySelector('[type="submit"]');
+            if (submit) submit.disabled = true;
+            message.textContent = 'Updating password...';
+            try {
+                const response = await fetch('/api/account/change-password', {
+                    method: 'POST', credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                    body: JSON.stringify({ currentPassword: current, newPassword: next, confirmPassword: confirm })
+                });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(result.error || 'Password could not be updated.');
+                form.reset();
+                message.textContent = result.message || 'Password updated successfully.';
+            } catch (error) {
+                message.textContent = error.message;
+            } finally {
+                if (submit) submit.disabled = false;
+            }
         });
     }
     if (document.readyState === 'loading') {
