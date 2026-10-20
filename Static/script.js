@@ -282,7 +282,19 @@
     async function load() {
         rows.replaceChildren();
         const section = sections.find(item => item.section_id === sectionSelect.value);
-        if (!section) return;
+        if (!section) {
+            const row = document.createElement('tr'); row.className = 'faculty-outcome-placeholder';
+            const cell = document.createElement('td'); cell.colSpan = 3; cell.textContent = 'Select a course section to view its outcomes.';
+            row.appendChild(cell); rows.appendChild(row);
+            status.textContent = 'Choose a section to load its syllabus outcomes.';
+            return;
+        }
+        const heading = root.closest('.so-main')?.querySelector('.cw-hero h2');
+        const subheading = root.closest('.so-main')?.querySelector('.cw-hero p');
+        const breadcrumb = root.closest('.so-main')?.querySelector('.cw-breadcrumb-current');
+        if (heading) heading.textContent = section.course_code + ' — ' + section.course_title;
+        if (subheading) subheading.textContent = section.section_name;
+        if (breadcrumb) breadcrumb.textContent = section.course_code + ' / ' + section.section_name;
         status.textContent = 'Loading outcomes from the course syllabus...';
         try {
             const data = await request('/api/faculty/courses/' + encodeURIComponent(section.course_id) + '/outcome-mappings');
@@ -290,11 +302,13 @@
             (data.outcomes || []).forEach(co => {
                 const row = document.createElement('tr');
                 const label = document.createElement('td');
+                label.className = 'faculty-outcome-description';
                 label.textContent = co.code + ' — ' + co.description;
                 const choices = document.createElement('td');
+                choices.className = 'faculty-outcome-choices';
                 (data.student_outcomes || []).forEach(so => {
                     const wrapper = document.createElement('label');
-                    wrapper.style.marginRight = '12px';
+                    wrapper.className = 'faculty-outcome-choice';
                     const input = document.createElement('input'); input.type = 'checkbox';
                     input.dataset.co = co.id; input.dataset.so = so.id;
                     input.checked = selected.has(co.id + ':' + so.id);
@@ -304,8 +318,15 @@
                 const target = document.createElement('td'); target.textContent = Number(co.target_percentage || 70).toFixed(1) + '%';
                 row.append(label, choices, target); rows.appendChild(row);
             });
-            if (!data.outcomes?.length) status.textContent = 'Add Course Outcomes to the syllabus before mapping Student Outcomes.';
-            else status.textContent = 'Review the syllabus mappings and save your changes.';
+            if (!data.outcomes?.length) {
+                const row = document.createElement('tr'); row.className = 'faculty-outcome-placeholder';
+                const cell = document.createElement('td'); cell.colSpan = 3;
+                cell.textContent = 'No Course Outcomes are configured for this course yet. Add them under Syllabus & Outcomes before creating activity mappings.';
+                row.appendChild(cell); rows.appendChild(row);
+                status.textContent = 'No syllabus outcomes are available for this course.';
+            }
+            else if (!data.student_outcomes?.length) status.textContent = 'No Student Outcomes are configured yet. Contact your Department Head before mapping.';
+            else status.textContent = data.outcomes.length + ' Course Outcome(s) loaded. Select one or more aligned Student Outcomes, then save.';
         } catch (error) { status.textContent = error.message; }
     }
     request('/api/faculty/sections').then(data => {
