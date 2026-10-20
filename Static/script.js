@@ -850,6 +850,9 @@
             row.appendChild(actionCell);
             body.appendChild(row);
         });
+        const tableWrap = body.closest(".cr-table-wrap");
+        if (tableWrap)
+            tableWrap.scrollTop = 0;
         if (empty)
             empty.hidden = rows.length > 0;
     }

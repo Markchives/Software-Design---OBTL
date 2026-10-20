@@ -2732,6 +2732,7 @@ body.cm-dept-review-open, body.cm-dept-modal-open{overflow:hidden;}
 .cr-faculty-page .crf-table th, .cr-faculty-page .crf-table td{overflow:hidden;text-overflow:ellipsis;}
 .cr-faculty-page .crf-table td:nth-child(4){overflow-wrap:anywhere;word-break:normal;white-space:normal;}
 .cr-faculty-page .crf-table th:nth-child(6){white-space:normal;line-height:1.15;}
+.cr-faculty-page:not(.cr-dept-head-page) .cr-table-wrap{box-sizing:border-box;height:min(52vh,410px);max-height:410px;min-height:220px;overflow-x:auto;overflow-y:auto;scrollbar-gutter:stable;}
 .cr-faculty-page .crf-category{min-width:92px;padding:4px 10px;display:inline-flex;justify-content:center;border:1px solid #2D71A9;border-radius:14px;font-size:11px;font-weight:700;}
 .cr-faculty-page .crf-status{min-width:92px;padding:4px 10px;display:inline-flex;justify-content:center;border-radius:14px;font-size:11px;font-weight:700;}
 .cr-faculty-page .crf-status.enrolled{background:#CFF28C;color:#4E7800;}
