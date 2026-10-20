@@ -734,16 +734,40 @@
 (function () {
     "use strict";
     const page = document.querySelector(".cr-faculty-page");
-    if (!page)
+    if (!page || page.classList.contains("cr-dept-head-page"))
         return;
     const body = document.getElementById("crfRosterBody");
     const search = document.getElementById("crfSearch");
     const sort = document.getElementById("crfSort");
     const category = document.getElementById("crfCategory");
     const empty = document.getElementById("crfEmpty");
+    const sectionSelect = document.getElementById("crfSectionSelect");
     const importModal = document.getElementById("crfImportModal");
+    const addStudentModal = document.getElementById("crfAddStudentModal");
     const removeModal = document.getElementById("crfRemoveModal");
-    let pendingRemoveRow = null;
+    const rosterMessage = document.getElementById("crfRosterMessage");
+    const studentSearch = document.getElementById("crfStudentSearch");
+    const studentSearchResults = document.getElementById("crfStudentSearchResults");
+    const studentSearchMessage = document.getElementById("crfStudentSearchMessage");
+    const fileInput = document.getElementById("crfRosterFile");
+    const previewBody = document.getElementById("crfPreviewBody");
+    const importMessage = document.getElementById("crfImportMessage");
+    let sections = [];
+    let roster = [];
+    let previewRows = [];
+    let pendingEnrollment = null;
+    let searchTimer = null;
+
+    async function api(url, options) {
+        const response = await fetch(url, Object.assign({
+            headers: { Accept: "application/json" },
+            credentials: "same-origin"
+        }, options || {}));
+        const result = await response.json().catch(function () { return {}; });
+        if (!response.ok)
+            throw new Error(result.error || "The request could not be completed.");
+        return result;
+    }
 
     function setModal(modal, show) {
         if (!modal)
@@ -753,15 +777,17 @@
         document.body.classList.toggle("crf-modal-open", document.querySelector(".crf-modal.show") !== null);
     }
 
-    function rosterRows() {
-        return body ? Array.from(body.querySelectorAll("tr")) : [];
+    function selectedSection() {
+        return sections.find(function (section) {
+            return section.section_id === (sectionSelect ? sectionSelect.value : "");
+        }) || null;
     }
 
-    function renumber() {
-        rosterRows().forEach(function (row, index) {
-            if (row.cells[0])
-                row.cells[0].textContent = String(index + 1);
-        });
+    function setMessage(element, message, isError) {
+        if (!element)
+            return;
+        element.textContent = message || "";
+        element.classList.toggle("is-error", Boolean(isError));
     }
 
     function renderRoster() {
@@ -770,25 +796,62 @@
         const q = (search ? search.value : "").trim().toLowerCase();
         const filter = category ? category.value : "all";
         const mode = sort ? sort.value : "az";
-        const rows = rosterRows();
+        const rows = roster.filter(function (student) {
+            const text = [
+                student.student_number,
+                student.full_name,
+                student.email
+            ].join(" ").toLowerCase();
+            return text.includes(q) &&
+                (filter === "all" || student.enrollment_status === filter);
+        });
         rows.sort(function (a, b) {
-            const nameA = a.cells[2].textContent.trim().toLowerCase();
-            const nameB = b.cells[2].textContent.trim().toLowerCase();
+            const nameA = String(a.full_name || "").toLowerCase();
+            const nameB = String(b.full_name || "").toLowerCase();
             if (mode === "za")
                 return nameB.localeCompare(nameA);
             if (mode === "id")
-                return a.cells[1].textContent.trim().localeCompare(b.cells[1].textContent.trim(), undefined, { numeric: true });
+                return String(a.student_number || "").localeCompare(
+                    String(b.student_number || ""), undefined, { numeric: true }
+                );
             return nameA.localeCompare(nameB);
         });
-        rows.forEach(function (row) {
-            const matchesSearch = row.textContent.toLowerCase().includes(q);
-            const matchesCategory = filter === "all" || row.dataset.category === filter;
-            row.hidden = !(matchesSearch && matchesCategory);
+        body.replaceChildren();
+        rows.forEach(function (student, index) {
+            const row = document.createElement("tr");
+            const number = document.createElement("td");
+            number.textContent = String(index + 1);
+            row.appendChild(number);
+            [student.student_number, student.full_name, student.email].forEach(function (value) {
+                const cell = document.createElement("td");
+                cell.textContent = value || "—";
+                row.appendChild(cell);
+            });
+            const statusCell = document.createElement("td");
+            const status = document.createElement("span");
+            status.className = "crf-status " + (
+                student.enrollment_status === "active" ? "enrolled" : "pending"
+            );
+            status.textContent = student.enrollment_status || "unknown";
+            statusCell.appendChild(status);
+            row.appendChild(statusCell);
+            const actionCell = document.createElement("td");
+            if (student.enrollment_status === "active" || student.enrollment_status === "dropped") {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = student.enrollment_status === "active"
+                    ? "crf-remove-btn" : "crf-reenroll-btn";
+                button.dataset.studentProfileId = student.student_profile_id;
+                button.textContent = student.enrollment_status === "active" ? "Drop" : "Re-enroll";
+                actionCell.appendChild(button);
+            } else {
+                actionCell.textContent = "—";
+            }
+            row.appendChild(actionCell);
             body.appendChild(row);
         });
-        renumber();
         if (empty)
-            empty.hidden = rows.some(function (row) { return !row.hidden; });
+            empty.hidden = rows.length > 0;
     }
 
     function showImportStep(step) {
@@ -799,35 +862,298 @@
             item.classList.toggle("active", Number(item.dataset.step) <= step);
         });
     }
+
+    function sectionLabel(section) {
+        return [
+            section.course_code,
+            section.section_name,
+            section.academic_year_name,
+            section.term_name
+        ].filter(Boolean).join(" · ");
+    }
+
+    async function loadRoster() {
+        const section = selectedSection();
+        roster = [];
+        renderRoster();
+        if (!section) {
+            ["crfTotal", "crfActive", "crfInactive"].forEach(function (id) {
+                const value = document.getElementById(id);
+                if (value) value.textContent = "—";
+            });
+            setMessage(rosterMessage, "", false);
+            return;
+        }
+        ["crfTotal", "crfActive", "crfInactive"].forEach(function (id) {
+            const value = document.getElementById(id);
+            if (value) value.textContent = "—";
+        });
+        setMessage(rosterMessage, "Loading roster…", false);
+        try {
+            const result = await api(
+                "/api/faculty/sections/" + encodeURIComponent(section.section_id) + "/roster"
+            );
+            roster = result.roster || [];
+            const counts = result.counts || {};
+            document.getElementById("crfTotal").textContent = String(counts.total || 0);
+            document.getElementById("crfActive").textContent = String(counts.active || 0);
+            document.getElementById("crfInactive").textContent = String(counts.inactive || 0);
+            setMessage(rosterMessage, "", false);
+            renderRoster();
+        } catch (error) {
+            setMessage(rosterMessage, error.message, true);
+        }
+    }
+
+    async function loadSections() {
+        try {
+            const result = await api("/api/faculty/sections");
+            sections = result.sections || [];
+            sectionSelect.replaceChildren();
+            const placeholder = document.createElement("option");
+            placeholder.value = "";
+            placeholder.textContent = sections.length ? "Select an assigned section" : "No assigned sections";
+            sectionSelect.appendChild(placeholder);
+            sections.forEach(function (section) {
+                const option = document.createElement("option");
+                option.value = section.section_id;
+                option.textContent = sectionLabel(section);
+                sectionSelect.appendChild(option);
+            });
+            if (sections.length === 1) {
+                sectionSelect.value = sections[0].section_id;
+                await loadRoster();
+            } else if (!sections.length) {
+                setMessage(rosterMessage, "No course sections are currently assigned to your account.", false);
+            }
+        } catch (error) {
+            sectionSelect.replaceChildren();
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "Unable to load assigned sections";
+            sectionSelect.appendChild(option);
+            setMessage(rosterMessage, error.message, true);
+        }
+    }
+
+    function resultText(status) {
+        const messages = {
+            eligible: "Ready to enroll",
+            enrolled: "Enrolled",
+            reactivated: "Re-enrolled",
+            already_active: "Already active in this section",
+            already_completed: "Enrollment already completed",
+            section_conflict: "Active in another section for this course and term",
+            invalid_student: "No active student account",
+            unknown_student: "Student account not found",
+            duplicate_in_file: "Duplicate student number in file"
+        };
+        return messages[status] || status || "Not eligible";
+    }
+
+    async function enrollStudents(profileIds) {
+        const section = selectedSection();
+        if (!section || !profileIds.length)
+            return [];
+        const result = await api(
+            "/api/faculty/sections/" + encodeURIComponent(section.section_id) + "/enrollments",
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Accept: "application/json" },
+                body: JSON.stringify({ student_profile_ids: profileIds })
+            }
+        );
+        await loadRoster();
+        return result.results || [];
+    }
+
+    function parseCsv(text) {
+        const rows = [];
+        let row = [];
+        let field = "";
+        let quoted = false;
+        for (let i = 0; i < text.length; i += 1) {
+            const character = text[i];
+            if (quoted && character === '"' && text[i + 1] === '"') {
+                field += '"';
+                i += 1;
+            } else if (character === '"') {
+                quoted = !quoted;
+            } else if (character === "," && !quoted) {
+                row.push(field);
+                field = "";
+            } else if ((character === "\n" || character === "\r") && !quoted) {
+                if (character === "\r" && text[i + 1] === "\n") i += 1;
+                row.push(field);
+                if (row.some(function (value) { return value.trim() !== ""; })) rows.push(row);
+                row = [];
+                field = "";
+            } else {
+                field += character;
+            }
+        }
+        if (quoted)
+            throw new Error("The CSV contains an unclosed quoted value.");
+        row.push(field);
+        if (row.some(function (value) { return value.trim() !== ""; })) rows.push(row);
+        return rows;
+    }
+
+    function studentNumberColumn(headers) {
+        return headers.findIndex(function (header) {
+            return ["student id", "student number", "student_id", "student_number"]
+                .includes(header.trim().toLowerCase().replace(/\s+/g, " "));
+        });
+    }
+
+    function renderPreview(results) {
+        previewBody.replaceChildren();
+        results.forEach(function (record, index) {
+            const row = document.createElement("tr");
+            [
+                String(index + 2),
+                record.student_number || "—",
+                record.full_name || "—",
+                record.email || "—",
+                resultText(record.status)
+            ].forEach(function (value) {
+                const cell = document.createElement("td");
+                cell.textContent = value;
+                row.appendChild(cell);
+            });
+            previewBody.appendChild(row);
+        });
+        previewRows = results.filter(function (record) {
+            return record.status === "eligible" && record.student_profile_id;
+        });
+        const button = document.getElementById("crfConfirmImport");
+        button.disabled = previewRows.length === 0;
+        button.textContent = previewRows.length
+            ? "Enroll " + previewRows.length + " Valid Student" + (previewRows.length === 1 ? "" : "s")
+            : "No Valid Students to Enroll";
+    }
+
     if (search)
         search.addEventListener("input", renderRoster);
     if (sort)
         sort.addEventListener("change", renderRoster);
     if (category)
         category.addEventListener("change", renderRoster);
+    if (sectionSelect)
+        sectionSelect.addEventListener("change", loadRoster);
+    document.getElementById("crfAddStudentOpen").addEventListener("click", function () {
+        if (!selectedSection()) {
+            setMessage(rosterMessage, "Select an assigned section first.", true);
+            return;
+        }
+        studentSearch.value = "";
+        studentSearchResults.replaceChildren();
+        setMessage(studentSearchMessage, "Enter at least 2 characters to search.", false);
+        setModal(addStudentModal, true);
+        studentSearch.focus();
+    });
+    if (studentSearch) {
+        studentSearch.addEventListener("input", function () {
+            window.clearTimeout(searchTimer);
+            const query = studentSearch.value.trim();
+            studentSearchResults.replaceChildren();
+            if (query.length < 2) {
+                setMessage(studentSearchMessage, "Enter at least 2 characters to search.", false);
+                return;
+            }
+            setMessage(studentSearchMessage, "Searching…", false);
+            searchTimer = window.setTimeout(async function () {
+                const section = selectedSection();
+                if (!section) return;
+                try {
+                    const result = await api(
+                        "/api/faculty/sections/" + encodeURIComponent(section.section_id) +
+                        "/students?q=" + encodeURIComponent(query)
+                    );
+                    if (
+                        studentSearch.value.trim() !== query ||
+                        selectedSection()?.section_id !== section.section_id
+                    )
+                        return;
+                    const students = result.students || [];
+                    studentSearchResults.replaceChildren();
+                    students.forEach(function (student) {
+                        const item = document.createElement("div");
+                        item.className = "crf-student-search-result";
+                        const details = document.createElement("div");
+                        const name = document.createElement("strong");
+                        name.textContent = student.full_name || student.student_number;
+                        const meta = document.createElement("span");
+                        meta.textContent = [student.student_number, student.email].filter(Boolean).join(" · ");
+                        details.append(name, meta);
+                        const button = document.createElement("button");
+                        button.type = "button";
+                        button.className = "crf-import-btn";
+                        button.dataset.enrollStudentId = student.student_profile_id || "";
+                        button.textContent = student.status === "eligible"
+                            ? "Enroll" : resultText(student.status);
+                        button.disabled = student.status !== "eligible";
+                        item.append(details, button);
+                        studentSearchResults.appendChild(item);
+                    });
+                    setMessage(
+                        studentSearchMessage,
+                        students.length ? "Select a student to enroll." : "No matching student accounts found.",
+                        false
+                    );
+                } catch (error) {
+                    setMessage(studentSearchMessage, error.message, true);
+                }
+            }, 250);
+        });
+    }
 
-    document.addEventListener("click", function (event) {
+    document.addEventListener("click", async function (event) {
         const openImport = event.target.closest("#crfImportOpen");
         if (openImport) {
+            if (!selectedSection()) {
+                setMessage(rosterMessage, "Select an assigned section first.", true);
+                return;
+            }
             event.preventDefault();
             event.stopPropagation();
+            previewRows = [];
+            previewBody.replaceChildren();
+            fileInput.value = "";
             showImportStep(1);
+            setMessage(importMessage, "", false);
             setModal(importModal, true);
             return;
         }
-        if (event.target.closest("#crfSampleRoster")) {
-            showImportStep(2);
-            return;
-        }
         if (event.target.closest("#crfChooseAnother")) {
-            const file = document.getElementById("crfRosterFile");
-            if (file)
-                file.value = "";
+            fileInput.value = "";
+            previewRows = [];
+            previewBody.replaceChildren();
+            setMessage(importMessage, "", false);
             showImportStep(1);
             return;
         }
         if (event.target.closest("#crfConfirmImport")) {
-            showImportStep(3);
+            const button = document.getElementById("crfConfirmImport");
+            button.disabled = true;
+            try {
+                const enrolled = await enrollStudents(previewRows.map(function (record) {
+                    return record.student_profile_id;
+                }));
+                const successful = enrolled.filter(function (record) {
+                    return ["enrolled", "reactivated", "already_active"].includes(record.status);
+                }).length;
+                const skipped = enrolled.length - successful;
+                document.getElementById("crfImportResult").textContent =
+                    successful + " student" + (successful === 1 ? "" : "s") +
+                    " enrolled or already active; " + skipped + " row" +
+                    (skipped === 1 ? " was" : "s were") + " not enrolled.";
+                setMessage(importMessage, "", false);
+                showImportStep(3);
+            } catch (error) {
+                button.disabled = false;
+                setMessage(importMessage, error.message, true);
+            }
             return;
         }
         if (event.target.closest("#crfImportDone")) {
@@ -835,48 +1161,106 @@
             showImportStep(1);
             return;
         }
+        const enrollButton = event.target.closest("[data-enroll-student-id]");
+        if (enrollButton) {
+            enrollButton.disabled = true;
+            try {
+                const result = await enrollStudents([enrollButton.dataset.enrollStudentId]);
+                const outcome = result[0];
+                setMessage(studentSearchMessage, outcome ? resultText(outcome.status) + ": " + outcome.reason : "Enrollment response was empty.", Boolean(!outcome || !["enrolled", "reactivated", "already_active"].includes(outcome.status)));
+                if (outcome && ["enrolled", "reactivated", "already_active"].includes(outcome.status)) {
+                    studentSearchResults.replaceChildren();
+                    studentSearch.value = "";
+                } else {
+                    enrollButton.disabled = false;
+                }
+            } catch (error) {
+                enrollButton.disabled = false;
+                setMessage(studentSearchMessage, error.message, true);
+            }
+            return;
+        }
         const removeButton = event.target.closest(".crf-remove-btn");
         if (removeButton) {
-            pendingRemoveRow = removeButton.closest("tr");
-            const name = pendingRemoveRow && pendingRemoveRow.cells[2]
-                ? pendingRemoveRow.cells[2].textContent.trim() : "this student";
+            const student = roster.find(function (item) {
+                return item.student_profile_id === removeButton.dataset.studentProfileId;
+            });
+            pendingEnrollment = student || null;
             const target = document.getElementById("crfRemoveName");
-            if (target)
-                target.textContent = name;
+            if (target) target.textContent = student ? student.full_name : "this student";
             setModal(removeModal, true);
             return;
         }
+        const reEnrollButton = event.target.closest(".crf-reenroll-btn");
+        if (reEnrollButton) {
+            reEnrollButton.disabled = true;
+            try {
+                const result = await enrollStudents([reEnrollButton.dataset.studentProfileId]);
+                const outcome = result[0];
+                setMessage(rosterMessage, outcome ? resultText(outcome.status) + ": " + outcome.reason : "Enrollment response was empty.", Boolean(!outcome || !["enrolled", "reactivated", "already_active"].includes(outcome.status)));
+            } catch (error) {
+                reEnrollButton.disabled = false;
+                setMessage(rosterMessage, error.message, true);
+            }
+            return;
+        }
         if (event.target.closest("#crfRemoveConfirm")) {
-            if (pendingRemoveRow)
-                pendingRemoveRow.remove();
-            pendingRemoveRow = null;
+            const section = selectedSection();
+            if (!section || !pendingEnrollment) return;
+            const confirmButton = document.getElementById("crfRemoveConfirm");
+            confirmButton.disabled = true;
+            try {
+                const result = await api(
+                    "/api/faculty/sections/" + encodeURIComponent(section.section_id) +
+                    "/enrollments/drop",
+                    {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", Accept: "application/json" },
+                        body: JSON.stringify({
+                            student_profile_id: pendingEnrollment.student_profile_id
+                        })
+                    }
+                );
+                const outcome = (result.results || [])[0];
+                setMessage(rosterMessage, outcome ? resultText(outcome.status) + ": " + outcome.reason : "Enrollment response was empty.", Boolean(!outcome || outcome.status !== "dropped"));
+                await loadRoster();
+            } catch (error) {
+                setMessage(rosterMessage, error.message, true);
+            }
+            pendingEnrollment = null;
+            confirmButton.disabled = false;
             setModal(removeModal, false);
-            renderRoster();
             return;
         }
         const close = event.target.closest("[data-crf-close]");
         if (close) {
             if (close.dataset.crfClose === "import")
                 setModal(importModal, false);
+            if (close.dataset.crfClose === "add")
+                setModal(addStudentModal, false);
             if (close.dataset.crfClose === "remove") {
-                pendingRemoveRow = null;
+                pendingEnrollment = null;
                 setModal(removeModal, false);
             }
             return;
         }
         if (event.target === importModal)
             setModal(importModal, false);
+        if (event.target === addStudentModal)
+            setModal(addStudentModal, false);
         if (event.target === removeModal) {
-            pendingRemoveRow = null;
+            pendingEnrollment = null;
             setModal(removeModal, false);
         }
         if (event.target.closest("#crfDownload")) {
-            const visible = rosterRows().filter(function (row) { return !row.hidden; });
-            const lines = [["#", "Student ID", "Student Name", "Email", "Category", "Enrollment Status"]];
-            visible.forEach(function (row) {
-                lines.push(Array.from(row.cells).slice(0, 6).map(function (cell) {
+            const visible = Array.from(body.querySelectorAll("tr")).filter(function (row) {
+                return !row.hidden;
+            });
+            const lines = [["#", "Student ID", "Student Name", "Email", "Enrollment Status"]];
+            visible.forEach(function (row, index) {
+                lines.push([String(index + 1)].concat(Array.from(row.cells).slice(1, 5).map(function (cell) {
                     return cell.textContent.trim();
-                }));
+                })));
             });
             const csv = lines.map(function (line) {
                 return line.map(function (value) {
@@ -887,27 +1271,62 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = "class-roster-COE232.csv";
+            a.download = "class-roster-" + (selectedSection()?.course_code || "section") + ".csv";
             a.click();
             URL.revokeObjectURL(url);
         }
     });
-    const rosterFile = document.getElementById("crfRosterFile");
-    if (rosterFile) {
-        rosterFile.addEventListener("change", function () {
-            if (rosterFile.files && rosterFile.files.length)
+    if (fileInput) {
+        fileInput.addEventListener("change", async function () {
+            if (!fileInput.files || !fileInput.files.length)
+                return;
+            try {
+                const file = fileInput.files[0];
+                if (!file.name.toLowerCase().endsWith(".csv"))
+                    throw new Error("Choose a CSV file.");
+                if (file.size > 1024 * 1024)
+                    throw new Error("The CSV file must be smaller than 1 MB.");
+                const text = (await file.text()).replace(/^\uFEFF/, "");
+                const rows = parseCsv(text);
+                if (rows.length < 2)
+                    throw new Error("The CSV must include a header and at least one student row.");
+                const column = studentNumberColumn(rows[0]);
+                if (column < 0)
+                    throw new Error("Add a Student ID or Student Number column to the CSV.");
+                const studentNumbers = rows.slice(1).map(function (row) {
+                    return row[column] || "";
+                });
+                if (studentNumbers.length > 200)
+                    throw new Error("A single import can include up to 200 student numbers.");
+                const section = selectedSection();
+                const result = await api(
+                    "/api/faculty/sections/" + encodeURIComponent(section.section_id) +
+                    "/enrollments/preview",
+                    {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", Accept: "application/json" },
+                        body: JSON.stringify({ student_numbers: studentNumbers })
+                    }
+                );
+                renderPreview(result.results || []);
+                setMessage(importMessage, "", false);
                 showImportStep(2);
+            } catch (error) {
+                setMessage(importMessage, error.message, true);
+                fileInput.value = "";
+            }
         });
     }
 
     document.addEventListener("keydown", function (event) {
         if (event.key !== "Escape")
             return;
-        pendingRemoveRow = null;
+        pendingEnrollment = null;
         setModal(importModal, false);
+        setModal(addStudentModal, false);
         setModal(removeModal, false);
     });
-    renderRoster();
+    loadSections();
 })();
 
 /* CM DEPT HEAD — CLEAN POPUP CONTROLLER */

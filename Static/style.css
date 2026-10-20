@@ -2698,7 +2698,9 @@ body.cm-dept-review-open, body.cm-dept-modal-open{overflow:hidden;}
 .cr-dept-head-page .crf-table :is(th, td):nth-child(9){width:7%;}
 .cr-dept-head-page .crf-table :is(th, td):nth-child(n/**/+7){padding-left:14px;padding-right:14px;}
 .cr-faculty-page .crf-roster-panel{width:100%;min-height:560px;padding:0 8px 14px;overflow:hidden;border-radius:12px;background:#FFFFFF;}
-.cr-faculty-page:not(.cr-dept-head-page) .crf-toolbar{min-height:68px;padding:0 10px 12px;display:grid;grid-template-columns:170px 230px minmax(300px, 1fr) auto;align-items:end;gap:20px;}
+.cr-faculty-page:not(.cr-dept-head-page) .crf-section-picker{max-width:520px;padding:14px 10px 8px;}
+.cr-faculty-page:not(.cr-dept-head-page) .crf-section-picker select{height:38px;}
+.cr-faculty-page:not(.cr-dept-head-page) .crf-toolbar{min-height:68px;padding:0 10px 12px;display:grid;grid-template-columns:160px 220px minmax(200px, 1fr) auto;align-items:end;gap:14px;}
 .cr-faculty-page .crf-tool-field label{display:block;margin-bottom:7px;color:#004179;font-size:14px;font-weight:700;}
 .cr-faculty-page .crf-tool-field select{width:100%;height:34px;padding:0 10px;border:1px solid #2D71A9;border-radius:5px;outline:none;background:#FFFFFF;color:#004179;font-size:13px;}
 .cr-faculty-page .cr-sort-wrap{display:flex;align-items:center;gap:14px;min-width:0;}
@@ -2707,7 +2709,7 @@ body.cm-dept-review-open, body.cm-dept-modal-open{overflow:hidden;}
 .cr-faculty-page .crf-search{width:100%;max-width:320px;height:34px;padding:0 12px;display:flex;align-items:center;gap:7px;justify-self:center;border:1px solid #2D71A9;border-radius:18px;background:#FFFFFF;color:#004179;}
 .cr-faculty-page .crf-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#004179;font-size:13px;}
 .cr-student-page .cr-search input::placeholder, .cr-faculty-page .crf-search input::placeholder{color:#86A7C1;}
-.cr-faculty-page .crf-toolbar-actions{display:flex;align-items:center;gap:10px;}
+.cr-faculty-page .crf-toolbar-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .cr-faculty-page .crf-import-btn, .cr-faculty-page .crf-download-btn, .cr-faculty-page .crf-outline-btn, .cr-faculty-page .crf-remove-confirm{min-height:34px;padding:0 16px;border-radius:18px;font-family:Arial, Helvetica, sans-serif;font-size:12px;font-weight:700;cursor:pointer;}
 .cr-faculty-page .crf-import-btn{border:0;background:#F4C300;color:#004179;}
 .cr-faculty-page .crf-download-btn{border:0;background:#004179;color:#FFFFFF;}
@@ -2722,12 +2724,11 @@ body.cm-dept-review-open, body.cm-dept-modal-open{overflow:hidden;}
 .cr-faculty-page .crf-table tbody td:first-child{border-left:1px solid #79BFFF;border-radius:10px 0 0 10px;}
 .cr-faculty-page .crf-table tbody td:last-child{border-right:1px solid #79BFFF;border-radius:0 10px 10px 0;}
 .cr-faculty-page:not(.cr-dept-head-page) .crf-table th:nth-child(1), .cr-faculty-page:not(.cr-dept-head-page) .crf-table td:nth-child(1){width:5%;}
-.cr-faculty-page:not(.cr-dept-head-page) .crf-table th:nth-child(2), .cr-faculty-page:not(.cr-dept-head-page) .crf-table td:nth-child(2){width:14%;}
-.cr-faculty-page:not(.cr-dept-head-page) .crf-table th:nth-child(3), .cr-faculty-page:not(.cr-dept-head-page) .crf-table td:nth-child(3){width:19%;}
-.cr-faculty-page:not(.cr-dept-head-page) .crf-table th:nth-child(4), .cr-faculty-page:not(.cr-dept-head-page) .crf-table td:nth-child(4){width:25%;}
-.cr-faculty-page:not(.cr-dept-head-page) .crf-table th:nth-child(5), .cr-faculty-page:not(.cr-dept-head-page) .crf-table td:nth-child(5){width:13%;}
-.cr-faculty-page:not(.cr-dept-head-page) .crf-table th:nth-child(6), .cr-faculty-page:not(.cr-dept-head-page) .crf-table td:nth-child(6){width:14%;}
-.cr-faculty-page:not(.cr-dept-head-page) .crf-table th:nth-child(7), .cr-faculty-page:not(.cr-dept-head-page) .crf-table td:nth-child(7){width:10%;}
+.cr-faculty-page:not(.cr-dept-head-page) .crf-table th:nth-child(2), .cr-faculty-page:not(.cr-dept-head-page) .crf-table td:nth-child(2){width:16%;}
+.cr-faculty-page:not(.cr-dept-head-page) .crf-table th:nth-child(3), .cr-faculty-page:not(.cr-dept-head-page) .crf-table td:nth-child(3){width:23%;}
+.cr-faculty-page:not(.cr-dept-head-page) .crf-table th:nth-child(4), .cr-faculty-page:not(.cr-dept-head-page) .crf-table td:nth-child(4){width:28%;}
+.cr-faculty-page:not(.cr-dept-head-page) .crf-table th:nth-child(5), .cr-faculty-page:not(.cr-dept-head-page) .crf-table td:nth-child(5){width:16%;}
+.cr-faculty-page:not(.cr-dept-head-page) .crf-table th:nth-child(6), .cr-faculty-page:not(.cr-dept-head-page) .crf-table td:nth-child(6){width:12%;}
 .cr-faculty-page .crf-table th, .cr-faculty-page .crf-table td{overflow:hidden;text-overflow:ellipsis;}
 .cr-faculty-page .crf-table td:nth-child(4){overflow-wrap:anywhere;word-break:normal;white-space:normal;}
 .cr-faculty-page .crf-table th:nth-child(6){white-space:normal;line-height:1.15;}
@@ -2736,6 +2737,18 @@ body.cm-dept-review-open, body.cm-dept-modal-open{overflow:hidden;}
 .cr-faculty-page .crf-status.enrolled{background:#CFF28C;color:#4E7800;}
 .cr-faculty-page .crf-status.pending{background:#FFF0AE;color:#C58A00;}
 .cr-faculty-page .crf-remove-btn{min-width:72px;height:28px;border:1px solid #FF4D4D;border-radius:14px;background:#FFFFFF;color:#FF3030;font-size:11px;font-weight:700;cursor:pointer;}
+.cr-faculty-page .crf-reenroll-btn{min-width:80px;height:28px;border:1px solid #2D71A9;border-radius:14px;background:#FFFFFF;color:#004179;font-size:11px;font-weight:700;cursor:pointer;}
+.cr-faculty-page .crf-roster-message{min-height:20px;margin:8px 12px;color:#315D80;font-size:13px;}
+.cr-faculty-page .crf-roster-message.is-error{color:#B42318;}
+.cr-faculty-page .crf-student-search{display:grid;gap:7px;color:#004179;font-size:13px;font-weight:700;}
+.cr-faculty-page .crf-student-search input{height:40px;padding:0 12px;border:1px solid #9AB7CC;border-radius:7px;color:#004179;font:inherit;}
+.cr-faculty-page .crf-add-student-body{max-height:65vh;overflow:auto;padding:20px 28px 28px;}
+.cr-faculty-page .crf-student-search-results{display:grid;gap:8px;max-height:40vh;overflow:auto;}
+.cr-faculty-page .crf-student-search-result{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px;border:1px solid #DCE7EF;border-radius:8px;}
+.cr-faculty-page .crf-student-search-result > div{display:grid;gap:4px;min-width:0;}
+.cr-faculty-page .crf-student-search-result strong{color:#004179;font-size:14px;}
+.cr-faculty-page .crf-student-search-result span{overflow-wrap:anywhere;color:#66829A;font-size:12px;}
+.cr-faculty-page .crf-student-search-result button:disabled,.cr-faculty-page .crf-preview-actions button:disabled{cursor:not-allowed;opacity:.55;}
 .cr-faculty-page .crf-empty{padding:30px;color:#66829A;text-align:center;}
 .cr-faculty-page .crf-modal{position:fixed;inset:0;z-index:3000;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(0, 35, 66, 0.38);}
 .cr-faculty-page .crf-modal.show{display:flex;}
@@ -2780,6 +2793,12 @@ body.sof-modal-open, body.crf-modal-open{overflow:hidden!important;}
 @media(max-width: 1100px) {
   .cr-faculty-page .crf-summary, .cr-faculty-page:not(.cr-dept-head-page) .crf-toolbar{grid-template-columns:repeat(2, minmax(0, 1fr));}
   .cr-faculty-page .crf-search{width:100%;justify-self:stretch;}
+}
+@media(max-width: 700px) {
+  .cr-faculty-page:not(.cr-dept-head-page) .crf-toolbar{grid-template-columns:minmax(0, 1fr);}
+  .cr-faculty-page:not(.cr-dept-head-page) .crf-toolbar-actions{justify-content:flex-start;}
+  .cr-faculty-page .crf-student-search-result{align-items:flex-start;flex-direction:column;}
+  .cr-faculty-page .crf-add-student-body{padding:16px;}
 }
 body:is(.workflow-page, .resources-page):not(.ed-platform-page):not(.ed-inside-page) .workflow-breadcrumb-wrap{position:sticky;top:var(--public-header-height,118px);z-index:99;width:100%;padding:16px 0 14px;background:#FFFFFF;border-bottom:1px solid #E4EBF2;}
 :where(.workflow-page, .resources-page) .workflow-breadcrumb{display:flex;align-items:center;gap:9px;margin:0;color:#6F8498;font-size:15px;font-weight:600;line-height:1.3;}

@@ -366,6 +366,382 @@ def faculty_sections():
         return jsonify({"error": "Course assignments could not be loaded."}), 500
 
 
+def _faculty_roster_section(section_id):
+    if not admin_supabase or not get_faculty_section(section_id):
+        return None
+    rows = (
+        admin_supabase.table("course_sections")
+        .select("id, course_id, academic_term_id, section_name")
+        .eq("id", section_id)
+        .limit(1)
+        .execute()
+        .data
+        or []
+    )
+    return rows[0] if rows else None
+
+
+def _student_roster_preview(profile, section):
+    user_rows = (
+        admin_supabase.table("users")
+        .select("id, full_name, email, role, is_active")
+        .eq("id", profile["user_id"])
+        .limit(1)
+        .execute()
+        .data
+        or []
+    )
+    user = user_rows[0] if user_rows else {}
+    status = "eligible"
+    reason = ""
+    if (
+        user.get("role") != "student"
+        or user.get("is_active") is not True
+        or profile.get("is_enrolled") is not True
+    ):
+        status = "invalid_student"
+        reason = "No active student account was found."
+    else:
+        current_rows = (
+            admin_supabase.table("enrollments")
+            .select("id, enrollment_status")
+            .eq("section_id", section["id"])
+            .eq("student_profile_id", profile["id"])
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if current_rows:
+            current_status = current_rows[0].get("enrollment_status")
+            if current_status == "active":
+                status = "already_active"
+                reason = "Already active in this section."
+            elif current_status == "completed":
+                status = "already_completed"
+                reason = "This enrollment is already completed."
+        if status == "eligible":
+            other_sections = (
+                admin_supabase.table("course_sections")
+                .select("id")
+                .eq("course_id", section["course_id"])
+                .eq("academic_term_id", section["academic_term_id"])
+                .neq("id", section["id"])
+                .execute()
+                .data
+                or []
+            )
+            other_section_ids = [row["id"] for row in other_sections]
+            if other_section_ids:
+                conflict_rows = (
+                    admin_supabase.table("enrollments")
+                    .select("id")
+                    .eq("student_profile_id", profile["id"])
+                    .eq("enrollment_status", "active")
+                    .in_("section_id", other_section_ids)
+                    .limit(1)
+                    .execute()
+                    .data
+                    or []
+                )
+                if conflict_rows:
+                    status = "section_conflict"
+                    reason = "Already active in another section of this course and term."
+    return {
+        "student_profile_id": profile["id"],
+        "student_number": profile.get("student_number", ""),
+        "full_name": user.get("full_name", ""),
+        "email": user.get("email", ""),
+        "status": status,
+        "reason": reason,
+    }
+
+
+@app.get("/api/faculty/sections/<section_id>/roster")
+@require_role("faculty")
+def faculty_section_roster(section_id):
+    if not admin_supabase:
+        return jsonify({"error": "Class rosters are unavailable."}), 503
+    try:
+        section = _faculty_roster_section(section_id)
+        if not section:
+            return jsonify({"error": "Section not found or not assigned to you."}), 404
+        enrollment_rows = (
+            admin_supabase.table("enrollments")
+            .select("student_profile_id, enrollment_status")
+            .eq("section_id", section_id)
+            .execute()
+            .data
+            or []
+        )
+        student_ids = list({
+            row["student_profile_id"] for row in enrollment_rows
+            if row.get("student_profile_id")
+        })
+        profiles = []
+        users_by_id = {}
+        if student_ids:
+            profiles = (
+                admin_supabase.table("student_profiles")
+                .select("id, user_id, student_number")
+                .in_("id", student_ids)
+                .execute()
+                .data
+                or []
+            )
+            user_ids = list({
+                row["user_id"] for row in profiles if row.get("user_id")
+            })
+            if user_ids:
+                users = (
+                    admin_supabase.table("users")
+                    .select("id, full_name, email")
+                    .in_("id", user_ids)
+                    .execute()
+                    .data
+                    or []
+                )
+                users_by_id = {row["id"]: row for row in users}
+        profiles_by_id = {row["id"]: row for row in profiles}
+        roster = []
+        for enrollment in enrollment_rows:
+            profile = profiles_by_id.get(enrollment.get("student_profile_id"))
+            if not profile:
+                continue
+            user = users_by_id.get(profile.get("user_id"), {})
+            roster.append({
+                "student_profile_id": profile["id"],
+                "student_number": profile.get("student_number", ""),
+                "full_name": user.get("full_name", ""),
+                "email": user.get("email", ""),
+                "enrollment_status": enrollment.get("enrollment_status", ""),
+            })
+        return jsonify({
+            "roster": roster,
+            "counts": {
+                "total": len(roster),
+                "active": sum(row["enrollment_status"] == "active" for row in roster),
+                "inactive": sum(row["enrollment_status"] != "active" for row in roster),
+            },
+        }), 200
+    except Exception:
+        app.logger.exception("Unable to load Faculty section roster")
+        return jsonify({"error": "Class roster could not be loaded."}), 500
+
+
+@app.get("/api/faculty/sections/<section_id>/students")
+@require_role("faculty")
+def search_faculty_roster_students(section_id):
+    if not admin_supabase:
+        return jsonify({"error": "Student search is unavailable."}), 503
+    query = (request.args.get("q") or "").strip()
+    if len(query) < 2 or len(query) > 100:
+        return jsonify({"students": []}), 200
+    try:
+        section = _faculty_roster_section(section_id)
+        if not section:
+            return jsonify({"error": "Section not found or not assigned to you."}), 404
+        pattern = f"%{query}%"
+        profiles_by_id = {}
+        number_matches = (
+            admin_supabase.table("student_profiles")
+            .select("id, user_id, student_number, is_enrolled")
+            .ilike("student_number", pattern)
+            .limit(20)
+            .execute()
+            .data
+            or []
+        )
+        for profile in number_matches:
+            profiles_by_id[profile["id"]] = profile
+        user_ids = set()
+        for field in ("full_name", "email"):
+            users = (
+                admin_supabase.table("users")
+                .select("id")
+                .eq("role", "student")
+                .eq("is_active", True)
+                .ilike(field, pattern)
+                .limit(20)
+                .execute()
+                .data
+                or []
+            )
+            user_ids.update(row["id"] for row in users)
+        if user_ids:
+            name_matches = (
+                admin_supabase.table("student_profiles")
+                .select("id, user_id, student_number, is_enrolled")
+                .in_("user_id", list(user_ids))
+                .limit(20)
+                .execute()
+                .data
+                or []
+            )
+            for profile in name_matches:
+                profiles_by_id[profile["id"]] = profile
+        results = [
+            _student_roster_preview(profile, section)
+            for profile in list(profiles_by_id.values())[:25]
+        ]
+        results = [
+            result for result in results
+            if result["status"] != "invalid_student"
+        ]
+        return jsonify({"students": results}), 200
+    except Exception:
+        app.logger.exception("Unable to search students for a Faculty roster")
+        return jsonify({"error": "Student search could not be completed."}), 500
+
+
+@app.post("/api/faculty/sections/<section_id>/enrollments/preview")
+@require_role("faculty")
+def preview_faculty_section_enrollments(section_id):
+    if not admin_supabase:
+        return jsonify({"error": "Roster import is unavailable."}), 503
+    payload = request.get_json(silent=True) or {}
+    if not isinstance(payload, dict):
+        return jsonify({"error": "Roster preview must be a JSON object."}), 400
+    student_numbers = payload.get("student_numbers")
+    if (
+        not isinstance(student_numbers, list)
+        or not student_numbers
+        or len(student_numbers) > 200
+        or any(not isinstance(number, str) or len(number.strip()) > 40 for number in student_numbers)
+    ):
+        return jsonify({"error": "Provide up to 200 student numbers to preview."}), 400
+    try:
+        section = _faculty_roster_section(section_id)
+        if not section:
+            return jsonify({"error": "Section not found or not assigned to you."}), 404
+        results = []
+        seen = set()
+        for raw_number in student_numbers:
+            number = raw_number.strip()
+            if not number:
+                results.append({
+                    "student_number": "",
+                    "status": "invalid_student",
+                    "reason": "Student number is blank.",
+                })
+                continue
+            normalized = number.casefold()
+            if normalized in seen:
+                results.append({
+                    "student_number": number,
+                    "status": "duplicate_in_file",
+                    "reason": "Student number appears more than once in the file.",
+                })
+                continue
+            seen.add(normalized)
+            profiles = (
+                admin_supabase.table("student_profiles")
+                .select("id, user_id, student_number, is_enrolled")
+                .ilike("student_number", number)
+                .limit(2)
+                .execute()
+                .data
+                or []
+            )
+            if not profiles:
+                results.append({
+                    "student_number": number,
+                    "status": "unknown_student",
+                    "reason": "No existing student account matches this student number.",
+                })
+                continue
+            if len(profiles) != 1 or profiles[0].get("student_number", "").casefold() != normalized:
+                results.append({
+                    "student_number": number,
+                    "status": "unknown_student",
+                    "reason": "Student number must match an existing account exactly.",
+                })
+                continue
+            results.append(_student_roster_preview(profiles[0], section))
+        return jsonify({"results": results}), 200
+    except Exception:
+        app.logger.exception("Unable to preview a Faculty roster import")
+        return jsonify({"error": "Roster import could not be previewed."}), 500
+
+
+@app.post("/api/faculty/sections/<section_id>/enrollments")
+@require_role("faculty")
+def enroll_students_in_faculty_section(section_id):
+    if not admin_supabase:
+        return jsonify({"error": "Student enrollment is unavailable."}), 503
+    payload = request.get_json(silent=True) or {}
+    if not isinstance(payload, dict):
+        return jsonify({"error": "Enrollment data must be a JSON object."}), 400
+    student_profile_ids = payload.get("student_profile_ids")
+    if (
+        not isinstance(student_profile_ids, list)
+        or not student_profile_ids
+        or len(student_profile_ids) > 200
+    ):
+        return jsonify({"error": "Select between 1 and 200 students to enroll."}), 400
+    try:
+        section = _faculty_roster_section(section_id)
+        if not section:
+            return jsonify({"error": "Section not found or not assigned to you."}), 404
+        parsed_ids = [str(UUID(str(value))) for value in student_profile_ids]
+        response = admin_supabase.rpc(
+            "manage_faculty_section_enrollments",
+            {
+                "p_section_id": section_id,
+                "p_faculty_user_id": str(g.authenticated_user.id),
+                "p_student_profile_ids": parsed_ids,
+                "p_action": "enroll",
+            },
+        ).execute()
+        return jsonify({"results": response.data or []}), 200
+    except ValueError:
+        return jsonify({"error": "One or more selected student IDs are invalid."}), 400
+    except Exception:
+        app.logger.exception("Unable to enroll students in a Faculty section")
+        return jsonify({
+            "error": (
+                "Student enrollment could not be saved. Check the Flask log "
+                "for the database error and verify that "
+                "database/student_enrollment_workflow.sql has been applied."
+            )
+        }), 503
+
+
+@app.post("/api/faculty/sections/<section_id>/enrollments/drop")
+@require_role("faculty")
+def drop_faculty_section_enrollment(section_id):
+    if not admin_supabase:
+        return jsonify({"error": "Enrollment updates are unavailable."}), 503
+    payload = request.get_json(silent=True) or {}
+    if not isinstance(payload, dict):
+        return jsonify({"error": "Enrollment data must be a JSON object."}), 400
+    try:
+        profile_id = str(UUID(str(payload.get("student_profile_id", ""))))
+        if not _faculty_roster_section(section_id):
+            return jsonify({"error": "Section not found or not assigned to you."}), 404
+        response = admin_supabase.rpc(
+            "manage_faculty_section_enrollments",
+            {
+                "p_section_id": section_id,
+                "p_faculty_user_id": str(g.authenticated_user.id),
+                "p_student_profile_ids": [profile_id],
+                "p_action": "drop",
+            },
+        ).execute()
+        return jsonify({"results": response.data or []}), 200
+    except ValueError:
+        return jsonify({"error": "The selected student ID is invalid."}), 400
+    except Exception:
+        app.logger.exception("Unable to update a Faculty section enrollment")
+        return jsonify({
+            "error": (
+                "Enrollment status could not be updated. Check the Flask log "
+                "and verify that database/student_enrollment_workflow.sql "
+                "has been applied."
+            )
+        }), 503
+
+
 @app.get("/api/student/courses")
 @require_role("student")
 def student_courses():

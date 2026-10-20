@@ -38,22 +38,24 @@
 <div class="cm-filter-group"><label for="crCourse">Course</label><select id="crCourse"><option selected="">Software Design - Lab</option></select></div>
 <div class="cm-filter-group"><label for="crSection">Section</label><input aria-label="Search" autocomplete="off" id="crSection" list="crSectionList" type="search" value="COE232"/><datalist id="crSectionList"><option value="COE232"></option><option value="COE231"></option><option value="COE233"></option></datalist></div>
 </section>
-<section class="so-summary-grid"><article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Total Students</span><strong class="so-summary-number">—</strong></article><article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Total Enrolled Students</span><strong class="so-summary-number">—</strong></article><article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Total Registered Students</span><strong class="so-summary-number">—</strong></article></section>
+<section class="so-summary-grid crf-summary"><article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Roster Size</span><strong class="so-summary-number" id="crfTotal">—</strong></article><article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Active Enrollments</span><strong class="so-summary-number" id="crfActive">—</strong></article><article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Inactive History</span><strong class="so-summary-number" id="crfInactive">—</strong></article></section>
 <section class="cr-roster-panel crf-roster-panel">
+<div class="crf-section-picker crf-tool-field"><label for="crfSectionSelect">Assigned Section</label><select id="crfSectionSelect"><option value="">Loading assigned sections…</option></select></div>
 <div class="cr-toolbar crf-toolbar">
-<div class="crf-tool-field"><label for="crfCategory">Category</label><select id="crfCategory"><option value="all">All Students</option><option value="Registered">Registered</option><option value="Regular">Regular</option><option value="Late Enrollee">Late Enrollee</option><option value="Transferee">Transferee</option></select></div>
+<div class="crf-tool-field"><label for="crfCategory">Enrollment Status</label><select id="crfCategory"><option value="all">All statuses</option><option value="active">Active</option><option value="dropped">Dropped</option><option value="completed">Completed</option></select></div>
 <div class="cr-sort-wrap"><label for="crfSort">Sort By</label><select id="crfSort"><option value="az">Students Name A-Z</option><option value="za">Students Name Z-A</option><option value="id">Student ID</option></select></div>
 <label class="cr-search crf-search"><span aria-hidden="true">⌕</span><input aria-label="⌕" id="crfSearch" placeholder="Search student id, name, or email..." type="search"/></label>
-<div class="crf-toolbar-actions"><button class="crf-import-btn" id="crfImportOpen" type="button">＋ Import Roster</button><button class="crf-download-btn" id="crfDownload" type="button">⇩ Download</button></div>
+<div class="crf-toolbar-actions"><button class="crf-outline-btn" id="crfAddStudentOpen" type="button">＋ Add Student</button><button class="crf-import-btn" id="crfImportOpen" type="button">＋ Import CSV</button><button class="crf-download-btn" id="crfDownload" type="button">⇩ Download</button></div>
 </div>
 <div class="cr-table-wrap">
 <table class="cr-table crf-table">
-<thead><tr><th>#</th><th>Student ID</th><th>Student Name</th><th>Email</th><th>Category</th><th>Enrollment Status</th><th>Action</th></tr></thead>
+<thead><tr><th>#</th><th>Student ID</th><th>Student Name</th><th>Email</th><th>Enrollment Status</th><th>Action</th></tr></thead>
 <tbody id="crfRosterBody">
 </tbody>
 </table>
 <div class="cr-empty" hidden="" id="crfEmpty">No students found.</div>
 </div>
+<p aria-live="polite" class="crf-roster-message" id="crfRosterMessage" role="status"></p>
 </section>
 </main>
 </div>
@@ -69,38 +71,49 @@
 <div class="crf-step" data-step="2"><b>2</b><span>Preview &amp; Validate</span></div>
 <div class="crf-step" data-step="3"><b>3</b><span>Import</span></div>
 </div>
+<p aria-live="polite" class="crf-roster-message" id="crfImportMessage" role="status"></p>
 <div class="crf-import-screen active" data-screen="1">
 <div class="crf-drop-zone">
 <div class="crf-upload-icon">⇧</div>
 <h3>Import your class roster</h3>
-<p>Upload a CSV or Excel roster. The system will preview records before enrollment.</p>
-<input accept=".csv,.xls,.xlsx" id="crfRosterFile" type="file"/>
-<small>Supported: CSV, XLS, XLSX</small>
-<button class="crf-outline-btn" id="crfSampleRoster" type="button">Use Sample Roster</button>
+<p>Upload a CSV with a Student ID or Student Number column. Existing student accounts are required.</p>
+<input accept=".csv,text/csv" id="crfRosterFile" type="file"/>
+<small>Supported: CSV (maximum 200 student numbers)</small>
 </div>
 </div>
 <div class="crf-import-screen" data-screen="2">
 <div class="crf-preview-wrap">
 <table class="crf-preview-table">
-<thead><tr><th>Row</th><th>Student ID</th><th>Student Name</th><th>Email</th><th>Category</th></tr></thead>
-<tbody>
-</tbody>
+<thead><tr><th>Row</th><th>Student ID</th><th>Student Name</th><th>Email</th><th>Result</th></tr></thead>
+<tbody id="crfPreviewBody"></tbody>
 </table>
 </div>
 <div class="crf-preview-actions">
 <button class="crf-outline-btn" id="crfChooseAnother" type="button">Choose Another File</button>
-<button class="crf-import-btn" id="crfConfirmImport" type="button">Confirm Valid Records (3)</button>
+<button class="crf-import-btn" id="crfConfirmImport" type="button" disabled="">Enroll Valid Students</button>
 </div>
 </div>
 <div class="crf-import-screen" data-screen="3">
 <div class="crf-import-complete">
 <div class="crf-success-icon">✓</div>
 <h3>Roster Import Complete</h3>
-<p>3 valid records were enrolled to COE232.</p>
-<p>3 records were excluded and remain flagged for review.</p>
+<p id="crfImportResult"></p>
 <button class="crf-import-btn" id="crfImportDone" type="button">Done</button>
 </div>
 </div>
+</div>
+</div>
+</div>
+<div aria-hidden="true" class="crf-modal" id="crfAddStudentModal">
+<div aria-labelledby="crfAddStudentTitle" aria-modal="true" class="crf-modal-dialog" role="dialog">
+<div class="crf-modal-header">
+<div><h2 id="crfAddStudentTitle">Add Student to Section</h2><p>Search existing active student accounts by ID, name, or email.</p></div>
+<button aria-label="Close" class="crf-modal-close" data-crf-close="add" type="button">×</button>
+</div>
+<div class="crf-modal-body crf-add-student-body">
+<label class="crf-student-search"><span>Search student</span><input autocomplete="off" id="crfStudentSearch" placeholder="Enter at least 2 characters" type="search"/></label>
+<p aria-live="polite" class="crf-roster-message" id="crfStudentSearchMessage" role="status"></p>
+<div aria-label="Student search results" class="crf-student-search-results" id="crfStudentSearchResults"></div>
 </div>
 </div>
 </div>
@@ -108,11 +121,11 @@
 <div aria-modal="true" class="crf-modal-dialog crf-remove-dialog" role="dialog">
 <button aria-label="Close" class="crf-modal-close crf-remove-x" data-crf-close="remove" type="button">×</button>
 <div aria-hidden="true" class="crf-remove-icon">−</div>
-<h2>Remove Student?</h2>
-<p>Are you sure you want to remove <strong id="crfRemoveName">this student</strong> from the class roster?</p>
+<h2>Drop Enrollment?</h2>
+<p>Mark <strong id="crfRemoveName">this student</strong> as dropped? The enrollment record will be kept in the roster history.</p>
 <div class="crf-remove-actions">
 <button class="crf-outline-btn" data-crf-close="remove" type="button">Cancel</button>
-<button class="crf-remove-confirm" id="crfRemoveConfirm" type="button">Remove</button>
+<button class="crf-remove-confirm" id="crfRemoveConfirm" type="button">Drop Enrollment</button>
 </div>
 </div>
 </div>
