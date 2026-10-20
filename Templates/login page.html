@@ -555,12 +555,8 @@
 
 
                     if (result.status === "authenticated") {
-                        // The backend must issue a login OTP before this page can verify it.
-                        // Do not treat a successful password check as completed OTP verification.
-                        sessionStorage.setItem("verificationEmail", email);
-                        sessionStorage.setItem("verificationRole", role);
-                        sessionStorage.setItem("verificationPurpose", "login");
-                        window.location.href = "verification-login.html?role=" + encodeURIComponent(role);
+                        // A remembered device is already authenticated by the backend.
+                        window.location.href = "/main/dashboard.html";
                         return;
                     }
 

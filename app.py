@@ -21,6 +21,7 @@ from flask import (
 from supabase import create_client, Client
 from datetime import datetime, timedelta, timezone
 from werkzeug.utils import secure_filename
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
 
 load_dotenv()
@@ -79,6 +80,55 @@ if not app.secret_key:
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise RuntimeError("Supabase configuration is missing from .env")
+
+REMEMBERED_ACCOUNTS_COOKIE = "edumetrics_remembered_accounts"
+remembered_accounts_serializer = URLSafeTimedSerializer(
+    app.secret_key,
+    salt="edumetrics-remembered-accounts",
+)
+
+
+def get_remembered_accounts():
+    """Load and merge this browser's signed remember-me list and session copy."""
+    cookie_accounts = {}
+    cookie_value = request.cookies.get(REMEMBERED_ACCOUNTS_COOKIE)
+    if cookie_value:
+        try:
+            cookie_accounts = remembered_accounts_serializer.loads(
+                cookie_value,
+                max_age=30 * 24 * 60 * 60,
+            )
+        except (BadSignature, SignatureExpired):
+            cookie_accounts = {}
+
+    session_accounts = session.get("remembered_accounts", {})
+    accounts = {}
+    if isinstance(cookie_accounts, dict):
+        accounts.update(cookie_accounts)
+    if isinstance(session_accounts, dict):
+        accounts.update(session_accounts)
+
+    now = int(time.time())
+    return {
+        str(email).strip().lower(): account
+        for email, account in accounts.items()
+        if isinstance(account, dict)
+        and account.get("expires_at", 0) > now
+        and account.get("user_id")
+    }
+
+
+def set_remembered_accounts_cookie(response, accounts):
+    response.set_cookie(
+        REMEMBERED_ACCOUNTS_COOKIE,
+        remembered_accounts_serializer.dumps(accounts),
+        max_age=30 * 24 * 60 * 60,
+        httponly=True,
+        secure=app.config["SESSION_COOKIE_SECURE"],
+        samesite="Lax",
+        path="/",
+    )
+    return response
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
@@ -2021,16 +2071,7 @@ def login():
 
         # Check remembered accounts for this browser.
 
-        remembered_accounts = session.get("remembered_accounts", {})
-        now = int(time.time())
-
-        # Remove expired remembered accounts.
-        remembered_accounts = {
-            account_email: account_data
-            for account_email, account_data in remembered_accounts.items()
-            if isinstance(account_data, dict)
-            and account_data.get("expires_at", 0) > now
-        }
+        remembered_accounts = get_remembered_accounts()
 
         remembered_account = remembered_accounts.get(email)
 
@@ -2049,10 +2090,11 @@ def login():
             session["user_role"] = actual_role
             session["remembered_accounts"] = remembered_accounts
 
-            return jsonify({
+            response = jsonify({
                 "status": "authenticated",
                 "message": "Login successful."
-            }), 200
+            })
+            return set_remembered_accounts_cookie(response, remembered_accounts), 200
 
         # Password is correct, but require a separate login OTP.
         auth_client.auth.sign_out()
@@ -2064,10 +2106,11 @@ def login():
             }
         })
 
-        return jsonify({
+        response = jsonify({
             "status": "login_otp_required",
             "message": "A login verification code has been requested."
-        }), 200
+        })
+        return set_remembered_accounts_cookie(response, remembered_accounts), 200
 
     except Exception as exc:
         error_text = str(exc).lower()
@@ -2279,15 +2322,8 @@ def verify_otp():
             remember_me = data.get("rememberMe", False) is True
 
             # Preserve remembered accounts when switching users.
-            remembered_accounts = session.get("remembered_accounts", {})
+            remembered_accounts = get_remembered_accounts()
             now = int(time.time())
-
-            remembered_accounts = {
-                account_email: account_data
-                for account_email, account_data in remembered_accounts.items()
-                if isinstance(account_data, dict)
-                and account_data.get("expires_at", 0) > now
-            }
 
             if remember_me:
                 remembered_accounts[email] = {
@@ -2301,9 +2337,10 @@ def verify_otp():
             session["access_token"] = result.session.access_token
             session["refresh_token"] = result.session.refresh_token
             session["user_id"] = result.user.id
+            session["user_role"] = get_user_role(result.user)
             session["remembered_accounts"] = remembered_accounts
 
-        return jsonify({
+        response = jsonify({
             "status": "verified",
             "purpose": purpose,
             "message": (
@@ -2311,7 +2348,10 @@ def verify_otp():
                 if purpose == "login"
                 else "Email verification successful."
             )
-        }), 200
+        })
+        if purpose == "login":
+            set_remembered_accounts_cookie(response, remembered_accounts)
+        return response, 200
 
     except Exception as e:
         app.logger.exception("OTP verification failed")
@@ -2454,6 +2494,7 @@ def forgot_password_page():
 @app.get("/logout")
 def logout_redirect():
     role = session.get("user_role") or session.get("role") or "student"
+    remembered_accounts = session.get("remembered_accounts", {})
 
     allowed_roles = {
         "student",
@@ -2466,6 +2507,8 @@ def logout_redirect():
         role = "student"
 
     session.clear()
+    session.permanent = True
+    session["remembered_accounts"] = remembered_accounts
 
     return redirect(
         url_for("login_page", role=role)
@@ -2476,6 +2519,7 @@ def logout_redirect():
 def logout():
     refresh_token = session.get("refresh_token")
     access_token = session.get("access_token")
+    remembered_accounts = session.get("remembered_accounts", {})
 
     try:
         if access_token:
@@ -2489,6 +2533,8 @@ def logout():
         app.logger.exception("Supabase sign-out failed")
     finally:
         session.clear()
+        session.permanent = True
+        session["remembered_accounts"] = remembered_accounts
 
     response = jsonify({
         "status": "logged_out",
