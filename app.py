@@ -140,6 +140,63 @@ SYLLABI_BUCKET = "course-syllabi"
 PROFILE_PHOTOS_BUCKET = "profile-photos"
 PROFILE_PHOTO_MAX_BYTES = 1024 * 1024
 
+
+def record_audit_event(
+    action,
+    module,
+    level="INFO",
+    details="",
+    user_id=None,
+    table_name=None,
+    record_id=None,
+):
+    """Persist a minimal system event without request payloads or credentials."""
+    if not admin_supabase:
+        return
+    actor_id = user_id
+    if actor_id is None:
+        actor = getattr(g, "authenticated_user", None)
+        actor_id = getattr(actor, "id", None) or session.get("user_id")
+    try:
+        admin_supabase.table("audit_logs").insert({
+            "user_id": str(actor_id) if actor_id else None,
+            "action": str(action)[:240],
+            "module": str(module)[:80] if module else None,
+            "table_name": str(table_name)[:120] if table_name else None,
+            "record_id": str(record_id)[:160] if record_id else None,
+            "details": str(details)[:2000] if details else None,
+            "ip_address": request.remote_addr,
+            "level": level if level in {"INFO", "SECURITY", "WARNING", "ERROR"} else "INFO",
+        }).execute()
+    except Exception:
+        app.logger.exception("Unable to persist a system audit event")
+
+
+@app.after_request
+def audit_authenticated_api_mutations(response):
+    if (
+        request.path.startswith("/api/")
+        and request.method in {"POST", "PUT", "PATCH", "DELETE"}
+    ):
+        endpoint = request.endpoint or "unknown_endpoint"
+        module = request.path.split("/", 3)[2] if len(request.path.split("/", 3)) > 2 else "application"
+        status_level = "INFO" if response.status_code < 400 else "WARNING"
+        if module == "auth" or "password" in endpoint or "otp" in endpoint:
+            status_level = "SECURITY" if response.status_code < 400 else "WARNING"
+        actor = getattr(g, "authenticated_user", None)
+        actor_id = getattr(actor, "id", None) or session.get("user_id")
+        # Only write attributed changes. Public actions such as login requests
+        # are logged explicitly once authentication succeeds.
+        if actor_id:
+            record_audit_event(
+                action=f"{request.method} {endpoint.replace('_', ' ')}",
+                module=module,
+                level=status_level,
+                details=f"Endpoint {endpoint} completed with HTTP {response.status_code}.",
+                user_id=actor_id,
+            )
+    return response
+
 # Password login lockout: 3 failed attempts, then 30 seconds.
 
 LOGIN_MAX_FAILED_ATTEMPTS = 3
@@ -6088,6 +6145,50 @@ def admin_system_records():
     return render_template("requirement 7/gl-admin.html")
 
 
+@app.get("/api/admin/system-history")
+@require_role("admin-security")
+def admin_system_history_api():
+    if not admin_supabase:
+        return jsonify({"error": "System history storage is unavailable."}), 503
+
+    try:
+        result = (
+            admin_supabase.table("audit_logs")
+            .select("id,user_id,action,module,table_name,record_id,details,ip_address,level,created_at")
+            .order("created_at", desc=True)
+            .limit(500)
+            .execute()
+        )
+        rows = result.data or []
+        actor_ids = list({row.get("user_id") for row in rows if row.get("user_id")})
+        actors = {}
+        if actor_ids:
+            users_result = (
+                admin_supabase.table("users")
+                .select("id,full_name,email")
+                .in_("id", actor_ids)
+                .execute()
+            )
+            actors = {user["id"]: user for user in (users_result.data or [])}
+
+        events = []
+        for row in rows:
+            actor = actors.get(row.get("user_id"), {})
+            events.append({
+                "id": row.get("id"),
+                "timestamp": row.get("created_at"),
+                "level": row.get("level") or "INFO",
+                "event": row.get("action") or "System event",
+                "actor": actor.get("full_name") or actor.get("email") or "System",
+                "record": row.get("record_id") or row.get("table_name") or "—",
+                "details": row.get("details") or row.get("module") or "—",
+            })
+        return jsonify({"events": events, "count": len(events)})
+    except Exception:
+        app.logger.exception("Unable to load admin system history")
+        return jsonify({"error": "System history could not be loaded."}), 500
+
+
 @app.get("/requirement 4/ra-admin.html")
 @app.get("/requirement 5/ac-admin.html")
 @app.get("/requirement 6/cqi-admin.html")
@@ -6561,6 +6662,13 @@ def auth_callback():
             session["refresh_token"] = result.session.refresh_token
             session["user_id"] = result.user.id
             session["profile_completion_role"] = requested_role
+            record_audit_event(
+                action=f"{provider_name} sign-in",
+                module="auth",
+                level="SECURITY",
+                details="OAuth sign-in completed; profile setup is required.",
+                user_id=result.user.id,
+            )
             return redirect(url_for("complete_profile_page"))
 
         # Existing accounts must match their trusted assigned role.
@@ -6580,6 +6688,13 @@ def auth_callback():
         session["access_token"] = result.session.access_token
         session["refresh_token"] = result.session.refresh_token
         session["user_id"] = result.user.id
+        record_audit_event(
+            action=f"{provider_name} sign-in",
+            module="auth",
+            level="SECURITY",
+            details="OAuth sign-in completed successfully.",
+            user_id=result.user.id,
+        )
         return redirect("/main/dashboard.html")
 
     except Exception:
@@ -7637,6 +7752,7 @@ def forgot_password_page():
 def logout_redirect():
     role = session.get("user_role") or session.get("role") or "student"
     remembered_accounts = session.get("remembered_accounts", {})
+    actor_id = session.get("user_id")
 
     allowed_roles = {
         "student",
@@ -7648,6 +7764,14 @@ def logout_redirect():
     if role not in allowed_roles:
         role = "student"
 
+    if actor_id:
+        record_audit_event(
+            action="Logout",
+            module="auth",
+            level="SECURITY",
+            details="User signed out.",
+            user_id=actor_id,
+        )
     session.clear()
     session.permanent = True
     session["remembered_accounts"] = remembered_accounts
@@ -7662,6 +7786,16 @@ def logout():
     refresh_token = session.get("refresh_token")
     access_token = session.get("access_token")
     remembered_accounts = session.get("remembered_accounts", {})
+    actor_id = session.get("user_id")
+
+    if actor_id:
+        record_audit_event(
+            action="Logout",
+            module="auth",
+            level="SECURITY",
+            details="User signed out.",
+            user_id=actor_id,
+        )
 
     try:
         if access_token:
