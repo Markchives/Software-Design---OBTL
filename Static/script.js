@@ -131,6 +131,7 @@
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(data.error || 'Attainment could not be loaded.');
             const section = data.section || {};
+            window.syncEduMetricsWorkspaceSection?.(sectionId, section);
             const heading = page.querySelector('.cw-hero h2');
             const subheading = page.querySelector('.cw-hero p');
             if (heading) heading.textContent = [section.course_code, section.course_title].filter(Boolean).join(' — ');
@@ -174,7 +175,13 @@
             const requested = new URLSearchParams(location.search).get('section_id');
             if (sections.some(item => item.section_id === requested)) sectionSelect.value = requested;
             else if (sections.length === 1) sectionSelect.value = sections[0].section_id;
-            if (sectionSelect.value) load(sectionSelect.value);
+            if (sectionSelect.value) {
+                const selectedSection = sections.find(function (item) {
+                    return item.section_id === sectionSelect.value;
+                });
+                window.syncEduMetricsWorkspaceSection?.(sectionSelect.value, selectedSection);
+                load(sectionSelect.value);
+            }
         }).catch(error => { message.textContent = error.message; });
     sectionSelect.addEventListener('change', () => load(sectionSelect.value));
 })();
@@ -338,7 +345,13 @@
         const requested = new URLSearchParams(location.search).get('section_id');
         if (sections.some(item => item.section_id === requested)) sectionSelect.value = requested;
         else if (sections.length === 1) sectionSelect.value = sections[0].section_id;
-        if (sectionSelect.value) load();
+        if (sectionSelect.value) {
+            const selectedSection = sections.find(function (item) {
+                return item.section_id === sectionSelect.value;
+            });
+            window.syncEduMetricsWorkspaceSection?.(sectionSelect.value, selectedSection);
+            load();
+        }
     }).catch(error => { sectionSelect.replaceChildren(new Option(error.message, '')); });
     sectionSelect.addEventListener('change', load);
     document.getElementById('loadFacultyOutcomeMappings').addEventListener('click', load);
@@ -1188,6 +1201,7 @@
             setMessage(rosterMessage, "", false);
             return;
         }
+        window.syncEduMetricsWorkspaceSection?.(section.section_id, section);
         ["crfTotal", "crfActive", "crfInactive"].forEach(function (id) {
             const value = document.getElementById(id);
             if (value) value.textContent = "—";
@@ -1224,8 +1238,13 @@
                 option.textContent = sectionLabel(section);
                 sectionSelect.appendChild(option);
             });
-            if (sections.length === 1) {
-                sectionSelect.value = sections[0].section_id;
+            const requestedSectionId = new URLSearchParams(location.search).get("section_id");
+            const selectedSection = sections.find(function (item) {
+                return item.section_id === requestedSectionId;
+            }) || (sections.length === 1 ? sections[0] : null);
+            if (selectedSection) {
+                sectionSelect.value = selectedSection.section_id;
+                window.syncEduMetricsWorkspaceSection?.(selectedSection.section_id);
                 await loadRoster();
             } else if (!sections.length) {
                 setMessage(rosterMessage, "No course sections are currently assigned to your account.", false);
@@ -6150,6 +6169,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     courseSelect.addEventListener("change", function () {
+        window.syncEduMetricsWorkspaceSection?.("");
         const years = new Map();
         selectedCourseAssignments().forEach(function (item) {
             if (item.academic_year_id && item.academic_year_name) {
@@ -6164,12 +6184,16 @@ document.addEventListener("DOMContentLoaded", function () {
         refreshSections();
     });
 
-    yearSelect.addEventListener("change", refreshSections);
+    yearSelect.addEventListener("change", function () {
+        window.syncEduMetricsWorkspaceSection?.("");
+        refreshSections();
+    });
 
     sectionSelect.addEventListener("change", function () {
         const selected = assignments.find(function (item) {
             return item.section_id === sectionSelect.value;
         });
+        window.syncEduMetricsWorkspaceSection?.(sectionSelect.value, selected);
         if (selected && selected.academic_year_id) {
             yearSelect.value = selected.academic_year_id;
         }
@@ -6203,15 +6227,20 @@ document.addEventListener("DOMContentLoaded", function () {
             }));
             courseSelect.disabled = courses.size === 0;
 
-            if (assignments.length === 1 && !courseSelect.value) {
-                const assignment = assignments[0];
+            const requestedSectionId = new URLSearchParams(location.search).get("section_id");
+            const assignment = assignments.find(function (item) {
+                return item.section_id === requestedSectionId;
+            }) || (assignments.length === 1 ? assignments[0] : null);
+            if (assignment) {
                 courseSelect.value = assignment.course_id;
                 courseSelect.dispatchEvent(new Event("change", { bubbles: true }));
                 if (assignment.academic_year_id) {
                     yearSelect.value = assignment.academic_year_id;
+                    yearSelect.dispatchEvent(new Event("change", { bubbles: true }));
                 }
                 sectionSelect.value = assignment.section_id;
                 sectionSelect.dispatchEvent(new Event("change", { bubbles: true }));
+                window.syncEduMetricsWorkspaceSection?.(assignment.section_id);
             }
 
             if (status) {
@@ -6531,17 +6560,109 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 })();
 
-// Keep the selected course section when navigating between workspace tabs.
+// Keep the selected course section in the URL and across workspace module links.
 (function () {
-    const sectionId = new URLSearchParams(window.location.search).get("section_id");
-    if (!sectionId)
-        return;
+    const sectionSelectIds = new Set([
+        "facultySection",
+        "facultyMappingSection",
+        "crfSectionSelect",
+        "rafSection",
+        "facultyAttainmentSection"
+    ]);
+    let facultySectionsRequest;
 
-    document.querySelectorAll(".cw-module-nav a[href]").forEach(function (link) {
-        const target = new URL(link.href, window.location.href);
-        target.searchParams.set("section_id", sectionId);
-        link.href = target.pathname + target.search + target.hash;
+    function loadFacultySections() {
+        if (!facultySectionsRequest) {
+            facultySectionsRequest = fetch("/api/faculty/sections", {
+                credentials: "same-origin",
+                headers: { Accept: "application/json" }
+            }).then(async function (response) {
+                if (!(response.headers.get("content-type") || "").includes("application/json")) {
+                    throw new Error("The server did not return course assignments.");
+                }
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || "Course assignments could not be loaded.");
+                }
+                return Array.isArray(data.sections) ? data.sections : [];
+            }).catch(function (error) {
+                facultySectionsRequest = null;
+                throw error;
+            });
+        }
+        return facultySectionsRequest;
+    }
+
+    function updateWorkspaceContext(sectionId, section) {
+        const roleLabel = document.querySelector(".so-user-info span");
+        if (!document.getElementById("facultyName") ||
+            roleLabel?.textContent.trim() !== "Faculty") return;
+        const heading = document.querySelector(".cw-hero h2");
+        const subheading = document.querySelector(".cw-hero p");
+        const breadcrumb = document.querySelector(".cw-breadcrumb-current");
+
+        if (!sectionId) {
+            if (heading) heading.textContent = "—";
+            if (subheading) subheading.textContent = "—";
+            if (breadcrumb) breadcrumb.textContent = "Course not selected";
+            return;
+        }
+
+        if (section) {
+            if (heading) heading.textContent = section.course_code + " - " + section.course_title;
+            if (subheading) subheading.textContent = section.section_name;
+            if (breadcrumb) breadcrumb.textContent = section.course_code + " / " + section.section_name;
+            return;
+        }
+
+        if (!document.querySelector(".cqi-faculty-page, .rp-faculty-page")) return;
+        loadFacultySections().then(function (sections) {
+            if (new URLSearchParams(window.location.search).get("section_id") !== sectionId) {
+                return;
+            }
+            const section = sections.find(function (item) {
+                return item.section_id === sectionId;
+            });
+            if (!section) return;
+            if (heading) heading.textContent = section.course_code + " - " + section.course_title;
+            if (subheading) subheading.textContent = section.section_name;
+            if (breadcrumb) breadcrumb.textContent = section.course_code + " / " + section.section_name;
+        }).catch(function (error) {
+            console.error("Unable to update course workspace context:", error);
+        });
+    }
+
+    function syncWorkspaceSection(sectionId, section) {
+        const value = String(sectionId || "").trim();
+        const current = new URL(window.location.href);
+        if (value) current.searchParams.set("section_id", value);
+        else current.searchParams.delete("section_id");
+
+        window.history.replaceState(
+            window.history.state,
+            "",
+            current.pathname + current.search + current.hash
+        );
+
+        document.querySelectorAll(".cw-module-nav a[href]").forEach(function (link) {
+            const target = new URL(link.href, window.location.href);
+            if (value) target.searchParams.set("section_id", value);
+            else target.searchParams.delete("section_id");
+            link.href = target.pathname + target.search + target.hash;
+        });
+        updateWorkspaceContext(value, section);
+    }
+
+    window.syncEduMetricsWorkspaceSection = syncWorkspaceSection;
+    document.addEventListener("change", function (event) {
+        const select = event.target;
+        if (select instanceof HTMLSelectElement && sectionSelectIds.has(select.id)) {
+            syncWorkspaceSection(select.value);
+        }
     });
+
+    const initialSectionId = new URLSearchParams(window.location.search).get("section_id");
+    if (initialSectionId) syncWorkspaceSection(initialSectionId);
 })();
 
 /* REQUIREMENT 3 — CLASS ROSTER STUDENT */
@@ -8572,9 +8693,12 @@ function initRawAssessmentFaculty() {
     const $ = id => document.getElementById(id);
     const sectionSelect = $('rafSection');
     const assessmentSelect = $('rafAssessment');
+    const manageSectionSelect = $('rafManageSection');
+    const manageAssessmentSelect = $('rafManageAssessment');
     const body = $('rafRows');
     const createForm = $('rafCreateAssessmentForm');
-    if (!sectionSelect || !assessmentSelect || !body || !createForm) return;
+    if (!sectionSelect || !assessmentSelect || !manageSectionSelect ||
+        !manageAssessmentSelect || !body || !createForm) return;
 
     let workspace = null;
     let assignments = [];
@@ -8596,6 +8720,11 @@ function initRawAssessmentFaculty() {
 
     function selectedAssessment() {
         return workspace?.assessments.find(item => item.id === assessmentSelect.value) || null;
+    }
+
+    function selectAssessment(assessmentId) {
+        assessmentSelect.value = assessmentId;
+        manageAssessmentSelect.value = assessmentId;
     }
 
     function scoreFor(assessment, studentId) {
@@ -8673,6 +8802,7 @@ function initRawAssessmentFaculty() {
         $('rafMode').textContent = locked ? 'Gradebook Locked' : 'Open for Editing';
         $('rafMode').classList.toggle('in-progress', locked);
         assessmentSelect.disabled = !workspace?.assessments.length;
+        manageAssessmentSelect.disabled = !workspace?.assessments.length;
         const manageLocked = !assessment || locked;
         $('rafEditAssessment').disabled = manageLocked;
         $('rafDeleteAssessment').disabled = manageLocked;
@@ -8784,18 +8914,35 @@ function initRawAssessmentFaculty() {
     async function loadWorkspace() {
         workspace = null;
         editedScores.clear();
+        if (!sectionSelect.value) {
+            assessmentSelect.replaceChildren(new Option('Select a section first', ''));
+            manageAssessmentSelect.replaceChildren(new Option('Select a section first', ''));
+            body.replaceChildren();
+            $('rafMessage').textContent = 'Select a course section first.';
+            render();
+            return;
+        }
+        assessmentSelect.disabled = true;
+        manageAssessmentSelect.disabled = true;
         assessmentSelect.replaceChildren(new Option('Loading assessments...', ''));
+        manageAssessmentSelect.replaceChildren(new Option('Loading activities...', ''));
         body.replaceChildren();
         $('rafMessage').textContent = '';
         try {
             workspace = await api('/api/faculty/sections/' +
                 encodeURIComponent(sectionSelect.value) + '/assessments');
-            assessmentSelect.replaceChildren(new Option(
+            const assessmentPlaceholder = new Option(
                 workspace.assessments.length ? 'Select assessment' : 'No assessments yet',
+                ''
+            );
+            assessmentSelect.replaceChildren(assessmentPlaceholder);
+            manageAssessmentSelect.replaceChildren(new Option(
+                workspace.assessments.length ? 'Select activity' : 'No activities yet',
                 ''
             ));
             workspace.assessments.forEach(item => {
                 assessmentSelect.add(new Option(item.title, item.id));
+                manageAssessmentSelect.add(new Option(item.title, item.id));
             });
             const outcomeSelect = $('rafNewOutcome');
             outcomeSelect.replaceChildren(new Option(
@@ -8810,6 +8957,7 @@ function initRawAssessmentFaculty() {
             if (breadcrumb && assignment) {
                 breadcrumb.textContent = assignment.course_code + ' / ' + assignment.section_name;
             }
+            window.syncEduMetricsWorkspaceSection?.(sectionSelect.value, assignment);
             const heading = document.querySelector('.cw-hero h2');
             const subheading = document.querySelector('.cw-hero p');
             if (heading && assignment) heading.textContent = assignment.course_code + ' - ' + assignment.course_title;
@@ -8819,12 +8967,21 @@ function initRawAssessmentFaculty() {
             workspace = null;
             $('rafMessage').textContent = error.message;
             assessmentSelect.replaceChildren(new Option('Unable to load assessments', ''));
+            manageAssessmentSelect.replaceChildren(new Option('Unable to load activities', ''));
             render();
         }
     }
 
-    sectionSelect.addEventListener('change', loadWorkspace);
+    sectionSelect.addEventListener('change', () => {
+        manageSectionSelect.value = sectionSelect.value;
+        loadWorkspace();
+    });
+    manageSectionSelect.addEventListener('change', () => {
+        sectionSelect.value = manageSectionSelect.value;
+        sectionSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    });
     assessmentSelect.addEventListener('change', () => {
+        manageAssessmentSelect.value = assessmentSelect.value;
         editedScores.clear();
         $('rafMessage').textContent = '';
         editingAssessmentId = null;
@@ -8833,6 +8990,10 @@ function initRawAssessmentFaculty() {
         createForm.querySelector('h3').textContent = 'Create Assessment';
         createForm.querySelector('[type="submit"]').textContent = 'Create Assessment';
         render();
+    });
+    manageAssessmentSelect.addEventListener('change', () => {
+        selectAssessment(manageAssessmentSelect.value);
+        assessmentSelect.dispatchEvent(new Event('change', { bubbles: true }));
     });
     $('rafEditAssessment').addEventListener('click', () => {
         const assessment = selectedAssessment();
@@ -8892,7 +9053,7 @@ function initRawAssessmentFaculty() {
                     headers: { Accept: 'application/json' }
                 });
             await loadWorkspace();
-            assessmentSelect.value = assessmentId;
+            selectAssessment(assessmentId);
             render();
             status.textContent = 'Scores released to students. You may continue editing until the gradebook is locked.';
         } catch (error) {
@@ -8923,7 +9084,7 @@ function initRawAssessmentFaculty() {
             editedScores.clear();
             $('rafMessage').textContent = 'Scores saved.';
             await loadWorkspace();
-            assessmentSelect.value = assessment.id;
+            selectAssessment(assessment.id);
             render();
         } catch (error) {
             $('rafMessage').textContent = error.message;
@@ -8959,7 +9120,7 @@ function initRawAssessmentFaculty() {
             createForm.querySelector('h3').textContent = 'Create Assessment';
             createForm.querySelector('[type="submit"]').textContent = 'Create Assessment';
             await loadWorkspace();
-            assessmentSelect.value = result.assessment.id;
+            selectAssessment(result.assessment.id);
             $('rafMessage').textContent = 'Assessment ' + (result.assessment ? 'saved.' : 'updated.');
             render();
         } catch (error) {
@@ -8976,21 +9137,29 @@ function initRawAssessmentFaculty() {
             assignments.length ? 'Select course section' : 'No assigned sections',
             ''
         ));
+        manageSectionSelect.replaceChildren(new Option(
+            assignments.length ? 'Select course section' : 'No assigned sections',
+            ''
+        ));
         assignments.forEach(item => {
-            sectionSelect.add(new Option(
-                [item.course_code, item.section_name, item.academic_year_name, item.term_name]
-                    .filter(Boolean).join(' - '),
-                item.section_id
-            ));
+            const label = [item.course_code, item.section_name, item.academic_year_name, item.term_name]
+                .filter(Boolean).join(' - ');
+            sectionSelect.add(new Option(label, item.section_id));
+            manageSectionSelect.add(new Option(label, item.section_id));
         });
         const requestedSection = new URLSearchParams(location.search).get('section_id');
         const selectedAssignment = assignments.find(item => item.section_id === requestedSection) ||
             (assignments.length === 1 ? assignments[0] : null);
         if (selectedAssignment) {
             sectionSelect.value = selectedAssignment.section_id;
+            manageSectionSelect.value = selectedAssignment.section_id;
+            window.syncEduMetricsWorkspaceSection?.(selectedAssignment.section_id);
             loadWorkspace();
         } else {
             sectionSelect.disabled = assignments.length === 0;
+            manageSectionSelect.disabled = assignments.length === 0;
+            assessmentSelect.disabled = true;
+            manageAssessmentSelect.disabled = true;
             $('rafStudents').textContent = '0';
             $('rafEntered').textContent = '0';
             if (!assignments.length) {
@@ -8999,7 +9168,11 @@ function initRawAssessmentFaculty() {
         }
     }).catch(error => {
         sectionSelect.replaceChildren(new Option('Unable to load sections', ''));
+        manageSectionSelect.replaceChildren(new Option('Unable to load sections', ''));
         sectionSelect.disabled = true;
+        manageSectionSelect.disabled = true;
+        assessmentSelect.disabled = true;
+        manageAssessmentSelect.disabled = true;
         $('rafMessage').textContent = error.message;
     });
 }
