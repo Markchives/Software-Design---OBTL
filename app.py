@@ -137,6 +137,8 @@ def set_remembered_accounts_cookie(response, accounts):
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 SYLLABI_BUCKET = "course-syllabi"
+PROFILE_PHOTOS_BUCKET = "profile-photos"
+PROFILE_PHOTO_MAX_BYTES = 1024 * 1024
 
 # Password login lockout: 3 failed attempts, then 30 seconds.
 
@@ -5246,6 +5248,25 @@ def account_profile():
             affiliation = "Admin & Security"
 
         user = user_rows[0]
+        settings_rows = (
+            admin_supabase.table("account_settings")
+            .select("profile_photo_path")
+            .eq("user_id", str(g.authenticated_user.id))
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        photo_url = ""
+        if settings_rows and settings_rows[0].get("profile_photo_path"):
+            signed_photo = admin_supabase.storage.from_(PROFILE_PHOTOS_BUCKET).create_signed_url(
+                settings_rows[0]["profile_photo_path"], 60 * 60
+            )
+            photo_url = (
+                signed_photo.get("signedURL")
+                or signed_photo.get("signedUrl")
+                or ""
+            )
         return jsonify({
             "profile": {
                 "role": role,
@@ -5253,11 +5274,185 @@ def account_profile():
                 "id_number": id_number or "",
                 "affiliation": affiliation,
                 "email": user.get("email") or g.authenticated_user.email or "",
+                "profile_photo_url": photo_url,
             }
         }), 200
     except Exception:
         app.logger.exception("Unable to load authenticated account profile")
         return jsonify({"error": "Account details could not be loaded."}), 500
+
+
+@app.post("/api/account/profile-photo")
+@require_authenticated
+def upload_account_profile_photo():
+    if not admin_supabase:
+        return jsonify({"error": "Profile photo storage is unavailable."}), 503
+
+    photo = request.files.get("photo")
+    if not photo or not photo.filename:
+        return jsonify({"error": "Choose a profile photo to upload."}), 400
+
+    content = photo.stream.read(PROFILE_PHOTO_MAX_BYTES + 1)
+    if not content:
+        return jsonify({"error": "The selected photo is empty."}), 400
+    if len(content) > PROFILE_PHOTO_MAX_BYTES:
+        return jsonify({"error": "Choose an image up to 1 MB."}), 413
+
+    signatures = {
+        "image/jpeg": (b"\xff\xd8\xff", "jpg"),
+        "image/png": (b"\x89PNG\r\n\x1a\n", "png"),
+        "image/webp": (None, "webp"),
+    }
+    content_type = (photo.mimetype or "").lower()
+    if content_type not in signatures:
+        return jsonify({"error": "Use a JPG, PNG, or WebP image."}), 400
+    signature, extension = signatures[content_type]
+    if signature and not content.startswith(signature):
+        return jsonify({"error": "The uploaded file is not a valid image of that type."}), 400
+    if content_type == "image/webp" and not (
+        len(content) >= 12 and content[:4] == b"RIFF" and content[8:12] == b"WEBP"
+    ):
+        return jsonify({"error": "The uploaded file is not a valid WebP image."}), 400
+
+    user_id = str(g.authenticated_user.id)
+    photo_path = f"{user_id}/{uuid4().hex}.{extension}"
+    try:
+        previous_rows = (
+            admin_supabase.table("account_settings")
+            .select("profile_photo_path")
+            .eq("user_id", user_id)
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        previous_path = previous_rows[0].get("profile_photo_path") if previous_rows else None
+
+        admin_supabase.storage.from_(PROFILE_PHOTOS_BUCKET).upload(
+            photo_path,
+            content,
+            file_options={"content-type": content_type, "upsert": "true"},
+        )
+        admin_supabase.table("account_settings").upsert({
+            "user_id": user_id,
+            "profile_photo_path": photo_path,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }, on_conflict="user_id").execute()
+
+        if previous_path and previous_path != photo_path:
+            try:
+                admin_supabase.storage.from_(PROFILE_PHOTOS_BUCKET).remove([previous_path])
+            except Exception:
+                app.logger.warning("Unable to remove replaced profile photo for user %s", user_id)
+
+        signed_photo = admin_supabase.storage.from_(PROFILE_PHOTOS_BUCKET).create_signed_url(
+            photo_path, 60 * 60
+        )
+        return jsonify({
+            "status": "photo_updated",
+            "profile_photo_url": signed_photo.get("signedURL") or signed_photo.get("signedUrl") or "",
+        }), 200
+    except Exception:
+        app.logger.exception("Unable to save profile photo for user %s", user_id)
+        return jsonify({"error": "Profile photo could not be saved."}), 500
+
+
+@app.delete("/api/account/profile-photo")
+@require_authenticated
+def delete_account_profile_photo():
+    if not admin_supabase:
+        return jsonify({"error": "Profile photo storage is unavailable."}), 503
+
+    user_id = str(g.authenticated_user.id)
+    try:
+        rows = (
+            admin_supabase.table("account_settings")
+            .select("profile_photo_path")
+            .eq("user_id", user_id)
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        photo_path = rows[0].get("profile_photo_path") if rows else None
+        admin_supabase.table("account_settings").upsert({
+            "user_id": user_id,
+            "profile_photo_path": None,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }, on_conflict="user_id").execute()
+        if photo_path:
+            try:
+                admin_supabase.storage.from_(PROFILE_PHOTOS_BUCKET).remove([photo_path])
+            except Exception:
+                app.logger.warning("Unable to delete old profile photo for user %s", user_id)
+        return jsonify({"status": "photo_removed"}), 200
+    except Exception:
+        app.logger.exception("Unable to remove profile photo for user %s", user_id)
+        return jsonify({"error": "Profile photo could not be removed."}), 500
+
+
+@app.post("/api/account/change-password")
+@require_authenticated
+def change_account_password():
+    data = get_json_data()
+    current_password = data.get("currentPassword")
+    new_password = data.get("newPassword")
+    confirm_password = data.get("confirmPassword")
+
+    if not all(isinstance(value, str) and value for value in (
+        current_password, new_password, confirm_password
+    )):
+        return jsonify({"error": "Complete all password fields."}), 400
+    if new_password != confirm_password:
+        return jsonify({"error": "New password and confirmation do not match."}), 400
+    if (
+        len(new_password) < 8
+        or not any(character.isalpha() for character in new_password)
+        or not any(character.isdigit() for character in new_password)
+        or not any(not character.isalnum() for character in new_password)
+    ):
+        return jsonify({
+            "error": "Use at least 8 characters with a letter, number, and special character."
+        }), 400
+
+    email = str(g.authenticated_user.email or "").strip().lower()
+    user_id = str(g.authenticated_user.id)
+    if not email:
+        return jsonify({"error": "Your account email could not be verified."}), 400
+
+    try:
+        auth_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        current_login = auth_client.auth.sign_in_with_password({
+            "email": email,
+            "password": current_password,
+        })
+        if not current_login.user or str(current_login.user.id) != user_id:
+            return jsonify({"error": "Current password is incorrect."}), 400
+
+        updated = auth_client.auth.update_user({"password": new_password})
+        if not updated.user or str(updated.user.id) != user_id:
+            return jsonify({"error": "Password could not be updated."}), 400
+
+        remembered_accounts = {
+            remembered_email: account
+            for remembered_email, account in get_remembered_accounts().items()
+            if str(account.get("user_id")) != user_id
+        }
+        session["remembered_accounts"] = remembered_accounts
+        response = jsonify({
+            "status": "password_updated",
+            "message": "Password updated successfully.",
+        })
+        set_remembered_accounts_cookie(response, remembered_accounts)
+        return response, 200
+    except Exception as error:
+        error_text = str(error).lower()
+        if any(term in error_text for term in (
+            "invalid login credentials", "invalid credentials", "invalid password"
+        )):
+            return jsonify({"error": "Current password is incorrect."}), 400
+        app.logger.exception("Unable to change password for user %s", user_id)
+        return jsonify({"error": "Password could not be updated. Please try again."}), 500
 
 
 @app.get("/main/courses-faculty.html")
@@ -6406,6 +6601,7 @@ def login():
         # Check remembered accounts for this browser.
 
         remembered_accounts = get_remembered_accounts()
+        session["remembered_accounts"] = remembered_accounts
 
         remembered_account = remembered_accounts.get(email)
 
