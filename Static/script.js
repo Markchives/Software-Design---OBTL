@@ -9164,10 +9164,12 @@ document.addEventListener("DOMContentLoaded", function () {
     function initPasswordRecovery() {
         if (!document.body.classList.contains('auth-reset-page')) return;
         const role = new URLSearchParams(location.search).get('role') || sessionStorage.getItem('verificationRole') || 'student';
+        const normalizedRole = role === 'dept-head' || role === 'department_head' ? 'department-head' : role;
+        const roleLabel = ({ student: 'Student', faculty: 'Faculty', 'department-head': 'Department Head', 'admin-security': 'Admin & Security' })[normalizedRole] || 'Student';
         const label = document.getElementById('loginRoleLabel');
-        if (label) label.textContent = ({ student: 'Student', faculty: 'Faculty', 'dept-head': 'Department Head', 'department-head': 'Department Head', 'admin-security': 'Admin & Security' })[role] || 'Student';
+        if (label) label.textContent = roleLabel;
         const back = document.getElementById('resetBackLink');
-        if (back) back.href += '?role=' + encodeURIComponent(role);
+        if (back) back.href = '/forgot-password.html?role=' + encodeURIComponent(normalizedRole);
         document.querySelectorAll('[data-toggle-password]').forEach(button => button.addEventListener('click', function () {
             const field = document.getElementById(button.dataset.togglePassword);
             if (!field) return;
@@ -9181,20 +9183,144 @@ document.addEventListener("DOMContentLoaded", function () {
             event.preventDefault();
             const email = document.getElementById('resetEmail').value.trim();
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return feedback('Enter a valid email address.');
-            sessionStorage.setItem('verificationEmail', email);
-            sessionStorage.setItem('verificationRole', role);
-            sessionStorage.setItem('verificationPurpose', 'password_reset');
-            feedback('Email saved. Verification delivery requires the connected backend.', true);
+            const submit = forgot.querySelector('button[type="submit"]');
+            if (submit) submit.disabled = true;
+            feedback('Requesting a password reset code…');
+            try {
+                const response = await fetch('/api/auth/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ email, role: normalizedRole })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || 'Could not request a reset code.');
+                sessionStorage.setItem('verificationEmail', email.toLowerCase());
+                sessionStorage.setItem('verificationRole', normalizedRole);
+                sessionStorage.setItem('verificationPurpose', 'reset_password');
+                location.href = '/verification-reset-password.html?role=' + encodeURIComponent(normalizedRole);
+            } catch (error) {
+                feedback(error.message || 'Could not connect to the password recovery service.');
+            } finally {
+                if (submit) submit.disabled = false;
+            }
         });
         const reset = document.getElementById('resetPasswordForm');
-        if (reset) reset.addEventListener('submit', function (event) {
+        if (reset) reset.addEventListener('submit', async function (event) {
             event.preventDefault();
             const password = document.getElementById('newPassword').value;
             const confirm = document.getElementById('confirmPassword').value;
             if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(password)) return feedback('Password must have 8+ characters, a letter, number, and special character.');
             if (password !== confirm) return feedback('Passwords do not match.');
-            feedback('Password validated. Saving requires a verified reset token and backend.', true);
+            const submit = reset.querySelector('button[type="submit"]');
+            if (submit) submit.disabled = true;
+            feedback('Updating your password…');
+            try {
+                const response = await fetch('/api/auth/reset-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ newPassword: password, confirmPassword: confirm })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || 'Password could not be updated.');
+                feedback(result.message || 'Password updated. Returning to login…', true);
+                sessionStorage.removeItem('verificationEmail');
+                sessionStorage.removeItem('verificationPurpose');
+                sessionStorage.removeItem('verificationCompleted');
+                setTimeout(() => {
+                    location.href = '/login%20page.html?role=' + encodeURIComponent(normalizedRole);
+                }, 1200);
+            } catch (error) {
+                feedback(error.message || 'Could not connect to the password recovery service.');
+            } finally {
+                if (submit) submit.disabled = false;
+            }
         });
+
+        const resetCodeForm = document.getElementById('resetCodeForm');
+        if (resetCodeForm) {
+            const resetEmail = sessionStorage.getItem('verificationEmail') || '';
+            const emailLabel = document.getElementById('resetCodeEmail');
+            const codeRole = document.getElementById('resetCodeRole');
+            const resetBack = document.getElementById('resetCodeBack');
+            const codeMessage = document.getElementById('resetCodeMessage');
+            const inputs = [...document.querySelectorAll('#resetCodeInputs .otp-input')];
+            const resend = document.getElementById('resetCodeResend');
+            const verifyButton = document.getElementById('resetCodeSubmit');
+            const feedbackCode = (value, success = false) => {
+                if (codeMessage) {
+                    codeMessage.textContent = value;
+                    codeMessage.classList.toggle('is-success', success);
+                }
+            };
+            if (codeRole) codeRole.textContent = roleLabel;
+            if (emailLabel) emailLabel.textContent = resetEmail || 'your email address';
+            if (resetBack) resetBack.href = '/forgot-password.html?role=' + encodeURIComponent(normalizedRole);
+            inputs.forEach((input, index) => {
+                input.addEventListener('input', () => {
+                    input.value = input.value.replace(/\D/g, '').slice(0, 1);
+                    if (input.value && inputs[index + 1]) inputs[index + 1].focus();
+                    feedbackCode('');
+                });
+                input.addEventListener('keydown', event => {
+                    if (event.key === 'Backspace' && !input.value && inputs[index - 1]) inputs[index - 1].focus();
+                });
+                input.addEventListener('paste', event => {
+                    const digits = (event.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+                    if (!digits) return;
+                    event.preventDefault();
+                    inputs.forEach((field, digitIndex) => { field.value = digits[digitIndex] || ''; });
+                    inputs[Math.min(digits.length, inputs.length - 1)].focus();
+                });
+            });
+            resetCodeForm.addEventListener('submit', async event => {
+                event.preventDefault();
+                const token = inputs.map(input => input.value).join('');
+                if (!resetEmail) return feedbackCode('Your email is missing. Return to the forgot password page and try again.');
+                if (!/^\d{6}$/.test(token)) return feedbackCode('Enter the complete six-digit code.');
+                if (verifyButton) verifyButton.disabled = true;
+                feedbackCode('Verifying code…');
+                try {
+                    const response = await fetch('/api/auth/verify-otp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({ email: resetEmail, token, purpose: 'reset_password' })
+                    });
+                    const result = await response.json();
+                    if (!response.ok || result.status !== 'reset_verified') throw new Error(result.error || 'The code could not be verified.');
+                    sessionStorage.setItem('verificationPurpose', 'reset_password');
+                    location.href = '/create%20password.html?role=' + encodeURIComponent(normalizedRole);
+                } catch (error) {
+                    feedbackCode(error.message || 'Could not verify the code. Please try again.');
+                } finally {
+                    if (verifyButton) verifyButton.disabled = false;
+                }
+            });
+            if (resend) resend.addEventListener('click', async () => {
+                if (!resetEmail) return feedbackCode('Your email is missing. Return to the forgot password page and try again.');
+                resend.disabled = true;
+                feedbackCode('Requesting another reset code…');
+                try {
+                    const response = await fetch('/api/auth/forgot-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({ email: resetEmail, role: normalizedRole })
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.error || 'Could not resend the reset code.');
+                    inputs.forEach(input => { input.value = ''; });
+                    if (inputs[0]) inputs[0].focus();
+                    feedbackCode(result.message || 'A new reset code was sent.', true);
+                } catch (error) {
+                    feedbackCode(error.message || 'Could not resend the reset code.');
+                } finally {
+                    resend.disabled = false;
+                }
+            });
+        }
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initPasswordRecovery);
     else initPasswordRecovery();

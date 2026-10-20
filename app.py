@@ -3178,6 +3178,16 @@ def verification_signup_page():
     return render_template("verification-signup.html")
 
 
+@app.get("/verification-reset-password.html")
+def verification_reset_password_page():
+    return render_template("verification-reset-password.html")
+
+
+@app.get("/create password.html")
+def create_password_page():
+    return render_template("create password.html")
+
+
 @app.route("/verification-success.html")
 def verification_success():
     return render_template("verification-success.html")
