@@ -220,18 +220,35 @@
             const data = await request('/api/department-head/sections/' + encodeURIComponent(sectionSelect.value) + '/mapping-review');
             currentReview = data;
             (data.assessments || []).forEach(activity => {
-                const coAttainment = (data.attainment || []).find(co => co.course_outcome_id === activity.course_outcome_id);
+                const mappedOutcomes = activity.course_outcomes || [];
+                const coAttainments = mappedOutcomes.map(outcome => ({
+                    outcome,
+                    result: (data.attainment || []).find(
+                        item => item.course_outcome_id === outcome.id
+                    )
+                }));
                 addRow([
                     activity.title, activity.activity_type,
-                    activity.course_outcome ? activity.course_outcome.code : 'Unmapped',
-                    (data.outcomes || []).find(co => co.id === activity.course_outcome_id)?.student_outcomes.map(so => so.code).join(', ') || 'No SO mapping',
-                    coAttainment?.attainment_percentage == null ? 'Awaiting scores' : Number(coAttainment.attainment_percentage).toFixed(1) + '%',
-                    coAttainment?.flagged ? 'Flagged · CQI recommended' : coAttainment?.status || data.review.status
+                    mappedOutcomes.map(outcome => outcome.code).join(', ') || 'Unmapped',
+                    mappedOutcomes.map(outcome => outcome.student_outcomes
+                        .map(studentOutcome => studentOutcome.code).join(', ') || 'No SO mapping'
+                    ).join('; ') || 'No SO mapping',
+                    coAttainments.map(({ outcome, result }) => outcome.code + ': ' +
+                        (result?.attainment_percentage == null
+                            ? 'Awaiting released scores'
+                            : Number(result.attainment_percentage).toFixed(1) + '%')
+                    ).join('; ') || 'Awaiting released scores',
+                    coAttainments.some(({ result }) => result?.flagged)
+                        ? 'Flagged · CQI recommended'
+                        : coAttainments.map(({ result }) => result?.status)
+                            .filter(Boolean).join(', ') || data.review.status
                 ]);
             });
             (data.outcomes || []).forEach(outcome => {
                 const coAttainment = (data.attainment || []).find(co => co.course_outcome_id === outcome.id);
-                if ((data.assessments || []).some(activity => activity.course_outcome_id === outcome.id)) return;
+                if ((data.assessments || []).some(activity =>
+                    (activity.course_outcome_ids || []).includes(outcome.id)
+                )) return;
                 addRow([
                     outcome.code + ' · ' + outcome.description, 'Course Outcome', outcome.code,
                     outcome.student_outcomes.map(so => so.code).join(', ') || 'No SO mapping',
@@ -6264,220 +6281,226 @@ document.addEventListener("DOMContentLoaded", function () {
 (function () {
     const modal = document.getElementById('assessmentModal');
     const openBtn = document.getElementById('openAssessmentModal');
-
-    if (!modal) return;
+    const page = document.querySelector('.cm-faculty-page');
+    const sectionSelect = document.getElementById('facultyMappingSection');
+    const form = document.getElementById('assessmentForm');
+    const tbody = document.getElementById('facultyAssessmentMappingBody');
+    const status = document.getElementById('facultyActivityStatus');
+    const coError = document.getElementById('assessmentCoError');
+    const outcomeChoices = document.getElementById('assessmentCourseOutcomes');
+    if (!page || !modal || !openBtn || !sectionSelect || !form || !tbody ||
+        !status || !outcomeChoices) return;
 
     const closeBtn = document.getElementById('closeAssessmentModal');
     const cancelBtn = document.getElementById('cancelAssessmentModal');
-    const form = document.getElementById('assessmentForm');
-    const tbody = document.getElementById('facultyAssessmentMappingBody');
-    const coError = document.getElementById('assessmentCoError');
-    const deleteModal = document.getElementById('deleteConfirmModal');
-    const deleteMessage = document.getElementById('deleteConfirmMessage');
-    const cancelDeleteBtn = document.getElementById('cancelDeleteAssessment');
-    const confirmDeleteBtn = document.getElementById('confirmDeleteAssessment');
-    const scoreModal = document.getElementById('scoreModal');
-    const closeScoreBtn = document.getElementById('closeScoreModal');
-    const cancelScoreBtn = document.getElementById('cancelScoreModal');
-    const saveScoresBtn = document.getElementById('saveScoresBtn');
-    const scoreAssessmentName = document.getElementById('scoreAssessmentName');
-    const scoreMappedCos = document.getElementById('scoreMappedCos');
-    const scoreMean = document.getElementById('scoreMean');
-    const scoreTableBody = document.getElementById('scoreTableBody');
+    const maxScoreInput = document.getElementById('assessmentMaxScore');
+    const activityTypes = ['Quiz', 'Major Exam', 'Laboratory', 'Assignment', 'Other'];
+    let workspace = null;
+    let editingAssessmentId = null;
 
-    // This script only applies to the faculty curriculum mapping page.
-    if (!modal || !openBtn || !closeBtn || !cancelBtn || !form) return;
+    async function request(url, options) {
+        const response = await fetch(url, Object.assign({
+            credentials: 'same-origin',
+            headers: { Accept: 'application/json' }
+        }, options || {}));
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || 'The request could not be completed.');
+        return data;
+    }
 
-    let rowToDelete = null;
-    let rowToEdit = null;
+    function setModal(open) {
+        modal.classList.toggle('show', open);
+        modal.setAttribute('aria-hidden', String(!open));
+        document.body.classList.toggle('cm-modal-open', open);
+        if (!open) {
+            form.reset();
+            editingAssessmentId = null;
+            coError.textContent = '';
+        }
+    }
 
-    function openModal() {
-        rowToEdit = null;
+    function renderOutcomeChoices(outcomes, selectedIds) {
+        outcomeChoices.replaceChildren();
+        outcomes.forEach(outcome => {
+            const label = document.createElement('label');
+            const input = document.createElement('input');
+            input.type = 'checkbox';
+            input.name = 'assessmentCO';
+            input.value = outcome.id;
+            input.checked = selectedIds.includes(outcome.id);
+            const code = document.createElement('span');
+            code.textContent = outcome.code;
+            label.append(input, code);
+            outcomeChoices.appendChild(label);
+        });
+    }
+
+    function renderActivities() {
+        tbody.replaceChildren();
+        const locked = workspace?.gradebook_status === 'locked';
+        (workspace?.assessments || []).forEach(activity => {
+            const row = document.createElement('tr');
+            const values = [
+                activity.title,
+                activity.activity_type,
+                activity.due_date || '—',
+                Number(activity.max_score).toString(),
+                (activity.outcome_codes || []).join(', ') || 'Unmapped',
+                activity.released_at ? 'Released' : 'Not released'
+            ];
+            values.forEach(value => {
+                const cell = document.createElement('td');
+                cell.textContent = value;
+                row.appendChild(cell);
+            });
+            const actions = document.createElement('td');
+            const edit = document.createElement('button');
+            edit.type = 'button';
+            edit.className = 'cm-action-btn cm-edit-btn';
+            edit.dataset.action = 'edit';
+            edit.textContent = 'Edit';
+            edit.disabled = locked;
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.className = 'cm-action-btn cm-delete-btn';
+            remove.dataset.action = 'delete';
+            remove.textContent = 'Delete';
+            remove.disabled = locked;
+            actions.append(edit, remove);
+            row.appendChild(actions);
+            tbody.appendChild(row);
+            row.dataset.assessmentId = activity.id;
+        });
+        if (!workspace?.assessments.length) {
+            const row = document.createElement('tr');
+            const cell = document.createElement('td');
+            cell.colSpan = 7;
+            cell.textContent = 'No activities are set up for this section yet.';
+            row.appendChild(cell);
+            tbody.appendChild(row);
+        }
+        openBtn.disabled = !sectionSelect.value || locked || !workspace?.outcomes.length;
+    }
+
+    async function loadSection() {
+        workspace = null;
+        tbody.replaceChildren();
+        openBtn.disabled = true;
+        if (!sectionSelect.value) {
+            status.textContent = 'Choose a section to manage its activities and CO mappings.';
+            renderOutcomeChoices([], []);
+            return;
+        }
+        status.textContent = 'Loading course activities...';
+        try {
+            workspace = await request('/api/faculty/sections/' +
+                encodeURIComponent(sectionSelect.value) + '/assessments');
+            const assignment = workspace.section;
+            window.syncEduMetricsWorkspaceSection?.(sectionSelect.value, assignment);
+            renderActivities();
+            status.textContent = workspace.gradebook_status === 'locked'
+                ? 'This gradebook is locked. Activities and mappings are read-only.'
+                : 'Activities here are shared with Assessment Entry. Only released scores contribute to CO attainment.';
+        } catch (error) {
+            status.textContent = error.message;
+            workspace = null;
+        }
+    }
+
+    function openForActivity(activity) {
         form.reset();
         coError.textContent = '';
-        document.getElementById('assessmentModalTitle').textContent = 'Add Assessment';
-        document.getElementById('assessmentCoHelper').textContent = 'Select one or more COs.';
-        form.querySelector('.cm-assessment-save-btn').textContent = 'Add Assessment';
-        modal.classList.add('show');
-        modal.setAttribute('aria-hidden', 'false');
-        document.body.classList.add('cm-modal-open');
+        editingAssessmentId = activity?.id || null;
+        document.getElementById('assessmentName').value = activity?.title || '';
+        document.getElementById('assessmentType').value = activity?.activity_type || '';
+        document.getElementById('assessmentDate').value = activity?.due_date || '';
+        maxScoreInput.value = String(activity?.max_score || 100);
+        document.getElementById('assessmentModalTitle').textContent =
+            editingAssessmentId ? 'Edit Activity' : 'Add Activity';
+        form.querySelector('.cm-assessment-save-btn').textContent =
+            editingAssessmentId ? 'Save Changes' : 'Add Activity';
+        document.getElementById('assessmentCoHelper').textContent =
+            'Select every Course Outcome measured by this activity.';
+        renderOutcomeChoices(
+            workspace?.outcomes || [],
+            activity?.course_outcome_ids || []
+        );
+        setModal(true);
         document.getElementById('assessmentName').focus();
     }
 
-    function closeModal() {
-        modal.classList.remove('show');
-        modal.setAttribute('aria-hidden', 'true');
-        document.body.classList.remove('cm-modal-open');
-        form.reset();
-        coError.textContent = '';
-    }
-    openBtn.addEventListener('click', openModal);
-    closeBtn.addEventListener('click', closeModal);
-    cancelBtn.addEventListener('click', closeModal);
+    activityTypes.forEach(type =>
+        document.getElementById('assessmentType').add(new Option(type, type))
+    );
+    openBtn.addEventListener('click', () => openForActivity(null));
+    closeBtn.addEventListener('click', () => setModal(false));
+    cancelBtn.addEventListener('click', () => setModal(false));
     modal.addEventListener('click', function (e) {
         if (e.target === modal)
-            closeModal();
+            setModal(false);
     });
-
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && modal.classList.contains('show'))
-            closeModal();
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && modal.classList.contains('show')) setModal(false);
     });
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
-        const selected = [...form.querySelectorAll('input[name="assessmentCO"]:checked')];
-        if (!selected.length) {
+    form.addEventListener('submit', async event => {
+        event.preventDefault();
+        const courseOutcomeIds = [...form.querySelectorAll('input[name="assessmentCO"]:checked')]
+            .map(input => input.value);
+        if (!courseOutcomeIds.length) {
             coError.textContent = 'Please select at least one course outcome.';
             return;
         }
         coError.textContent = '';
-        const name = document.getElementById('assessmentName').value.trim();
-        const type = document.getElementById('assessmentType').value;
-        const dateValue = document.getElementById('assessmentDate').value;
-        const date = dateValue
-            ? new Date(dateValue + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-            : '—';
-        const coBadges = selected.map(item => '<span class="cm-co-badge">' + item.value + '</span>').join(' ');
-        const rowHtml = '<td>' + name + '</td>' +
-            '<td><span class="cm-type-badge">' + type + '</span></td>' +
-            '<td>' + date + '</td>' +
-            '<td>' + coBadges + '</td>' +
-            '<td><button type="button" class="cm-view-score-btn">View Score</button></td>' +
-            '<td><div class="cm-row-actions">' +
-            '<button type="button" class="cm-action-btn cm-edit-btn">✎ Edit</button>' +
-            '<button type="button" class="cm-action-btn cm-delete-btn">🗑 Delete</button>' +
-            '</div></td>';
-        if (rowToEdit) {
-            rowToEdit.innerHTML = rowHtml;
-            rowToEdit = null;
+        const submit = form.querySelector('[type="submit"]');
+        submit.disabled = true;
+        const payload = {
+            title: document.getElementById('assessmentName').value.trim(),
+            activity_type: document.getElementById('assessmentType').value,
+            due_date: document.getElementById('assessmentDate').value || null,
+            max_score: Number(maxScoreInput.value),
+            course_outcome_ids: courseOutcomeIds
+        };
+        try {
+            const url = editingAssessmentId
+                ? '/api/faculty/assessments/' + encodeURIComponent(editingAssessmentId)
+                : '/api/faculty/sections/' + encodeURIComponent(sectionSelect.value) + '/assessments';
+            await request(url, {
+                method: editingAssessmentId ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            setModal(false);
+            await loadSection();
+        } catch (error) {
+            status.textContent = error.message;
+        } finally {
+            submit.disabled = false;
         }
-        else {
-            const row = document.createElement('tr');
-            row.innerHTML = rowHtml;
-            tbody.appendChild(row);
-        }
-        closeModal();
     });
-    tbody.addEventListener('click', function (e) {
-        const viewBtn = e.target.closest('.cm-view-score-btn');
-        if (viewBtn) {
-            const row = viewBtn.closest('tr');
-            scoreAssessmentName.textContent = row.cells[0].textContent.trim();
-            scoreMappedCos.textContent = [...row.cells[3].querySelectorAll('.cm-co-badge')].map(item => item.textContent.trim()).join(' • ');
-            const scoreStudentCount = document.getElementById('scoreStudentCount');
-            if (scoreStudentCount) {
-                scoreStudentCount.textContent = String(scoreTableBody.querySelectorAll('tr').length);
-            }
-            recalculateScores();
-            scoreModal.classList.add('show');
-            scoreModal.setAttribute('aria-hidden', 'false');
-            document.body.classList.add('cm-modal-open');
+    tbody.addEventListener('click', async event => {
+        const button = event.target.closest('button[data-action]');
+        const row = button?.closest('tr[data-assessment-id]');
+        if (!button || !row) return;
+        const activity = workspace?.assessments.find(item => item.id === row.dataset.assessmentId);
+        if (!activity) return;
+        if (button.dataset.action === 'edit') {
+            openForActivity(activity);
             return;
         }
-        const editBtn = e.target.closest('.cm-edit-btn');
-        if (editBtn) {
-            rowToEdit = editBtn.closest('tr');
-            const cells = rowToEdit.cells;
-            document.getElementById('assessmentName').value = cells[0].textContent.trim();
-            const type = cells[1].textContent.trim();
-            document.getElementById('assessmentType').value = type === 'Laboratory' ? 'Laboratory Experiment' : type;
-            const parsedDate = new Date(cells[2].textContent.trim());
-            if (!Number.isNaN(parsedDate.getTime())) {
-                const y = parsedDate.getFullYear();
-                const m = String(parsedDate.getMonth() + 1).padStart(2, '0');
-                const d = String(parsedDate.getDate()).padStart(2, '0');
-                document.getElementById('assessmentDate').value = y + '-' + m + '-' + d;
-            }
-            const mapped = [...cells[3].querySelectorAll('.cm-co-badge')].map(b => b.textContent.trim());
-            form.querySelectorAll('input[name="assessmentCO"]').forEach(input => input.checked = mapped.includes(input.value));
-            coError.textContent = '';
-            document.getElementById('assessmentModalTitle').textContent = 'Edit Assessment';
-            document.getElementById('assessmentCoHelper').textContent = 'Choose the CO(s) mapped to this assessment.';
-            form.querySelector('.cm-assessment-save-btn').textContent = 'Save Changes';
-            modal.classList.add('show');
-            modal.setAttribute('aria-hidden', 'false');
-            document.body.classList.add('cm-modal-open');
-            const firstCo = form.querySelector('input[name="assessmentCO"]');
-            if (firstCo) {
-                firstCo.focus();
-            }
-            return;
+        if (!window.confirm('Delete activity "' + activity.title + '" and its saved scores?')) return;
+        button.disabled = true;
+        try {
+            await request('/api/faculty/assessments/' + encodeURIComponent(activity.id), {
+                method: 'DELETE'
+            });
+            await loadSection();
+        } catch (error) {
+            status.textContent = error.message;
+            button.disabled = false;
         }
-        const deleteBtn = e.target.closest('.cm-delete-btn');
-        if (!deleteBtn)
-            return;
-        rowToDelete = deleteBtn.closest('tr');
-        const assessmentName = rowToDelete.cells[0].textContent.trim();
-        deleteMessage.textContent = 'Are you sure you want to delete ' + assessmentName + '?';
-        deleteModal.classList.add('show');
-        deleteModal.setAttribute('aria-hidden', 'false');
-        document.body.classList.add('cm-modal-open');
     });
-
-    function recalculateScores() {
-        const inputs = [...scoreTableBody.querySelectorAll('.cm-raw-score-input')];
-        let total = 0;
-        inputs.forEach(input => {
-            let value = Number(input.value);
-            if (!Number.isFinite(value))
-                value = 0;
-            value = Math.max(0, Math.min(100, value));
-            input.value = value;
-            input.closest('tr').querySelector('.cm-score-percent').textContent = Math.round(value) + '%';
-            total += value;
-        });
-        scoreMean.textContent = (inputs.length ? Math.round(total / inputs.length) : 0) + '%';
-    }
-
-    function closeScoreModal() {
-        scoreModal.classList.remove('show');
-        scoreModal.setAttribute('aria-hidden', 'true');
-        document.body.classList.remove('cm-modal-open');
-    }
-    scoreTableBody.addEventListener('input', function (e) {
-        if (e.target.classList.contains('cm-raw-score-input'))
-            recalculateScores();
-    });
-    closeScoreBtn.addEventListener('click', closeScoreModal);
-    cancelScoreBtn.addEventListener('click', closeScoreModal);
-    saveScoresBtn.addEventListener('click', function () {
-        recalculateScores();
-        closeScoreModal();
-    });
-    scoreModal.addEventListener('click', function (e) {
-        if (e.target === scoreModal)
-            closeScoreModal();
-    });
-
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && scoreModal.classList.contains('show'))
-            closeScoreModal();
-    });
-
-    function closeDeleteModal() {
-        deleteModal.classList.remove('show');
-        deleteModal.setAttribute('aria-hidden', 'true');
-        document.body.classList.remove('cm-modal-open');
-        rowToDelete = null;
-    }
-    cancelDeleteBtn.addEventListener('click', closeDeleteModal);
-    deleteModal.addEventListener('click', function (e) {
-        if (e.target === deleteModal)
-            closeDeleteModal();
-    });
-    confirmDeleteBtn.addEventListener('click', function () {
-        if (rowToDelete)
-            rowToDelete.remove();
-        closeDeleteModal();
-    });
-
-    document.addEventListener('keydown', function (e) {
-        if (
-            e.key === 'Escape' &&
-            deleteModal.classList.contains('show')
-        )
-            closeDeleteModal();
-    });
+    sectionSelect.addEventListener('change', loadSection);
+    if (sectionSelect.value) loadSection();
 })();
 
 /* CM FACULTY — STUDENT ATTAINMENT VIEW + CQI BASIS */
@@ -8693,17 +8716,12 @@ function initRawAssessmentFaculty() {
     const $ = id => document.getElementById(id);
     const sectionSelect = $('rafSection');
     const assessmentSelect = $('rafAssessment');
-    const manageSectionSelect = $('rafManageSection');
-    const manageAssessmentSelect = $('rafManageAssessment');
     const body = $('rafRows');
-    const createForm = $('rafCreateAssessmentForm');
-    if (!sectionSelect || !assessmentSelect || !manageSectionSelect ||
-        !manageAssessmentSelect || !body || !createForm) return;
+    if (!sectionSelect || !assessmentSelect || !body) return;
 
     let workspace = null;
     let assignments = [];
     let editedScores = new Map();
-    let editingAssessmentId = null;
     const status = $('rafMessage');
     const saveButton = $('rafSave');
     const releaseButton = $('rafRelease');
@@ -8720,11 +8738,6 @@ function initRawAssessmentFaculty() {
 
     function selectedAssessment() {
         return workspace?.assessments.find(item => item.id === assessmentSelect.value) || null;
-    }
-
-    function selectAssessment(assessmentId) {
-        assessmentSelect.value = assessmentId;
-        manageAssessmentSelect.value = assessmentId;
     }
 
     function scoreFor(assessment, studentId) {
@@ -8802,11 +8815,6 @@ function initRawAssessmentFaculty() {
         $('rafMode').textContent = locked ? 'Gradebook Locked' : 'Open for Editing';
         $('rafMode').classList.toggle('in-progress', locked);
         assessmentSelect.disabled = !workspace?.assessments.length;
-        manageAssessmentSelect.disabled = !workspace?.assessments.length;
-        const manageLocked = !assessment || locked;
-        $('rafEditAssessment').disabled = manageLocked;
-        $('rafDeleteAssessment').disabled = manageLocked;
-        $('rafSubmitMappings').disabled = !workspace || !workspace.assessments.length || locked;
         saveButton.disabled = !assessment || locked;
         releaseButton.disabled = !assessment || locked || Boolean(assessment?.released_at);
         releaseButton.textContent = assessment?.released_at ? 'Scores Released' : 'Release Scores';
@@ -8885,16 +8893,9 @@ function initRawAssessmentFaculty() {
         $('rafEmpty').hidden = visible.length > 0;
         updateSummary(assessment, students);
         renderQueries();
-        createForm.querySelectorAll('input, select, button').forEach(control => {
-            control.disabled = !workspace || locked ||
-                (!workspace.outcomes.length &&
-                    (control.id === 'rafNewOutcome' || control.type === 'submit'));
-        });
         if (locked) status.textContent = 'This section gradebook is locked; scores are read-only.';
-        else if (workspace && !workspace.outcomes.length) {
-            status.textContent = 'Add course outcomes before creating assessments.';
-        } else if (!assessment && !status.textContent) {
-            status.textContent = 'Select an assessment or create one for this section.';
+        else if (!assessment && !status.textContent) {
+            status.textContent = 'Select an activity to enter its scores.';
         }
     }
 
@@ -8916,16 +8917,13 @@ function initRawAssessmentFaculty() {
         editedScores.clear();
         if (!sectionSelect.value) {
             assessmentSelect.replaceChildren(new Option('Select a section first', ''));
-            manageAssessmentSelect.replaceChildren(new Option('Select a section first', ''));
             body.replaceChildren();
             $('rafMessage').textContent = 'Select a course section first.';
             render();
             return;
         }
         assessmentSelect.disabled = true;
-        manageAssessmentSelect.disabled = true;
         assessmentSelect.replaceChildren(new Option('Loading assessments...', ''));
-        manageAssessmentSelect.replaceChildren(new Option('Loading activities...', ''));
         body.replaceChildren();
         $('rafMessage').textContent = '';
         try {
@@ -8936,21 +8934,8 @@ function initRawAssessmentFaculty() {
                 ''
             );
             assessmentSelect.replaceChildren(assessmentPlaceholder);
-            manageAssessmentSelect.replaceChildren(new Option(
-                workspace.assessments.length ? 'Select activity' : 'No activities yet',
-                ''
-            ));
             workspace.assessments.forEach(item => {
                 assessmentSelect.add(new Option(item.title, item.id));
-                manageAssessmentSelect.add(new Option(item.title, item.id));
-            });
-            const outcomeSelect = $('rafNewOutcome');
-            outcomeSelect.replaceChildren(new Option(
-                workspace.outcomes.length ? 'Select course outcome' : 'No course outcomes configured',
-                ''
-            ));
-            workspace.outcomes.forEach(outcome => {
-                outcomeSelect.add(new Option(outcome.code + ' - ' + outcome.description, outcome.id));
             });
             const assignment = assignments.find(item => item.section_id === sectionSelect.value);
             const breadcrumb = document.querySelector('.cw-breadcrumb-current');
@@ -8967,76 +8952,17 @@ function initRawAssessmentFaculty() {
             workspace = null;
             $('rafMessage').textContent = error.message;
             assessmentSelect.replaceChildren(new Option('Unable to load assessments', ''));
-            manageAssessmentSelect.replaceChildren(new Option('Unable to load activities', ''));
             render();
         }
     }
 
     sectionSelect.addEventListener('change', () => {
-        manageSectionSelect.value = sectionSelect.value;
         loadWorkspace();
     });
-    manageSectionSelect.addEventListener('change', () => {
-        sectionSelect.value = manageSectionSelect.value;
-        sectionSelect.dispatchEvent(new Event('change', { bubbles: true }));
-    });
     assessmentSelect.addEventListener('change', () => {
-        manageAssessmentSelect.value = assessmentSelect.value;
         editedScores.clear();
         $('rafMessage').textContent = '';
-        editingAssessmentId = null;
-        createForm.reset();
-        $('rafNewMax').value = '100';
-        createForm.querySelector('h3').textContent = 'Create Assessment';
-        createForm.querySelector('[type="submit"]').textContent = 'Create Assessment';
         render();
-    });
-    manageAssessmentSelect.addEventListener('change', () => {
-        selectAssessment(manageAssessmentSelect.value);
-        assessmentSelect.dispatchEvent(new Event('change', { bubbles: true }));
-    });
-    $('rafEditAssessment').addEventListener('click', () => {
-        const assessment = selectedAssessment();
-        if (!assessment || workspace?.gradebook_status === 'locked') return;
-        editingAssessmentId = assessment.id;
-        $('rafNewTitle').value = assessment.title || '';
-        $('rafNewType').value = assessment.activity_type || '';
-        $('rafNewOutcome').value = assessment.course_outcome_id || '';
-        $('rafNewDate').value = assessment.due_date || '';
-        $('rafNewMax').value = String(assessment.max_score || 100);
-        createForm.querySelector('h3').textContent = 'Update Assessment';
-        createForm.querySelector('[type="submit"]').textContent = 'Save Changes';
-        createForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        $('rafNewTitle').focus();
-    });
-    $('rafDeleteAssessment').addEventListener('click', async () => {
-        const assessment = selectedAssessment();
-        if (!assessment || workspace?.gradebook_status === 'locked') return;
-        if (!window.confirm('Remove “' + assessment.title + '” and its saved scores?')) return;
-        $('rafDeleteAssessment').disabled = true;
-        status.textContent = 'Removing assessment...';
-        try {
-            await api('/api/faculty/assessments/' + encodeURIComponent(assessment.id), { method: 'DELETE' });
-            editingAssessmentId = null;
-            status.textContent = 'Assessment removed.';
-            await loadWorkspace();
-        } catch (error) {
-            status.textContent = error.message;
-            render();
-        }
-    });
-    $('rafSubmitMappings').addEventListener('click', async () => {
-        if (!sectionSelect.value || !workspace) return;
-        $('rafSubmitMappings').disabled = true;
-        status.textContent = 'Submitting mappings for review...';
-        try {
-            await api('/api/faculty/sections/' + encodeURIComponent(sectionSelect.value) + '/submit-mappings', { method: 'POST' });
-            status.textContent = 'Mappings submitted to the Department Head.';
-        } catch (error) {
-            status.textContent = error.message;
-        } finally {
-            render();
-        }
     });
     $('rafSearch').addEventListener('input', render);
     $('rafSort').addEventListener('change', render);
@@ -9053,7 +8979,7 @@ function initRawAssessmentFaculty() {
                     headers: { Accept: 'application/json' }
                 });
             await loadWorkspace();
-            selectAssessment(assessmentId);
+                assessmentSelect.value = assessmentId;
             render();
             status.textContent = 'Scores released to students. You may continue editing until the gradebook is locked.';
         } catch (error) {
@@ -9084,60 +9010,16 @@ function initRawAssessmentFaculty() {
             editedScores.clear();
             $('rafMessage').textContent = 'Scores saved.';
             await loadWorkspace();
-            selectAssessment(assessment.id);
+            assessmentSelect.value = assessment.id;
             render();
         } catch (error) {
             $('rafMessage').textContent = error.message;
             saveButton.disabled = false;
         }
     });
-    createForm.addEventListener('submit', async event => {
-        event.preventDefault();
-        if (!sectionSelect.value) {
-            $('rafMessage').textContent = 'Select a course section first.';
-            return;
-        }
-        const submit = createForm.querySelector('[type="submit"]');
-        submit.disabled = true;
-        $('rafMessage').textContent = editingAssessmentId ? 'Updating assessment...' : 'Creating assessment...';
-        try {
-            const result = await api(editingAssessmentId
-                ? '/api/faculty/assessments/' + encodeURIComponent(editingAssessmentId)
-                : '/api/faculty/sections/' + encodeURIComponent(sectionSelect.value) + '/assessments', {
-                    method: editingAssessmentId ? 'PUT' : 'POST',
-                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-                    body: JSON.stringify({
-                        title: $('rafNewTitle').value.trim(),
-                        activity_type: $('rafNewType').value,
-                        course_outcome_id: $('rafNewOutcome').value,
-                        due_date: $('rafNewDate').value,
-                        max_score: $('rafNewMax').value
-                    })
-                });
-            createForm.reset();
-            $('rafNewMax').value = '100';
-            editingAssessmentId = null;
-            createForm.querySelector('h3').textContent = 'Create Assessment';
-            createForm.querySelector('[type="submit"]').textContent = 'Create Assessment';
-            await loadWorkspace();
-            selectAssessment(result.assessment.id);
-            $('rafMessage').textContent = 'Assessment ' + (result.assessment ? 'saved.' : 'updated.');
-            render();
-        } catch (error) {
-            $('rafMessage').textContent = error.message;
-        } finally {
-            submit.disabled = !workspace || workspace.gradebook_status === 'locked' ||
-                !workspace.outcomes.length;
-        }
-    });
-
     api('/api/faculty/sections').then(result => {
         assignments = Array.isArray(result.sections) ? result.sections : [];
         sectionSelect.replaceChildren(new Option(
-            assignments.length ? 'Select course section' : 'No assigned sections',
-            ''
-        ));
-        manageSectionSelect.replaceChildren(new Option(
             assignments.length ? 'Select course section' : 'No assigned sections',
             ''
         ));
@@ -9145,21 +9027,17 @@ function initRawAssessmentFaculty() {
             const label = [item.course_code, item.section_name, item.academic_year_name, item.term_name]
                 .filter(Boolean).join(' - ');
             sectionSelect.add(new Option(label, item.section_id));
-            manageSectionSelect.add(new Option(label, item.section_id));
         });
         const requestedSection = new URLSearchParams(location.search).get('section_id');
         const selectedAssignment = assignments.find(item => item.section_id === requestedSection) ||
             (assignments.length === 1 ? assignments[0] : null);
         if (selectedAssignment) {
             sectionSelect.value = selectedAssignment.section_id;
-            manageSectionSelect.value = selectedAssignment.section_id;
             window.syncEduMetricsWorkspaceSection?.(selectedAssignment.section_id);
             loadWorkspace();
         } else {
             sectionSelect.disabled = assignments.length === 0;
-            manageSectionSelect.disabled = assignments.length === 0;
             assessmentSelect.disabled = true;
-            manageAssessmentSelect.disabled = true;
             $('rafStudents').textContent = '0';
             $('rafEntered').textContent = '0';
             if (!assignments.length) {
@@ -9168,11 +9046,8 @@ function initRawAssessmentFaculty() {
         }
     }).catch(error => {
         sectionSelect.replaceChildren(new Option('Unable to load sections', ''));
-        manageSectionSelect.replaceChildren(new Option('Unable to load sections', ''));
         sectionSelect.disabled = true;
-        manageSectionSelect.disabled = true;
         assessmentSelect.disabled = true;
-        manageAssessmentSelect.disabled = true;
         $('rafMessage').textContent = error.message;
     });
 }

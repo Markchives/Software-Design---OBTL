@@ -1850,6 +1850,73 @@ def create_dashboard_post():
         return jsonify({"error": "Post could not be published."}), 500
 
 
+def _assessment_outcomes_by_activity(activities):
+    activity_ids = [row["id"] for row in activities]
+    if not activity_ids:
+        return {}
+    mappings = (
+        admin_supabase.table("assessment_activity_course_outcomes")
+        .select("assessment_activity_id, course_outcome_id")
+        .in_("assessment_activity_id", activity_ids)
+        .execute()
+        .data
+        or []
+    )
+    outcome_ids = list({
+        row["course_outcome_id"] for row in mappings
+        if row.get("course_outcome_id")
+    })
+    outcomes = []
+    if outcome_ids:
+        outcomes = (
+            admin_supabase.table("course_outcomes")
+            .select("id, code, description, target_percentage")
+            .in_("id", outcome_ids)
+            .execute()
+            .data
+            or []
+        )
+    outcome_by_id = {row["id"]: row for row in outcomes}
+    by_activity = {}
+    for mapping in mappings:
+        outcome = outcome_by_id.get(mapping["course_outcome_id"])
+        if outcome:
+            by_activity.setdefault(
+                mapping["assessment_activity_id"], []
+            ).append(outcome)
+    for activity in activities:
+        linked = by_activity.get(activity["id"], [])
+        activity["course_outcomes"] = linked
+        activity["course_outcome_ids"] = [row["id"] for row in linked]
+        activity["outcome_codes"] = [row["code"] for row in linked]
+        activity["outcome_code"] = ", ".join(activity["outcome_codes"])
+    return by_activity
+
+
+def _normalize_assessment_outcome_ids(data, workspace):
+    values = data.get("course_outcome_ids")
+    if values is None:
+        legacy_value = data.get("course_outcome_id")
+        values = [legacy_value] if legacy_value else []
+    if not isinstance(values, list) or not values:
+        return None, "Select at least one Course Outcome."
+    if len(values) > 50:
+        return None, "An activity can be mapped to at most 50 Course Outcomes."
+    outcome_ids = []
+    for value in values:
+        try:
+            outcome_id = str(UUID(str(value)))
+        except (TypeError, ValueError):
+            return None, "A Course Outcome identifier is invalid."
+        if outcome_id in outcome_ids:
+            return None, "Duplicate Course Outcome mapping."
+        outcome_ids.append(outcome_id)
+    available_ids = {row["id"] for row in workspace["outcomes"]}
+    if any(outcome_id not in available_ids for outcome_id in outcome_ids):
+        return None, "A selected outcome does not belong to this course."
+    return outcome_ids, None
+
+
 def _faculty_assessment_workspace(section_id):
     if not get_faculty_section(section_id):
         return None
@@ -1939,6 +2006,7 @@ def _faculty_assessment_workspace(section_id):
         .data
         or []
     )
+    _assessment_outcomes_by_activity(activities)
     activity_ids = [row["id"] for row in activities]
     scores = []
     if activity_ids:
@@ -1958,11 +2026,7 @@ def _faculty_assessment_workspace(section_id):
         scores_by_activity.setdefault(
             row["assessment_activity_id"], {}
         )[row["student_profile_id"]] = row
-    outcome_codes = {row["id"]: row["code"] for row in outcomes}
     for activity in activities:
-        activity["outcome_code"] = outcome_codes.get(
-            activity.get("course_outcome_id"), ""
-        )
         activity["scores"] = scores_by_activity.get(activity["id"], {})
     gradebooks = (
         admin_supabase.table("gradebooks")
@@ -2055,12 +2119,15 @@ def _calculate_section_attainment(section_id):
     )
     activities = (
         admin_supabase.table("assessment_activities")
-        .select("id, course_outcome_id, title, activity_type, max_score")
+        .select(
+            "id, course_outcome_id, title, activity_type, max_score, released_at"
+        )
         .eq("section_id", section_id)
         .execute()
         .data
         or []
     )
+    _assessment_outcomes_by_activity(activities)
     enrollments = (
         admin_supabase.table("enrollments")
         .select("student_profile_id")
@@ -2074,31 +2141,32 @@ def _calculate_section_attainment(section_id):
         row["student_profile_id"] for row in enrollments
         if row.get("student_profile_id")
     })
-    activity_ids = [row["id"] for row in activities]
+    released_activities = [
+        row for row in activities if row.get("released_at")
+    ]
+    released_activity_ids = [row["id"] for row in released_activities]
     scores = []
-    if student_ids and activity_ids:
+    if student_ids and released_activity_ids:
         scores = (
             admin_supabase.table("raw_assessment_scores")
             .select("assessment_activity_id, student_profile_id, percentage")
-            .in_("assessment_activity_id", activity_ids)
+            .in_("assessment_activity_id", released_activity_ids)
             .in_("student_profile_id", student_ids)
             .execute()
             .data
             or []
         )
-    activity_by_id = {row["id"]: row for row in activities}
+    activity_by_id = {row["id"]: row for row in released_activities}
     scores_by_student_outcome = {}
-    scores_by_outcome = {}
     for score in scores:
         activity = activity_by_id.get(score.get("assessment_activity_id"))
         percentage = score.get("percentage")
         if not activity or percentage is None:
             continue
-        outcome_id = activity["course_outcome_id"]
-        scores_by_student_outcome.setdefault(
-            (score["student_profile_id"], outcome_id), []
-        ).append(float(percentage))
-        scores_by_outcome.setdefault(outcome_id, []).append(float(percentage))
+        for outcome_id in activity["course_outcome_ids"]:
+            scores_by_student_outcome.setdefault(
+                (score["student_profile_id"], outcome_id), []
+            ).append(float(percentage))
 
     verified = _section_mapping_is_verified(section_id)
     # Rebuild the materialized rows so blanked/deleted scores cannot leave stale
@@ -2129,22 +2197,24 @@ def _calculate_section_attainment(section_id):
                 "can_view": verified,
                 "calculated_at": datetime.now(timezone.utc).isoformat(),
             })
-        values = scores_by_outcome.get(outcome_id, [])
-        attainment = round(sum(individual) / len(individual), 2) if individual else 0.0
-        status = "met" if attainment >= target else (
-            "needs_improvement" if attainment < target * 0.85 else "below_target"
+        attainment = round(sum(individual) / len(individual), 2) if individual else None
+        status = "awaiting_results" if attainment is None else (
+            "met" if attainment >= target else (
+                "needs_improvement" if attainment < target * 0.85 else "below_target"
+            )
         )
         contributing = [
             {"id": activity["id"], "title": activity["title"],
-             "activity_type": activity["activity_type"]}
+             "activity_type": activity["activity_type"],
+             "released_at": activity.get("released_at")}
             for activity in activities
-            if activity.get("course_outcome_id") == outcome_id
+            if outcome_id in activity["course_outcome_ids"]
         ]
         output.append({
             "course_outcome_id": outcome_id,
             "code": outcome["code"],
             "description": outcome["description"],
-            "attainment_percentage": attainment if individual else None,
+            "attainment_percentage": attainment,
             "target_percentage": target,
             "status": status if individual else "awaiting_results",
             "flagged": bool(individual and attainment < target),
@@ -2208,16 +2278,16 @@ def create_faculty_assessment(section_id):
             return jsonify({"error": "Assessment data must be a JSON object."}), 400
         title = data.get("title", "")
         activity_type = data.get("activity_type", "")
-        outcome_id = str(data.get("course_outcome_id", "")).strip()
         if not isinstance(title, str) or not isinstance(activity_type, str):
             return jsonify({"error": "Assessment title and type must be text."}), 400
         title = title.strip()
         activity_type = activity_type.strip()
         due_date = str(data.get("due_date", "")).strip() or None
-        try:
-            outcome_id = str(UUID(outcome_id))
-        except (TypeError, ValueError):
-            return jsonify({"error": "Choose a valid course outcome."}), 400
+        outcome_ids, mapping_error = _normalize_assessment_outcome_ids(
+            data, workspace
+        )
+        if mapping_error:
+            return jsonify({"error": mapping_error}), 400
         if isinstance(data.get("max_score"), bool):
             return jsonify({"error": "Maximum score must be a number."}), 400
         try:
@@ -2239,24 +2309,39 @@ def create_faculty_assessment(section_id):
                 datetime.strptime(due_date, "%Y-%m-%d")
             except ValueError:
                 return jsonify({"error": "Due date must use YYYY-MM-DD format."}), 400
-        if not any(item["id"] == outcome_id for item in workspace["outcomes"]):
-            return jsonify({"error": "The selected outcome does not belong to this course."}), 400
-
-        result = (
+        result = admin_supabase.rpc(
+            "create_assessment_activity_with_outcomes",
+            {
+                "p_section_id": section_id,
+                "p_title": title,
+                "p_activity_type": activity_type,
+                "p_due_date": due_date,
+                "p_max_score": max_score,
+                "p_course_outcome_ids": outcome_ids,
+            },
+        ).execute()
+        activity_id = result.data
+        if isinstance(activity_id, list):
+            activity_id = activity_id[0] if activity_id else None
+        if isinstance(activity_id, dict):
+            activity_id = next(iter(activity_id.values()), None)
+        if not activity_id:
+            raise RuntimeError("Assessment insert returned no saved record.")
+        rows = (
             admin_supabase.table("assessment_activities")
-            .insert({
-                "section_id": section_id,
-                "course_outcome_id": outcome_id,
-                "title": title,
-                "activity_type": activity_type,
-                "due_date": due_date,
-                "max_score": max_score,
-            })
+            .select(
+                "id, section_id, course_outcome_id, title, activity_type, "
+                "due_date, max_score, created_at, released_at"
+            )
+            .eq("id", str(activity_id))
+            .limit(1)
             .execute()
+            .data
+            or []
         )
-        rows = result.data or []
         if not rows:
             raise RuntimeError("Assessment insert returned no saved record.")
+        rows[0]["course_outcome_ids"] = outcome_ids
         _set_mapping_review_status(section_id, "pending")
         _calculate_section_attainment(section_id)
         return jsonify({"assessment": rows[0]}), 201
@@ -2301,68 +2386,70 @@ def update_faculty_assessment(assessment_id):
             return jsonify({"error": "Assessment title must contain 1 to 120 characters."}), 400
         if activity_type not in {"Quiz", "Major Exam", "Laboratory", "Assignment", "Other"}:
             return jsonify({"error": "Choose a valid assessment type."}), 400
+        outcome_ids, mapping_error = _normalize_assessment_outcome_ids(
+            data, workspace
+        )
+        if mapping_error:
+            return jsonify({"error": mapping_error}), 400
+        if isinstance(data.get("max_score"), bool):
+            return jsonify({"error": "Maximum score must be a number."}), 400
         try:
-            outcome_id = str(UUID(str(data.get("course_outcome_id", ""))))
-            if isinstance(data.get("max_score"), bool):
-                raise ValueError
             max_score = float(data.get("max_score"))
         except (TypeError, ValueError):
-            return jsonify({"error": "Choose a valid course outcome and maximum score."}), 400
+            return jsonify({"error": "Maximum score must be a number."}), 400
         if not math.isfinite(max_score) or not 0 < max_score <= 10000:
             return jsonify({"error": "Maximum score must be greater than 0 and at most 10,000."}), 400
-        if not any(row["id"] == outcome_id for row in workspace["outcomes"]):
-            return jsonify({"error": "The selected outcome does not belong to this course."}), 400
-        saved_scores = (
-            admin_supabase.table("raw_assessment_scores")
-            .select("student_profile_id, score")
-            .eq("assessment_activity_id", assessment_id)
-            .execute().data or []
-        )
-        if any(row.get("score") is not None and float(row["score"]) > max_score
-               for row in saved_scores):
-            return jsonify({
-                "error": "Maximum score cannot be lower than a score already entered."
-            }), 409
         due_date = str(data.get("due_date", "")).strip() or None
         if due_date:
             try:
                 datetime.strptime(due_date, "%Y-%m-%d")
             except ValueError:
                 return jsonify({"error": "Due date must use YYYY-MM-DD format."}), 400
-        result = (
+        result = admin_supabase.rpc(
+            "update_assessment_activity_with_outcomes",
+            {
+                "p_assessment_activity_id": assessment_id,
+                "p_title": title,
+                "p_activity_type": activity_type,
+                "p_due_date": due_date,
+                "p_max_score": max_score,
+                "p_course_outcome_ids": outcome_ids,
+            },
+        ).execute()
+        updated_id = result.data
+        if isinstance(updated_id, list):
+            updated_id = updated_id[0] if updated_id else None
+        if isinstance(updated_id, dict):
+            updated_id = next(iter(updated_id.values()), None)
+        if not updated_id:
+            return jsonify({"error": "Assessment could not be updated."}), 404
+        rows = (
             admin_supabase.table("assessment_activities")
-            .update({
-                "title": title, "activity_type": activity_type,
-                "course_outcome_id": outcome_id, "due_date": due_date,
-                "max_score": max_score,
-                "updated_at": datetime.now(timezone.utc).isoformat(),
-            })
-            .eq("id", assessment_id).execute()
+            .select(
+                "id, section_id, course_outcome_id, title, activity_type, "
+                "due_date, max_score, created_at, released_at"
+            )
+            .eq("id", assessment_id)
+            .limit(1)
+            .execute()
+            .data
+            or []
         )
-        rows = result.data or []
         if not rows:
             return jsonify({"error": "Assessment could not be updated."}), 404
-        if saved_scores:
-            recalculated_scores = [{
-                "assessment_activity_id": assessment_id,
-                "section_id": section_id,
-                "student_profile_id": score["student_profile_id"],
-                "score": score.get("score"),
-                "max_score": max_score,
-                "percentage": round(float(score["score"]) / max_score * 100, 2)
-                if score.get("score") is not None else None,
-                "updated_at": datetime.now(timezone.utc).isoformat(),
-            } for score in saved_scores]
-            admin_supabase.table("raw_assessment_scores").upsert(
-                recalculated_scores,
-                on_conflict="assessment_activity_id,student_profile_id",
-            ).execute()
+        rows[0]["course_outcome_ids"] = outcome_ids
         _set_mapping_review_status(section_id, "pending")
         _calculate_section_attainment(section_id)
         return jsonify({"assessment": rows[0]}), 200
     except ValueError:
         return jsonify({"error": "Invalid assessment ID."}), 400
-    except Exception:
+    except Exception as error:
+        if "gradebook is locked" in str(error).lower():
+            return jsonify({"error": "This section's gradebook is locked."}), 409
+        if "maximum score cannot be lower" in str(error).lower():
+            return jsonify({
+                "error": "Maximum score cannot be lower than a score already entered."
+            }), 409
         app.logger.exception("Unable to update faculty assessment")
         return jsonify({"error": "Assessment could not be updated."}), 500
 
@@ -2417,6 +2504,15 @@ def submit_faculty_section_mappings(section_id):
         )
         if not syllabi:
             return jsonify({"error": "Upload the course syllabus before submitting mappings."}), 409
+        unmapped_activities = [
+            activity["title"] for activity in workspace["assessments"]
+            if not activity["course_outcome_ids"]
+        ]
+        if unmapped_activities:
+            return jsonify({
+                "error": "Map every activity to at least one Course Outcome before submitting: "
+                + ", ".join(unmapped_activities)
+            }), 409
         outcome_ids = [row["id"] for row in workspace["outcomes"]]
         mappings = []
         if outcome_ids:
@@ -2667,6 +2763,7 @@ def get_department_mapping_review(section_id):
             .eq("course_id", section["course_id"]).order("code")
             .execute().data or []
         )
+        _assessment_outcomes_by_activity(activities)
         outcome_ids = [row["id"] for row in outcomes]
         coso = []
         if outcome_ids:
@@ -2691,7 +2788,15 @@ def get_department_mapping_review(section_id):
             )
         co_by_id = {row["id"]: row for row in outcomes}
         for activity in activities:
-            activity["course_outcome"] = co_by_id.get(activity["course_outcome_id"])
+            activity["course_outcomes"] = [
+                co_by_id[outcome_id]
+                for outcome_id in activity["course_outcome_ids"]
+                if outcome_id in co_by_id
+            ]
+            activity["course_outcome"] = (
+                activity["course_outcomes"][0]
+                if activity["course_outcomes"] else None
+            )
         attainment = _calculate_section_attainment(section_id)
         syllabus_rows = (
             admin_supabase.table("course_syllabi")
@@ -2780,6 +2885,7 @@ def release_faculty_assessment(assessment_id):
         if workspace["gradebook_status"] == "locked":
             return jsonify({"error": "This section's gradebook is locked."}), 409
         if activity.get("released_at"):
+            _calculate_section_attainment(activity["section_id"])
             return jsonify({
                 "released": True,
                 "released_at": activity["released_at"],
@@ -2797,6 +2903,7 @@ def release_faculty_assessment(assessment_id):
         )
         if not result.data:
             raise RuntimeError("Assessment release returned no updated record.")
+        _calculate_section_attainment(activity["section_id"])
         return jsonify({
             "released": True,
             "released_at": result.data[0]["released_at"],
@@ -2983,18 +3090,7 @@ def get_student_assessment_scores():
             .data
             or []
         )
-        outcome_ids = list({
-            row["course_outcome_id"] for row in activities
-            if row.get("course_outcome_id")
-        })
-        outcome_rows = []
-        if outcome_ids:
-            outcome_rows = (
-                admin_supabase.table("course_outcomes")
-                .select("id, code, description")
-                .in_("id", outcome_ids).execute().data or []
-            )
-        outcome_by_id = {row["id"]: row for row in outcome_rows}
+        _assessment_outcomes_by_activity(activities)
         activity_ids = [row["id"] for row in activities]
         score_map = {}
         if activity_ids:
@@ -3017,18 +3113,24 @@ def get_student_assessment_scores():
             course = courses.get(section.get("course_id"), {})
             score = score_map.get(activity["id"])
             released = bool(activity.get("released_at"))
+            mapped_outcomes = activity["course_outcomes"]
             rows.append({
                 "assessment_id": activity["id"],
                 "title": activity["title"],
                 "course_code": course.get("code", ""),
                 "course_title": course.get("title", ""),
                 "activity_type": activity["activity_type"],
-                "course_outcome_code": outcome_by_id.get(
-                    activity.get("course_outcome_id"), {}
-                ).get("code", ""),
-                "course_outcome_description": outcome_by_id.get(
-                    activity.get("course_outcome_id"), {}
-                ).get("description", ""),
+                "course_outcome_ids": activity["course_outcome_ids"],
+                "course_outcome_codes": [row["code"] for row in mapped_outcomes],
+                "course_outcome_code": ", ".join(
+                    row["code"] for row in mapped_outcomes
+                ),
+                "course_outcome_descriptions": [
+                    row["description"] for row in mapped_outcomes
+                ],
+                "course_outcome_description": "; ".join(
+                    row["description"] for row in mapped_outcomes
+                ),
                 "due_date": activity.get("due_date"),
                 "score": score.get("score") if released and score else None,
                 "max_score": activity["max_score"],
@@ -3117,6 +3219,7 @@ def _department_head_assessment_review_workspace(department_id):
         .data
         or []
     )
+    _assessment_outcomes_by_activity(activities)
     activity_ids = [row["id"] for row in activities]
     enrollments = (
         admin_supabase.table("enrollments")

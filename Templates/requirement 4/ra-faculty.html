@@ -32,36 +32,20 @@
 </aside>
 <main class="so-main cr-student-main">
 <div class="cw-breadcrumb">My Courses <span class="cw-breadcrumb-separator">/</span> <span class="cw-breadcrumb-current">Course not selected</span></div><div class="cw-workspace"><section aria-label="Selected course" class="cw-hero"><div><div class="cw-eyebrow">COURSE WORKSPACE</div><h2>—</h2><p>—</p></div></section><nav aria-label="Course modules" class="cw-module-nav"><a class="cw-module-tab" href="../requirement 1/so-faculty.html"><span class="cw-module-number">01</span> Syllabus &amp; Outcomes</a><a class="cw-module-tab" href="../requirement 2/cm-faculty.html"><span class="cw-module-number">02</span> Curriculum Mapping</a><a class="cw-module-tab" href="../requirement 3/cr.faculty.html"><span class="cw-module-number">03</span> Class Roster</a><a aria-current="page" class="cw-module-tab active" href="ra-faculty.html"><span class="cw-module-number">04</span> Assessment Entry</a><a class="cw-module-tab" href="../requirement 5/ac-faculty.html"><span class="cw-module-number">05</span> Attainment</a><a class="cw-module-tab" href="../requirement 6/cqi-faculty.html"><span class="cw-module-number">06</span> CQI Planning</a><a class="cw-module-tab" href="../requirement 8/rp-faculty.html"><span class="cw-module-number">07</span> Compliance Report</a></nav></div>
-<section class="raf-assessment-manage" aria-label="Select and manage assessments">
-<div class="raf-assessment-manage-heading"><div><h2>Manage course activities</h2><p>Edit or remove an existing assignment, assessment, laboratory, or other activity.</p></div></div>
-<label for="rafManageSection">Course section<select id="rafManageSection"><option value="">Loading sections...</option></select></label>
-<label for="rafManageAssessment">Activity<select id="rafManageAssessment"><option value="">Select a section first</option></select></label>
-<div class="raf-assessment-actions"><button class="crf-download-btn" id="rafEditAssessment" type="button" disabled>Edit Activity</button><button class="crf-download-btn" id="rafDeleteAssessment" type="button" disabled>Remove Activity</button></div>
-<button class="crf-download-btn raf-submit-mappings" id="rafSubmitMappings" type="button" disabled>Submit CO Mappings for Review</button>
-</section>
 <section aria-label="Assessment summary" class="so-summary-grid">
 <article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Total Students</span><strong class="so-summary-number" id="rafStudents">—</strong></article>
 <article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Scores Entered</span><strong class="so-summary-number" id="rafEntered">—</strong></article>
 <article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Average Percentage</span><strong class="so-summary-number" id="rafMaximum">—</strong></article>
 </section>
 <section aria-labelledby="rafTitle" class="cr-roster-panel crf-roster-panel raf-panel">
-<header class="so-section-header raf-heading"><div><h2 id="rafTitle">Raw Scores by Student</h2><p>Select a section, create an assessment if needed, then enter raw points for enrolled students.</p></div><div class="raf-actions"><span class="sodh-status complete" id="rafMode">Open for Editing</span><button class="crf-download-btn" id="rafRelease" type="button">Release Scores</button><button class="crf-download-btn" id="rafSave" type="button">Save Scores</button></div></header>
+<header class="so-section-header raf-heading"><div><h2 id="rafTitle">Raw Scores by Student</h2><p>Select a saved activity to enter raw points for its enrolled students. Create and map activities in Requirement 2.</p></div><div class="raf-actions"><span class="sodh-status complete" id="rafMode">Open for Editing</span><button class="crf-download-btn" id="rafRelease" type="button">Release Scores</button><button class="crf-download-btn" id="rafSave" type="button">Save Scores</button></div></header>
 <div class="raf-assessment-bar">
 <div><label for="rafSection">Course section</label><select id="rafSection"><option value="">Loading assigned sections...</option></select></div>
-<div><label for="rafAssessment">Assessment</label><select id="rafAssessment" disabled><option value="">Select a section first</option></select></div>
-<div class="raf-detail"><span>Course outcome</span><strong id="rafCO">—</strong></div>
+<div><label for="rafAssessment">Activity</label><select id="rafAssessment" disabled><option value="">Select a section first</option></select></div>
+<div class="raf-detail"><span>Mapped course outcomes</span><strong id="rafCO">—</strong></div>
 <div class="raf-detail"><span>Due date</span><strong id="rafDate">—</strong></div>
 <div><label for="rafMaxInput">Maximum score</label><input id="rafMaxInput" readonly value=""/></div>
 </div>
-<form class="raf-create-assessment" id="rafCreateAssessmentForm">
-<h3>Create Assessment</h3>
-<div><label for="rafNewTitle">Title</label><input id="rafNewTitle" maxlength="120" required placeholder="Assessment title"/></div>
-<div><label for="rafNewType">Type</label><select id="rafNewType" required><option value="">Select type</option><option>Quiz</option><option>Major Exam</option><option>Laboratory</option><option>Assignment</option><option>Other</option></select></div>
-<div><label for="rafNewOutcome">Course outcome</label><select id="rafNewOutcome" required><option value="">Choose a section first</option></select></div>
-<div><label for="rafNewDate">Due date</label><input id="rafNewDate" type="date"/></div>
-<div><label for="rafNewMax">Maximum score</label><input id="rafNewMax" type="number" min="0.01" max="10000" step="0.01" value="100" required/></div>
-<button class="crf-download-btn" type="submit">Create Assessment</button>
-</form>
 <div class="cr-toolbar crf-toolbar raf-toolbar"><label class="cr-search crf-search"><span aria-hidden="true">⌕</span><input aria-label="Search students" id="rafSearch" placeholder="Search student name or ID..." type="search"/></label><div class="cr-sort-wrap"><label for="rafSort">Sort By</label><select id="rafSort"><option value="az">Student Name A–Z</option><option value="za">Student Name Z–A</option><option value="high">Highest Score</option><option value="low">Lowest Score</option></select></div></div>
 <div class="raf-table-frame"><div class="cr-table-header"><table class="cr-table raf-table"><colgroup><col/><col/><col/><col/><col/><col/></colgroup><thead><tr><th>#</th><th>Student ID</th><th>Student Name</th><th>Raw Points</th><th>Percentage</th><th>Entry Status</th></tr></thead></table></div><div class="cr-table-wrap"><table class="cr-table raf-table"><colgroup><col/><col/><col/><col/><col/><col/></colgroup><tbody id="rafRows"></tbody></table></div></div><div class="so-empty-state" hidden="" id="rafEmpty">No matching students found.</div><section aria-label="Department Head queries" class="raf-review-queries" hidden id="rafQueries"><h3>Department Head Queries</h3><div id="rafQueryRows"></div></section><p aria-live="polite" class="raf-message" id="rafMessage" role="status"></p>
 </section></main>

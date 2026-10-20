@@ -115,8 +115,9 @@
 <button class="cm-tab" data-cm-tab="students-attainment" type="button">Students' Attainment</button>
 </div>
 <div class="cm-tab-panel active" id="assessment-mapping">
-<div class="cm-assessment-toolbar"><p>Add, edit, delete assessments</p><button class="cm-add-assessment-btn" id="openAssessmentModal" type="button"><span>+</span> Add Assessment</button></div>
-<div class="cm-table-wrap"><table class="cm-table cm-assessment-table"><thead><tr><th>Assessment Title</th><th>Assessment Type</th><th>Date</th><th>Mapped CO(s)</th><th>View Score</th><th>Actions</th></tr></thead><tbody id="facultyAssessmentMappingBody">
+<div class="cm-assessment-toolbar"><p>Set up course activities and map each activity to every Course Outcome it measures. These saved activities are used for Requirement 4 score entry.</p><button class="cm-add-assessment-btn" id="openAssessmentModal" type="button" disabled><span>+</span> Add Activity</button></div>
+<p aria-live="polite" class="faculty-outcome-status" id="facultyActivityStatus" role="status">Choose a section to load its activities.</p>
+<div class="cm-table-wrap"><table class="cm-table cm-assessment-table"><thead><tr><th>Activity Title</th><th>Type</th><th>Due Date</th><th>Maximum Score</th><th>Mapped CO(s)</th><th>Score Status</th><th>Actions</th></tr></thead><tbody id="facultyAssessmentMappingBody">
 </tbody></table></div></div>
 <div class="cm-tab-panel" id="course-outcomes"><div class="cm-table-wrap"><table class="cm-table cm-course-outcomes-table"><thead><tr><th>CO No.</th><th>Course Outcome</th><th>Mapped Activities</th><th>Class Attainment</th><th>Target</th><th>Status</th><th>Action</th></tr></thead><tbody id="facultyCourseOutcomesBody">
 </tbody></table></div></div>
@@ -130,29 +131,14 @@
 <div class="cm-assessment-modal-header"><div><h2 id="assessmentModalTitle">Add Assessment</h2><p>Enter the assessment details and select the course outcome(s) it measures.</p></div><button aria-label="Close" class="cm-assessment-modal-close" id="closeAssessmentModal" type="button">×</button></div>
 <form id="assessmentForm">
 <div class="cm-assessment-form-grid">
-<div class="cm-assessment-field cm-assessment-field-full"><label for="assessmentName">Assessment Name</label><input id="assessmentName" placeholder="Enter assessment name" required="" type="text"/></div>
-<div class="cm-assessment-field"><label for="assessmentType">Assessment Type</label><select id="assessmentType" required=""><option disabled="" selected="" value="">Select Assessment Type</option></select></div>
-<div class="cm-assessment-field"><label for="assessmentDate">Date</label><input id="assessmentDate" required="" type="date"/></div>
-<div class="cm-assessment-field cm-assessment-field-full"><label>Course Outcome(s)</label><p class="cm-assessment-helper" id="assessmentCoHelper">Select one or more COs.</p><div class="cm-co-options"><label><input name="assessmentCO" type="checkbox" value="CO1"/><span>CO1</span></label><label><input name="assessmentCO" type="checkbox" value="CO2"/><span>CO2</span></label><label><input name="assessmentCO" type="checkbox" value="CO3"/><span>CO3</span></label><label><input name="assessmentCO" type="checkbox" value="CO4"/><span>CO4</span></label><label><input name="assessmentCO" type="checkbox" value="CO5"/><span>CO5</span></label><label><input name="assessmentCO" type="checkbox" value="CO6"/><span>CO6</span></label><label><input name="assessmentCO" type="checkbox" value="CO7"/><span>CO7</span></label><label><input name="assessmentCO" type="checkbox" value="CO8"/><span>CO8</span></label><label><input name="assessmentCO" type="checkbox" value="CO9"/><span>CO9</span></label><label><input name="assessmentCO" type="checkbox" value="CO10"/><span>CO10</span></label></div><span class="cm-assessment-error" id="assessmentCoError"></span></div>
+<div class="cm-assessment-field cm-assessment-field-full"><label for="assessmentName">Activity Name</label><input id="assessmentName" maxlength="120" placeholder="Enter activity name" required="" type="text"/></div>
+<div class="cm-assessment-field"><label for="assessmentType">Activity Type</label><select id="assessmentType" required=""><option disabled="" selected="" value="">Select Activity Type</option></select></div>
+<div class="cm-assessment-field"><label for="assessmentDate">Due Date</label><input id="assessmentDate" type="date"/></div>
+<div class="cm-assessment-field"><label for="assessmentMaxScore">Maximum Score</label><input id="assessmentMaxScore" type="number" min="0.01" max="10000" step="0.01" value="100" required=""/></div>
+<div class="cm-assessment-field cm-assessment-field-full"><label>Course Outcome(s)</label><p class="cm-assessment-helper" id="assessmentCoHelper">Select one or more COs.</p><div class="cm-co-options" id="assessmentCourseOutcomes"></div><span class="cm-assessment-error" id="assessmentCoError"></span></div>
 </div>
 <div class="cm-assessment-modal-actions"><button class="cm-assessment-cancel-btn" id="cancelAssessmentModal" type="button">Cancel</button><button class="cm-assessment-save-btn" type="submit">Add Assessment</button></div>
 </form>
-</div>
-</div>
-<div aria-hidden="true" class="cm-score-modal" id="scoreModal">
-<div aria-labelledby="scoreModalTitle" aria-modal="true" class="cm-score-modal-card" role="dialog">
-<div class="cm-score-modal-header"><h2 id="scoreModalTitle">Raw Assessment Scores</h2><button aria-label="Close" class="cm-score-modal-close" id="closeScoreModal" type="button">×</button></div>
-<div class="cm-score-modal-body">
-<div class="cm-score-summary">
-<div class="cm-score-summary-card"><span>ASSESSMENT</span><strong id="scoreAssessmentName">Experiment 1</strong></div>
-<div class="cm-score-summary-card"><span>MAPPED CO(S)</span><strong id="scoreMappedCos">CO1 • CO4</strong></div>
-<div class="cm-score-summary-card"><span>STUDENTS</span><strong id="scoreStudentCount">—</strong></div>
-<div class="cm-score-summary-card"><span>MEAN</span><strong id="scoreMean">—</strong></div>
-</div>
-<div class="cm-score-table-wrap"><table class="cm-score-table"><thead><tr><th>Student</th><th>Raw Score</th><th>Percentage</th></tr></thead><tbody id="scoreTableBody"></tbody></table></div>
-<div class="cm-score-note"><strong>Raw Score Entry:</strong> scores entered here are connected to this assessment. Saving recalculates the assessment mean and automatically updates the attainment of every mapped CO.</div>
-<div class="cm-score-modal-actions"><button class="cm-score-cancel-btn" id="cancelScoreModal" type="button">Cancel</button><button class="cm-score-save-btn" id="saveScoresBtn" type="button">Save Scores &amp; Recalculate</button></div>
-</div>
 </div>
 </div>
 <div aria-hidden="true" class="cm-attainment-modal" id="courseOutcomeViewModal"><div aria-modal="true" class="cm-attainment-modal-card" role="dialog"><div class="cm-attainment-modal-header"><div><h2>Course Outcome Details</h2><p>Class attainment details for the selected course outcome.</p></div><button class="cm-attainment-modal-close" data-close-co-modal="courseOutcomeViewModal" type="button">×</button></div><div class="cm-attainment-modal-body"><div class="cm-attainment-modal-summary"><div><span>COURSE OUTCOME</span><strong id="coViewNumber">—</strong></div><div><span>CLASS ATTAINMENT</span><strong id="coViewAttainment">—</strong></div><div><span>TARGET</span><strong id="coViewTarget">—</strong></div><div><span>STATUS</span><strong id="coViewStatus">—</strong></div></div><div class="cm-co-description-box"><span>COURSE OUTCOME DESCRIPTION</span><strong id="coViewDescription">—</strong></div><div class="cm-co-description-box"><span>MAPPED ACTIVITIES</span><strong id="coViewActivities">—</strong></div><div class="cm-attainment-modal-actions"><button class="cm-score-cancel-btn" data-close-co-modal="courseOutcomeViewModal" type="button">Close</button></div></div></div></div>

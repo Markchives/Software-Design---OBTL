@@ -179,6 +179,13 @@ def get_signature_url(file_path: str, expires_in: int = 60):
 - Apply `database/posts_and_scores_persistence.sql` and then `database/requirement_4_assessment_release_and_review.sql` to the Supabase database before using these features. The latter adds per-assessment release state, score history, Department Head queries, locked-gradebook guards, and the atomic gradebook-lock RPC. Routes use the server-side Supabase service-role client; browser clients must not access these tables directly.
 - These changes have code-level validation only until both SQL migrations are applied and role-specific end-to-end checks are run against Supabase. Other Gradebook workflow transitions (such as submission and verification) remain separate from the implemented Department Head lock action.
 
+## Shared Requirement 2 and 4 activities
+
+- Requirement 2 is the single place where Faculty create, edit, remove, and map activities. An activity can be linked to multiple Course Outcomes; its saved maximum score and mappings are shared with Requirement 4.
+- Requirement 4 is limited to raw-score entry, score saving, and per-activity release. Students only see their own results after release; CO attainment uses released activities only.
+- Existing single-CO activity links are backfilled into `assessment_activity_course_outcomes`. Attainment remains null with `awaiting_results` status until there is a released result; the migration makes that status and nullable percentage valid in `co_attainment`. For an existing database, apply this after the base schema and `database/requirement_4_assessment_release_and_review.sql`, and before deploying the matching `app.py` changes. `database/schema.sql` contains the equivalent definitions for fresh installations. This migration has not been applied to the live database.
+- Code validation includes Python compilation, clean diff formatting, a mocked calculation check for released-only multi-CO attainment, and browser checks using mocked API responses for multi-CO activity creation and Requirement 4 score display. The live Supabase migration and role-authenticated create/edit/delete, score, release, lock, and attainment flows still need end-to-end verification.
+
 ## Academic terms and course offerings
 
 - Admins can create academic years with exactly three terms named Term 1, Term 2, and Term 3 at `/admin/academic-terms.html`. Year dates and each term's date range are optional; supplied ranges must be complete, sequential, within the year, and non-overlapping.
