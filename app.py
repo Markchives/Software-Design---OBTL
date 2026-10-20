@@ -2226,6 +2226,17 @@ def signed_syllabus_url(record):
     return response.get("signedURL") or response.get("signedUrl")
 
 
+def get_oauth_callback_url():
+    """Build the callback from Render's public URL, or the local request URL."""
+    public_base_url = (
+        os.getenv("PUBLIC_APP_URL", "").strip()
+        or os.getenv("RENDER_EXTERNAL_URL", "").strip()
+    )
+    if public_base_url:
+        return public_base_url.rstrip("/") + url_for("auth_callback")
+    return url_for("auth_callback", _external=True)
+
+
 @app.get("/api/faculty/syllabi/<section_id>")
 @require_role("faculty")
 def get_faculty_syllabus(section_id):
@@ -2627,11 +2638,13 @@ def google_login():
 
     try:
         auth_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        redirect_uri = get_oauth_callback_url()
+        app.logger.info("Starting Google OAuth with redirect URI %s", redirect_uri)
 
         response = auth_client.auth.sign_in_with_oauth({
             "provider": "google",
             "options": {
-                "redirect_to": request.host_url.rstrip("/") + "/auth/callback",
+                "redirect_to": redirect_uri,
                 "query_params": {
                     "prompt": "select_account",
                 },
@@ -2647,6 +2660,7 @@ def google_login():
             app.logger.error("Google OAuth PKCE verifier was not created.")
             return "Unable to initialize Google sign-in. Please try again.", 500
 
+        session.permanent = True
         session["oauth_code_verifier"] = verifier
         session["oauth_requested_role"] = role
         session["oauth_provider"] = "google"
@@ -2671,11 +2685,13 @@ def microsoft_login():
 
     try:
         auth_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        redirect_uri = get_oauth_callback_url()
+        app.logger.info("Starting Microsoft OAuth with redirect URI %s", redirect_uri)
 
         response = auth_client.auth.sign_in_with_oauth({
             "provider": "azure",
             "options": {
-                "redirect_to": request.host_url.rstrip("/") + "/auth/callback",
+                "redirect_to": redirect_uri,
                 "scopes": "email",
                 "query_params": {"prompt": "select_account"},
             },
@@ -2695,6 +2711,7 @@ def microsoft_login():
                 500,
             )
 
+        session.permanent = True
         session["oauth_code_verifier"] = verifier
         session["oauth_requested_role"] = role
         session["oauth_provider"] = "microsoft"
