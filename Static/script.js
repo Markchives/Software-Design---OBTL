@@ -6189,6 +6189,9 @@ document.addEventListener("DOMContentLoaded", function () {
 (function () {
     const facultyPage = document.querySelector(".so-faculty-page");
     const facultySection = document.getElementById("facultySection");
+    const usesPersistentFacultySyllabus = Boolean(
+        facultyPage && document.getElementById("soWorkflowManager")
+    );
 
     async function requestJson(url, options) {
         const response = await fetch(url, Object.assign({
@@ -6377,76 +6380,80 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    document.addEventListener("change", async function (event) {
-        if (event.target && event.target.id === "syllabusFile") {
-            const file = event.target.files && event.target.files[0];
-            if (!file)
+    if (!usesPersistentFacultySyllabus) {
+        document.addEventListener("change", async function (event) {
+            if (event.target && event.target.id === "syllabusFile") {
+                const file = event.target.files && event.target.files[0];
+                if (!file)
+                    return;
+                const isPDF = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+                if (!isPDF) {
+                    window.alert("Please choose a PDF syllabus.");
+                    return;
+                }
+                try {
+                    const syllabus = await saveSharedSyllabus(file);
+                    showFacultySyllabus(syllabus);
+                } catch (error) {
+                    console.error("Unable to share syllabus with students:", error);
+                    window.alert(error.message || "Syllabus upload failed.");
+                }
+            }
+        }, true);
+
+        document.addEventListener("click", async function (event) {
+            const viewButton = event.target.closest("#viewSyllabusButton");
+            const downloadButton = event.target.closest("#downloadSyllabusButton");
+            const targetButton = viewButton || downloadButton;
+            if (targetButton && targetButton.dataset.signedUrl) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                if (viewButton) {
+                    window.open(targetButton.dataset.signedUrl, "_blank", "noopener");
+                } else {
+                    const link = document.createElement("a");
+                    link.href = targetButton.dataset.signedUrl;
+                    link.download = document.getElementById("syllabusFileName")?.textContent || "Course_Syllabus.pdf";
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                }
                 return;
-            const isPDF = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
-            if (!isPDF) {
-                window.alert("Please choose a PDF syllabus.");
+            }
+
+            const button = event.target && event.target.closest
+                ? event.target.closest("#confirmDeleteSyllabus")
+                : null;
+            const deleteOption = event.target.closest("#deleteSyllabusOption");
+            if (!button && !deleteOption)
+                return;
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            if (deleteOption && !window.confirm("Are you sure you want to delete this syllabus?")) {
                 return;
             }
             try {
-                const syllabus = await saveSharedSyllabus(file);
-                showFacultySyllabus(syllabus);
+                await deleteSharedSyllabus();
+                showFacultySyllabus(null);
+                const modal = document.getElementById("deleteSyllabusModal");
+                if (modal) {
+                    modal.classList.remove("show");
+                    modal.setAttribute("aria-hidden", "true");
+                }
             } catch (error) {
-                console.error("Unable to share syllabus with students:", error);
-                window.alert(error.message || "Syllabus upload failed.");
+                console.error("Unable to remove shared syllabus:", error);
+                window.alert(error.message || "Syllabus could not be deleted.");
             }
-        }
-    }, true);
-
-    document.addEventListener("click", async function (event) {
-        const viewButton = event.target.closest("#viewSyllabusButton");
-        const downloadButton = event.target.closest("#downloadSyllabusButton");
-        const targetButton = viewButton || downloadButton;
-        if (targetButton && targetButton.dataset.signedUrl) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            if (viewButton) {
-                window.open(targetButton.dataset.signedUrl, "_blank", "noopener");
-            } else {
-                const link = document.createElement("a");
-                link.href = targetButton.dataset.signedUrl;
-                link.download = document.getElementById("syllabusFileName")?.textContent || "Course_Syllabus.pdf";
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-            }
-            return;
-        }
-
-        const button = event.target && event.target.closest
-            ? event.target.closest("#confirmDeleteSyllabus")
-            : null;
-        const deleteOption = event.target.closest("#deleteSyllabusOption");
-        if (!button && !deleteOption)
-            return;
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        if (deleteOption && !window.confirm("Are you sure you want to delete this syllabus?")) {
-            return;
-        }
-        try {
-            await deleteSharedSyllabus();
-            showFacultySyllabus(null);
-            const modal = document.getElementById("deleteSyllabusModal");
-            if (modal) {
-                modal.classList.remove("show");
-                modal.setAttribute("aria-hidden", "true");
-            }
-        } catch (error) {
-            console.error("Unable to remove shared syllabus:", error);
-            window.alert(error.message || "Syllabus could not be deleted.");
-        }
-    }, true);
+        }, true);
+    }
 
     document.addEventListener("DOMContentLoaded", function () {
         renderStudentSharedSyllabi();
-        loadFacultySyllabus();
+        if (!usesPersistentFacultySyllabus) loadFacultySyllabus();
     });
-    if (facultySection) facultySection.addEventListener("change", loadFacultySyllabus);
+    if (facultySection && !usesPersistentFacultySyllabus) {
+        facultySection.addEventListener("change", loadFacultySyllabus);
+    }
 })();
 
 (function () {
