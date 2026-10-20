@@ -5743,3 +5743,9 @@ body.cr-student-page:not(.cr-faculty-page) .so-main.cr-student-main{height:auto!
 body.cr-student-page:not(.cr-faculty-page) .cr-roster-panel{height:auto!important;min-height:0!important;overflow:visible!important}
 body.cr-student-page:not(.cr-faculty-page) .cr-table-wrap{box-sizing:border-box;width:100%;height:min(60vh,560px)!important;max-height:560px!important;min-height:260px!important;overflow-x:auto!important;overflow-y:auto!important;scrollbar-gutter:stable}
 .cr-student-roster-status{min-height:20px;margin:8px 12px;color:#315D80;font-size:13px}
+
+@media(min-width:821px){
+  .so-student-page .so-sidebar .so-nav{overflow-x:hidden!important;overflow-y:auto!important;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.42) transparent}
+  .so-student-page .so-sidebar .so-nav::-webkit-scrollbar{width:7px}
+  .so-student-page .so-sidebar .so-nav::-webkit-scrollbar-thumb{border-radius:5px;background:rgba(255,255,255,.42)}
+}
