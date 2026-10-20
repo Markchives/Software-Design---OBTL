@@ -22,6 +22,7 @@ from supabase import create_client, Client
 from datetime import datetime, timedelta, timezone
 import math
 from werkzeug.utils import secure_filename
+from werkzeug.middleware.proxy_fix import ProxyFix
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
 
@@ -42,6 +43,7 @@ app = Flask(
     template_folder="Templates",
     static_folder="Static"
 )
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
 account_approval_logger = logging.getLogger("edumetrics.account_approvals")
 account_approval_logger.setLevel(logging.ERROR)
@@ -72,7 +74,8 @@ app.config["SESSION_COOKIE_NAME"] = "edumetrics_session"
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = (
-    os.getenv("FLASK_ENV") == "production"
+    os.getenv("FLASK_ENV", "").lower() == "production"
+    or os.getenv("RENDER", "").lower() == "true"
 )
 
 
@@ -2462,6 +2465,11 @@ def home():
     return render_template("website.html")
 
 
+@app.get("/healthz")
+def health_check():
+    return jsonify({"status": "ok"}), 200
+
+
 @app.get("/health")
 def health():
     return jsonify({
@@ -4495,7 +4503,7 @@ def logout():
 
 if __name__ == "__main__":
     app.run(
-        host="127.0.0.1",
-        port=5000,
+        host="0.0.0.0",
+        port=int(os.getenv("PORT", "5000")),
         debug=os.getenv("FLASK_DEBUG", "false").lower() == "true"
     )
