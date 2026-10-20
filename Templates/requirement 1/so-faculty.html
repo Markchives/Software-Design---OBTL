@@ -146,19 +146,23 @@
                     View Course Details
                 </button>
 </section>
-<section class="sodh-content-card sof-content-card">
-<div class="sodh-tabs sof-tabs" role="tablist">
-<button class="sodh-tab sof-tab active" data-tab="syllabus" type="button">
+<section class="so-content-card so-workflow-manager" id="soWorkflowManager">
+<div class="so-workflow-grid">
+<label class="so-section-context"><span>Teaching section</span><select aria-label="Select assigned course section" id="soFacultySection"><option value="">Loading assigned sections...</option></select><small id="soSelectedSection">Select an assigned section to manage its syllabus and outcomes.</small></label>
+</div>
+<p class="so-workflow-status" id="soFacultyStatus" role="status" aria-live="polite">Select a course section to get started.</p>
+<div class="sodh-tabs sof-tabs" role="tablist" aria-label="Syllabus and outcome management">
+<button class="sodh-tab sof-tab active" id="soTabSyllabus" role="tab" aria-controls="syllabus" aria-selected="true" data-tab="syllabus" type="button">
                         Course Syllabus
                     </button>
-<button class="sodh-tab sof-tab" data-tab="course-outcomes" type="button" hidden="">
+<button class="sodh-tab sof-tab" id="soTabCourseOutcomes" role="tab" aria-controls="course-outcomes" aria-selected="false" data-tab="course-outcomes" type="button">
                         Course Outcomes
                     </button>
-<button class="sodh-tab sof-tab" data-tab="student-outcomes" type="button" hidden="">
+<button class="sodh-tab sof-tab" id="soTabStudentOutcomes" role="tab" aria-controls="student-outcomes" aria-selected="false" data-tab="student-outcomes" type="button">
                         Student Outcomes
                     </button>
 </div>
-<div class="sodh-tab-panel sof-tab-panel active" id="syllabus">
+<div class="sodh-tab-panel sof-tab-panel active" id="syllabus" role="tabpanel" aria-labelledby="soTabSyllabus">
 <div class="sodh-toolbar sof-panel-toolbar sof-syllabus-toolbar">
 <p>
                             Upload, view, update the course syllabus.
@@ -230,111 +234,59 @@
 </div>
 </div>
 </div>
-<div class="sodh-tab-panel sof-tab-panel" hidden="" id="course-outcomes">
+<div class="sodh-tab-panel sof-tab-panel" hidden="" id="course-outcomes" role="tabpanel" aria-labelledby="soTabCourseOutcomes">
 <div class="sodh-toolbar sof-outcome-toolbar sof-course-outcome-toolbar">
 <p>
-                            Add, edit, delete course outcomes
+                            Define course outcomes, attainment targets, and their Student Outcome alignment.
                         </p>
 <button class="sof-add-outcome-btn" id="addCourseOutcomeButton" type="button">
 <span class="sof-add-icon">
                                 +
                             </span>
-<span>
-                                Add Course Outcomes
-                            </span>
+<span>Add Course Outcome</span>
 </button>
+</div>
+<div class="so-workflow-grid" id="soCourseOutcomeForm">
+<label>Course Outcome code<input id="soCoCode" maxlength="20" placeholder="CO1"></label>
+<label>Target attainment (%)<input id="soCoTarget" type="number" min="0" max="100" value="70"></label>
+<label class="so-workflow-wide">Course Outcome description<input id="soCoDescription" maxlength="2000" placeholder="Describe what students should be able to demonstrate"></label>
+<label class="so-workflow-wide">Align to Student Outcome<select id="soCoAlignment"><option value="">Choose an SO (optional)</option></select></label>
+<button class="sof-add-outcome-btn" id="soSaveCo" type="button">Save Course Outcome</button>
 </div>
 <div class="sodh-table-wrap sof-outcome-table-wrap">
 <table class="sodh-table sof-outcome-table">
-<thead>
-<tr>
-<th>
-                                        CO No.
-                                    </th>
-<th>
-                                        Course Outcomes (CO)
-                                    </th>
-<th>
-                                        Aligned SO(s)
-                                    </th>
-<th>
-                                        Actions
-                                    </th>
-</tr>
-</thead>
-<tbody id="courseOutcomesTableBody">
-
-</tbody>
+<thead><tr><th>CO No.</th><th>Course Outcomes</th><th>Target Attainment</th><th>Aligned SOs</th><th>Actions</th></tr></thead>
+<tbody id="soCoRows"><tr><td colspan="5">Choose an assigned section to load outcomes.</td></tr></tbody>
 </table>
 </div>
 </div>
-<div class="sodh-tab-panel sof-tab-panel" hidden="" id="student-outcomes">
+<div class="sodh-tab-panel sof-tab-panel" hidden="" id="student-outcomes" role="tabpanel" aria-labelledby="soTabStudentOutcomes">
 <div class="sodh-toolbar sof-outcome-toolbar sof-student-outcome-toolbar">
-<p>
-                            Upload and manage student outcome assessments
-                        </p>
+<p>Configure SO self-assessments and track student responses.</p>
 <button class="sof-add-outcome-btn" id="addStudentOutcomeButton" type="button">
-<img alt="" class="sof-add-outcome-upload-icon" src="../../Static/images/content/upload.png"/>
-<span>
-                                Upload Student Outcome
-                            </span>
+<span class="sof-add-icon">+</span><span>Add Student Outcome</span>
 </button>
 </div>
-<div class="sodh-table-wrap sof-outcome-table-wrap">
-<table class="sodh-table sof-outcome-table sof-student-outcome-table">
-<thead>
-<tr>
-<th>
-                                        Student Outcomes (SO)
-                                    </th>
-<th>
-                                        Due Date
-                                    </th>
-<th>
-                                        Responses
-                                    </th>
-<th>
-                                        Status
-                                    </th>
-<th>
-                                        Actions
-                                    </th>
-</tr>
-</thead>
-<tbody id="studentOutcomeTableBody">
-
-</tbody>
-</table>
-</div>
-</div>
-</section>
-<section class="so-content-card so-workflow-manager" id="soWorkflowManager">
-<div class="so-section-header"><div><h2>Course Outcomes &amp; SO Self-Assessments</h2><p>Manage this section’s Course Outcomes, align them to Student Outcomes, configure self-assessments, and review completion.</p></div></div>
-<div class="so-section-rule"></div>
-<div class="so-workflow-grid">
-<label class="so-section-context"><span>Teaching section</span><select aria-label="Select assigned course section" id="soFacultySection"><option value="">Loading assigned sections...</option></select><small id="soSelectedSection">Select an assigned section to manage its syllabus and outcomes.</small></label>
-<label>Course Outcome code<input id="soCoCode" maxlength="20" placeholder="CO1"></label>
-<label class="so-workflow-wide">Course Outcome description<input id="soCoDescription" maxlength="2000" placeholder="Describe the expected course outcome"></label>
-<label>Target attainment (%)<input id="soCoTarget" type="number" min="0" max="100" value="70"></label>
-<label>Align new CO to SO<select id="soCoAlignment"><option value="">Choose an SO (optional)</option></select></label>
-<button class="sof-add-outcome-btn" id="soSaveCo" type="button">Add Course Outcome</button>
-</div>
-<div class="sodh-table-wrap"><table class="sodh-table"><thead><tr><th>CO</th><th>Description</th><th>Target</th><th>Actions</th></tr></thead><tbody id="soCoRows"><tr><td colspan="4">Choose an assigned section to load outcomes.</td></tr></tbody></table></div>
-<h3 class="so-workflow-subheading">Configure SO self-assessment</h3>
-<div class="so-workflow-grid">
+<div class="so-workflow-grid" id="soAssessmentForm">
 <label>Student Outcome<select id="soAssessmentOutcome"><option value="">Select a mapped SO</option></select></label>
 <label>Assessment title<input id="soAssessmentTitle" maxlength="160" placeholder="SO self-assessment"></label>
 <label>Due date<input id="soAssessmentDue" type="date"></label>
-<label>Status<select id="soAssessmentStatus"><option value="draft">Draft</option><option value="open">Open to students</option><option value="closed">Closed</option></select></label>
+<label>Status<select id="soAssessmentStatus"><option value="draft">Draft</option><option value="open">Active</option><option value="closed">Closed</option></select></label>
 <label class="so-workflow-wide">Performance indicators <small>One indicator per line</small><textarea id="soIndicators" rows="4" placeholder="Apply relevant knowledge to solve problems&#10;Communicate technical findings"></textarea></label>
 <label class="so-workflow-wide">Rating scale <small>One rating per line, format: value | label</small><textarea id="soRatingScale" rows="3">1 | Beginning
 2 | Developing
 3 | Proficient
 4 | Advanced</textarea></label>
-<button class="sof-add-outcome-btn" id="soSaveAssessment" type="button">Save assessment</button>
+<button class="sof-add-outcome-btn" id="soSaveAssessment" type="button">Save Student Outcome</button>
 </div>
-<div class="sodh-table-wrap"><table class="sodh-table"><thead><tr><th>SO assessment</th><th>Due date</th><th>Status</th><th>Responses</th><th>Completion</th><th>Actions</th></tr></thead><tbody id="soAssessmentRows"><tr><td colspan="6">Choose an assigned section to load SO assessments.</td></tr></tbody></table></div>
+<div class="sodh-table-wrap sof-outcome-table-wrap">
+<table class="sodh-table sof-outcome-table sof-student-outcome-table">
+<thead><tr><th>Student Outcome</th><th>Due Date</th><th>Responses</th><th>Status</th><th>Actions</th></tr></thead>
+<tbody id="soAssessmentRows"><tr><td colspan="5">Choose an assigned section to load Student Outcomes.</td></tr></tbody>
+</table>
+</div>
 <div class="sodh-table-wrap" id="soResponseLog" hidden><h3>Response log</h3><table class="sodh-table"><thead><tr><th>Student number</th><th>Name</th><th>Program</th><th>Submitted</th><th>Answers</th></tr></thead><tbody id="soResponseRows"></tbody></table></div>
+</div>
 </section>
 </main>
 </div>

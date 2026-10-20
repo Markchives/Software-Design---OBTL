@@ -3220,17 +3220,20 @@ function initializeSyllabusOutcomeTabs() {
             }
             tabs.forEach(function (item) {
                 item.classList.remove("active");
+                item.setAttribute("aria-selected", "false");
             });
             panels.forEach(function (panel) {
                 panel.classList.remove("active");
+                panel.hidden = true;
+                panel.setAttribute("aria-hidden", "true");
             });
             this.classList.add("active");
-            tabs.forEach(function (item) {
-                item.setAttribute("aria-selected", String(item === tab));
-            });
+            this.setAttribute("aria-selected", "true");
             const targetPanel = document.getElementById(targetId);
             if (targetPanel) {
                 targetPanel.classList.add("active");
+                targetPanel.hidden = false;
+                targetPanel.setAttribute("aria-hidden", "false");
             }
         });
     });
@@ -3592,6 +3595,7 @@ function initFacultySyllabusOutcomes() {
     if (!page) {
         return;
     }
+    initializeSyllabusOutcomeTabs();
     const workflowManager = document.getElementById("soWorkflowManager");
     if (workflowManager) {
         initializePersistentFacultySyllabus(

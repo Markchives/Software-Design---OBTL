@@ -19,6 +19,13 @@
         if (!root) return;
         const sectionContext = document.getElementById("soSelectedSection");
         const sectionSelect = document.getElementById("soFacultySection");
+        const status = document.getElementById("soFacultyStatus");
+        const coForm = document.getElementById("soCourseOutcomeForm");
+        const assessmentForm = document.getElementById("soAssessmentForm");
+        const addCoButton = document.getElementById("addCourseOutcomeButton");
+        const addAssessmentButton = document.getElementById("addStudentOutcomeButton");
+        const saveCoButton = document.getElementById("soSaveCo");
+        const saveAssessmentButton = document.getElementById("soSaveAssessment");
         const coRows = document.getElementById("soCoRows");
         const assessmentRows = document.getElementById("soAssessmentRows");
         const outcomeSelect = document.getElementById("soAssessmentOutcome");
@@ -28,6 +35,8 @@
         let studentOutcomes = [];
         let mappings = [];
         const button = (text, action, id) => `<button class="so-workflow-action" type="button" data-action="${action}" data-id="${esc(id)}">${text}</button>`;
+        if (coForm) coForm.hidden = true;
+        if (assessmentForm) assessmentForm.hidden = true;
         async function loadSection(sectionId) {
             section = sections.find(row => row.section_id === sectionId) || null;
             if (sectionSelect) sectionSelect.value = section?.section_id || "";
@@ -37,11 +46,20 @@
                     ? `${section.course_code} · ${section.course_title} · ${section.section_name} · ${section.academic_year_name || ""}`
                     : "Open this workspace from your assigned course.";
             }
-            document.getElementById("soSaveCo").disabled = !section;
-            document.getElementById("soSaveAssessment").disabled = !section;
+            saveCoButton.disabled = !section;
+            saveAssessmentButton.disabled = !section;
+            if (addCoButton) addCoButton.disabled = !section;
+            if (addAssessmentButton) addAssessmentButton.disabled = !section;
+            if (status) status.textContent = section ? "Loading course outcomes and Student Outcome assessments..." : "Select a course section to get started.";
+            if (coForm) coForm.hidden = true;
+            if (assessmentForm) assessmentForm.hidden = true;
             document.getElementById("soCoCode").value = "";
             document.getElementById("soCoDescription").value = "";
-            if (!section) return;
+            if (!section) {
+                coRows.innerHTML = `<tr><td colspan="5">Choose an assigned section to load outcomes.</td></tr>`;
+                assessmentRows.innerHTML = `<tr><td colspan="5">Choose an assigned section to load Student Outcomes.</td></tr>`;
+                return;
+            }
             try {
                 const mapData = await api(`/api/faculty/courses/${encodeURIComponent(section.course_id)}/outcome-mappings`);
                 outcomes = mapData.outcomes || [];
@@ -53,18 +71,40 @@
                         .filter(Boolean).map(so => `${so.code}: ${so.description}`).join("; ");
                     const currentSoIds = new Set(mappings.filter(link => link.course_outcome_id === row.id).map(link => link.student_outcome_id));
                     const alignOptions = studentOutcomes.filter(so => !currentSoIds.has(so.id));
-                    return `<tr><td>${esc(row.code)}</td><td>${esc(row.description)}${links ? `<small class="so-co-links">Mapped SOs: ${esc(links)}</small>` : "<small class=\"so-co-links\">No SO mapping yet</small>"}</td><td>${esc(row.target_percentage)}%</td><td>${button("Edit", "edit-co", row.id)} ${button("Delete", "delete-co", row.id)}<div class="so-inline-map"><select aria-label="Select SO to align with ${esc(row.code)}" data-map-select="${esc(row.id)}"><option value="">Align an SO</option>${alignOptions.map(so => `<option value="${esc(so.id)}">${esc(so.code)}</option>`).join("")}</select>${button("Map", "map-co", row.id)}</div></td></tr>`;
-                }).join("") : `<tr><td colspan="4">No Course Outcomes. Add one above.</td></tr>`;
+                    return `<tr><td>${esc(row.code)}</td><td>${esc(row.description)}</td><td>${esc(row.target_percentage ?? 70)}%</td><td>${links ? esc(links) : "—"}<div class="so-inline-map"><select aria-label="Select SO to align with ${esc(row.code)}" data-map-select="${esc(row.id)}"><option value="">Align an SO</option>${alignOptions.map(so => `<option value="${esc(so.id)}">${esc(so.code)} — ${esc(so.description)}</option>`).join("")}</select>${button("Add alignment", "map-co", row.id)}</div></td><td>${button("Edit", "edit-co", row.id)} ${button("Delete", "delete-co", row.id)}</td></tr>`;
+                }).join("") : `<tr><td colspan="5">No Course Outcomes. Add one above.</td></tr>`;
                 const mappedSoIds = new Set(mappings.map(row => row.student_outcome_id));
                 const soOptions = studentOutcomes.filter(row => mappedSoIds.has(row.id));
                 outcomeSelect.innerHTML = `<option value="">Select a mapped SO</option>` + soOptions.map(row => `<option value="${esc(row.id)}">${esc(row.code)} — ${esc(row.description)}</option>`).join("");
                 const alignSelect = document.getElementById("soCoAlignment");
                 if (alignSelect) alignSelect.innerHTML = `<option value="">Choose an SO (optional)</option>` + studentOutcomes.map(row => `<option value="${esc(row.id)}">${esc(row.code)} — ${esc(row.description)}</option>`).join("");
                 const data = await api(`/api/faculty/sections/${encodeURIComponent(section.section_id)}/so-assessments`);
-                assessmentRows.innerHTML = (data.assessments || []).length ? data.assessments.map(row => `<tr><td><strong>${esc(row.student_outcome?.code)} · ${esc(row.title)}</strong><small class="so-co-links">${esc(row.student_outcome?.description)}</small></td><td>${esc(row.due_date || "No due date")}</td><td><span class="so-status-pill ${esc(row.status)}">${esc(row.status)}</span></td><td>${row.response_count || 0} / ${row.student_count || 0}</td><td>${row.completion_rate === null ? "—" : `${row.completion_rate}%`}</td><td>${button("Responses", "responses", row.id)} ${button("Edit", "edit-assessment", row.id)} ${button("Delete", "delete-assessment", row.id)}</td></tr>`).join("") : `<tr><td colspan="6">No SO assessments for this section yet.</td></tr>`;
-            } catch (error) { notify(error.message); }
+                assessmentRows.innerHTML = (data.assessments || []).length ? data.assessments.map(row => {
+                    const statusLabel = row.status === "open" ? "Active" :
+                        row.status.charAt(0).toUpperCase() + row.status.slice(1);
+                    return `<tr><td><strong>${esc(row.student_outcome?.code)} · ${esc(row.title)}</strong><small class="so-co-links">${esc(row.student_outcome?.description)}</small></td><td>${esc(row.due_date || "No due date")}</td><td>${row.response_count || 0}</td><td><span class="so-status-pill ${esc(row.status)}">${esc(statusLabel)}</span></td><td>${button("Responses", "responses", row.id)} ${button("Edit", "edit-assessment", row.id)} ${button("Delete", "delete-assessment", row.id)}</td></tr>`;
+                }).join("") : `<tr><td colspan="5">No Student Outcome assessments for this section yet.</td></tr>`;
+                if (status) status.textContent = "Course outcomes and Student Outcome assessments loaded.";
+            } catch (error) {
+                if (status) status.textContent = error.message;
+                notify(error.message);
+            }
         }
-        document.getElementById("soSaveCo").addEventListener("click", async () => {
+        addCoButton?.addEventListener("click", () => {
+            if (!section) return notify("Select a section first.");
+            if (coForm) coForm.hidden = !coForm.hidden;
+            if (!coForm.hidden) document.getElementById("soCoCode").focus();
+        });
+        addAssessmentButton?.addEventListener("click", () => {
+            if (!section) return notify("Select a section first.");
+            if (!outcomeSelect.options.length || !outcomeSelect.value) {
+                const mapped = studentOutcomes.some(so => mappings.some(link => link.student_outcome_id === so.id));
+                if (!mapped) return notify("Add and align a Course Outcome with a Student Outcome before creating an assessment.");
+            }
+            if (assessmentForm) assessmentForm.hidden = !assessmentForm.hidden;
+            if (!assessmentForm.hidden) outcomeSelect.focus();
+        });
+        saveCoButton.addEventListener("click", async () => {
             if (!section) return notify("Select a section first.");
             const data = { code: document.getElementById("soCoCode").value, description: document.getElementById("soCoDescription").value, target_percentage: Number(document.getElementById("soCoTarget").value) };
             try {
@@ -74,11 +114,13 @@
                     const current = await api(`/api/faculty/courses/${encodeURIComponent(section.course_id)}/outcome-mappings`);
                     await api(`/api/faculty/courses/${encodeURIComponent(section.course_id)}/outcome-mappings`, { method: "PUT", body: JSON.stringify({ mappings: [...(current.mappings || []), { course_outcome_id: saved.outcome.id, student_outcome_id: soId }] }) });
                 }
-                await loadSection(section.section_id); notify("Course Outcome saved.");
+                if (coForm) coForm.hidden = true;
+                await loadSection(section.section_id);
+                if (status) status.textContent = "Course Outcome saved.";
             }
-            catch (error) { notify(error.message); }
+            catch (error) { if (status) status.textContent = error.message; notify(error.message); }
         });
-        document.getElementById("soSaveAssessment").addEventListener("click", async () => {
+        saveAssessmentButton.addEventListener("click", async () => {
             if (!section) return notify("Select a section first.");
             const indicators = document.getElementById("soIndicators").value.split("\n").map(v => v.trim()).filter(Boolean);
             const rating_scale = document.getElementById("soRatingScale").value.split("\n").map(line => {
@@ -86,8 +128,12 @@
                 return { value: Number(value.trim()), label: label.join("|").trim() };
             }).filter(row => Number.isInteger(row.value) && row.label);
             const data = { student_outcome_id: outcomeSelect.value, title: document.getElementById("soAssessmentTitle").value, due_date: document.getElementById("soAssessmentDue").value || null, status: document.getElementById("soAssessmentStatus").value, performance_indicators: indicators, rating_scale };
-            try { await api(`/api/faculty/sections/${encodeURIComponent(section.section_id)}/so-assessments`, { method: "POST", body: JSON.stringify(data) }); await loadSection(section.section_id); notify("SO assessment saved."); }
-            catch (error) { notify(error.message); }
+            try {
+                await api(`/api/faculty/sections/${encodeURIComponent(section.section_id)}/so-assessments`, { method: "POST", body: JSON.stringify(data) });
+                if (assessmentForm) assessmentForm.hidden = true;
+                await loadSection(section.section_id);
+                if (status) status.textContent = "Student Outcome assessment saved.";
+            } catch (error) { if (status) status.textContent = error.message; notify(error.message); }
         });
         root.addEventListener("click", async event => {
             const control = event.target.closest("[data-action]");
@@ -128,7 +174,11 @@
                     document.getElementById("soResponseLog").scrollIntoView({ behavior: "smooth", block: "start" }); return;
                 }
                 await loadSection(section.section_id);
-            } catch (error) { notify(error.message); }
+                if (status) status.textContent = "Changes saved.";
+            } catch (error) {
+                if (status) status.textContent = error.message;
+                notify(error.message);
+            }
         });
         api("/api/faculty/sections").then(data => {
             sections = Array.isArray(data.sections) ? data.sections : [];
