@@ -2502,6 +2502,22 @@ def student_syllabi():
 
 @app.get("/")
 def home():
+    # Supabase can fall back to the configured Site URL when the requested
+    # OAuth redirect is not allowlisted. Forward that returned code to the
+    # PKCE callback while this browser still has the OAuth session cookie.
+    if session.get("oauth_code_verifier") and (
+        request.args.get("code") or request.args.get("error")
+    ):
+        callback_args = {
+            key: value
+            for key in ("code", "error", "error_description")
+            if (value := request.args.get(key))
+        }
+        app.logger.warning(
+            "OAuth returned to the site root; forwarding to the callback route."
+        )
+        return redirect(url_for("auth_callback", **callback_args))
+
     return render_template("website.html")
 
 
