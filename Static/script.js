@@ -1,3 +1,11 @@
+function studentSectionScopedUrl(path) {
+    const sectionId = new URLSearchParams(window.location.search).get("section_id");
+    if (!sectionId) return path;
+    const url = new URL(path, window.location.href);
+    url.searchParams.set("section_id", sectionId);
+    return url.pathname + url.search + url.hash;
+}
+
 /* AC Faculty: accessible attainment / assessment input tabs and breakdown */
 (function () {
     function initAcFaculty() {
@@ -438,7 +446,7 @@
     const body = document.getElementById('ac-attainment-rows');
     if (!body) return;
     const targets = Array.from(document.querySelectorAll('.so-summary-grid .so-summary-number')).slice(-3);
-    fetch('/api/student/course-outcomes', { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+    fetch(studentSectionScopedUrl('/api/student/course-outcomes'), { credentials: 'same-origin', headers: { Accept: 'application/json' } })
         .then(async response => {
             const result = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(result.error || 'Course outcomes could not be loaded.');
@@ -5987,7 +5995,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async function getSharedSyllabi() {
-        const data = await requestJson("/api/student/syllabi");
+        const data = await requestJson(studentSectionScopedUrl("/api/student/syllabi"));
         return (Array.isArray(data.syllabi) ? data.syllabi : []).map(function (item) {
             return {
                 courseKey: item.course_id,
@@ -7111,6 +7119,7 @@ document.addEventListener("DOMContentLoaded", function () {
         "facultyAttainmentSection"
     ]);
     let facultySectionsRequest;
+    let studentCoursesRequest;
 
     function loadFacultySections() {
         if (!facultySectionsRequest) {
@@ -7134,10 +7143,35 @@ document.addEventListener("DOMContentLoaded", function () {
         return facultySectionsRequest;
     }
 
+    function loadStudentCourses() {
+        if (!studentCoursesRequest) {
+            studentCoursesRequest = fetch("/api/student/courses", {
+                credentials: "same-origin",
+                headers: { Accept: "application/json" }
+            }).then(async function (response) {
+                if (!(response.headers.get("content-type") || "").includes("application/json")) {
+                    throw new Error("The server did not return student courses.");
+                }
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || "Student courses could not be loaded.");
+                }
+                return Array.isArray(data.courses) ? data.courses : [];
+            }).catch(function (error) {
+                studentCoursesRequest = null;
+                throw error;
+            });
+        }
+        return studentCoursesRequest;
+    }
+
     function updateWorkspaceContext(sectionId, section) {
         const roleLabel = document.querySelector(".so-user-info span");
-        if (!document.getElementById("facultyName") ||
-            roleLabel?.textContent.trim() !== "Faculty") return;
+        const isFaculty = Boolean(document.getElementById("facultyName")) &&
+            roleLabel?.textContent.trim() === "Faculty";
+        const isStudent = Boolean(document.getElementById("studentName")) &&
+            roleLabel?.textContent.trim() === "Student";
+        if (!isFaculty && !isStudent) return;
         const heading = document.querySelector(".cw-hero h2");
         const subheading = document.querySelector(".cw-hero p");
         const breadcrumb = document.querySelector(".cw-breadcrumb-current");
@@ -7146,6 +7180,30 @@ document.addEventListener("DOMContentLoaded", function () {
             if (heading) heading.textContent = "—";
             if (subheading) subheading.textContent = "—";
             if (breadcrumb) breadcrumb.textContent = "Course not selected";
+            return;
+        }
+
+        if (isStudent) {
+            loadStudentCourses().then(function (courses) {
+                if (new URLSearchParams(window.location.search).get("section_id") !== sectionId) {
+                    return;
+                }
+                const selected = courses.find(function (item) {
+                    return item.section_id === sectionId;
+                });
+                if (!selected) {
+                    if (heading) heading.textContent = "Course unavailable";
+                    if (subheading) subheading.textContent = "This section is not available to your student account.";
+                    if (breadcrumb) breadcrumb.textContent = "Course unavailable";
+                    return;
+                }
+                const courseLabel = selected.course_code + " - " + selected.course_title;
+                if (heading) heading.textContent = courseLabel;
+                if (subheading) subheading.textContent = selected.section_name;
+                if (breadcrumb) breadcrumb.textContent = selected.course_code + " / " + selected.section_name;
+            }).catch(function (error) {
+                console.error("Unable to update student course workspace context:", error);
+            });
             return;
         }
 
@@ -9689,7 +9747,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function load() {
         try {
-            const response = await fetch('/api/student/assessment-scores', {
+            const response = await fetch(studentSectionScopedUrl('/api/student/assessment-scores'), {
                 headers: { Accept: 'application/json' },
                 credentials: 'same-origin'
             });
