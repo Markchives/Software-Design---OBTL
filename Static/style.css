@@ -2419,9 +2419,11 @@ body.so-reflection-page{margin:0;min-height:100vh;background:#F4F7FB;color:#173B
 .cm-assessment-field{display:flex;flex-direction:column;gap:7px;}
 .cm-assessment-field-full{grid-column:1 / -1;}
 .cm-assessment-field label{color:#004179;font-size:14px;font-weight:700;}
-.cm-assessment-field input[type="text"], .cm-assessment-field input[type="date"], .cm-assessment-field select{width:100%;height:42px;padding:0 12px;border:1.5px solid #C9DFF0;border-radius:7px;outline:none;background:#FFFFFF;color:#004179;font-size:14px;}
+.cm-assessment-field input[type="text"], .cm-assessment-field input[type="date"], .cm-assessment-field input[type="number"], .cm-assessment-field select{box-sizing:border-box;width:100%;height:42px;padding:0 12px;border:1.5px solid #C9DFF0;border-radius:7px;outline:none;background:#FFFFFF;color:#004179;font-size:14px;}
 .cm-assessment-field input:focus, .cm-assessment-field select:focus{border-color:#00579A;box-shadow:0 0 0 3px rgba(0, 87, 154, 0.08);}
 .cm-assessment-helper{margin:-2px 0 2px;color:#6B778C;font-size:12px;}
+.cm-assessment-form-status{min-height:20px;margin:0;padding:0 24px;color:#315875;font-size:13px;}
+.cm-assessment-form-status.is-error{color:#B42318;}
 .cm-co-options{display:flex;flex-wrap:wrap;gap:8px;}
 button, .cm-co-options label{cursor:pointer;}
 .soa-rating-option input, .cm-co-options input{position:absolute;opacity:0;pointer-events:none;}
@@ -2433,6 +2435,7 @@ button, .cm-co-options label{cursor:pointer;}
 .cm-assessment-cancel-btn{border:1.5px solid #C9DFF0;background:#FFFFFF;color:#004179;}
 .cm-assessment-save-btn{border:1.5px solid #004179;background:#004179;color:#FFFFFF;}
 .cm-assessment-save-btn:hover{background:#00345F;border-color:#00345F;}
+.cm-assessment-save-btn:disabled{cursor:wait;opacity:.7;}
 @media(max-width: 620px) {
   .so-student-page.cm-faculty-page .cm-assessment-toolbar{align-items:flex-start;flex-direction:column;}
   .cm-assessment-form-grid{grid-template-columns:1fr;}

@@ -6458,9 +6458,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const tbody = document.getElementById('facultyAssessmentMappingBody');
     const status = document.getElementById('facultyActivityStatus');
     const coError = document.getElementById('assessmentCoError');
+    const formStatus = document.getElementById('assessmentFormStatus');
     const outcomeChoices = document.getElementById('assessmentCourseOutcomes');
     if (!page || !modal || !openBtn || !sectionSelect || !form || !tbody ||
-        !status || !outcomeChoices) return;
+        !status || !coError || !formStatus || !outcomeChoices) return;
 
     const closeBtn = document.getElementById('closeAssessmentModal');
     const cancelBtn = document.getElementById('cancelAssessmentModal');
@@ -6474,8 +6475,13 @@ document.addEventListener("DOMContentLoaded", function () {
             credentials: 'same-origin',
             headers: { Accept: 'application/json' }
         }, options || {}));
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(data.error || 'The request could not be completed.');
+        const data = await response.json().catch(() => null);
+        if (!response.ok) {
+            throw new Error(data?.error || `Request failed (HTTP ${response.status}).`);
+        }
+        if (!data) {
+            throw new Error(`The server returned an invalid response (HTTP ${response.status}).`);
+        }
         return data;
     }
 
@@ -6487,6 +6493,8 @@ document.addEventListener("DOMContentLoaded", function () {
             form.reset();
             editingAssessmentId = null;
             coError.textContent = '';
+            formStatus.textContent = '';
+            formStatus.classList.remove('is-error');
         }
     }
 
@@ -6585,6 +6593,8 @@ document.addEventListener("DOMContentLoaded", function () {
     function openForActivity(activity) {
         form.reset();
         coError.textContent = '';
+        formStatus.textContent = '';
+        formStatus.classList.remove('is-error');
         editingAssessmentId = activity?.id || null;
         document.getElementById('assessmentName').value = activity?.title || '';
         document.getElementById('assessmentType').value = activity?.activity_type || '';
@@ -6626,8 +6636,12 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
         coError.textContent = '';
+        formStatus.textContent = 'Saving activity...';
+        formStatus.classList.remove('is-error');
         const submit = form.querySelector('[type="submit"]');
+        const originalSubmitText = editingAssessmentId ? 'Save Changes' : 'Add Activity';
         submit.disabled = true;
+        submit.textContent = 'Saving...';
         const payload = {
             title: document.getElementById('assessmentName').value.trim(),
             activity_type: document.getElementById('assessmentType').value,
@@ -6646,10 +6660,15 @@ document.addEventListener("DOMContentLoaded", function () {
             });
             setModal(false);
             await loadSection();
+            if (workspace) {
+                status.textContent = 'Activity saved and added to the course activity list.';
+            }
         } catch (error) {
-            status.textContent = error.message;
+            formStatus.textContent = error.message;
+            formStatus.classList.add('is-error');
         } finally {
             submit.disabled = false;
+            submit.textContent = originalSubmitText;
         }
     });
     tbody.addEventListener('click', async event => {
