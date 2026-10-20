@@ -6712,10 +6712,33 @@ document.addEventListener("DOMContentLoaded", function () {
                 .find(item => item.textContent.trim() === 'Dashboard' || item.textContent.trim() === 'Home');
             nav.insertBefore(link, dashboardLink ? dashboardLink.nextSibling : nav.firstChild);
         };
+        const addAcademicTermsLink = nav => {
+            if (!nav || nav.getAttribute('aria-label') !== 'Administrator navigation') return;
+            let link = [...nav.querySelectorAll(':scope > a.so-nav-item')]
+                .find(item => item.textContent.trim() === 'Academic Terms');
+            if (!link) {
+                link = document.createElement('a');
+                link.className = 'so-nav-item';
+                link.innerHTML = '<span class="so-nav-icon"><img alt="" class="so-nav-image" src="/Static/images/sidebar/sr.png"></span><span>Academic Terms</span>';
+            }
+            link.href = '/admin/academic-terms.html';
+            const path = decodeURIComponent(location.pathname).toLowerCase();
+            const active = path.endsWith('/admin/academic-terms.html');
+            link.classList.toggle('active', active);
+            link.classList.toggle('sd-active', active);
+            if (active) link.setAttribute('aria-current', 'page');
+            else link.removeAttribute('aria-current');
+            const recordsLink = [...nav.querySelectorAll(':scope > a.so-nav-item')]
+                .find(item => item.textContent.trim() === 'System Records');
+            if (!link.parentElement) {
+                nav.insertBefore(link, recordsLink ? recordsLink.nextSibling : nav.firstChild);
+            }
+        };
 
         document.querySelectorAll('.so-sidebar nav').forEach(nav => {
             normalizeAccountRequestLinks(nav);
             addCourseOfferings(nav);
+            addAcademicTermsLink(nav);
             if (nav.getAttribute('aria-label') === 'Department Head navigation') {
                 addLink(nav);
             }
@@ -6724,6 +6747,7 @@ document.addEventListener("DOMContentLoaded", function () {
             template.content.querySelectorAll('nav').forEach(nav => {
                 normalizeAccountRequestLinks(nav);
                 addCourseOfferings(nav);
+                addAcademicTermsLink(nav);
                 if (nav.getAttribute('aria-label') === 'Department Head navigation') {
                     addLink(nav);
                 }
