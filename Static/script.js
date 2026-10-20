@@ -6310,6 +6310,56 @@ document.addEventListener("DOMContentLoaded", function () {
             'department-head': 'dept-head',
             'admin-security': 'admin'
         };
+        function applyHeaderProfile(account) {
+            if (!account || !roleDisplayNames[account.role]) {
+                throw new Error('The account profile response is invalid.');
+            }
+            const info = area.querySelector('.so-user-info');
+            const name = info?.querySelector('strong');
+            const roleLabel = info?.querySelector('span');
+            if (name && account.full_name) name.textContent = account.full_name;
+            if (roleLabel) roleLabel.textContent = roleDisplayNames[account.role];
+
+            const photoKey = 'edumetrics-' + photoRoleNames[account.role] + '-profile-photo';
+            let photoData = '';
+            try {
+                photoData = localStorage.getItem(photoKey) || '';
+            } catch (storageError) {
+                console.warn('Unable to read the saved profile photo.', storageError);
+            }
+            if (photoData) {
+                let avatarPhoto = avatar.querySelector('.account-avatar-photo');
+                if (!avatarPhoto) {
+                    avatarPhoto = document.createElement('img');
+                    avatarPhoto.className = 'account-avatar-photo';
+                    avatarPhoto.alt = '';
+                    avatarPhoto.setAttribute('aria-hidden', 'true');
+                    avatar.appendChild(avatarPhoto);
+                }
+                avatarPhoto.src = photoData;
+                avatar.querySelectorAll(':scope > :not(.account-avatar-photo)').forEach(child => {
+                    child.hidden = true;
+                });
+            }
+        }
+        const profileEmail = (
+            sessionStorage.getItem('verificationEmail') ||
+            sessionStorage.getItem('verifiedEmail') ||
+            sessionStorage.getItem('edumetrics-current-profile-email') ||
+            ''
+        ).trim().toLowerCase();
+        const cachedProfileKey = profileEmail
+            ? 'edumetrics-profile-cache:' + profileEmail
+            : '';
+        if (cachedProfileKey) {
+            try {
+                const cachedProfile = sessionStorage.getItem(cachedProfileKey);
+                if (cachedProfile) applyHeaderProfile(JSON.parse(cachedProfile));
+            } catch (cacheError) {
+                console.warn('Unable to load the cached account profile.', cacheError);
+                sessionStorage.removeItem(cachedProfileKey);
+            }
+        }
         async function loadHeaderProfile() {
             try {
                 const response = await fetch('/api/account/profile', {
@@ -6325,35 +6375,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
                 const result = await response.json();
                 const account = result.profile;
-                if (!account || !roleDisplayNames[account.role]) {
-                    throw new Error('The account profile response is invalid.');
-                }
-                const info = area.querySelector('.so-user-info');
-                const name = info?.querySelector('strong');
-                const roleLabel = info?.querySelector('span');
-                if (name && account.full_name) name.textContent = account.full_name;
-                if (roleLabel) roleLabel.textContent = roleDisplayNames[account.role];
-
-                const photoKey = 'edumetrics-' + photoRoleNames[account.role] + '-profile-photo';
-                let photoData = '';
-                try {
-                    photoData = localStorage.getItem(photoKey) || '';
-                } catch (storageError) {
-                    console.warn('Unable to read the saved profile photo.', storageError);
-                }
-                if (photoData) {
-                    let avatarPhoto = avatar.querySelector('.account-avatar-photo');
-                    if (!avatarPhoto) {
-                        avatarPhoto = document.createElement('img');
-                        avatarPhoto.className = 'account-avatar-photo';
-                        avatarPhoto.alt = '';
-                        avatarPhoto.setAttribute('aria-hidden', 'true');
-                        avatar.appendChild(avatarPhoto);
-                    }
-                    avatarPhoto.src = photoData;
-                    avatar.querySelectorAll(':scope > :not(.account-avatar-photo)').forEach(child => {
-                        child.hidden = true;
-                    });
+                applyHeaderProfile(account);
+                const accountEmail = String(account.email || '').trim().toLowerCase();
+                if (accountEmail) {
+                    sessionStorage.setItem('edumetrics-current-profile-email', accountEmail);
+                    sessionStorage.setItem(
+                        'edumetrics-profile-cache:' + accountEmail,
+                        JSON.stringify(account)
+                    );
                 }
             } catch (error) {
                 console.error('Unable to load the signed-in user header profile:', error);
@@ -6425,6 +6454,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 sessionStorage.removeItem('edumetricsRole');
                 sessionStorage.removeItem('userRole');
                 sessionStorage.removeItem('verifiedRole');
+                sessionStorage.removeItem('verifiedEmail');
+                sessionStorage.removeItem('verificationEmail');
+                sessionStorage.removeItem('edumetrics-current-profile-email');
+                Object.keys(sessionStorage)
+                    .filter(key => key.startsWith('edumetrics-profile-cache:'))
+                    .forEach(key => sessionStorage.removeItem(key));
 
                 window.location.href =
                     '/login%20page.html?role=' + encodeURIComponent(role);

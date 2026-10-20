@@ -581,6 +581,9 @@
 
         /* SOCIAL LOGIN */
         function socialLogin(provider) {
+            sessionStorage.removeItem("edumetrics-current-profile-email");
+            sessionStorage.removeItem("verifiedEmail");
+            sessionStorage.removeItem("verificationEmail");
 
             /* Save the same login verification context used by the normal login flow. */
             sessionStorage.setItem(

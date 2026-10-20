@@ -53,6 +53,7 @@ Do not confuse this project with the separate Portfolio repository that may be t
 - Fixed Profile-page sidebar links to use absolute, role-correct Flask routes. Previously, relative links resolved from `/account-settings` and sent users to nonexistent top-level paths. Dashboard, course, main information, workflow, and Account Requests links now resolve to registered routes.
 - The user confirmed the Profile-page sidebar navigation now works.
 - Updated the shared account-menu header so authenticated profile name and role display across dashboard and role tabs. The header restores the role-specific profile image saved in this browser's local storage, and the shared avatar CSS displays it consistently.
+- Reduced the visible header synchronization delay by caching the last fetched account profile in session storage, keyed by the signed-in email. On repeat visits the header displays that matching cached name immediately, then refreshes it from the authenticated profile API. Cache entries are cleared on logout, and OAuth login invalidates the current cached identity before redirecting.
 - Added authenticated `/api/account/profile` data loading. It returns the signed-in user's full name, email, role-specific student/employee number, and student program or employee department from Supabase.
 - Updated the shared Profile page script and template to load and display those fields rather than relying on unrelated browser session-storage keys.
 - Verified the profile endpoint's role-specific response with focused tests for Student, Faculty, Department Head, and Admin, and verified unauthenticated requests are redirected to login.
@@ -67,6 +68,7 @@ Do not confuse this project with the separate Portfolio repository that may be t
 - Focused tests confirmed `/api/account/profile` returns the expected name, ID, role affiliation, and email for all four roles; unauthenticated requests cannot read profile data.
 - Confirmed the role sidebar target paths exist in the Flask route map; `git diff --check` passes.
 - The signed-in header now fetches the authenticated profile for its display name/role and restores the saved browser profile photo on pages with the shared account menu.
+- The header now paints a matching session-cached profile immediately and refreshes it in the background; login/logout handling avoids reusing the previous signed-in identity.
 - The user confirmed the account Profile page now displays data after the API integration.
 - Browser checks confirmed the college-to-program selection interaction. Live API checks subsequently confirmed seven colleges and exactly five programs for each college.
 - The running app passed `/health`.
