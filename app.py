@@ -893,6 +893,106 @@ def student_courses():
         return jsonify({"error": "Student courses could not be loaded."}), 500
 
 
+@app.get("/api/student/sections/<section_id>/roster")
+@require_role("student")
+def student_section_roster(section_id):
+    if not admin_supabase:
+        return jsonify({"error": "Class rosters are unavailable."}), 503
+
+    try:
+        profile_result = (
+            admin_supabase.table("student_profiles")
+            .select("id")
+            .eq("user_id", g.authenticated_user.id)
+            .limit(1)
+            .execute()
+        )
+        profiles = profile_result.data or []
+        if not profiles:
+            return jsonify({"error": "A student profile is required to view classmates."}), 403
+
+        student_profile_id = profiles[0]["id"]
+        own_enrollment = (
+            admin_supabase.table("enrollments")
+            .select("id")
+            .eq("section_id", section_id)
+            .eq("student_profile_id", student_profile_id)
+            .eq("enrollment_status", "active")
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if not own_enrollment:
+            return jsonify({"error": "You are not actively enrolled in this section."}), 403
+
+        section_result = (
+            admin_supabase.table("course_sections")
+            .select("section_name")
+            .eq("id", section_id)
+            .limit(1)
+            .execute()
+        )
+        section_rows = section_result.data or []
+        if not section_rows:
+            return jsonify({"error": "Section not found."}), 404
+
+        enrollment_rows = (
+            admin_supabase.table("enrollments")
+            .select("student_profile_id")
+            .eq("section_id", section_id)
+            .eq("enrollment_status", "active")
+            .execute()
+            .data
+            or []
+        )
+        profile_ids = list({
+            row["student_profile_id"]
+            for row in enrollment_rows
+            if row.get("student_profile_id")
+        })
+        student_profiles = []
+        if profile_ids:
+            profiles_result = (
+                admin_supabase.table("student_profiles")
+                .select("id, user_id")
+                .in_("id", profile_ids)
+                .execute()
+            )
+            student_profiles = profiles_result.data or []
+        user_ids = list({
+            row["user_id"]
+            for row in student_profiles
+            if row.get("user_id")
+        })
+        names_by_user_id = {}
+        if user_ids:
+            users_result = (
+                admin_supabase.table("users")
+                .select("id, full_name")
+                .in_("id", user_ids)
+                .execute()
+            )
+            names_by_user_id = {
+                row["id"]: row.get("full_name", "")
+                for row in (users_result.data or [])
+            }
+        classmates = [
+            names_by_user_id[profile["user_id"]]
+            for profile in student_profiles
+            if profile.get("user_id") in names_by_user_id
+            and names_by_user_id[profile["user_id"]]
+        ]
+        classmates.sort(key=str.casefold)
+        return jsonify({
+            "section_name": section_rows[0].get("section_name", ""),
+            "classmates": classmates,
+        }), 200
+    except Exception:
+        app.logger.exception("Unable to load Student section classmates")
+        return jsonify({"error": "Classmates could not be loaded."}), 500
+
+
 def _account_profile(role, user_id, fields):
     table_by_role = {
         "student": "student_profiles",

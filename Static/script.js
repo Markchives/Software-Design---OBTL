@@ -6253,44 +6253,89 @@ document.addEventListener("DOMContentLoaded", function () {
     const search = document.getElementById("crSearch");
     const sort = document.getElementById("crSort");
     const empty = document.getElementById("crEmpty");
+    const status = document.getElementById("crStudentRosterStatus");
+    const sectionId = new URLSearchParams(window.location.search).get("section_id");
+    const total = document.getElementById("crStudentTotal");
+    const listed = document.getElementById("crStudentListed");
+    const sectionLabel = document.getElementById("crStudentSection");
     if (!body || !search || !sort)
         return;
-    const originalRows = Array.from(body.querySelectorAll("tr"));
-
-    function renumber(rows) {
-        rows.forEach(function (row, index) {
-            if (row.cells[0])
-                row.cells[0].textContent = String(index + 1);
-        });
-    }
+    let classmates = [];
 
     function renderRoster() {
         const query = search.value.trim().toLowerCase();
         const mode = sort.value;
-        const rows = originalRows.filter(function (row) {
-            return row.textContent.toLowerCase().includes(query);
+        const names = classmates.filter(function (name) {
+            return name.toLowerCase().includes(query);
         });
-        rows.sort(function (a, b) {
-            const nameA = a.cells[1].textContent.trim().toLowerCase();
-            const nameB = b.cells[1].textContent.trim().toLowerCase();
-            if (mode === "za")
-                return nameB.localeCompare(nameA);
-            if (mode === "id") {
-                return a.cells[0].textContent.trim().localeCompare(b.cells[0].textContent.trim(), undefined, { numeric: true });
-            }
-            return nameA.localeCompare(nameB);
+        names.sort(function (a, b) {
+            return mode === "za" ? b.localeCompare(a) : a.localeCompare(b);
         });
         body.replaceChildren();
-        rows.forEach(function (row) {
+        names.forEach(function (name, index) {
+            const row = document.createElement("tr");
+            const numberCell = document.createElement("td");
+            numberCell.textContent = String(index + 1);
+            const nameCell = document.createElement("td");
+            nameCell.textContent = name;
+            row.append(numberCell, nameCell);
             body.appendChild(row);
         });
-        renumber(rows);
+        if (listed)
+            listed.textContent = String(names.length);
         if (empty)
-            empty.hidden = rows.length !== 0;
+            empty.hidden = names.length !== 0 || !classmates.length;
+    }
+
+    async function loadClassmates() {
+        if (!sectionId) {
+            if (status)
+                status.textContent = "Open the Class Roster from My Courses to view classmates in your section.";
+            if (empty)
+                empty.hidden = true;
+            return;
+        }
+        if (status)
+            status.textContent = "Loading classmates…";
+        try {
+            const response = await fetch(
+                "/api/student/sections/" + encodeURIComponent(sectionId) + "/roster",
+                {
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin"
+                }
+            );
+            const result = await response.json().catch(function () { return {}; });
+            if (!response.ok)
+                throw new Error(result.error || "Classmates could not be loaded.");
+            classmates = Array.isArray(result.classmates)
+                ? result.classmates.filter(function (name) {
+                    return typeof name === "string" && name.trim();
+                }).map(function (name) {
+                    return name.trim();
+                })
+                : [];
+            if (total)
+                total.textContent = String(classmates.length);
+            if (sectionLabel)
+                sectionLabel.textContent = result.section_name || "—";
+            if (status)
+                status.textContent = "";
+            renderRoster();
+        } catch (error) {
+            if (status)
+                status.textContent = error.message || "Classmates could not be loaded.";
+            if (total)
+                total.textContent = "—";
+            classmates = [];
+            renderRoster();
+            if (empty)
+                empty.hidden = true;
+        }
     }
     search.addEventListener("input", renderRoster);
     sort.addEventListener("change", renderRoster);
-    renderRoster();
+    loadClassmates();
 })();
 
 /* WEBSITE LOGIN ROLE DROPDOWN */

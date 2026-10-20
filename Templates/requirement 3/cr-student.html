@@ -39,22 +39,23 @@
 <div class="cm-filter-group"><label for="crCourse">Course</label><select id="crCourse"><option selected="">Software Design - Lab</option></select></div>
 <div class="cm-filter-group"><label for="crSection">Section</label><input autocomplete="off" id="crSection" list="crSectionList" type="search" value="COE232"/><datalist id="crSectionList"><option value="COE232"></option><option value="COE231"></option><option value="COE233"></option></datalist></div>
 </section>
-<section class="so-summary-grid"><article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Total Students</span><strong class="so-summary-number">—</strong></article><article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Students Listed</span><strong class="so-summary-number">—</strong></article><article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Section</span><strong class="so-summary-number">COE232</strong></article></section>
+<section class="so-summary-grid"><article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Classmates</span><strong class="so-summary-number" id="crStudentTotal">—</strong></article><article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Names Shown</span><strong class="so-summary-number" id="crStudentListed">—</strong></article><article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Section</span><strong class="so-summary-number" id="crStudentSection">—</strong></article></section>
 <section aria-label="Class roster enrollment records" class="cr-roster-panel">
 <div class="cr-toolbar">
-<div class="cr-sort-wrap"><label for="crSort">Sort By</label><select id="crSort"><option value="az">Students Name A-Z</option><option value="za">Students Name Z-A</option><option value="id">Email</option></select></div>
+<div class="cr-sort-wrap"><label for="crSort">Sort By</label><select id="crSort"><option value="az">Students Name A-Z</option><option value="za">Students Name Z-A</option></select></div>
 <label class="cr-search"><span aria-hidden="true">⌕</span><input id="crSearch" placeholder="Search student name" type="search"/></label>
 </div>
-<div aria-hidden="true" class="cr-table-header"><table class="cr-table"><thead><tr><th>#</th><th>Student Name</th><th>Email</th><th>Job Title</th><th>Department</th></tr></thead></table></div>
+<p aria-live="polite" class="cr-student-roster-status" id="crStudentRosterStatus" role="status"></p>
+<div aria-hidden="true" class="cr-table-header"><table class="cr-table"><thead><tr><th>#</th><th>Student Name</th></tr></thead></table></div>
 <div class="cr-table-wrap">
 <table aria-label="Student roster" class="cr-table"><tbody id="crRosterBody">
 </tbody>
 </table>
-<div class="cr-empty" hidden="" id="crEmpty">No students found.</div>
 </div>
+<p class="cr-empty" hidden="" id="crEmpty">No classmates found for this section.</p>
 </section>
 </main>
 </div>
-<script src="../script.js"></script>
+<script src="../../Static/script.js"></script>
 </body>
 </html>

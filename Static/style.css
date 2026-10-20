@@ -5736,3 +5736,9 @@ body.cr-faculty-page:not(.cr-dept-head-page) .so-shell{height:auto!important;min
 body.cr-faculty-page:not(.cr-dept-head-page) .so-main.cr-student-main{height:auto!important;min-height:0!important;overflow:visible!important}
 body.cr-faculty-page:not(.cr-dept-head-page) .crf-roster-panel{height:auto!important;min-height:0!important;overflow:visible!important}
 body.cr-faculty-page:not(.cr-dept-head-page) .cr-table-wrap{box-sizing:border-box;width:100%;height:min(60vh,560px)!important;max-height:560px!important;min-height:260px!important;overflow-x:auto!important;overflow-y:auto!important;scrollbar-gutter:stable}
+body.cr-student-page:not(.cr-faculty-page){height:auto!important;min-height:100vh!important;overflow-x:hidden!important;overflow-y:auto!important}
+body.cr-student-page:not(.cr-faculty-page) .so-shell{height:auto!important;min-height:calc(100vh - 95px)!important;overflow:visible!important}
+body.cr-student-page:not(.cr-faculty-page) .so-main.cr-student-main{height:auto!important;min-height:0!important;overflow:visible!important}
+body.cr-student-page:not(.cr-faculty-page) .cr-roster-panel{height:auto!important;min-height:0!important;overflow:visible!important}
+body.cr-student-page:not(.cr-faculty-page) .cr-table-wrap{box-sizing:border-box;width:100%;height:min(60vh,560px)!important;max-height:560px!important;min-height:260px!important;overflow-x:auto!important;overflow-y:auto!important;scrollbar-gutter:stable}
+.cr-student-roster-status{min-height:20px;margin:8px 12px;color:#315D80;font-size:13px}
