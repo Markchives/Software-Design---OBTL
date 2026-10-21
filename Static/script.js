@@ -9520,17 +9520,43 @@ document.addEventListener("DOMContentLoaded", function () {
         form.reset();
         selectedStudent = null;
         $("crdhStudentProfileId").value = "";
-        $("crdhSelectedStudent").textContent = "No student selected.";
+        $("crdhStudentName").value = "";
+        $("crdhStudentEmail").value = "";
+        $("crdhStudentProgram").value = "";
+        $("crdhFacultyOwner").value = "";
+        $("crdhEnrollmentStatus").value = "Enrolled";
         $("crdhStudentResults").replaceChildren();
         $("crdhModalError").hidden = true;
-        fillSelect($("crdhSectionChoice"), "Choose a department section", sections, "id", section =>
-            [section.course_code, section.course_title, section.section_name, section.academic_year_name, section.term_name, section.faculty_name]
-                .filter(Boolean).join(" ? "));
-        if ($("crdhSection").value) $("crdhSectionChoice").value = $("crdhSection").value;
+        const courseOptions = Array.from(new Map(sections.map(section => [section.course_id, {
+            id: section.course_id, code: section.course_code, title: section.course_title
+        }])).values());
+        fillSelect($("crdhCourseChoice"), "Choose a course", courseOptions, "id", course => `${course.code} · ${course.title}`);
+        fillSelect($("crdhSectionChoice"), "Choose a section", [], "id", () => "");
+        const filteredSection = sections.find(section => section.id === $("crdhSection").value);
+        const currentCourse = $("crdhCourse").value || filteredSection?.course_id || "";
+        if (currentCourse) {
+            $("crdhCourseChoice").value = currentCourse;
+            populateModalSections(currentCourse, filteredSection?.id || "");
+        }
         modal.hidden = false;
         modal.classList.add("show");
         document.body.style.overflow = "hidden";
         $("crdhStudentSearch").focus();
+    }
+
+    function populateModalSections(courseId, selectedSectionId) {
+        const matching = sections.filter(section => section.course_id === courseId);
+        fillSelect($("crdhSectionChoice"), "Choose a section", matching, "id", section =>
+            [section.section_name, section.academic_year_name, section.term_name].filter(Boolean).join(" · "));
+        if (selectedSectionId && matching.some(section => section.id === selectedSectionId)) {
+            $("crdhSectionChoice").value = selectedSectionId;
+        }
+        updateModalFaculty();
+    }
+
+    function updateModalFaculty() {
+        const section = sections.find(item => item.id === $("crdhSectionChoice").value);
+        $("crdhFacultyOwner").value = section?.faculty_name || "";
     }
 
     function closeModal() {
@@ -9570,6 +9596,8 @@ document.addEventListener("DOMContentLoaded", function () {
     ["crdhSearch", "crdhSort", "crdhSchoolYear", "crdhProgram", "crdhCourse", "crdhSection", "crdhFaculty"]
         .forEach(id => $(id).addEventListener(id === "crdhSearch" ? "input" : "change", render));
     $("crdhAdd").addEventListener("click", openModal);
+    $("crdhCourseChoice").addEventListener("change", () => populateModalSections($("crdhCourseChoice").value, ""));
+    $("crdhSectionChoice").addEventListener("change", updateModalFaculty);
     $("crdhModalClose").addEventListener("click", closeModal);
     $("crdhModalCancel").addEventListener("click", closeModal);
     modal.addEventListener("click", event => { if (event.target === modal) closeModal(); });
@@ -9579,7 +9607,9 @@ document.addEventListener("DOMContentLoaded", function () {
         window.clearTimeout(searchTimer);
         selectedStudent = null;
         $("crdhStudentProfileId").value = "";
-        $("crdhSelectedStudent").textContent = "No student selected.";
+        $("crdhStudentName").value = "";
+        $("crdhStudentEmail").value = "";
+        $("crdhStudentProgram").value = "";
         const query = $("crdhStudentSearch").value.trim();
         const results = $("crdhStudentResults");
         results.replaceChildren();
@@ -9598,7 +9628,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         selectedStudent = student;
                         $("crdhStudentProfileId").value = student.student_profile_id;
                         $("crdhStudentSearch").value = student.student_number;
-                        $("crdhSelectedStudent").textContent = `${student.full_name} ? ${student.student_number} ? ${student.email}`;
+                        $("crdhStudentName").value = student.full_name || "";
+                        $("crdhStudentEmail").value = student.email || "";
+                        $("crdhStudentProgram").value = student.program_name || "";
                         results.replaceChildren();
                     });
                     results.appendChild(option);
@@ -9620,7 +9652,7 @@ document.addEventListener("DOMContentLoaded", function () {
         event.preventDefault();
         const error = $("crdhModalError");
         if (!selectedStudent || !$("crdhSectionChoice").value) {
-            error.textContent = "Select an existing student and a section.";
+            error.textContent = "Select an active student account, course, and section.";
             error.hidden = false;
             return;
         }
