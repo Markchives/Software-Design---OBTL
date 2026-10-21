@@ -159,22 +159,11 @@
       Gradebook Locking &amp; Verification
      </h1>
 <p>
-      Review gradebook completeness, verify raw scores and calculated results, lock approved records, and audit reopening or relocking activity.
+      Review submitted gradebooks, resolve readiness issues, verify complete records, and lock them after approval.
      </p>
 </section>
 <section aria-label="Academic filters" class="sodh-filter-card dh-filters gl-top-filters">
-<div class="sodh-filter-group"><label for="glYear">School Year</label><select id="glYear"><option>Select School Year</option></select>
-</select></div>
-<div class="sodh-filter-group"><label for="glDepartment">Department</label><select id="glDepartment">
-<option value="">
-        All Departments
-       </option>
-</select></div>
-<div class="sodh-filter-group"><label for="glProgram">Program</label><select id="glProgram">
-<option value="">
-        All Programs
-       </option>
-</select></div>
+<div class="sodh-filter-group"><label for="glYear">School Year</label><select id="glYear"><option value="">All School Years</option></select></div>
 <div class="sodh-filter-group"><label for="glCourse">Course</label><select id="glCourse">
 <option value="">
         All Courses
@@ -227,6 +216,7 @@
        Reset Filters
       </button>
 </div>
+<p aria-live="polite" class="raf-message" id="glStatus" role="status"></p>
 <div class="gl-table-scroll cqi-dh-table-scroll">
 <table class="gl-table cqi-dh-table">
 <thead>
@@ -275,7 +265,7 @@
         Locking History &amp; Audit Trail
        </h2>
 <p>
-        Review verification, locking, and reopening actions in this demo session.
+        Read-only record of gradebook submission, verification, locking, and reopening actions.
        </p>
 </div>
 </div>
@@ -312,7 +302,7 @@
         Approved Reports &amp; Exports
        </h2>
 <p>
-        Export a gradebook status index or review approved and locked records.
+        Export gradebook metadata or review verified and locked records.
        </p>
 </div>
 <button class="gl-btn gl-gold" id="glExport" type="button">
@@ -320,7 +310,7 @@
       </button>
 </div>
 <div class="gl-export-note">
-      Demo exports contain gradebook metadata and status only; no individual student grades are included.
+      Exports contain gradebook metadata only; individual student grades are not included.
      </div>
 <div class="gl-approved-list" id="glApprovedList">
 </div>
@@ -341,7 +331,7 @@
 <div class="gl-dialog-footer" id="glDialogActions">
 </div>
 </dialog>
-<script defer="" src="../../Static/script.js?v=gl-dept-head-unified-2">
+<script defer="" src="../../Static/script.js?v=gradebook-workflow-1">
 </script>
 </body>
 </html>

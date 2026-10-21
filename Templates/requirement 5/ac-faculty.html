@@ -148,7 +148,7 @@
 </section>
 <nav aria-label="Course modules" class="cw-module-nav"><a class="cw-module-tab" href="../requirement 1/so-faculty.html"><span class="cw-module-number">01</span> Syllabus &amp; Outcomes</a><a class="cw-module-tab" href="../requirement 2/cm-faculty.html"><span class="cw-module-number">02</span> Curriculum Mapping</a><a class="cw-module-tab" href="../requirement 3/cr.faculty.html"><span class="cw-module-number">03</span> Class Roster</a><a class="cw-module-tab" href="../requirement 4/ra-faculty.html"><span class="cw-module-number">04</span> Assessment Entry</a><a aria-current="page" class="cw-module-tab active" href="ac-faculty.html"><span class="cw-module-number">05</span> Attainment</a><a class="cw-module-tab" href="../requirement 6/cqi-faculty.html"><span class="cw-module-number">06</span> CQI Planning</a><a class="cw-module-tab" href="../requirement 8/rp-faculty.html"><span class="cw-module-number">07</span> Compliance Report</a></nav>
 </div>
-<section class="so-content-card" style="padding:18px;margin-bottom:18px"><label for="facultyAttainmentSection">Course section</label> <select id="facultyAttainmentSection"><option value="">Loading sections...</option></select> <span id="facultyAttainmentStatus" aria-live="polite" role="status"></span></section>
+<select id="facultyAttainmentSection" hidden><option value="">Loading sections...</option></select>
 <section aria-label="Attainment calculation" class="ac-attainment-content">
 <div class="so-summary-grid">
 <article class="so-summary-card">
@@ -183,6 +183,7 @@
 <p>
        For each CO, class attainment is the share of scored students meeting its syllabus target. Only released mapped assessments contribute.
       </p>
+<span id="facultyAttainmentStatus" aria-live="polite" role="status"></span>
 </div>
 <div aria-label="Course outcome tables" class="ac-co-tabs" role="tablist">
 <button aria-controls="panel-calculated" aria-selected="true" class="ac-co-tab active" data-panel="calculated" id="tab-calculated" role="tab" type="button">

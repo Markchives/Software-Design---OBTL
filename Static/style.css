@@ -2618,7 +2618,7 @@ body.cm-dept-review-open, body.cm-dept-modal-open{overflow:hidden;}
 :is(.ra-faculty-page .raf-heading, .ac-faculty-page .ac-co-content-heading) p{margin:2px 0 0;color:#41658b;font-size:11px;font-weight:400;line-height:1.45;}
 .ra-faculty-page .raf-actions{display:flex;align-items:center;gap:10px;}
 /* Faculty assessment metadata and server-backed assessment creation. */
-.ra-faculty-page .raf-assessment-bar{display:grid;grid-template-columns:minmax(170px,1.5fr) minmax(150px,1.2fr) minmax(120px,.8fr) minmax(90px,.6fr) minmax(110px,.8fr);align-items:stretch;margin:0 0 6px;border:1px solid #D8E6F2;border-radius:9px;background:#fff;overflow:hidden;}
+.ra-faculty-page .raf-assessment-bar{display:grid;grid-template-columns:minmax(170px,1.5fr) minmax(120px,.8fr) minmax(90px,.6fr) minmax(110px,.8fr);align-items:stretch;margin:0 0 6px;border:1px solid #D8E6F2;border-radius:9px;background:#fff;overflow:hidden;}
 .ra-faculty-page .raf-assessment-bar > div{min-width:0;padding:8px 12px;display:flex;flex-direction:column;justify-content:center;}
 .ra-faculty-page .raf-assessment-bar > div + div{border-left:1px solid #D8E6F2;}
 .ra-faculty-page .raf-assessment-bar label,.ra-faculty-page .raf-detail span{display:block;margin:0 0 4px;color:#004179;font-weight:700;font-size:11px;line-height:1.3;}

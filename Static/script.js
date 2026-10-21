@@ -6798,7 +6798,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function renderActivities() {
         tbody.replaceChildren();
-        const locked = workspace?.gradebook_status === 'locked';
+        const readOnly = ['for_verification', 'verified', 'locked'].includes(
+            workspace?.gradebook_status
+        );
         (workspace?.assessments || []).forEach(activity => {
             const row = document.createElement('tr');
             const values = [
@@ -6818,13 +6820,13 @@ document.addEventListener("DOMContentLoaded", function () {
             edit.className = 'cm-action-btn cm-edit-btn';
             edit.dataset.action = 'edit';
             edit.textContent = 'Edit';
-            edit.disabled = locked;
+            edit.disabled = readOnly;
             const remove = document.createElement('button');
             remove.type = 'button';
             remove.className = 'cm-action-btn cm-delete-btn';
             remove.dataset.action = 'delete';
             remove.textContent = 'Delete';
-            remove.disabled = locked;
+            remove.disabled = readOnly;
             actions.append(edit, remove);
             row.appendChild(actions);
             tbody.appendChild(row);
@@ -6838,9 +6840,9 @@ document.addEventListener("DOMContentLoaded", function () {
             row.appendChild(cell);
             tbody.appendChild(row);
         }
-        openBtn.disabled = !sectionSelect.value || locked || !workspace?.outcomes.length;
-        if (locked) {
-            status.textContent = 'This gradebook is locked. Activities and mappings are read-only.';
+        openBtn.disabled = !sectionSelect.value || readOnly || !workspace?.outcomes.length;
+        if (readOnly) {
+            status.textContent = 'This gradebook is under review or locked. Activities and mappings are read-only.';
         } else if (!workspace?.outcomes.length) {
             status.textContent = 'Add Course Outcomes in Syllabus & Outcomes before creating activity mappings.';
         } else {
@@ -7090,11 +7092,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function setContext(section) {
-        document.getElementById("cmFacultySchoolYear").textContent = section?.academic_year_name || "—";
-        document.getElementById("cmFacultyDepartment").textContent = section?.department_name || "—";
-        document.getElementById("cmFacultyCourse").textContent = section
-            ? `${section.course_code} · ${section.course_title}` : "—";
-        document.getElementById("cmFacultySection").textContent = section?.section_name || "—";
         window.syncEduMetricsWorkspaceSection?.(section?.section_id || "", section || undefined);
     }
 
@@ -7159,11 +7156,15 @@ document.addEventListener("DOMContentLoaded", function () {
             const edit = document.createElement("button");
             edit.type = "button"; edit.className = "cm-action-btn cm-edit-btn";
             edit.dataset.action = "edit"; edit.textContent = "Edit";
-            edit.disabled = workspace.gradebook_status === "locked";
+            edit.disabled = ["for_verification", "verified", "locked"].includes(
+                workspace.gradebook_status
+            );
             const remove = document.createElement("button");
             remove.type = "button"; remove.className = "cm-action-btn cm-delete-btn";
             remove.dataset.action = "delete"; remove.textContent = "Delete";
-            remove.disabled = workspace.gradebook_status === "locked";
+            remove.disabled = ["for_verification", "verified", "locked"].includes(
+                workspace.gradebook_status
+            );
             actions.append(edit, remove);
             row.appendChild(actions);
             row.dataset.assessmentId = activity.id;
@@ -7172,8 +7173,10 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!activities.length) {
             activityBody.innerHTML = '<tr><td colspan="5">No activities are set up for this section yet.</td></tr>';
         }
-        if (status) status.textContent = workspace?.gradebook_status === "locked"
-            ? "This gradebook is locked. Activities and mappings are read-only."
+        if (status) status.textContent = ["for_verification", "verified", "locked"].includes(
+            workspace?.gradebook_status
+        )
+            ? "This gradebook is under review or locked. Activities and mappings are read-only."
             : "Activities are shared with Assessment Entry; only released scores contribute to CO attainment.";
     }
 
@@ -9566,6 +9569,8 @@ function initRawAssessmentFaculty() {
     const status = $('rafMessage');
     const saveButton = $('rafSave');
     const releaseButton = $('rafRelease');
+    const submitButton = $('rafSubmitGradebook');
+    const readinessStatus = $('rafReadiness');
 
     async function api(url, options) {
         const response = await fetch(url, Object.assign({
@@ -9652,12 +9657,47 @@ function initRawAssessmentFaculty() {
         const maxScore = Number(assessment?.max_score || 0);
         const query = $('rafSearch').value.trim().toLowerCase();
         const sort = $('rafSort').value;
-        const locked = workspace?.gradebook_status === 'locked';
-        $('rafMode').textContent = locked ? 'Gradebook Locked' : 'Open for Editing';
-        $('rafMode').classList.toggle('in-progress', locked);
+        const gradebookStatus = workspace?.gradebook_status || 'draft';
+        const readOnly = ['for_verification', 'verified', 'locked'].includes(gradebookStatus);
+        const modeLabels = {
+            for_verification: 'Awaiting Verification',
+            verified: 'Verified · Read Only',
+            locked: 'Gradebook Locked',
+            reopened: 'Reopened · Open for Editing'
+        };
+        $('rafMode').textContent = modeLabels[gradebookStatus] || 'Open for Editing';
+        $('rafMode').classList.toggle('in-progress', readOnly);
         assessmentSelect.disabled = !workspace?.assessments.length;
-        saveButton.disabled = !assessment || locked;
-        releaseButton.disabled = !assessment || locked || Boolean(assessment?.released_at);
+        saveButton.disabled = !assessment || readOnly;
+        releaseButton.disabled = !assessment || readOnly || Boolean(assessment?.released_at);
+        const readiness = workspace?.gradebook_readiness;
+        const canSubmit = ['draft', 'reopened'].includes(gradebookStatus);
+        submitButton.disabled = !workspace || !canSubmit || !readiness?.ready;
+        submitButton.textContent = gradebookStatus === 'for_verification'
+            ? 'Submitted for Verification'
+            : gradebookStatus === 'verified' ? 'Gradebook Verified'
+                : gradebookStatus === 'locked' ? 'Gradebook Locked'
+                    : gradebookStatus === 'reopened'
+                        ? 'Resubmit for Verification' : 'Submit for Verification';
+        readinessStatus.replaceChildren();
+        if (readiness) {
+            const summary = document.createElement('strong');
+            summary.textContent = readiness.ready
+                ? 'Gradebook is ready to submit for Department Head verification.'
+                : 'Resolve these items before submitting for verification:';
+            readinessStatus.appendChild(summary);
+            if (readiness.blockers.length) {
+                const list = document.createElement('ul');
+                readiness.blockers.forEach(blocker => {
+                    const item = document.createElement('li');
+                    item.textContent = blocker;
+                    list.appendChild(item);
+                });
+                readinessStatus.appendChild(list);
+            }
+        } else {
+            readinessStatus.textContent = '';
+        }
         releaseButton.textContent = assessment?.released_at ? 'Scores Released' : 'Release Scores';
         $('rafMaxInput').value = assessment ? String(maxScore) : '';
         $('rafCO').textContent = assessment?.outcome_code || '—';
@@ -9698,7 +9738,7 @@ function initRawAssessmentFaculty() {
             input.max = String(maxScore);
             input.step = '0.01';
             input.value = score === null ? '' : String(score);
-            input.disabled = !assessment || locked;
+            input.disabled = !assessment || readOnly;
             input.setAttribute('aria-label', 'Raw score for ' + nameCell.textContent);
             scoreCell.appendChild(input);
             const percentageCell = document.createElement('td');
@@ -9734,7 +9774,9 @@ function initRawAssessmentFaculty() {
         $('rafEmpty').hidden = visible.length > 0;
         updateSummary(assessment, students);
         renderQueries();
-        if (locked) status.textContent = 'This section gradebook is locked; scores are read-only.';
+        if (readOnly) status.textContent = gradebookStatus === 'locked'
+            ? 'This section gradebook is locked; scores are read-only.'
+            : 'This gradebook is under Department Head review; scores are read-only.';
         else if (!assessment && !status.textContent) {
             status.textContent = 'Select an activity to enter its scores.';
         }
@@ -9856,6 +9898,22 @@ function initRawAssessmentFaculty() {
         } catch (error) {
             $('rafMessage').textContent = error.message;
             saveButton.disabled = false;
+        }
+    });
+    submitButton.addEventListener('click', async () => {
+        if (!workspace || submitButton.disabled) return;
+        submitButton.disabled = true;
+        status.textContent = 'Submitting gradebook for verification...';
+        try {
+            await api('/api/faculty/sections/' +
+                encodeURIComponent(sectionSelect.value) + '/gradebook/submit', {
+                    method: 'POST'
+                });
+            await loadWorkspace();
+            status.textContent = 'Gradebook submitted to the Department Head for verification.';
+        } catch (error) {
+            status.textContent = error.message;
+            submitButton.disabled = false;
         }
     });
     api('/api/faculty/sections').then(result => {
@@ -10127,16 +10185,12 @@ document.addEventListener("DOMContentLoaded", function () {
             actionCell.appendChild(button(
                 'View Scores', 'ra-review-action', 'reviewId', item.id
             ));
-            if (item.gradebook_status !== 'locked') {
-                actionCell.appendChild(button(
-                    'Lock Gradebook', 'ra-lock-action', 'lockSection', item.section_id
-                ));
-            } else {
-                const locked = document.createElement('span');
-                locked.className = 'ra-locked-label';
-                locked.textContent = 'Locked';
-                actionCell.appendChild(locked);
-            }
+            const gradebookLink = document.createElement('a');
+            gradebookLink.className = 'ra-review-action';
+            gradebookLink.href = '../requirement 7/gl-dept-head.html?section_id=' +
+                encodeURIComponent(item.section_id);
+            gradebookLink.textContent = 'Gradebook Workflow';
+            actionCell.appendChild(gradebookLink);
             row.appendChild(actionCell);
             reviewBody.appendChild(row);
         });
@@ -10312,22 +10366,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         headers: { Accept: 'application/json' }
                     });
                 message.textContent = 'Assessment query resolved.';
-                await load();
-            } catch (error) {
-                message.textContent = error.message;
-                target.disabled = false;
-            }
-        } else if (target.dataset.lockSection) {
-            const sectionId = target.dataset.lockSection;
-            if (!window.confirm('Lock this section gradebook? Faculty will no longer be able to edit its scores.')) return;
-            target.disabled = true;
-            try {
-                await api('/api/department-head/sections/' +
-                    encodeURIComponent(sectionId) + '/lock', {
-                        method: 'POST',
-                        headers: { Accept: 'application/json' }
-                    });
-                message.textContent = 'Gradebook locked. Faculty score editing is now disabled.';
                 await load();
             } catch (error) {
                 message.textContent = error.message;
@@ -10658,38 +10696,374 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 
 
-/* Requirement 7 — GL Department Head: scoped interactive prototype. */
+/* Requirement 7 — Department Head gradebook verification workflow. */
 (function () {
     'use strict';
+
     function init() {
-        const page = document.querySelector('.gl-dept-head-page'); if (!page) return;
-        const $ = id => document.getElementById(id), rows = [...$('glRows').rows], dialog = $('glDialog'); let active = null, mode = 'review';
-        const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-        function state(row) { return { id: row.dataset.id, course: row.cells[0].querySelector('small').textContent.split('2026')[0].trim(), section: row.dataset.course, faculty: row.dataset.faculty, students: row.dataset.students, assessments: row.dataset.assessments, check: row.dataset.check, grades: row.dataset.grades, mapping: row.dataset.mapping, attainment: row.dataset.attainment, status: row.dataset.status }; }
-        function counts() { $('glPending').textContent = rows.filter(r => ['For Verification', 'Draft'].includes(r.dataset.status)).length; $('glLocked').textContent = rows.filter(r => r.dataset.status === 'Locked').length; $('glIssues').textContent = rows.filter(r => r.dataset.check !== 'clean').length; }
-        function filter() { const q = $('glSearch').value.toLowerCase().trim(), course = $('glCourse').value, section = $('glSection').value, department = $('glDepartment').value, program = $('glProgram').value; let n = 0; rows.forEach(r => { const ok = (!q || r.textContent.toLowerCase().includes(q)) && (!course || r.dataset.course === course) && (!section || r.dataset.course === section) && (!department || department === 'Engineering') && (!program || program === 'BS CpE'); r.hidden = !ok; if (ok) n++; }); $('glCount').textContent = n + ' gradebook(s)'; $('glEmpty').hidden = n > 0; }
-        function details(items) { return '<div class="gl-detail-grid">' + items.map(([k, v]) => '<div class="gl-detail"><span>' + esc(k) + '</span><strong>' + esc(v) + '</strong></div>').join('') + '</div>'; }
-        function btn(text, kind, action) { return '<button type="button" class="gl-btn ' + kind + '" data-gl-dialog="' + action + '">' + text + '</button>'; }
-        function show(row, action) {
-            active = row; mode = action; const d = state(row); let title = '', content = '', actions = btn('Close', 'gl-outline', 'close'); if (action === 'review') { title = 'Gradebook Review Details'; content = details([['Gradebook / Course', d.id + ' · ' + d.course], ['Section / Faculty', d.section + ' · ' + d.faculty], ['Academic Year / Students', '2026–2027 · ' + d.students + ' students'], ['Assessments', d.assessments + ' assessments'], ['Raw Scores', d.grades], ['Calculated Grades', d.grades === 'Complete' ? 'Verified' : 'Pending'], ['CO/SO Mappings', d.mapping], ['Attainment', d.attainment]]) + '<div class="gl-notice">Data validation: ' + (d.check === 'clean' ? '0 missing scores, 0 incomplete assessments, 0 invalid entries, 0 unmapped CO/SO records.' : '2 missing scores, 1 incomplete assessment, 0 invalid entries, 1 unmapped CO/SO record.') + '</div><h3>Audit history</h3><div class="gl-notice">Submitted for verification · ' + esc(d.faculty) + ' · Oct 12, 2026</div>'; }
-            if (action === 'verify') { title = 'Verify Gradebook'; content = details([['Gradebook', d.id + ' · ' + d.course], ['Section / Faculty', d.section + ' · ' + d.faculty], ['Raw Scores / Grades', d.grades], ['CO/SO / Attainment', d.mapping + ' / ' + d.attainment]]) + '<div class="gl-notice">Confirm student records, raw scores, grade calculations, assessment weights, CO/SO mappings and attainment. Any unresolved issues block verification.</div><label for="glReason">Verification remarks</label><textarea id="glReason" placeholder="Record checks performed and verification notes…"></textarea><p id="glDialogError" class="gl-error" hidden></p>'; actions = btn('Cancel', 'gl-outline', 'close') + btn('Mark Verified', 'gl-gold', 'confirm'); }
-            if (action === 'reopen') { title = 'Reopen Locked Gradebook'; content = details([['Locked Gradebook', d.id + ' · ' + d.course]]) + '<div class="gl-notice">Reopening allows corrections and changes the status to Reopened. The gradebook must be re-verified before it can be locked again.</div><label for="glReason">Required reason for reopening</label><textarea id="glReason" placeholder="Explain why reopening is necessary…"></textarea><p id="glDialogError" class="gl-error" hidden></p>'; actions = btn('Cancel', 'gl-outline', 'close') + btn('Reopen Gradebook', 'gl-red-outline', 'confirm'); }
-            if (action === 'lock') { title = 'Confirm Gradebook Lock'; content = '<p>Lock <strong>' + esc(d.id) + '</strong>? The gradebook will be marked read-only in this prototype. Only a verified record without unresolved issues can be locked.</p><div class="gl-notice">This action will be recorded in the locking history. Corrections require an authorized reopening reason.</div>'; actions = btn('Cancel', 'gl-outline', 'close') + btn('Confirm Lock', 'gl-gold', 'confirm'); }
-            $('glDialogTitle').textContent = title; $('glDialogContent').innerHTML = content; $('glDialogActions').innerHTML = actions; if (!dialog.open) dialog.showModal();
+        const page = document.querySelector('.gl-dept-head-page');
+        if (!page) return;
+        const $ = id => document.getElementById(id);
+        const tableBody = $('glRows');
+        const dialog = $('glDialog');
+        const statusMessage = $('glStatus');
+        let gradebooks = [];
+        let active = null;
+        let action = '';
+
+        const escape = value => String(value ?? '').replace(/[&<>"']/g, character => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[character]);
+        const labelStatus = value => ({
+            draft: 'Draft',
+            for_verification: 'For Verification',
+            verified: 'Verified',
+            locked: 'Locked',
+            reopened: 'Reopened'
+        })[value] || value;
+        const statusClass = value => ({
+            for_verification: 'gl-yellow',
+            verified: 'gl-green',
+            locked: 'gl-green'
+        })[value] || 'gl-muted';
+
+        async function request(url, options) {
+            const response = await fetch(url, Object.assign({
+                credentials: 'same-origin',
+                headers: { Accept: 'application/json' }
+            }, options || {}));
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(payload.error || 'The request could not be completed.');
+            return payload;
         }
-        function close() { if (dialog.open) dialog.close(); }
-        function updateRow(row, status) { row.dataset.status = status; const badge = row.querySelector('.gl-row-status'); badge.textContent = status; badge.className = 'gl-pill gl-row-status ' + (['Verified', 'Locked'].includes(status) ? 'gl-green' : status === 'For Verification' ? 'gl-yellow' : 'gl-muted'); const action = row.querySelector('.gl-actions'); const type = status === 'Locked' ? 'reopen' : status === 'Verified' ? 'lock' : 'verify'; action.querySelector('[data-gl-action]:last-child').outerHTML = btn(status === 'Locked' ? 'Reopen' : status === 'Verified' ? 'Lock' : 'Verify', type === 'reopen' ? 'gl-red-outline' : type === 'lock' ? 'gl-outline' : 'gl-gold', type).replace('data-gl-dialog', 'data-gl-action'); }
-        function history(row, action, remark) { const d = state(row), tr = document.createElement('tr');[d.id, action, 'Department Head', new Date().toLocaleString(), remark || '—'].forEach(value => { const td = document.createElement('td'); td.textContent = value; tr.append(td) }); $('glHistory').prepend(tr); }
-        function approved() { const list = rows.filter(r => ['Locked', 'Verified'].includes(r.dataset.status)); $('glApprovedList').innerHTML = list.length ? list.map(r => '<p><strong>' + esc(r.dataset.id) + '</strong> — ' + esc(r.dataset.status) + '</p>').join('') : '<p>No approved gradebooks yet.</p>'; }
-        $('glRows').addEventListener('click', e => { const button = e.target.closest('button[data-gl-action]'); if (button) show(button.closest('tr'), button.dataset.glAction); });
-        dialog.addEventListener('click', e => { const button = e.target.closest('button[data-gl-dialog]'); if (!button) return; if (button.dataset.glDialog === 'close') { close(); return; } if (!active) return; const d = state(active), remark = $('glReason')?.value.trim() || ''; let next = ''; if (mode === 'verify') { if (d.check !== 'clean' || d.grades !== 'Complete' || d.mapping !== 'Verified' || d.attainment !== 'Verified') { const el = $('glDialogError'); el.hidden = false; el.textContent = 'Verification blocked: resolve missing or incomplete data, grades, mappings and attainment first.'; return; } next = 'Verified'; } else if (mode === 'lock') { if (d.status !== 'Verified' || d.check !== 'clean') return; next = 'Locked'; } else if (mode === 'reopen') { if (!remark) { const el = $('glDialogError'); el.hidden = false; el.textContent = 'Please provide a reason for reopening.'; return; } next = 'Reopened'; } if (next) { updateRow(active, next); history(active, next, remark); counts(); filter(); approved(); close(); } });
-        $('glDialogX').addEventListener('click', close); dialog.addEventListener('click', e => { if (e.target === dialog) close(); });
-        page.querySelectorAll('[data-gl-tab]').forEach(tab => tab.addEventListener('click', () => { page.querySelectorAll('[data-gl-tab]').forEach(t => { const yes = t === tab; t.classList.toggle('active', yes); t.setAttribute('aria-selected', String(yes)); }); page.querySelectorAll('[data-gl-panel]').forEach(p => p.hidden = p.dataset.glPanel !== tab.dataset.glTab); approved(); }));
-        $('glSearch').addEventListener('input', filter);['glCourse', 'glSection', 'glDepartment', 'glProgram', 'glYear'].forEach(id => $(id).addEventListener('change', filter)); $('glReset').addEventListener('click', () => { $('glSearch').value = '';['glCourse', 'glSection', 'glDepartment', 'glProgram'].forEach(id => $(id).value = ''); filter(); });
-        $('glExport')?.addEventListener('click', () => { const data = [['Gradebook', 'Course', 'Faculty', 'Students', 'Assessments', 'Status'], ...rows.map(r => { const d = state(r); return [d.id, d.section, d.faculty, d.students, d.assessments, d.status] })]; const csv = data.map(a => a.map(s => '"' + String(s).replace(/"/g, '""') + '"').join(',')).join('\r\n'); const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = 'gradebook-locking-index.csv'; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000); });
-        counts(); filter(); approved();
+
+        function actionButton(item) {
+            if (item.status === 'for_verification') {
+                return '<button type="button" class="gl-btn gl-gold" data-gl-action="verify"' +
+                    (item.ready ? '' : ' disabled title="Resolve readiness issues before verification."') +
+                    '>Verify</button>';
+            }
+            if (item.status === 'verified') {
+                return '<button type="button" class="gl-btn gl-outline" data-gl-action="lock"' +
+                    (item.ready ? '' : ' disabled title="Resolve readiness issues before locking."') +
+                    '>Lock</button>';
+            }
+            if (item.status === 'locked') {
+                return '<button type="button" class="gl-btn gl-red-outline" data-gl-action="reopen">Reopen</button>';
+            }
+            return '';
+        }
+
+        function renderRows() {
+            tableBody.replaceChildren();
+            gradebooks.forEach(item => {
+                const row = document.createElement('tr');
+                row.dataset.sectionId = item.section_id;
+                row.dataset.courseCode = item.course_code;
+                row.dataset.sectionName = item.course_code + ' · ' + item.section_name;
+                row.dataset.year = item.academic_year_name;
+                row.dataset.status = item.status;
+                const course = document.createElement('td');
+                course.innerHTML = '<strong>' + escape(item.gradebook_id || 'Not submitted') +
+                    '</strong><small>' + escape(item.course_code + ' · ' + item.course_title) + '</small>';
+                const section = document.createElement('td');
+                section.textContent = item.section_name + ' · ' + item.faculty_name;
+                const enrollment = document.createElement('td');
+                enrollment.textContent = item.student_count + ' students · ' +
+                    item.assessment_count + ' activities';
+                const checks = document.createElement('td');
+                checks.textContent = item.missing_score_count + ' missing · ' +
+                    item.invalid_entry_count + ' invalid · ' +
+                    item.unreleased_assessment_count + ' unreleased · ' +
+                    item.unmapped_co_so_count + ' unmapped · ' +
+                    item.open_query_count + ' open queries';
+                const grades = document.createElement('td');
+                grades.textContent = item.ready ? 'Complete' : 'Incomplete';
+                const mapping = document.createElement('td');
+                mapping.textContent = item.mapping_verified
+                    ? 'Verified' : 'Needs verification';
+                const attainment = document.createElement('td');
+                attainment.textContent = item.attainment_available
+                    ? 'Available' : 'Pending';
+                const state = document.createElement('td');
+                state.innerHTML = '<span class="gl-pill gl-row-status ' +
+                    statusClass(item.status) + '">' + escape(labelStatus(item.status)) + '</span>';
+                const actions = document.createElement('td');
+                actions.className = 'gl-actions';
+                actions.innerHTML = '<button type="button" class="gl-btn gl-outline" ' +
+                    'data-gl-action="review">Review</button>' + actionButton(item);
+                row.append(course, section, enrollment, checks, grades, mapping, attainment, state, actions);
+                tableBody.appendChild(row);
+            });
+            applyFilters();
+            updateCounts();
+            renderHistory();
+            renderApproved();
+        }
+
+        function updateCounts() {
+            $('glPending').textContent = String(gradebooks.filter(item =>
+                item.status === 'for_verification').length);
+            $('glLocked').textContent = String(gradebooks.filter(item =>
+                item.status === 'locked').length);
+            $('glIssues').textContent = String(gradebooks.filter(item =>
+                !item.ready).length);
+        }
+
+        function fillFilter(id, values, placeholder) {
+            const select = $(id);
+            const selected = select.value;
+            select.replaceChildren(new Option(placeholder, ''));
+            [...new Set(values.filter(Boolean))].sort().forEach(value => {
+                select.add(new Option(value, value));
+            });
+            select.value = values.includes(selected) ? selected : '';
+        }
+
+        function applyFilters() {
+            const query = $('glSearch').value.trim().toLowerCase();
+            const course = $('glCourse').value;
+            const section = $('glSection').value;
+            const year = $('glYear').value;
+            let visible = 0;
+            [...tableBody.rows].forEach(row => {
+                const matches = (!query || row.textContent.toLowerCase().includes(query)) &&
+                    (!course || row.dataset.courseCode === course) &&
+                    (!section || row.dataset.sectionName === section) &&
+                    (!year || row.dataset.year === year);
+                row.hidden = !matches;
+                if (matches) visible += 1;
+            });
+            $('glCount').textContent = visible + ' gradebook(s)';
+            $('glEmpty').hidden = visible > 0;
+        }
+
+        function renderHistory() {
+            const events = gradebooks.flatMap(item => (item.history || []).map(event => ({
+                ...event,
+                gradebook: item.gradebook_id || item.course_code + ' · ' + item.section_name
+            }))).sort((left, right) =>
+                new Date(right.timestamp || 0) - new Date(left.timestamp || 0));
+            $('glHistory').replaceChildren();
+            events.forEach(event => {
+                const row = document.createElement('tr');
+                [event.gradebook, event.action, event.actor,
+                    event.timestamp ? new Date(event.timestamp).toLocaleString() : '—',
+                    event.reason || '—'].forEach(value => {
+                    const cell = document.createElement('td');
+                    cell.textContent = value;
+                    row.appendChild(cell);
+                });
+                $('glHistory').appendChild(row);
+            });
+        }
+
+        function renderApproved() {
+            const approved = gradebooks.filter(item =>
+                ['verified', 'locked'].includes(item.status));
+            $('glApprovedList').innerHTML = approved.length
+                ? approved.map(item => '<p><strong>' +
+                    escape(item.gradebook_id || item.course_code) + '</strong> · ' +
+                    escape(item.course_code + ' / ' + item.section_name) + ' — ' +
+                    escape(labelStatus(item.status)) + '</p>').join('')
+                : '<p>No verified or locked gradebooks yet.</p>';
+        }
+
+        function showDetails(item, selectedAction) {
+            active = item;
+            action = selectedAction;
+            const status = labelStatus(item.status);
+            const details = [
+                ['Course / section', item.course_code + ' · ' + item.course_title + ' / ' + item.section_name],
+                ['Faculty / school year', item.faculty_name + ' / ' + (item.academic_year_name || '—')],
+                ['Students / assessment activities', item.student_count + ' / ' + item.assessment_count],
+                ['Missing scores / invalid entries', item.missing_score_count + ' / ' + item.invalid_entry_count],
+                ['Unreleased / unmapped / open queries', item.unreleased_assessment_count +
+                    ' / ' + item.unmapped_co_so_count + ' / ' + item.open_query_count],
+                ['CO–SO mapping', item.mapping_verified ? 'Verified' : 'Not verified'],
+                ['Attainment results', item.attainment_available ? 'Available' : 'Pending'],
+                ['Current status', status]
+            ];
+            let content = '<div class="gl-detail-grid">' + details.map(([key, value]) =>
+                '<div class="gl-detail"><span>' + escape(key) + '</span><strong>' +
+                escape(value) + '</strong></div>').join('') + '</div>';
+            if (item.blockers.length) {
+                content += '<div class="gl-notice"><strong>Readiness issues</strong><ul>' +
+                    item.blockers.map(text => '<li>' + escape(text) + '</li>').join('') +
+                    '</ul></div>';
+            } else {
+                content += '<div class="gl-notice">All gradebook readiness checks passed.</div>';
+            }
+            if (selectedAction === 'verify') {
+                content += '<label for="glReason">Verification remarks (optional)</label>' +
+                    '<textarea id="glReason" maxlength="2000" placeholder="Record the checks performed…"></textarea>';
+            } else if (selectedAction === 'reopen') {
+                content += '<div class="gl-notice">Reopening returns the gradebook to Faculty for corrections. It must be submitted and verified again before relocking.</div>' +
+                    '<label for="glReason">Required reason for reopening</label>' +
+                    '<textarea id="glReason" maxlength="2000" required placeholder="Explain why reopening is necessary…"></textarea>';
+            } else if (selectedAction === 'lock') {
+                content += '<div class="gl-notice">Locking makes saved assessment data read-only. Only a verified gradebook can be locked.</div>';
+            } else if (selectedAction === 'review') {
+                const events = item.history || [];
+                content += '<h3>Gradebook audit history</h3>' + (events.length
+                    ? events.map(event => '<div class="gl-notice">' + escape(event.action) +
+                        ' · ' + escape(event.actor) + ' · ' +
+                        escape(event.timestamp ? new Date(event.timestamp).toLocaleString() : '—') +
+                        (event.reason ? '<br>' + escape(event.reason) : '') + '</div>').join('')
+                    : '<p>No gradebook transitions have been recorded.</p>');
+            }
+            $('glDialogTitle').textContent = selectedAction === 'review'
+                ? 'Gradebook Review Details'
+                : selectedAction === 'verify' ? 'Verify Gradebook'
+                    : selectedAction === 'lock' ? 'Lock Gradebook'
+                        : 'Reopen Locked Gradebook';
+            $('glDialogContent').innerHTML = content +
+                '<p id="glDialogError" class="gl-error" hidden></p>';
+            const controls = selectedAction === 'review'
+                ? '<button type="button" class="gl-btn gl-outline" data-gl-dialog="close">Close</button>'
+                : '<button type="button" class="gl-btn gl-outline" data-gl-dialog="close">Cancel</button>' +
+                  '<button type="button" class="gl-btn ' +
+                    (selectedAction === 'reopen' ? 'gl-red-outline' : 'gl-gold') +
+                    '" data-gl-dialog="confirm">' +
+                    (selectedAction === 'verify' ? 'Mark Verified' :
+                        selectedAction === 'lock' ? 'Confirm Lock' : 'Reopen Gradebook') +
+                    '</button>';
+            $('glDialogActions').innerHTML = controls;
+            if (!dialog.open) dialog.showModal();
+        }
+
+        async function performAction() {
+            if (!active) return;
+            const button = $('glDialogActions').querySelector('[data-gl-dialog="confirm"]');
+            const error = $('glDialogError');
+            const reason = $('glReason')?.value.trim() || '';
+            if (action === 'reopen' && !reason) {
+                error.hidden = false;
+                error.textContent = 'A reason is required to reopen this gradebook.';
+                return;
+            }
+            button.disabled = true;
+            error.hidden = true;
+            try {
+                const url = action === 'verify'
+                    ? '/api/department-head/sections/' + encodeURIComponent(active.section_id) + '/verify-gradebook'
+                    : action === 'lock'
+                        ? '/api/department-head/sections/' + encodeURIComponent(active.section_id) + '/lock'
+                        : '/api/department-head/sections/' + encodeURIComponent(active.section_id) + '/reopen-gradebook';
+                const options = { method: 'POST' };
+                if (action !== 'lock') {
+                    options.headers = {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json'
+                    };
+                    options.body = JSON.stringify(action === 'verify'
+                        ? { remarks: reason } : { reason });
+                }
+                await request(url, options);
+                dialog.close();
+                await loadGradebooks();
+            } catch (requestError) {
+                error.hidden = false;
+                error.textContent = requestError.message;
+                button.disabled = false;
+            }
+        }
+
+        async function loadGradebooks() {
+            statusMessage.textContent = 'Loading department gradebooks…';
+            try {
+                const payload = await request('/api/department-head/gradebooks');
+                gradebooks = Array.isArray(payload.gradebooks) ? payload.gradebooks : [];
+                fillFilter('glYear', gradebooks.map(item => item.academic_year_name), 'All School Years');
+                fillFilter('glCourse', gradebooks.map(item => item.course_code), 'All Courses');
+                fillFilter('glSection', gradebooks.map(item =>
+                    item.course_code + ' · ' + item.section_name), 'All Sections');
+                const requestedSection = new URLSearchParams(location.search).get('section_id');
+                const selectedSection = gradebooks.find(item =>
+                    item.section_id === requestedSection);
+                if (selectedSection) {
+                    $('glSection').value = selectedSection.course_code + ' · ' +
+                        selectedSection.section_name;
+                }
+                renderRows();
+                statusMessage.textContent = gradebooks.length
+                    ? 'Department gradebooks loaded.'
+                    : 'No course sections are currently assigned to your department.';
+            } catch (error) {
+                gradebooks = [];
+                renderRows();
+                statusMessage.textContent = error.message;
+            }
+        }
+
+        tableBody.addEventListener('click', event => {
+            const button = event.target.closest('[data-gl-action]');
+            if (!button) return;
+            const row = button.closest('tr');
+            const item = gradebooks.find(record => record.section_id === row?.dataset.sectionId);
+            if (item) showDetails(item, button.dataset.glAction);
+        });
+        $('glDialogX').addEventListener('click', () => dialog.close());
+        dialog.addEventListener('click', event => {
+            const button = event.target.closest('[data-gl-dialog]');
+            if (button?.dataset.glDialog === 'close') dialog.close();
+            if (button?.dataset.glDialog === 'confirm') performAction();
+            if (event.target === dialog) dialog.close();
+        });
+        page.querySelectorAll('[data-gl-tab]').forEach(tab => tab.addEventListener('click', () => {
+            page.querySelectorAll('[data-gl-tab]').forEach(item => {
+                const selected = item === tab;
+                item.classList.toggle('active', selected);
+                item.setAttribute('aria-selected', String(selected));
+            });
+            page.querySelectorAll('[data-gl-panel]').forEach(panel => {
+                panel.hidden = panel.dataset.glPanel !== tab.dataset.glTab;
+            });
+        }));
+        $('glSearch').addEventListener('input', applyFilters);
+        ['glCourse', 'glSection', 'glYear'].forEach(id =>
+            $(id).addEventListener('change', applyFilters));
+        $('glReset').addEventListener('click', () => {
+            $('glSearch').value = '';
+            ['glCourse', 'glSection', 'glYear'].forEach(id => {
+                $(id).value = '';
+            });
+            applyFilters();
+        });
+        $('glExport')?.addEventListener('click', () => {
+            const data = [
+                ['Course', 'Section', 'Faculty', 'School Year', 'Students',
+                    'Activities', 'Missing Scores', 'Invalid Entries', 'Status'],
+                ...gradebooks.map(item => [
+                    item.course_code + ' · ' + item.course_title,
+                    item.section_name,
+                    item.faculty_name,
+                    item.academic_year_name,
+                    item.student_count,
+                    item.assessment_count,
+                    item.missing_score_count,
+                    item.invalid_entry_count,
+                    labelStatus(item.status)
+                ])
+            ];
+            const csv = data.map(row => row.map(value =>
+                '"' + String(value ?? '').replace(/"/g, '""') + '"').join(',')).join('\r\n');
+            const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'gradebook-locking-index.csv';
+            document.body.append(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        });
+        loadGradebooks();
     }
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true }); else init();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init, { once: true });
+    } else {
+        init();
+    }
 })();
 
 

@@ -193,6 +193,15 @@ def audit_authenticated_api_mutations(response):
     if (
         request.path.startswith("/api/")
         and request.method in {"POST", "PUT", "PATCH", "DELETE"}
+        and (
+            request.endpoint not in {
+                "submit_faculty_gradebook",
+                "verify_department_head_gradebook",
+                "lock_department_head_gradebook",
+                "reopen_department_head_gradebook",
+            }
+            or response.status_code >= 400
+        )
     ):
         endpoint = request.endpoint or "unknown_endpoint"
         module = request.path.split("/", 3)[2] if len(request.path.split("/", 3)) > 2 else "application"
@@ -2040,12 +2049,12 @@ def _is_assessment_mapping_setup_error(error):
     )
 
 
-def _faculty_assessment_workspace(section_id):
-    if not get_faculty_section(section_id):
+def _faculty_assessment_workspace(section_id, check_assignment=True):
+    if check_assignment and not get_faculty_section(section_id):
         return None
     sections = (
         admin_supabase.table("course_sections")
-        .select("id, course_id, section_name")
+        .select("id, course_id, section_name, academic_year_id, faculty_id")
         .eq("id", section_id)
         .limit(1)
         .execute()
@@ -2153,7 +2162,12 @@ def _faculty_assessment_workspace(section_id):
         activity["scores"] = scores_by_activity.get(activity["id"], {})
     gradebooks = (
         admin_supabase.table("gradebooks")
-        .select("status")
+        .select(
+            "id, status, submitted_by, submitted_at, verified_by, "
+            "verified_at, locked_by, locked_at, reopened_by, reopened_at, "
+            "reopen_reason, missing_score_count, invalid_entry_count, "
+            "unmapped_co_so_count"
+        )
         .eq("section_id", section_id)
         .limit(1)
         .execute()
@@ -2184,6 +2198,7 @@ def _faculty_assessment_workspace(section_id):
         "assessments": activities,
         "review_flags": review_flags,
         "gradebook_status": gradebooks[0]["status"] if gradebooks else "draft",
+        "gradebook": gradebooks[0] if gradebooks else None,
     }
 
 
@@ -2215,6 +2230,178 @@ def _section_mapping_is_verified(section_id):
         or []
     )
     return bool(rows and rows[0].get("status") == "verified")
+
+
+def _gradebook_readiness(section_id, workspace=None):
+    workspace = workspace or _faculty_assessment_workspace(
+        section_id, check_assignment=False
+    )
+    if not workspace:
+        return None
+
+    students = workspace["students"]
+    assessments = workspace["assessments"]
+    outcomes = workspace["outcomes"]
+    section = workspace["section"]
+    flags = workspace["review_flags"]
+    student_ids = {row["student_profile_id"] for row in students}
+    missing_score_count = 0
+    invalid_entry_count = 0
+    missing_release_count = 0
+    mapped_outcome_ids = set()
+    unmapped_activity_count = sum(
+        1 for assessment in assessments
+        if not assessment["course_outcome_ids"]
+    )
+
+    for assessment in assessments:
+        mapped_outcome_ids.update(assessment["course_outcome_ids"])
+        if not assessment.get("released_at"):
+            missing_release_count += 1
+        maximum = float(assessment.get("max_score") or 0)
+        for score in assessment["scores"].values():
+            if score.get("score") is None:
+                continue
+            value = float(score["score"])
+            saved_maximum = float(score.get("max_score") or 0)
+            if (
+                maximum <= 0
+                or not math.isfinite(value)
+                or not math.isfinite(maximum)
+                or not math.isfinite(saved_maximum)
+                or value < 0
+                or value > maximum
+                or saved_maximum != maximum
+            ):
+                invalid_entry_count += 1
+        for student_id in student_ids:
+            score = assessment["scores"].get(student_id)
+            if not score or score.get("score") is None:
+                missing_score_count += 1
+
+    unmapped_course_outcome_count = sum(
+        1 for outcome in outcomes if outcome["id"] not in mapped_outcome_ids
+    )
+    outcome_ids = [row["id"] for row in outcomes]
+    student_outcome_mappings = []
+    if outcome_ids:
+        student_outcome_mappings = (
+            admin_supabase.table("course_outcome_student_outcomes")
+            .select("course_outcome_id")
+            .in_("course_outcome_id", outcome_ids)
+            .execute()
+            .data
+            or []
+        )
+    student_mapped_outcome_ids = {
+        row["course_outcome_id"] for row in student_outcome_mappings
+    }
+    unmapped_student_outcome_count = sum(
+        1 for outcome in outcomes
+        if outcome["id"] not in student_mapped_outcome_ids
+    )
+    unmapped_co_so_count = (
+        unmapped_activity_count
+        + unmapped_course_outcome_count
+        + unmapped_student_outcome_count
+    )
+    mapping_verified = _section_mapping_is_verified(section_id)
+    open_query_count = len(flags)
+    blockers = []
+    if not students:
+        blockers.append("The section has no active enrolled students.")
+    if not assessments:
+        blockers.append("Create at least one assessment activity.")
+    if not outcomes:
+        blockers.append("The course has no Course Outcomes to assess.")
+    if not section.get("academic_year_id"):
+        blockers.append("Assign this section to an academic year.")
+    if missing_release_count:
+        blockers.append(
+            f"Release scores for {missing_release_count} assessment "
+            f"activity(ies)."
+        )
+    if missing_score_count:
+        blockers.append(
+            f"Enter {missing_score_count} missing student score(s)."
+        )
+    if invalid_entry_count:
+        blockers.append(f"Correct {invalid_entry_count} invalid score entries.")
+    if unmapped_co_so_count:
+        if unmapped_activity_count:
+            blockers.append(
+                f"Map {unmapped_activity_count} assessment activity(ies) "
+                "to at least one Course Outcome."
+            )
+        if unmapped_course_outcome_count:
+            blockers.append(
+                f"Map {unmapped_course_outcome_count} Course Outcome(s) "
+                "to an assessment activity."
+            )
+        if unmapped_student_outcome_count:
+            blockers.append(
+                f"Map {unmapped_student_outcome_count} Course Outcome(s) "
+                "to a Student Outcome."
+            )
+    if not mapping_verified:
+        blockers.append("The section's CO–SO mappings are not verified.")
+    if open_query_count:
+        blockers.append(
+            f"Resolve {open_query_count} open or responded assessment "
+            f"query(ies)."
+        )
+
+    return {
+        "student_count": len(students),
+        "assessment_count": len(assessments),
+        "missing_score_count": missing_score_count,
+        "invalid_entry_count": invalid_entry_count,
+        "unreleased_assessment_count": missing_release_count,
+        "unmapped_co_so_count": unmapped_co_so_count,
+        "unmapped_activity_count": unmapped_activity_count,
+        "unmapped_course_outcome_count": unmapped_course_outcome_count,
+        "unmapped_student_outcome_count": unmapped_student_outcome_count,
+        "open_query_count": open_query_count,
+        "mapping_verified": mapping_verified,
+        "attainment_available": bool(
+            students
+            and outcomes
+            and not missing_score_count
+            and not missing_release_count
+            and not unmapped_co_so_count
+            and mapping_verified
+        ),
+        "blockers": blockers,
+        "ready": not blockers,
+    }
+
+
+def _gradebook_is_read_only(status):
+    return status in {"for_verification", "verified", "locked"}
+
+
+def _is_gradebook_transition_conflict(error):
+    message = str(error).lower()
+    return any(fragment in message for fragment in (
+        "section does not exist",
+        "section academic year changed",
+        "no active enrolled students",
+        "create at least one assessment activity",
+        "no course outcomes to assess",
+        "release scores for all assessment activities",
+        "enter all missing student scores",
+        "correct invalid score entries",
+        "map every course outcome",
+        "map every assessment activity",
+        "map every course outcome to a student outcome",
+        "verify the section co-so mappings",
+        "assessment quer",
+        "only a draft or reopened gradebook",
+        "only a submitted gradebook",
+        "only a verified gradebook",
+        "only a locked gradebook",
+        "reason is required to reopen",
+    ))
 
 
 ATTAINMENT_ALGORITHM_VERSION = "co-threshold-rate-v1"
@@ -3050,6 +3237,9 @@ def get_faculty_assessment_workspace(section_id):
         workspace = _faculty_assessment_workspace(section_id)
         if not workspace:
             return jsonify({"error": "Section not found or not assigned to you."}), 404
+        workspace["gradebook_readiness"] = _gradebook_readiness(
+            section_id, workspace
+        )
         return jsonify(workspace), 200
     except ValueError:
         return jsonify({"error": "Invalid section ID."}), 400
@@ -3058,6 +3248,61 @@ def get_faculty_assessment_workspace(section_id):
             return jsonify({"error": ASSESSMENT_MAPPING_SETUP_ERROR}), 503
         app.logger.exception("Unable to load faculty assessment workspace")
         return jsonify({"error": "Assessment records could not be loaded."}), 500
+
+
+@app.post("/api/faculty/sections/<section_id>/gradebook/submit")
+@require_role("faculty")
+def submit_faculty_gradebook(section_id):
+    if not admin_supabase:
+        return jsonify({"error": "Gradebook submission is unavailable."}), 503
+    try:
+        section_id = str(UUID(section_id))
+        workspace = _faculty_assessment_workspace(section_id)
+        if not workspace:
+            return jsonify({"error": "Section not found or not assigned to you."}), 404
+        if workspace["gradebook_status"] not in {"draft", "reopened"}:
+            return jsonify({
+                "error": "Only a draft or reopened gradebook can be submitted.",
+                "status": workspace["gradebook_status"],
+            }), 409
+        readiness = _gradebook_readiness(section_id, workspace)
+        if not readiness["ready"]:
+            return jsonify({
+                "error": "Resolve all readiness issues before submitting this gradebook.",
+                "readiness": readiness,
+            }), 409
+        academic_year_id = workspace["section"].get("academic_year_id")
+        if not academic_year_id:
+            return jsonify({
+                "error": "Assign this section to an academic year before submission."
+            }), 409
+        result = admin_supabase.rpc(
+            "submit_faculty_gradebook",
+            {
+                "p_section_id": section_id,
+                "p_academic_year_id": academic_year_id,
+                "p_actor_id": str(g.authenticated_user.id),
+                "p_missing_score_count": readiness["missing_score_count"],
+                "p_invalid_entry_count": readiness["invalid_entry_count"],
+                "p_unmapped_co_so_count": readiness["unmapped_co_so_count"],
+            },
+        ).execute()
+        gradebook_id = result.data
+        if isinstance(gradebook_id, list):
+            gradebook_id = gradebook_id[0] if gradebook_id else None
+        if not gradebook_id:
+            raise RuntimeError("Gradebook submission returned no record.")
+        return jsonify({
+            "gradebook_id": str(gradebook_id),
+            "status": "for_verification",
+        }), 200
+    except ValueError:
+        return jsonify({"error": "Invalid section ID."}), 400
+    except Exception as error:
+        if _is_gradebook_transition_conflict(error):
+            return jsonify({"error": str(error)}), 409
+        app.logger.exception("Unable to submit faculty gradebook")
+        return jsonify({"error": "Gradebook could not be submitted."}), 500
 
 
 @app.post("/api/faculty/sections/<section_id>/assessments")
@@ -3070,8 +3315,10 @@ def create_faculty_assessment(section_id):
         workspace = _faculty_assessment_workspace(section_id)
         if not workspace:
             return jsonify({"error": "Section not found or not assigned to you."}), 404
-        if workspace["gradebook_status"] == "locked":
-            return jsonify({"error": "This section's gradebook is locked."}), 409
+        if _gradebook_is_read_only(workspace["gradebook_status"]):
+            return jsonify({
+                "error": "This gradebook is submitted for review or locked; assessment changes are read-only."
+            }), 409
 
         data = request.get_json(silent=True) or {}
         if not isinstance(data, dict):
@@ -3148,8 +3395,10 @@ def create_faculty_assessment(section_id):
     except ValueError:
         return jsonify({"error": "Invalid section ID."}), 400
     except Exception as error:
-        if "gradebook is locked" in str(error).lower():
-            return jsonify({"error": "This section's gradebook is locked."}), 409
+        if any(term in str(error).lower() for term in (
+            "gradebook is locked", "submitted for review or locked",
+        )):
+            return jsonify({"error": "Assessment changes are read-only while the gradebook is under review or locked."}), 409
         if _is_assessment_mapping_setup_error(error):
             return jsonify({"error": ASSESSMENT_MAPPING_SETUP_ERROR}), 503
         app.logger.exception("Unable to create faculty assessment")
@@ -3174,8 +3423,8 @@ def update_faculty_assessment(assessment_id):
         workspace = _faculty_assessment_workspace(section_id)
         if not workspace:
             return jsonify({"error": "Assessment is not in a section assigned to you."}), 403
-        if workspace["gradebook_status"] == "locked":
-            return jsonify({"error": "This section's gradebook is locked."}), 409
+        if _gradebook_is_read_only(workspace["gradebook_status"]):
+            return jsonify({"error": "Assessment changes are read-only while the gradebook is under review or locked."}), 409
         data = request.get_json(silent=True) or {}
         if not isinstance(data, dict):
             return jsonify({"error": "Assessment data must be a JSON object."}), 400
@@ -3246,8 +3495,10 @@ def update_faculty_assessment(assessment_id):
     except ValueError:
         return jsonify({"error": "Invalid assessment ID."}), 400
     except Exception as error:
-        if "gradebook is locked" in str(error).lower():
-            return jsonify({"error": "This section's gradebook is locked."}), 409
+        if any(term in str(error).lower() for term in (
+            "gradebook is locked", "submitted for review or locked",
+        )):
+            return jsonify({"error": "Assessment changes are read-only while the gradebook is under review or locked."}), 409
         if "maximum score cannot be lower" in str(error).lower():
             return jsonify({
                 "error": "Maximum score cannot be lower than a score already entered."
@@ -3276,8 +3527,8 @@ def delete_faculty_assessment(assessment_id):
         workspace = _faculty_assessment_workspace(section_id)
         if not workspace:
             return jsonify({"error": "Assessment is not in a section assigned to you."}), 403
-        if workspace["gradebook_status"] == "locked":
-            return jsonify({"error": "This section's gradebook is locked."}), 409
+        if _gradebook_is_read_only(workspace["gradebook_status"]):
+            return jsonify({"error": "Assessment changes are read-only while the gradebook is under review or locked."}), 409
         admin_supabase.table("assessment_activities").delete().eq(
             "id", assessment_id
         ).execute()
@@ -3355,12 +3606,26 @@ def save_faculty_outcome_mappings(course_id):
             .eq("course_id", course_id)
             .execute().data or []
         )
+        course_section_ids = [row["id"] for row in assigned_sections]
         owned_section_ids = [
-            row["id"] for row in assigned_sections
-            if get_faculty_section(row["id"])
+            section_id for section_id in course_section_ids
+            if get_faculty_section(section_id)
         ]
         if not owned_section_ids:
             return jsonify({"error": "Course is not assigned to you."}), 403
+        existing_gradebooks = (
+            admin_supabase.table("gradebooks")
+            .select("status")
+            .in_("section_id", course_section_ids)
+            .execute()
+            .data
+            or []
+        )
+        if any(row.get("status") not in {"draft", "reopened"}
+               for row in existing_gradebooks):
+            return jsonify({
+                "error": "Reopen the affected gradebook before changing course outcome mappings."
+            }), 409
         data = request.get_json(silent=True) or {}
         mappings = data.get("mappings") if isinstance(data, dict) else None
         if not isinstance(mappings, list) or len(mappings) > 200:
@@ -3408,7 +3673,7 @@ def save_faculty_outcome_mappings(course_id):
             admin_supabase.table("course_outcome_student_outcomes").insert(
                 normalized
             ).execute()
-        for section_id in owned_section_ids:
+        for section_id in course_section_ids:
             _set_mapping_review_status(section_id, "pending")
         return jsonify({"saved_count": len(normalized)}), 200
     except ValueError:
@@ -4485,6 +4750,8 @@ def get_department_mapping_review(section_id):
     try:
         section_id = str(UUID(section_id))
         department_id = _department_head_department_id(g.authenticated_user.id)
+        if not department_id:
+            return jsonify({"error": "Your department profile is incomplete."}), 409
         section = _department_head_section(section_id, department_id)
         if not section:
             return jsonify({"error": "Section not found in your department."}), 404
@@ -4623,8 +4890,8 @@ def release_faculty_assessment(assessment_id):
         if not get_faculty_section(activity["section_id"]):
             return jsonify({"error": "Assessment is not in a section assigned to you."}), 403
         workspace = _faculty_assessment_workspace(activity["section_id"])
-        if workspace["gradebook_status"] == "locked":
-            return jsonify({"error": "This section's gradebook is locked."}), 409
+        if _gradebook_is_read_only(workspace["gradebook_status"]):
+            return jsonify({"error": "Assessment changes are read-only while the gradebook is under review or locked."}), 409
         if activity.get("released_at"):
             _calculate_section_attainment(activity["section_id"])
             return jsonify({
@@ -4652,8 +4919,10 @@ def release_faculty_assessment(assessment_id):
     except ValueError:
         return jsonify({"error": "Invalid assessment ID."}), 400
     except Exception as error:
-        if "gradebook is locked" in str(error).lower():
-            return jsonify({"error": "This section's gradebook is locked."}), 409
+        if any(term in str(error).lower() for term in (
+            "gradebook is locked", "submitted for review or locked",
+        )):
+            return jsonify({"error": "Assessment changes are read-only while the gradebook is under review or locked."}), 409
         app.logger.exception("Unable to release faculty assessment")
         return jsonify({"error": "Assessment could not be released."}), 500
 
@@ -4680,8 +4949,8 @@ def save_faculty_assessment_scores(assessment_id):
         if not get_faculty_section(activity["section_id"]):
             return jsonify({"error": "Assessment is not in a section assigned to you."}), 403
         workspace = _faculty_assessment_workspace(activity["section_id"])
-        if workspace["gradebook_status"] == "locked":
-            return jsonify({"error": "This section's gradebook is locked."}), 409
+        if _gradebook_is_read_only(workspace["gradebook_status"]):
+            return jsonify({"error": "Assessment changes are read-only while the gradebook is under review or locked."}), 409
 
         data = request.get_json(silent=True) or {}
         if not isinstance(data, dict):
@@ -4743,8 +5012,10 @@ def save_faculty_assessment_scores(assessment_id):
     except ValueError:
         return jsonify({"error": "Invalid assessment ID."}), 400
     except Exception as error:
-        if "gradebook is locked" in str(error).lower():
-            return jsonify({"error": "This section's gradebook is locked."}), 409
+        if any(term in str(error).lower() for term in (
+            "gradebook is locked", "submitted for review or locked",
+        )):
+            return jsonify({"error": "Assessment changes are read-only while the gradebook is under review or locked."}), 409
         app.logger.exception("Unable to save faculty assessment scores")
         return jsonify({"error": "Scores could not be saved."}), 500
 
@@ -5443,12 +5714,290 @@ def lock_department_head_gradebook(section_id):
     except ValueError:
         return jsonify({"error": "Invalid section ID."}), 400
     except Exception as error:
-        if "open assessment queries" in str(error).lower():
-            return jsonify({"error": "Resolve all open assessment queries before locking this gradebook."}), 409
-        if "already locked" in str(error).lower():
-            return jsonify({"error": "This gradebook is already locked."}), 409
+        if _is_gradebook_transition_conflict(error):
+            return jsonify({"error": str(error)}), 409
         app.logger.exception("Unable to lock department gradebook")
         return jsonify({"error": "Gradebook could not be locked."}), 500
+
+
+@app.get("/api/department-head/gradebooks")
+@require_role("department-head")
+def get_department_head_gradebooks():
+    if not admin_supabase:
+        return jsonify({"error": "Gradebooks are unavailable."}), 503
+    try:
+        department_id = _department_head_department_id(g.authenticated_user.id)
+        if not department_id:
+            return jsonify({"error": "Your department profile is incomplete."}), 409
+        courses = (
+            admin_supabase.table("courses")
+            .select("id, code, title")
+            .eq("department_id", department_id)
+            .execute()
+            .data
+            or []
+        )
+        course_by_id = {row["id"]: row for row in courses}
+        course_ids = list(course_by_id)
+        sections = []
+        if course_ids:
+            sections = (
+                admin_supabase.table("course_sections")
+                .select("id, course_id, section_name, academic_year_id, faculty_id")
+                .in_("course_id", course_ids)
+                .execute()
+                .data
+                or []
+            )
+        faculty_ids = list({
+            row["faculty_id"] for row in sections if row.get("faculty_id")
+        })
+        faculty_profiles = []
+        if faculty_ids:
+            faculty_profiles = (
+                admin_supabase.table("faculty_profiles")
+                .select("id, user_id")
+                .in_("id", faculty_ids)
+                .execute()
+                .data
+                or []
+            )
+        faculty_user_ids = list({
+            row["user_id"] for row in faculty_profiles if row.get("user_id")
+        })
+        faculty_users = []
+        if faculty_user_ids:
+            faculty_users = (
+                admin_supabase.table("users")
+                .select("id, full_name, email")
+                .in_("id", faculty_user_ids)
+                .execute()
+                .data
+                or []
+            )
+        user_by_id = {row["id"]: row for row in faculty_users}
+        faculty_by_profile = {
+            row["id"]: user_by_id.get(row.get("user_id"), {}).get(
+                "full_name"
+            ) or user_by_id.get(row.get("user_id"), {}).get("email")
+            or "Unassigned"
+            for row in faculty_profiles
+        }
+        year_ids = list({
+            row["academic_year_id"] for row in sections
+            if row.get("academic_year_id")
+        })
+        years = []
+        if year_ids:
+            years = (
+                admin_supabase.table("academic_years")
+                .select("id, name")
+                .in_("id", year_ids)
+                .execute()
+                .data
+                or []
+            )
+        year_by_id = {row["id"]: row.get("name", "") for row in years}
+
+        gradebooks = []
+        gradebook_ids = []
+        for section in sections:
+            workspace = _faculty_assessment_workspace(
+                section["id"], check_assignment=False
+            )
+            if not workspace:
+                continue
+            readiness = _gradebook_readiness(section["id"], workspace)
+            course = course_by_id[section["course_id"]]
+            gradebook = workspace.get("gradebook") or {}
+            if gradebook.get("id"):
+                gradebook_ids.append(gradebook["id"])
+            gradebooks.append({
+                "gradebook_id": gradebook.get("id"),
+                "section_id": section["id"],
+                "status": workspace["gradebook_status"],
+                "course_code": course.get("code", ""),
+                "course_title": course.get("title", ""),
+                "section_name": section.get("section_name", ""),
+                "faculty_name": faculty_by_profile.get(
+                    section.get("faculty_id"), "Unassigned"
+                ),
+                "academic_year_name": year_by_id.get(
+                    section.get("academic_year_id"), ""
+                ),
+                "student_count": readiness["student_count"],
+                "assessment_count": readiness["assessment_count"],
+                "missing_score_count": readiness["missing_score_count"],
+                "invalid_entry_count": readiness["invalid_entry_count"],
+                "unreleased_assessment_count": readiness[
+                    "unreleased_assessment_count"
+                ],
+                "unmapped_co_so_count": readiness["unmapped_co_so_count"],
+                "open_query_count": readiness["open_query_count"],
+                "mapping_verified": readiness["mapping_verified"],
+                "attainment_available": readiness["attainment_available"],
+                "ready": readiness["ready"],
+                "blockers": readiness["blockers"],
+                "history": [],
+            })
+        if gradebook_ids:
+            history_rows = (
+                admin_supabase.table("gradebook_history")
+                .select(
+                    "id, gradebook_id, user_id, action, from_status, "
+                    "to_status, reason, created_at"
+                )
+                .in_("gradebook_id", gradebook_ids)
+                .order("created_at", desc=True)
+                .limit(1000)
+                .execute()
+                .data
+                or []
+            )
+            actor_ids = list({
+                row["user_id"] for row in history_rows if row.get("user_id")
+            })
+            actors = []
+            if actor_ids:
+                actors = (
+                    admin_supabase.table("users")
+                    .select("id, full_name, email")
+                    .in_("id", actor_ids)
+                    .execute()
+                    .data
+                    or []
+                )
+            actor_by_id = {
+                row["id"]: row.get("full_name") or row.get("email") or "User"
+                for row in actors
+            }
+            history_by_gradebook = {}
+            for event in history_rows:
+                history_by_gradebook.setdefault(
+                    event["gradebook_id"], []
+                ).append({
+                    "action": event.get("action", ""),
+                    "from_status": event.get("from_status"),
+                    "to_status": event.get("to_status"),
+                    "reason": event.get("reason") or "",
+                    "actor": actor_by_id.get(event.get("user_id"), "User"),
+                    "timestamp": event.get("created_at"),
+                })
+            for item in gradebooks:
+                item["history"] = history_by_gradebook.get(
+                    item["gradebook_id"], []
+                )
+        return jsonify({"gradebooks": gradebooks}), 200
+    except Exception:
+        app.logger.exception("Unable to load Department Head gradebooks")
+        return jsonify({"error": "Gradebooks could not be loaded."}), 500
+
+
+@app.post("/api/department-head/sections/<section_id>/verify-gradebook")
+@require_role("department-head")
+def verify_department_head_gradebook(section_id):
+    if not admin_supabase:
+        return jsonify({"error": "Gradebook verification is unavailable."}), 503
+    try:
+        section_id = str(UUID(section_id))
+        department_id = _department_head_department_id(g.authenticated_user.id)
+        if not department_id:
+            return jsonify({"error": "Your department profile is incomplete."}), 409
+        section = _department_head_section(section_id, department_id)
+        if not section:
+            return jsonify({"error": "Section not found in your department."}), 404
+        workspace = _faculty_assessment_workspace(
+            section_id, check_assignment=False
+        )
+        if not workspace:
+            return jsonify({"error": "Section not found."}), 404
+        if workspace["gradebook_status"] != "for_verification":
+            return jsonify({
+                "error": "Only a submitted gradebook can be verified."
+            }), 409
+        readiness = _gradebook_readiness(section_id, workspace)
+        if not readiness["ready"]:
+            return jsonify({
+                "error": "Verification is blocked until all readiness issues are resolved.",
+                "readiness": readiness,
+            }), 409
+        data = request.get_json(silent=True) or {}
+        if not isinstance(data, dict):
+            return jsonify({"error": "Verification data must be a JSON object."}), 400
+        reason = data.get("remarks", "")
+        if not isinstance(reason, str) or len(reason) > 2000:
+            return jsonify({"error": "Verification remarks must be text up to 2,000 characters."}), 400
+        result = admin_supabase.rpc(
+            "verify_department_gradebook",
+            {
+                "p_section_id": section_id,
+                "p_actor_id": str(g.authenticated_user.id),
+                "p_reason": reason.strip() or None,
+            },
+        ).execute()
+        gradebook_id = result.data
+        if isinstance(gradebook_id, list):
+            gradebook_id = gradebook_id[0] if gradebook_id else None
+        if not gradebook_id:
+            raise RuntimeError("Gradebook verification returned no record.")
+        return jsonify({
+            "gradebook_id": str(gradebook_id),
+            "status": "verified",
+        }), 200
+    except ValueError:
+        return jsonify({"error": "Invalid section ID."}), 400
+    except Exception as error:
+        if _is_gradebook_transition_conflict(error):
+            return jsonify({"error": str(error)}), 409
+        app.logger.exception("Unable to verify Department Head gradebook")
+        return jsonify({"error": "Gradebook could not be verified."}), 500
+
+
+@app.post("/api/department-head/sections/<section_id>/reopen-gradebook")
+@require_role("department-head")
+def reopen_department_head_gradebook(section_id):
+    if not admin_supabase:
+        return jsonify({"error": "Gradebook reopening is unavailable."}), 503
+    try:
+        section_id = str(UUID(section_id))
+        department_id = _department_head_department_id(g.authenticated_user.id)
+        if not department_id:
+            return jsonify({"error": "Your department profile is incomplete."}), 409
+        section = _department_head_section(section_id, department_id)
+        if not section:
+            return jsonify({"error": "Section not found in your department."}), 404
+        data = request.get_json(silent=True) or {}
+        if not isinstance(data, dict):
+            return jsonify({"error": "Reopening data must be a JSON object."}), 400
+        reason = data.get("reason", "")
+        if not isinstance(reason, str) or not reason.strip():
+            return jsonify({"error": "A reason is required to reopen a gradebook."}), 400
+        if len(reason.strip()) > 2000:
+            return jsonify({"error": "Reopening reason must be 2,000 characters or fewer."}), 400
+        result = admin_supabase.rpc(
+            "reopen_department_gradebook",
+            {
+                "p_section_id": section_id,
+                "p_actor_id": str(g.authenticated_user.id),
+                "p_reason": reason.strip(),
+            },
+        ).execute()
+        gradebook_id = result.data
+        if isinstance(gradebook_id, list):
+            gradebook_id = gradebook_id[0] if gradebook_id else None
+        if not gradebook_id:
+            raise RuntimeError("Gradebook reopening returned no record.")
+        return jsonify({
+            "gradebook_id": str(gradebook_id),
+            "status": "reopened",
+        }), 200
+    except ValueError:
+        return jsonify({"error": "Invalid section ID."}), 400
+    except Exception as error:
+        if _is_gradebook_transition_conflict(error):
+            return jsonify({"error": str(error)}), 409
+        app.logger.exception("Unable to reopen Department Head gradebook")
+        return jsonify({"error": "Gradebook could not be reopened."}), 500
 
 @app.get("/api/student/course-outcomes")
 @require_role("student")
@@ -6977,6 +7526,105 @@ def admin_system_history_api():
                 "record": row.get("record_id") or row.get("table_name") or "—",
                 "details": row.get("details") or row.get("module") or "—",
             })
+        gradebook_history = (
+            admin_supabase.table("gradebook_history")
+            .select(
+                "id, gradebook_id, user_id, action, from_status, to_status, "
+                "reason, created_at"
+            )
+            .order("created_at", desc=True)
+            .limit(500)
+            .execute()
+            .data
+            or []
+        )
+        gradebook_ids = list({
+            row["gradebook_id"] for row in gradebook_history
+            if row.get("gradebook_id")
+        })
+        gradebooks = []
+        if gradebook_ids:
+            gradebooks = (
+                admin_supabase.table("gradebooks")
+                .select("id, section_id")
+                .in_("id", gradebook_ids)
+                .execute()
+                .data
+                or []
+            )
+        section_ids = list({
+            row["section_id"] for row in gradebooks if row.get("section_id")
+        })
+        sections = []
+        if section_ids:
+            sections = (
+                admin_supabase.table("course_sections")
+                .select("id, course_id, section_name")
+                .in_("id", section_ids)
+                .execute()
+                .data
+                or []
+            )
+        course_ids = list({
+            row["course_id"] for row in sections if row.get("course_id")
+        })
+        courses = []
+        if course_ids:
+            courses = (
+                admin_supabase.table("courses")
+                .select("id, code")
+                .in_("id", course_ids)
+                .execute()
+                .data
+                or []
+            )
+        course_by_id = {row["id"]: row.get("code", "") for row in courses}
+        section_by_id = {
+            row["id"]: course_by_id.get(row.get("course_id"), "") +
+            " · " + row.get("section_name", "")
+            for row in sections
+        }
+        section_by_gradebook = {
+            row["id"]: section_by_id.get(row.get("section_id"), "")
+            for row in gradebooks
+        }
+        actor_ids = list({
+            row["user_id"] for row in gradebook_history if row.get("user_id")
+        })
+        gradebook_actors = []
+        if actor_ids:
+            gradebook_actors = (
+                admin_supabase.table("users")
+                .select("id, full_name, email")
+                .in_("id", actor_ids)
+                .execute()
+                .data
+                or []
+            )
+        gradebook_actor_by_id = {
+            row["id"]: row.get("full_name") or row.get("email") or "User"
+            for row in gradebook_actors
+        }
+        for row in gradebook_history:
+            events.append({
+                "id": "gradebook-" + str(row.get("id", "")),
+                "timestamp": row.get("created_at"),
+                "level": "INFO",
+                "event": "Gradebook " + (row.get("action") or "updated"),
+                "actor": gradebook_actor_by_id.get(row.get("user_id"), "User"),
+                "record": section_by_gradebook.get(
+                    row.get("gradebook_id"), "Gradebook"
+                ),
+                "details": row.get("reason") or (
+                    (row.get("from_status") or "—") + " → " +
+                    (row.get("to_status") or "—")
+                ),
+            })
+        events.sort(
+            key=lambda event: event.get("timestamp") or "",
+            reverse=True,
+        )
+        events = events[:500]
         return jsonify({"events": events, "count": len(events)})
     except Exception:
         app.logger.exception("Unable to load admin system history")

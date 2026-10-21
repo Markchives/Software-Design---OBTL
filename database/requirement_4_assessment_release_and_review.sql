@@ -41,19 +41,40 @@ CREATE OR REPLACE FUNCTION prevent_locked_assessment_changes()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    v_section_id UUID;
 BEGIN
+    IF TG_OP = 'DELETE' THEN
+        v_section_id := OLD.section_id;
+    ELSE
+        v_section_id := NEW.section_id;
+    END IF;
     PERFORM 1
     FROM course_sections
-    WHERE id = NEW.section_id
+    WHERE id = v_section_id
     FOR UPDATE;
     IF NOT FOUND THEN
+        IF TG_OP = 'DELETE' THEN
+            RETURN OLD;
+        END IF;
         RAISE EXCEPTION 'Assessment section does not exist.';
     END IF;
-    IF EXISTS (
+    IF TG_TABLE_NAME = 'assessment_review_flags' THEN
+        IF EXISTS (
+            SELECT 1 FROM gradebooks
+            WHERE section_id = v_section_id AND status = 'locked'
+        ) THEN
+            RAISE EXCEPTION 'Gradebook is locked.';
+        END IF;
+    ELSIF EXISTS (
         SELECT 1 FROM gradebooks
-        WHERE section_id = NEW.section_id AND status = 'locked'
+        WHERE section_id = v_section_id
+          AND status IN ('for_verification', 'verified', 'locked')
     ) THEN
-        RAISE EXCEPTION 'Gradebook is locked.';
+        RAISE EXCEPTION 'Gradebook is submitted for review or locked.';
+    END IF;
+    IF TG_OP = 'DELETE' THEN
+        RETURN OLD;
     END IF;
     RETURN NEW;
 END;
@@ -62,21 +83,21 @@ $$;
 DROP TRIGGER IF EXISTS assessment_activities_locked_guard
     ON assessment_activities;
 CREATE TRIGGER assessment_activities_locked_guard
-BEFORE INSERT OR UPDATE ON assessment_activities
+BEFORE INSERT OR UPDATE OR DELETE ON assessment_activities
 FOR EACH ROW
 EXECUTE FUNCTION prevent_locked_assessment_changes();
 
 DROP TRIGGER IF EXISTS raw_assessment_scores_locked_guard
     ON raw_assessment_scores;
 CREATE TRIGGER raw_assessment_scores_locked_guard
-BEFORE INSERT OR UPDATE ON raw_assessment_scores
+BEFORE INSERT OR UPDATE OR DELETE ON raw_assessment_scores
 FOR EACH ROW
 EXECUTE FUNCTION prevent_locked_assessment_changes();
 
 DROP TRIGGER IF EXISTS assessment_review_flags_locked_guard
     ON assessment_review_flags;
 CREATE TRIGGER assessment_review_flags_locked_guard
-BEFORE INSERT OR UPDATE ON assessment_review_flags
+BEFORE INSERT OR UPDATE OR DELETE ON assessment_review_flags
 FOR EACH ROW
 EXECUTE FUNCTION prevent_locked_assessment_changes();
 
@@ -140,58 +161,42 @@ SET search_path = public
 AS $$
 DECLARE
     v_gradebook_id UUID;
-    v_from_status TEXT;
+    v_status TEXT;
+    v_actual_academic_year_id UUID;
 BEGIN
-    PERFORM 1
+    SELECT academic_year_id INTO v_actual_academic_year_id
     FROM course_sections
     WHERE id = p_section_id
     FOR UPDATE;
     IF NOT FOUND THEN
         RAISE EXCEPTION 'Section does not exist.';
     END IF;
-
-    IF EXISTS (
-        SELECT 1
-        FROM assessment_review_flags
-        WHERE section_id = p_section_id
-          AND status <> 'resolved'
-    ) THEN
-        RAISE EXCEPTION 'Resolve open assessment queries before locking.';
+    IF v_actual_academic_year_id IS DISTINCT FROM p_academic_year_id THEN
+        RAISE EXCEPTION 'The section academic year changed; reload and retry.';
     END IF;
 
     SELECT id, status
-    INTO v_gradebook_id, v_from_status
+    INTO v_gradebook_id, v_status
     FROM gradebooks
     WHERE section_id = p_section_id
     FOR UPDATE;
-
-    IF FOUND THEN
-        IF v_from_status = 'locked' THEN
-            RAISE EXCEPTION 'Gradebook is already locked.';
-        END IF;
-        UPDATE gradebooks
-        SET status = 'locked',
-            locked_by = p_actor_id,
-            locked_at = NOW(),
-            updated_at = NOW()
-        WHERE id = v_gradebook_id;
-    ELSE
-        v_from_status := 'draft';
-        INSERT INTO gradebooks (
-            section_id, academic_year_id, status, locked_by, locked_at
-        )
-        VALUES (
-            p_section_id, p_academic_year_id, 'locked', p_actor_id, NOW()
-        )
-        RETURNING id INTO v_gradebook_id;
+    IF NOT FOUND OR v_status <> 'verified' THEN
+        RAISE EXCEPTION 'Only a verified gradebook can be locked.';
     END IF;
+    PERFORM assert_gradebook_readiness(p_section_id);
+    UPDATE gradebooks
+    SET status = 'locked',
+        locked_by = p_actor_id,
+        locked_at = NOW(),
+        updated_at = NOW()
+    WHERE id = v_gradebook_id;
 
     INSERT INTO gradebook_history (
         gradebook_id, user_id, action, from_status, to_status, reason
     )
     VALUES (
-        v_gradebook_id, p_actor_id, 'locked', v_from_status, 'locked',
-        'Department Head approved the gradebook lock.'
+        v_gradebook_id, p_actor_id, 'locked', v_status, 'locked',
+        'Department Head locked the verified gradebook.'
     );
     RETURN v_gradebook_id;
 END;
