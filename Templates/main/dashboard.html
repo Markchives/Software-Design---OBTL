@@ -33,16 +33,17 @@
 <section aria-label="Student welcome" class="sd-welcome">
 <div aria-hidden="true" class="sd-welcome-art"><span aria-hidden="true" class="sd-icon-placeholder">●</span></div>
 <div class="sd-welcome-content"><div class="sd-welcome-label">WELCOME BACK</div>
-<h1>Welcome back!</h1>
+<h1 data-dashboard-profile="name">Welcome back!</h1>
 <p>Your learning journey continues.</p>
-<div class="sd-student-details"><div class="sd-detail"><span class="sd-detail-icon"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span><span><small>Student Number</small><strong>—</strong></span></div><div class="sd-detail"><span class="sd-detail-icon"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span><span><small>Program</small><strong>—</strong></span></div></div></div>
+<div class="sd-student-details"><div class="sd-detail"><span class="sd-detail-icon"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span><span><small>Student Number</small><strong data-dashboard-profile="id_number">—</strong></span></div><div class="sd-detail"><span class="sd-detail-icon"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span><span><small>Program</small><strong data-dashboard-profile="affiliation">—</strong></span></div></div></div>
 </section>
 <section aria-label="Student academic summary" class="sd-metrics">
-<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span> ENROLLED COURSES</div><strong class="sd-number">0 <small>courses</small></strong><span class="sd-caption">This academic semester</span></article>
-<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon amber"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span> PENDING ASSESSMENTS</div><strong class="sd-number">0 </strong><span class="sd-caption">0 due this week</span></article>
-<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon green"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span> SO COMPLETION</div><strong class="sd-number">0 <small>%</small></strong><div class="sd-bar"><span style="width:0%"></span></div></article>
-<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon purple"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span> AVAILABLE SYLLABI</div><strong class="sd-number">0 <small>of 0</small></strong><span class="sd-caption">Uploaded by your faculty</span></article>
+<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span> ENROLLED COURSES</div><strong class="sd-number" data-dashboard-value="student-courses">—</strong><span class="sd-caption">Active course enrollments</span></article>
+<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon amber"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span> PENDING SO SELF-ASSESSMENTS</div><strong class="sd-number" data-dashboard-value="student-pending-assessments">—</strong><span class="sd-caption" data-dashboard-caption="student-due-week">Loading due dates…</span></article>
+<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon green"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span> SO COMPLETION</div><strong class="sd-number" data-dashboard-value="student-so-completion">—</strong><div class="sd-bar"><span data-dashboard-progress="student-so-completion" style="width:0%"></span></div></article>
+<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon purple"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span> AVAILABLE SYLLABI</div><strong class="sd-number" data-dashboard-value="student-syllabi">—</strong><span class="sd-caption">Uploaded by your faculty</span></article>
 </section>
+<p aria-live="polite" class="sd-post-status" data-dashboard-status role="status">Loading dashboard data…</p>
 <div class="sd-main-grid">
 <section aria-label="Class updates" class="sd-card sd-updates">
 <div class="sd-updates-head"><div><h2>Class Updates</h2><p class="sd-muted">Latest announcements and posts from your instructors.</p></div><select aria-label="Filter class updates by course" class="sd-filter" id="sdCourseFilter"><option value="all">All Courses</option></select></div>
@@ -53,9 +54,9 @@
 <section aria-label="Academic performance" class="sd-card sd-academic">
 <div class="sd-academic-head"><div><h2>My Academic Performance</h2><p class="sd-muted">Track published course grades and review assessment scores.</p></div><a class="sd-action" href="gradebook-student.html">View Gradebook →</a></div>
 <div class="sd-academic-grid">
-<article class="sd-academic-stat"><span>TERM AVERAGE</span><strong>—</strong><p>No published grades yet</p></article>
-<article class="sd-academic-stat"><span>COURSES WITH GRADES</span><strong>0<small> / 0</small></strong><p>No course grades available yet</p></article>
-<article class="sd-academic-stat"><span>GRADED ASSESSMENTS</span><strong>0<small> / 0</small></strong><p>No graded assessments yet</p></article>
+<article class="sd-academic-stat"><span>ASSESSMENT AVERAGE</span><strong data-dashboard-value="student-average">—</strong><p data-dashboard-caption="student-average">Based on released assessment scores</p></article>
+<article class="sd-academic-stat"><span>COURSES WITH SCORES</span><strong data-dashboard-value="student-courses-with-scores">—</strong><p>Courses with at least one released score</p></article>
+<article class="sd-academic-stat"><span>RELEASED ASSESSMENTS</span><strong data-dashboard-value="student-released-assessments">—</strong><p data-dashboard-caption="student-released-assessments">Released assessments with scores</p></article>
 </div>
 </section>
 </div>
@@ -63,16 +64,17 @@
 <section aria-label="Faculty welcome" class="sd-welcome">
 <div aria-hidden="true" class="sd-welcome-art"></div>
 <div class="sd-welcome-content"><div class="sd-welcome-label">WELCOME BACK</div>
-<h1>Welcome back!</h1>
+<h1 data-dashboard-profile="name">Welcome back!</h1>
 <p>Manage your classes, assessments, and student progress.</p>
-<div class="sd-student-details"><div class="sd-detail"><span class="sd-detail-icon"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span><span><small>Employee ID</small><strong>—</strong></span></div><div class="sd-detail"><span class="sd-detail-icon"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span><span><small>Department</small><strong>—</strong></span></div></div></div>
+<div class="sd-student-details"><div class="sd-detail"><span class="sd-detail-icon"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span><span><small>Employee ID</small><strong data-dashboard-profile="id_number">—</strong></span></div><div class="sd-detail"><span class="sd-detail-icon"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span><span><small>Department</small><strong data-dashboard-profile="affiliation">—</strong></span></div></div></div>
 </section>
 <section aria-label="Faculty academic summary" class="sd-metrics">
-<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span> ASSIGNED COURSES</div><strong class="sd-number">0<small> courses</small></strong><span class="sd-caption">This academic semester</span></article>
-<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon amber"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span> PENDING GRADING</div><strong class="sd-number">0</strong><span class="sd-caption">Assessments to review</span></article>
-<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon green"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span> SO ATTAINMENT</div><strong class="sd-number">0<small> %</small></strong><div class="sd-bar"><span style="width:0%"></span></div><span class="sd-caption">Across assigned courses</span></article>
-<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon purple"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span> PUBLISHED GRADES</div><strong class="sd-number">0<small> of 0</small></strong><span class="sd-caption">Course gradebooks updated</span></article>
+<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span> ASSIGNED COURSES</div><strong class="sd-number" data-dashboard-value="faculty-courses">—</strong><span class="sd-caption">Courses with assigned sections</span></article>
+<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon amber"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span> PENDING GRADING</div><strong class="sd-number" data-dashboard-value="faculty-pending-grading">—</strong><span class="sd-caption">Student scores still missing</span></article>
+<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon green"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span> CO ATTAINMENT</div><strong class="sd-number" data-dashboard-value="faculty-attainment">—</strong><div class="sd-bar"><span data-dashboard-progress="faculty-attainment" style="width:0%"></span></div><span class="sd-caption">Across assigned courses</span></article>
+<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon purple"><span aria-hidden="true" class="sd-icon-placeholder">●</span></span> REVIEWED GRADEBOOKS</div><strong class="sd-number" data-dashboard-value="faculty-reviewed-gradebooks">—</strong><span class="sd-caption">Verified or locked gradebooks</span></article>
 </section>
+<p aria-live="polite" class="sd-post-status" data-dashboard-status role="status">Loading dashboard data…</p>
 <div class="sd-main-grid">
 <section aria-label="Class updates" class="sd-card sd-updates">
 <div class="sd-updates-head"><div><h2>Faculty Updates</h2><p class="sd-muted">Recent course activity and teaching reminders.</p></div><div class="sd-update-controls"><button type="button" class="sd-create-post-btn" data-create-post>+ Create Post</button><select aria-label="Filter class updates by course" class="sd-filter" id="sdCourseFilter"><option value="all">All Assigned Courses</option></select></div></div>
@@ -83,25 +85,26 @@
 <section aria-label="Teaching Overview" class="sd-card sd-academic">
 <div class="sd-academic-head"><div><h2>Teaching Overview</h2><p class="sd-muted">Review assessment progress and grading activity.</p></div><a class="sd-action" href="gradebook-faculty.html">Open Gradebook →</a></div>
 <div class="sd-academic-grid">
-<article class="sd-academic-stat"><span>ASSESSMENTS GRADED</span><strong>0<small> / 0</small></strong><p>No graded assessments yet</p></article>
-<article class="sd-academic-stat"><span>COURSES WITH PUBLISHED GRADES</span><strong>0<small> / 0</small></strong><p>No published course grades yet</p></article>
-<article class="sd-academic-stat"><span>PENDING ASSESSMENTS</span><strong>0</strong><p>No pending assessments yet</p></article></div>
+<article class="sd-academic-stat"><span>FULLY SCORED ASSESSMENTS</span><strong data-dashboard-value="faculty-fully-scored">—</strong><p>Assessment activities with every student score entered</p></article>
+<article class="sd-academic-stat"><span>COURSES WITH REVIEWED GRADEBOOKS</span><strong data-dashboard-value="faculty-reviewed-courses">—</strong><p>Courses with verified or locked gradebooks</p></article>
+<article class="sd-academic-stat"><span>ASSESSMENTS NEEDING SCORES</span><strong data-dashboard-value="faculty-incomplete-assessments">—</strong><p>Assessment activities with missing student scores</p></article></div>
 </section>
 </div>
 </div></template><template id="dashboard-template-dept-head"><div class="sd-wrap">
 <section aria-label="Department Head welcome" class="sd-welcome">
 <div aria-hidden="true" class="sd-welcome-art"></div>
 <div class="sd-welcome-content"><div class="sd-welcome-label">WELCOME BACK</div>
-<h1>Welcome back!</h1>
+<h1 data-dashboard-profile="name">Welcome back!</h1>
 <p>Monitor academic performance and outcome attainment across your department.</p>
-<div class="sd-student-details"><div class="sd-detail"><span class="sd-detail-icon"><span aria-hidden="true" class="sd-icon-placeholder">•</span></span><span><small>Employee ID</small><strong>—</strong></span></div><div class="sd-detail"><span class="sd-detail-icon"><span aria-hidden="true" class="sd-icon-placeholder">•</span></span><span><small>Department</small><strong>—</strong></span></div></div></div>
+<div class="sd-student-details"><div class="sd-detail"><span class="sd-detail-icon"><span aria-hidden="true" class="sd-icon-placeholder">•</span></span><span><small>Employee ID</small><strong data-dashboard-profile="id_number">—</strong></span></div><div class="sd-detail"><span class="sd-detail-icon"><span aria-hidden="true" class="sd-icon-placeholder">•</span></span><span><small>Department</small><strong data-dashboard-profile="affiliation">—</strong></span></div></div></div>
 </section>
 <section aria-label="Department Head academic summary" class="sd-metrics">
-<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon"><span aria-hidden="true" class="sd-icon-placeholder">•</span></span> TOTAL COURSES</div><strong class="sd-number">0<small> courses</small></strong><span class="sd-caption">Across the department</span></article>
-<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon amber"><span aria-hidden="true" class="sd-icon-placeholder">•</span></span> FACULTY MEMBERS</div><strong class="sd-number">0</strong><span class="sd-caption">Active faculty members</span></article>
-<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon green"><span aria-hidden="true" class="sd-icon-placeholder">•</span></span> SO ATTAINMENT</div><strong class="sd-number">0<small> %</small></strong><div class="sd-bar"><span style="width:0%"></span></div><span class="sd-caption">Department-wide attainment</span></article>
-<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon purple"><span aria-hidden="true" class="sd-icon-placeholder">•</span></span> PENDING REVIEWS</div><strong class="sd-number">0</strong><span class="sd-caption">Items requiring attention</span></article>
+<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon"><span aria-hidden="true" class="sd-icon-placeholder">•</span></span> TOTAL COURSES</div><strong class="sd-number" data-dashboard-value="dept-courses">—</strong><span class="sd-caption">Across the department</span></article>
+<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon amber"><span aria-hidden="true" class="sd-icon-placeholder">•</span></span> FACULTY MEMBERS</div><strong class="sd-number" data-dashboard-value="dept-faculty">—</strong><span class="sd-caption">Active faculty members</span></article>
+<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon green"><span aria-hidden="true" class="sd-icon-placeholder">•</span></span> CO ATTAINMENT</div><strong class="sd-number" data-dashboard-value="dept-attainment">—</strong><div class="sd-bar"><span data-dashboard-progress="dept-attainment" style="width:0%"></span></div><span class="sd-caption">Department-wide attainment</span></article>
+<article class="sd-card sd-metric"><div class="sd-label"><span class="sd-icon purple"><span aria-hidden="true" class="sd-icon-placeholder">•</span></span> PENDING REVIEWS</div><strong class="sd-number" data-dashboard-value="dept-pending-reviews">—</strong><span class="sd-caption">Items requiring attention</span></article>
 </section>
+<p aria-live="polite" class="sd-post-status" data-dashboard-status role="status">Loading dashboard data…</p>
 <div class="sd-main-grid">
 <section aria-label="Class updates" class="sd-card sd-updates">
 <div class="sd-updates-head"><div><h2>Department Updates</h2><p class="sd-muted">Latest department notices and academic reviews.</p></div><div class="sd-update-controls"><button type="button" class="sd-create-post-btn" data-create-post>+ Create Post</button><select aria-label="Filter class updates by course" class="sd-filter" id="sdCourseFilter"><option value="all">All Department Updates</option></select></div></div>
@@ -112,9 +115,9 @@
 <section aria-label="Department Performance" class="sd-card sd-academic">
 <div class="sd-academic-head"><div><h2>Department Performance</h2><p class="sd-muted">Department-wide academic quality indicators.</p></div><div><a class="sd-action" href="so-dept-head.html">View SO Summary →</a></div></div>
 <div class="sd-academic-grid">
-<article class="sd-academic-stat"><span>DEPARTMENT SO ATTAINMENT</span><strong>—</strong><p>No attainment results available yet</p></article>
-<article class="sd-academic-stat"><span>COURSES MEETING TARGETS</span><strong>0<small> / 0</small></strong><p>No evaluated courses yet</p></article>
-<article class="sd-academic-stat"><span>PENDING FACULTY REVIEWS</span><strong>0</strong><p>No pending reviews yet</p></article></div>
+<article class="sd-academic-stat"><span>DEPARTMENT CO ATTAINMENT</span><strong data-dashboard-value="dept-academic-attainment">—</strong><p>Average across evaluated course outcomes</p></article>
+<article class="sd-academic-stat"><span>COURSE OUTCOMES MEETING TARGETS</span><strong data-dashboard-value="dept-outcomes-meeting-target">—</strong><p>Evaluated outcomes meeting their target</p></article>
+<article class="sd-academic-stat"><span>PENDING FACULTY REVIEWS</span><strong data-dashboard-value="dept-academic-pending-reviews">—</strong><p>Gradebooks and outcome mappings awaiting review</p></article></div>
 </section>
 </div>
 </div></template></main>

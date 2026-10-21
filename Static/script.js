@@ -8092,6 +8092,241 @@ document.addEventListener("DOMContentLoaded", function () {
     sessionStorage.setItem('userRole', selected);
 })();
 
+/* Populate role-specific dashboard metrics from authenticated, role-scoped APIs. */
+(function () {
+    const root = document.getElementById('dashboardRoleContent');
+    const role = document.body.dataset.dashboardRole;
+    const status = root?.querySelector('[data-dashboard-status]');
+    if (!root || !status || !['student', 'faculty', 'department-head'].includes(role)) return;
+
+    async function api(url) {
+        const response = await fetch(url, {
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin'
+        });
+        if (!(response.headers.get('content-type') || '').includes('application/json')) {
+            throw new Error('The server did not return dashboard data. Sign in again and retry.');
+        }
+        let result;
+        try {
+            result = await response.json();
+        } catch (_) {
+            throw new Error('The server returned an invalid dashboard response.');
+        }
+        if (!response.ok) throw new Error(result.error || 'Dashboard data could not be loaded.');
+        return result;
+    }
+
+    function setValue(key, value, detail) {
+        const target = root.querySelector('[data-dashboard-value="' + key + '"]');
+        if (!target) return;
+        target.replaceChildren(document.createTextNode(String(value)));
+        if (detail !== undefined && detail !== null) {
+            const small = document.createElement('small');
+            small.textContent = String(detail);
+            target.appendChild(small);
+        }
+    }
+
+    function setCaption(key, value) {
+        const target = root.querySelector('[data-dashboard-caption="' + key + '"]');
+        if (target) target.textContent = value;
+    }
+
+    function setProgress(key, value) {
+        const target = root.querySelector('[data-dashboard-progress="' + key + '"]');
+        if (target) {
+            const percent = Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
+            target.style.width = percent + '%';
+        }
+    }
+
+    function setProfile(profile) {
+        root.querySelectorAll('[data-dashboard-profile]').forEach(function (target) {
+            const field = target.dataset.dashboardProfile;
+            const value = field === 'name' ? profile.full_name : profile[field];
+            target.textContent = value || (field === 'name' ? 'Welcome back!' : '—');
+        });
+    }
+
+    function uniqueCount(rows, key) {
+        return new Set(rows.map(row => row[key]).filter(Boolean)).size;
+    }
+
+    function average(values) {
+        const available = values.map(Number).filter(Number.isFinite);
+        return available.length
+            ? available.reduce((total, value) => total + value, 0) / available.length
+            : null;
+    }
+
+    async function loadStudentDashboard() {
+        const [profileData, coursesData, soData, syllabiData, scoresData] = await Promise.all([
+            api('/api/account/profile'),
+            api('/api/student/courses'),
+            api('/api/student/so-assessments'),
+            api('/api/student/syllabi'),
+            api('/api/student/assessment-scores')
+        ]);
+        setProfile(profileData.profile || {});
+
+        const courses = coursesData.courses || [];
+        const assessments = soData.assessments || [];
+        const syllabi = syllabiData.syllabi || [];
+        const scores = scoresData.assessments || [];
+        const courseCount = uniqueCount(courses, 'course_code');
+        const today = new Date();
+        const todayUtc = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+        const dueThisWeek = assessments.filter(function (assessment) {
+            if (!assessment.due_date) return false;
+            const due = new Date(assessment.due_date + 'T00:00:00Z').getTime();
+            const days = (due - todayUtc) / 86400000;
+            return days >= 0 && days <= 7;
+        }).length;
+        const totalSoAssessments = Number(soData.assessment_total) || 0;
+        const completedSoAssessments = Number(soData.assessment_completed) || 0;
+        const soCompletion = totalSoAssessments
+            ? Math.round(completedSoAssessments / totalSoAssessments * 100)
+            : null;
+        const releasedScores = scores.filter(row => row.has_score &&
+            row.percentage !== null && row.percentage !== undefined &&
+            Number.isFinite(Number(row.percentage)));
+        const assessmentAverage = average(releasedScores.map(row => row.percentage));
+        const coursesWithScores = uniqueCount(releasedScores, 'course_code');
+
+        setValue('student-courses', courseCount, 'courses');
+        setValue('student-pending-assessments', assessments.length);
+        setCaption('student-due-week', dueThisWeek + ' due this week');
+        setValue('student-so-completion', soCompletion === null ? '—' : soCompletion, soCompletion === null ? null : '%');
+        setProgress('student-so-completion', soCompletion || 0);
+        setValue('student-syllabi', syllabi.length, 'of ' + courses.length);
+        setValue('student-average', assessmentAverage === null ? '—' : Math.round(assessmentAverage) + '%');
+        setCaption('student-average', releasedScores.length
+            ? 'Average of ' + releasedScores.length + ' released assessment scores'
+            : 'No released assessment scores yet');
+        setValue('student-courses-with-scores', coursesWithScores, '/ ' + courseCount);
+        const totalAssessments = scores.length;
+        setValue('student-released-assessments', releasedScores.length, '/ ' + totalAssessments);
+        setCaption('student-released-assessments', releasedScores.length
+            ? 'Released assessments with a recorded score'
+            : 'No released assessments with scores yet');
+    }
+
+    async function loadFacultyDashboard() {
+        const [profileData, sectionData] = await Promise.all([
+            api('/api/account/profile'),
+            api('/api/faculty/sections')
+        ]);
+        setProfile(profileData.profile || {});
+        const sections = sectionData.sections || [];
+        let attainmentUnavailable = false;
+        const sectionResults = await Promise.all(sections.map(async function (section) {
+            const base = '/api/faculty/sections/' + encodeURIComponent(section.section_id);
+            const workspace = await api(base + '/assessments');
+            let attainment = null;
+            try {
+                attainment = await api(base + '/attainment');
+            } catch {
+                attainmentUnavailable = true;
+            }
+            return { workspace, attainment };
+        }));
+
+        const courseCount = uniqueCount(sections, 'course_id');
+        let missingScores = 0;
+        let incompleteAssessments = 0;
+        let fullyScoredAssessments = 0;
+        let assessmentCount = 0;
+        let reviewedSections = 0;
+        const attainmentValues = [];
+        sectionResults.forEach(function (result) {
+            const workspace = result.workspace;
+            const students = workspace.students || [];
+            const activities = workspace.assessments || [];
+            const readiness = workspace.gradebook_readiness || {};
+            missingScores += Number(readiness.missing_score_count) || 0;
+            assessmentCount += activities.length;
+            activities.forEach(function (activity) {
+                const activityScores = activity.scores || {};
+                const complete = students.length > 0 && students.every(function (student) {
+                    const score = activityScores[student.student_profile_id];
+                    return score && score.score !== null && score.score !== undefined;
+                });
+                if (complete) fullyScoredAssessments += 1;
+                else if (students.length) incompleteAssessments += 1;
+            });
+            if (['verified', 'locked'].includes(workspace.gradebook_status)) reviewedSections += 1;
+            (result.attainment?.outcomes || []).forEach(function (outcome) {
+                if (outcome.attainment_percentage !== null && outcome.attainment_percentage !== undefined) {
+                    attainmentValues.push(outcome.attainment_percentage);
+                }
+            });
+        });
+        const attainment = average(attainmentValues);
+
+        setValue('faculty-courses', courseCount, 'courses');
+        setValue('faculty-pending-grading', missingScores);
+        setValue('faculty-attainment', attainment === null ? '—' : Math.round(attainment), attainment === null ? null : '%');
+        setProgress('faculty-attainment', attainment || 0);
+        setValue('faculty-reviewed-gradebooks', reviewedSections, 'of ' + sections.length);
+        setValue('faculty-fully-scored', fullyScoredAssessments, '/ ' + assessmentCount);
+        setValue('faculty-reviewed-courses', uniqueCount(
+            sections.filter((section, index) => ['verified', 'locked'].includes(sectionResults[index]?.workspace.gradebook_status)),
+            'course_id'
+        ), '/ ' + courseCount);
+        setValue('faculty-incomplete-assessments', incompleteAssessments);
+        if (attainmentUnavailable) {
+            status.textContent = attainment === null
+                ? 'CO attainment is not available for your assigned sections; other dashboard data is current.'
+                : 'Some section CO attainment could not be loaded; the displayed average uses available sections.';
+        }
+    }
+
+    async function loadDepartmentHeadDashboard() {
+        const [profileData, overviewData, gradebookData, mappingData, reviewData] = await Promise.all([
+            api('/api/account/profile'),
+            api('/api/outcomes/overview'),
+            api('/api/department-head/gradebooks'),
+            api('/api/department-head/mapping-reviews'),
+            api('/api/department-head/assessment-reviews')
+        ]);
+        setProfile(profileData.profile || {});
+
+        const metrics = overviewData.metrics || {};
+        const coOutcomes = overviewData.co_summary || [];
+        const evaluatedOutcomes = coOutcomes.filter(row => row.attainment_percentage !== null && row.attainment_percentage !== undefined);
+        const attainment = average(evaluatedOutcomes.map(row => row.attainment_percentage));
+        const meetingTarget = evaluatedOutcomes.filter(row => Number(row.attainment_percentage) >= Number(row.target_percentage)).length;
+        const gradebooks = gradebookData.gradebooks || [];
+        const mappingReviews = mappingData.reviews || [];
+        const openFlags = (reviewData.flags || []).filter(row => row.status === 'open').length;
+        const pendingGradebooks = gradebooks.filter(row => row.status === 'for_verification').length;
+        const pendingMappings = mappingReviews.filter(row => ['pending', 'submitted', 'pending_review'].includes(row.status)).length;
+        const pendingReviews = pendingGradebooks + pendingMappings + openFlags;
+
+        setValue('dept-courses', Number(metrics.courses) || 0, 'courses');
+        setValue('dept-faculty', Number(metrics.faculty) || 0);
+        setValue('dept-attainment', attainment === null ? '—' : Math.round(attainment), attainment === null ? null : '%');
+        setProgress('dept-attainment', attainment || 0);
+        setValue('dept-pending-reviews', pendingReviews);
+        setValue('dept-academic-attainment', attainment === null ? '—' : Math.round(attainment) + '%');
+        setValue('dept-outcomes-meeting-target', meetingTarget, '/ ' + evaluatedOutcomes.length);
+        setValue('dept-academic-pending-reviews', pendingReviews);
+    }
+
+    (async function () {
+        try {
+            if (role === 'student') await loadStudentDashboard();
+            else if (role === 'faculty') await loadFacultyDashboard();
+            else await loadDepartmentHeadDashboard();
+            if (status.textContent === 'Loading dashboard data…') status.textContent = '';
+        } catch (error) {
+            status.textContent = error.message || 'Dashboard data could not be loaded. Refresh the page to try again.';
+            status.setAttribute('data-error', 'true');
+        }
+    })();
+})();
+
 
 /* Shared profile menu: dashboard and account settings use the existing avatar. */
 (function () {

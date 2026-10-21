@@ -6600,7 +6600,10 @@ def student_so_assessments():
     try:
         profile = _account_profile("student", g.authenticated_user.id, "id")
         if not profile:
-            return jsonify({"assessments": [], "profile_complete": False}), 200
+            return jsonify({
+                "assessments": [], "profile_complete": False,
+                "assessment_total": 0, "assessment_completed": 0,
+            }), 200
         enrollment_rows = admin_supabase.table("enrollments").select("section_id").eq(
             "student_profile_id", profile["id"]
         ).eq("enrollment_status", "active").execute().data or []
@@ -6609,13 +6612,19 @@ def student_so_assessments():
         if section_ids is None:
             return jsonify({"error": "You are not actively enrolled in this section."}), 403
         if not section_ids:
-            return jsonify({"assessments": [], "profile_complete": True}), 200
+            return jsonify({
+                "assessments": [], "profile_complete": True,
+                "assessment_total": 0, "assessment_completed": 0,
+            }), 200
         reviews = admin_supabase.table("course_mapping_reviews").select(
             "section_id, status"
         ).in_("section_id", section_ids).execute().data or []
         verified_ids = [row["section_id"] for row in reviews if row.get("status") == "verified"]
         if not verified_ids:
-            return jsonify({"assessments": [], "profile_complete": True}), 200
+            return jsonify({
+                "assessments": [], "profile_complete": True,
+                "assessment_total": 0, "assessment_completed": 0,
+            }), 200
         rows = admin_supabase.table("so_self_assessments").select(
             "id, section_id, student_outcome_id, title, due_date, performance_indicators, rating_scale, status"
         ).in_("section_id", verified_ids).eq("status", "open").order("due_date").execute().data or []
@@ -6627,6 +6636,7 @@ def student_so_assessments():
             "assessment_id", [row["id"] for row in rows]
         ).execute().data if rows else []
         completed = {row["assessment_id"] for row in (response_rows or [])}
+        assessment_total = len(rows)
         rows = [row for row in rows if row["id"] not in completed]
         section_rows = admin_supabase.table("course_sections").select(
             "id, course_id, section_name, academic_term_id"
@@ -6667,7 +6677,12 @@ def student_so_assessments():
                 "syllabus_url": signed_syllabus_url(syllabus, download=False) if syllabus else None,
                 "syllabus_download_url": signed_syllabus_url(syllabus) if syllabus else None,
             })
-        return jsonify({"assessments": result, "profile_complete": True}), 200
+        return jsonify({
+            "assessments": result,
+            "profile_complete": True,
+            "assessment_total": assessment_total,
+            "assessment_completed": len(completed),
+        }), 200
     except Exception:
         app.logger.exception("Unable to load student SO assessments")
         return jsonify({"error": "SO assessments could not be loaded."}), 500
