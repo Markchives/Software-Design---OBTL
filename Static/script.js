@@ -9493,12 +9493,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     cell.textContent = value || "?";
                     row.appendChild(cell);
                 });
-            const statusCell = document.createElement("td");
-            const badge = document.createElement("span");
-            badge.className = "crf-status " + (item.enrollment_status === "active" ? "enrolled" : "pending");
-            badge.textContent = item.enrollment_status === "active" ? "Enrolled" : item.enrollment_status === "dropped" ? "Not Enrolled" : (item.enrollment_status || "—");
-            statusCell.appendChild(badge);
-            row.appendChild(statusCell);
             const actionCell = document.createElement("td");
             if (item.enrollment_status === "active" || item.enrollment_status === "dropped") {
                 const button = document.createElement("button");
@@ -9518,7 +9512,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!visible.length) {
             const row = document.createElement("tr");
             const cell = document.createElement("td");
-            cell.colSpan = 9;
+            cell.colSpan = 8;
             cell.textContent = "No roster records match these filters.";
             row.appendChild(cell);
             rosterBody.appendChild(row);
@@ -9552,10 +9546,6 @@ document.addEventListener("DOMContentLoaded", function () {
         selectedStudent = null;
         $("crdhStudentProfileId").value = "";
         $("crdhStudentName").value = "";
-        $("crdhStudentEmail").value = "";
-        $("crdhStudentProgram").value = "";
-        $("crdhFacultyOwner").value = "";
-        $("crdhEnrollmentStatus").value = "Enrolled";
         $("crdhStudentResults").replaceChildren();
         $("crdhModalError").hidden = true;
         const courseOptions = Array.from(new Map(sections.map(section => [section.course_id, {
@@ -9582,12 +9572,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (selectedSectionId && matching.some(section => section.id === selectedSectionId)) {
             $("crdhSectionChoice").value = selectedSectionId;
         }
-        updateModalFaculty();
-    }
-
-    function updateModalFaculty() {
-        const section = sections.find(item => item.id === $("crdhSectionChoice").value);
-        $("crdhFacultyOwner").value = section?.faculty_name || "";
     }
 
     function closeModal() {
@@ -9629,7 +9613,6 @@ document.addEventListener("DOMContentLoaded", function () {
         .forEach(id => $(id).addEventListener(id === "crdhSearch" ? "input" : "change", render));
     $("crdhAdd").addEventListener("click", openModal);
     $("crdhCourseChoice").addEventListener("change", () => populateModalSections($("crdhCourseChoice").value, ""));
-    $("crdhSectionChoice").addEventListener("change", updateModalFaculty);
     $("crdhModalClose").addEventListener("click", closeModal);
     $("crdhModalCancel").addEventListener("click", closeModal);
     modal.addEventListener("click", event => { if (event.target === modal) closeModal(); });
@@ -9640,8 +9623,6 @@ document.addEventListener("DOMContentLoaded", function () {
         selectedStudent = null;
         $("crdhStudentProfileId").value = "";
         $("crdhStudentName").value = "";
-        $("crdhStudentEmail").value = "";
-        $("crdhStudentProgram").value = "";
         const query = $("crdhStudentSearch").value.trim();
         const results = $("crdhStudentResults");
         results.replaceChildren();
@@ -9654,22 +9635,20 @@ document.addEventListener("DOMContentLoaded", function () {
                     const option = document.createElement("button");
                     option.type = "button";
                     option.className = "crdh-student-option";
-                    option.textContent = [student.student_number, student.full_name, student.email, student.program_name]
+                    option.textContent = [student.student_number, student.full_name]
                         .filter(Boolean).join(" ? ");
                     option.addEventListener("click", () => {
                         selectedStudent = student;
                         $("crdhStudentProfileId").value = student.student_profile_id;
                         $("crdhStudentSearch").value = student.student_number;
                         $("crdhStudentName").value = student.full_name || "";
-                        $("crdhStudentEmail").value = student.email || "";
-                        $("crdhStudentProgram").value = student.program_name || "";
                         results.replaceChildren();
                     });
                     results.appendChild(option);
                 });
                 if (!results.children.length) {
                     const empty = document.createElement("p");
-                    empty.textContent = "No active student account found in your department.";
+                    empty.textContent = "No registered student account found in your department.";
                     results.appendChild(empty);
                 }
             } catch (error) {
@@ -9684,7 +9663,7 @@ document.addEventListener("DOMContentLoaded", function () {
         event.preventDefault();
         const error = $("crdhModalError");
         if (!selectedStudent || !$("crdhSectionChoice").value) {
-            error.textContent = "Select an active student account, course, and section.";
+            error.textContent = "Select a registered student account, course, and section.";
             error.hidden = false;
             return;
         }
@@ -9729,7 +9708,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const columns = [
             ["student_number", "Student ID"], ["full_name", "Student Name"], ["email", "Email"],
             ["program_name", "Program"], ["course_code", "Course Code"], ["course_title", "Course"],
-            ["section_name", "Section"], ["faculty_name", "Faculty"], ["enrollment_status", "Enrollment Status"]
+            ["section_name", "Section"], ["faculty_name", "Faculty"]
         ];
         const csv = [columns.map(column => column[1]), ...currentRows().map(item => columns.map(column => item[column[0]] || ""))]
             .map(row => row.map(value => `"${String(value).replaceAll('"', '""')}"`).join(","))

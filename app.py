@@ -5394,7 +5394,6 @@ def search_department_head_roster_students():
         for profile in (admin_supabase.table("student_profiles")
                         .select("id, user_id, student_number, program_id")
                         .in_("program_id", program_ids)
-                        .eq("is_enrolled", True)
                         .ilike("student_number", f"%{query}%")
                         .limit(20).execute().data or []):
             profiles_by_id[profile["id"]] = profile
@@ -5410,7 +5409,6 @@ def search_department_head_roster_students():
                             .select("id, user_id, student_number, program_id")
                             .in_("program_id", program_ids)
                             .in_("user_id", matched_user_ids)
-                            .eq("is_enrolled", True)
                             .limit(30).execute().data or []):
                 profiles_by_id[profile["id"]] = profile
         user_ids = list({row["user_id"] for row in profiles_by_id.values() if row.get("user_id")})
@@ -5455,6 +5453,14 @@ def manage_department_head_roster_enrollment(section_id):
             return jsonify({"error": "Section is outside your department."}), 404
         if action not in {"enroll", "drop"}:
             return jsonify({"error": "Choose a valid roster action."}), 400
+        if action == "enroll":
+            existing = admin_supabase.table("enrollments").select(
+                "id, enrollment_status"
+            ).eq("section_id", section_uuid).eq(
+                "student_profile_id", student_profile_id
+            ).limit(1).execute().data or []
+            if existing and existing[0].get("enrollment_status") == "active":
+                return jsonify({"error": "This student is already on the selected section roster."}), 409
         result = admin_supabase.rpc(
             "manage_department_head_section_enrollment",
             {
@@ -5464,6 +5470,8 @@ def manage_department_head_roster_enrollment(section_id):
                 "p_action": action,
             },
         ).execute()
+        if action == "enroll" and isinstance(result.data, dict) and result.data.get("status") == "already_active":
+            return jsonify({"error": "This student is already on the selected section roster."}), 409
         return jsonify({"result": result.data}), 200
     except ValueError:
         return jsonify({"error": "A valid section and student are required."}), 400
