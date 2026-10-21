@@ -7466,6 +7466,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function showSummary(tab) {
+        // The summary sits outside the tab panels; hide the whole grid for verification.
+        const verification = tab === "mapping-verification";
+        summary.hidden = verification;
+        if (verification) summary.style.setProperty("display", "none", "important");
+        else summary.style.removeProperty("display");
         const cards = [...summary.querySelectorAll(".so-summary-card")];
         cards.forEach((card, index) => { card.hidden = index > (tab === "students-attainment" ? 2 : 1); });
         const labels = {
