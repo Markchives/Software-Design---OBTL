@@ -2691,6 +2691,12 @@ body.cm-dept-review-open, body.cm-dept-modal-open{overflow:hidden;}
 .cr-dept-head-page .crf-toolbar .crf-search{width:100%;max-width:250px;min-width:0;margin-left:auto;justify-self:end;}
 .cr-dept-head-page .crf-toolbar .crf-toolbar-actions{display:flex;align-items:center;justify-self:end;gap:10px;flex-wrap:nowrap;margin:0;white-space:nowrap;}
 .cr-dept-head-page #crdhRecordForm{position:relative;}
+.cr-dept-head-page .crdh-row-actions{white-space:nowrap;}
+.cr-dept-head-page .crdh-remove{min-width:76px;min-height:32px;padding:0 16px;border:1px solid #B42318;border-radius:18px;background:#FFF;color:#B42318;font:700 12px Arial,Helvetica,sans-serif;cursor:pointer;transition:background .16s ease,color .16s ease,box-shadow .16s ease,transform .16s ease;}
+.cr-dept-head-page .crdh-remove:hover{background:#B42318;color:#FFF;box-shadow:0 3px 8px rgba(180,35,24,.2);transform:translateY(-1px);}
+.cr-dept-head-page .crdh-remove:focus-visible{outline:3px solid rgba(244,195,0,.7);outline-offset:2px;}
+.cr-dept-head-page .crdh-remove:disabled{opacity:.58;cursor:wait;transform:none;box-shadow:none;}
+.cr-dept-head-page .crdh-dropped-badge{display:inline-flex;min-width:72px;justify-content:center;padding:6px 12px;border-radius:16px;background:#FDE8E7;color:#A12622;font-size:12px;font-weight:700;}
 .cr-dept-head-page #crdhModal .crf-modal-dialog{width:min(790px,96vw);}
 .cr-dept-head-page #crdhRecordForm .crdh-add-fields{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 12px;align-items:end;padding:13px 14px;margin:0 0 14px;}
 .cr-dept-head-page #crdhRecordForm .crdh-student-picker{position:relative;min-width:0;}
@@ -5798,3 +5804,118 @@ body.edu-management-page .so-main{width:100%;min-width:0}
 
 /* Faculty CM: hide summary only on the active Request Verification tab. */
 body.cm-faculty-page:has(.cm-tabs > .cm-tab:nth-child(4):is(.active,.is-active,[aria-selected="true"])) #cmFacultySummary{display:none!important;}
+
+/* SO Faculty workflow dialogs — shared, single source of modal styling. */
+.so-faculty-page .so-workflow-dialog {
+  position: fixed;
+  inset: 0;
+  width: min(640px, calc(100vw - 32px));
+  max-width: 640px;
+  max-height: min(85dvh, 780px);
+  margin: auto;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid #DCE5EE;
+  border-radius: 14px;
+  background: #FFFFFF;
+  color: #004179;
+  box-shadow: 0 20px 65px rgba(0, 30, 65, .22);
+}
+.so-faculty-page .so-workflow-dialog:not([open]) { display: none; }
+.so-faculty-page .so-workflow-dialog[open] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+  align-content: start;
+  padding: 26px;
+}
+.so-faculty-page .so-workflow-dialog::backdrop { background: rgba(5, 27, 53, .58); }
+.so-faculty-page .so-workflow-dialog-header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #E4EBF2;
+}
+.so-faculty-page .so-workflow-dialog-header h2 { margin: 0; font-size: 22px; line-height: 1.3; color: #004179; }
+.so-faculty-page .so-workflow-dialog-header p { margin: 5px 0 0; font-size: 13px; line-height: 1.5; color: #526D87; }
+.so-faculty-page .so-workflow-dialog-close {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #DCE5EE;
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: #004179;
+  font-size: 23px;
+  line-height: 1;
+  cursor: pointer;
+}
+.so-faculty-page .so-workflow-wide { grid-column: 1 / -1; min-width: 0; }
+.so-faculty-page .so-workflow-dialog .so-workflow-wide p { margin: 0 0 8px; font-size: 14px; line-height: 1.55; overflow-wrap: anywhere; }
+.so-faculty-page .so-workflow-dialog > label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  color: #004179;
+  font-size: 13px;
+  font-weight: 700;
+}
+.so-faculty-page .so-workflow-dialog > label input,
+.so-faculty-page .so-workflow-dialog > label select {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid #C8D7E5;
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: #004179;
+  font-size: 14px;
+  outline-offset: 2px;
+}
+.so-faculty-page .so-workflow-dialog .so-assessment-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+  padding-top: 18px;
+  border-top: 1px solid #E4EBF2;
+}
+.so-faculty-page .so-workflow-dialog .so-assessment-actions button {
+  min-height: 40px;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.so-faculty-page .so-workflow-dialog .so-assessment-cancel {
+  border: 1px solid #C8D7E5;
+  background: #FFFFFF;
+  color: #004179;
+}
+.so-faculty-page .so-workflow-dialog .sof-add-outcome-btn {
+  border: 1px solid #004179;
+  background: #004179;
+  color: #FFFFFF;
+}
+.so-faculty-page .so-workflow-dialog .sof-add-outcome-btn:hover { background: #00345F; }
+.so-faculty-page .so-workflow-dialog .so-assessment-editor {
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid #DCE5EE;
+  border-radius: 9px;
+}
+@media (max-width: 560px) {
+  .so-faculty-page .so-workflow-dialog[open] { grid-template-columns: minmax(0, 1fr); padding: 18px; gap: 14px; }
+  .so-faculty-page .so-workflow-dialog-header h2 { font-size: 19px; }
+  .so-faculty-page .so-workflow-dialog .so-assessment-actions button { flex: 1 1 auto; }
+}
