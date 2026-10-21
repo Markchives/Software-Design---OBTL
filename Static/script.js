@@ -11575,6 +11575,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     addButton(actions, 'Lock', 'lock', 'gl-gold');
                 } else if (item.status === 'locked') {
                     addButton(actions, 'Reopen', 'reopen', 'gl-red-outline');
+                } else {
+                    addButton(actions, 'Awaiting', 'awaiting', 'gl-outline', true,
+                        'Faculty must submit this gradebook before it can be verified or locked.');
                 }
                 row.appendChild(actions);
                 body.appendChild(row);

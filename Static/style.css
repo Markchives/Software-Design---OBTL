@@ -4593,7 +4593,7 @@ body.gl-dept-head-page .gl-table tbody td:first-child > small b{font-weight:800!
 .gl-yellow{background:#ffeba8;color:#926e00;}
 .gl-red{background:#ffc6c6;color:#ae3c3c;}
 .gl-muted{background:#e9eef3;color:#59758a;}
-.gl-dialog{width:min(720px,calc(100vw - 30px));max-height:85vh;padding:0;border:1px solid #9fc1d8;border-radius:9px;color:#004179;box-shadow:0 20px 60px #092f5360;}
+.gl-dialog{position:fixed;inset:0;margin:auto;box-sizing:border-box;width:min(720px,calc(100vw - 30px));max-height:min(85vh,780px);overflow:auto;padding:0;border:1px solid #9fc1d8;border-radius:9px;color:#004179;box-shadow:0 20px 60px #092f5360;z-index:10000;}
 .gl-dialog::backdrop{background:#0c2d4e80;}
 .gl-dialog-header{display:flex;justify-content:space-between;align-items:center;padding:20px;background:#f4f8fb;border-bottom:1px solid #dce7f0;}
 .gl-dialog-header h2{font-size:20px;font-weight:800;}
