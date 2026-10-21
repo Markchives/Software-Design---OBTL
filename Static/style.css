@@ -2687,12 +2687,13 @@ body.cm-dept-review-open, body.cm-dept-modal-open{overflow:hidden;}
 .cr-faculty-page .crf-summary{grid-template-columns:1.65fr 1fr 1fr 1fr;}
 .cr-dept-head-page .crf-summary .cm-course-card > div:last-child,
 .cr-dept-head-page .crf-summary .cm-stat-card > div:last-child{padding:0 18px 0 22px;min-width:0;}
-.cr-dept-head-page .crf-toolbar{display:grid;grid-template-columns:170px 230px 260px minmax(180px, 1fr) auto;align-items:end;column-gap:16px;row-gap:12px;padding:8px 10px 12px;}
+.cr-dept-head-page .crf-toolbar{display:grid;grid-template-columns:repeat(3,minmax(120px,1fr)) minmax(180px,1.2fr) auto;align-items:end;column-gap:10px;row-gap:12px;padding:8px 10px 12px;}
 .cr-dept-head-page .crf-toolbar .crf-search{width:100%;max-width:250px;min-width:0;margin-left:auto;justify-self:end;}
 .cr-dept-head-page .crf-toolbar .crf-toolbar-actions{display:flex;align-items:center;justify-self:end;gap:10px;flex-wrap:nowrap;margin:0;white-space:nowrap;}
 .cr-dept-head-page #crdhRecordForm{position:relative;}
 .cr-dept-head-page #crdhModal .crf-modal-dialog{width:min(790px,96vw);}
-.cr-dept-head-page #crdhRecordForm .crdh-add-fields{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 12px;align-items:end;padding:13px 14px;margin:0 0 14px;}
+.cr-dept-head-page #crdhRecordForm .crdh-add-fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 12px;align-items:end;padding:13px 14px;margin:0 0 14px;}
+.cr-dept-head-page .crf-toolbar #crdhDownload{margin-left:10px;}
 .cr-dept-head-page #crdhRecordForm .crdh-student-picker{position:relative;min-width:0;}
 .cr-dept-head-page #crdhRecordForm .crdh-student-picker .cm-filter-group{min-width:0;}
 .cr-dept-head-page #crdhRecordForm .crdh-student-picker label,
@@ -2705,7 +2706,8 @@ body.cm-dept-review-open, body.cm-dept-modal-open{overflow:hidden;}
 .cr-dept-head-page #crdhRecordForm .crdh-student-results:not(:empty){position:absolute;z-index:5;top:calc(100% + 4px);left:0;right:0;max-height:220px;overflow:auto;padding:5px;border:1px solid #91B8D7;border-radius:7px;background:#fff;box-shadow:0 6px 18px rgba(0,45,114,.16);}
 .cr-dept-head-page #crdhRecordForm .crdh-student-results button{display:block;width:100%;padding:9px 10px;border:0;border-radius:5px;background:#fff;color:#214B70;text-align:left;cursor:pointer;}
 .cr-dept-head-page #crdhRecordForm .crdh-student-results button:hover{background:#F0F6FB;}
-@media(max-width:700px){.cr-dept-head-page #crdhRecordForm .crdh-add-fields{grid-template-columns:1fr;}.cr-dept-head-page #crdhRecordForm .crdh-student-results:not(:empty){position:static;}}
+@media(max-width:1100px){.cr-dept-head-page .crf-toolbar{grid-template-columns:repeat(2,minmax(0,1fr));}.cr-dept-head-page .crf-toolbar .crf-search{max-width:none;}.cr-dept-head-page .crf-toolbar .crf-toolbar-actions{grid-column:1/-1;justify-self:end;}}
+@media(max-width:700px){.cr-dept-head-page .crf-toolbar{grid-template-columns:1fr;}.cr-dept-head-page .crf-toolbar .crf-toolbar-actions{grid-column:auto;justify-self:start;flex-wrap:wrap;}.cr-dept-head-page #crdhRecordForm .crdh-add-fields{grid-template-columns:1fr;}.cr-dept-head-page #crdhRecordForm .crdh-student-results:not(:empty){position:static;}}
 .cr-dept-head-page .crf-table-wrap{overflow-x:auto;overflow-y:auto;max-height:410px;min-height:0;}
 .cr-dept-head-page .crf-table{table-layout:fixed;width:100%;}
 .cr-dept-head-page .crf-table :is(th, td):nth-child(1){width:5%;}
