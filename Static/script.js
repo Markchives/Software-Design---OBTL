@@ -446,13 +446,14 @@ function studentSectionScopedUrl(path) {
     const body = document.getElementById('ac-attainment-rows');
     if (!body) return;
     const targets = Array.from(document.querySelectorAll('.so-summary-grid .so-summary-number')).slice(-3);
-    fetch(studentSectionScopedUrl('/api/student/course-outcomes'), { credentials: 'same-origin', headers: { Accept: 'application/json' } })
-        .then(async response => {
+    let loading = false;
+    async function load() {
+        if (loading) return;
+        loading = true;
+        try {
+            const response = await fetch(studentSectionScopedUrl('/api/student/course-outcomes'), { credentials: 'same-origin', headers: { Accept: 'application/json' } });
             const result = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(result.error || 'Course outcomes could not be loaded.');
-            return result;
-        })
-        .then(result => {
             const outcomes = Array.isArray(result.outcomes) ? result.outcomes : [];
             let met = 0, notMet = 0, awaiting = 0;
             body.replaceChildren();
@@ -480,12 +481,33 @@ function studentSectionScopedUrl(path) {
             const search = document.getElementById('ac-attainment-search');
             if (search) search.dispatchEvent(new Event('input', { bubbles: true }));
             const empty = document.getElementById('ac-attainment-empty');
-            if (empty && outcomes.length === 0) empty.textContent = 'No verified course outcomes are available yet.';
-        })
-        .catch(error => {
+            if (empty) {
+                empty.dataset.loadFailed = 'false';
+                if (outcomes.length === 0) empty.textContent = 'No verified course outcomes are available yet.';
+            }
+            const syncStatus = document.getElementById('ac-attainment-sync-status');
+            if (syncStatus) syncStatus.textContent = '';
+        } catch (error) {
             const empty = document.getElementById('ac-attainment-empty');
-            if (empty) { empty.textContent = error.message; empty.hidden = false; }
-        });
+            if (empty && !body.querySelector('tr')) {
+                empty.dataset.loadFailed = 'true';
+                empty.textContent = error.message;
+                empty.hidden = false;
+            } else {
+                const syncStatus = document.getElementById('ac-attainment-sync-status');
+                if (syncStatus) syncStatus.textContent = 'Could not refresh attainment: ' + error.message;
+            }
+        } finally {
+            loading = false;
+        }
+    }
+    function refreshWhenActive() {
+        if (document.visibilityState === 'visible') load();
+    }
+    load();
+    window.addEventListener('focus', refreshWhenActive);
+    document.addEventListener('visibilitychange', refreshWhenActive);
+    window.setInterval(refreshWhenActive, 30000);
 })();
 
 
@@ -10375,7 +10397,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const sort = document.getElementById('raSort');
     const empty = document.getElementById('raEmpty');
     if (!tbody || !search || !type || !sort || !empty) return;
+    const syncStatus = document.getElementById('raSyncStatus');
     let assessments = [];
+    let loading = false;
 
     function render() {
         const query = search.value.trim().toLowerCase();
@@ -10402,9 +10426,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 item.due_date || '—',
                 item.release_status === 'Released' && item.has_score ? String(item.score) : '—',
                 String(item.max_score),
-                item.release_status === 'Released' && item.has_score
-                    ? Number(item.percentage).toFixed(1) + '%'
-                    : '—',
+                item.result_status === 'pass' ? 'Pass'
+                    : item.result_status === 'fail' ? 'Fail' : 'Pending',
                 item.release_status
             ].forEach(value => {
                 const cell = document.createElement('td');
@@ -10422,6 +10445,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async function load() {
+        if (loading) return;
+        loading = true;
         try {
             const response = await fetch(studentSectionScopedUrl('/api/student/assessment-scores'), {
                 headers: { Accept: 'application/json' },
@@ -10436,17 +10461,31 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById('raReleasedCount').textContent = String(result.released_count || 0);
             document.getElementById('raCourseCount').textContent = String(result.course_count || 0);
             document.getElementById('raPendingCount').textContent = String(result.pending_count || 0);
+            empty.dataset.loadFailed = 'false';
+            if (syncStatus) syncStatus.textContent = '';
             render();
         } catch (error) {
-            empty.dataset.loadFailed = 'true';
-            empty.textContent = error.message;
-            empty.hidden = false;
+            if (!assessments.length) {
+                empty.dataset.loadFailed = 'true';
+                empty.textContent = error.message;
+                empty.hidden = false;
+            } else if (syncStatus) {
+                syncStatus.textContent = 'Could not refresh assessment results: ' + error.message;
+            }
+        } finally {
+            loading = false;
         }
+    }
+    function refreshWhenActive() {
+        if (document.visibilityState === 'visible') load();
     }
     [search, type, sort].forEach(element =>
         element.addEventListener(element === search ? 'input' : 'change', render)
     );
     load();
+    window.addEventListener('focus', refreshWhenActive);
+    document.addEventListener('visibilitychange', refreshWhenActive);
+    window.setInterval(refreshWhenActive, 30000);
 })();
 
 /* Department Head raw-score review is department-scoped and server-backed. */

@@ -87,6 +87,7 @@ if not SUPABASE_URL or not SUPABASE_KEY:
     raise RuntimeError("Supabase configuration is missing from .env")
 
 REMEMBERED_ACCOUNTS_COOKIE = "edumetrics_remembered_accounts"
+PASSING_PERCENTAGE = 60
 remembered_accounts_serializer = URLSafeTimedSerializer(
     app.secret_key,
     salt="edumetrics-remembered-accounts",
@@ -5419,6 +5420,14 @@ def get_student_assessment_scores():
                 "percentage": score.get("percentage") if released and score else None,
                 "has_score": bool(
                     released and score and score.get("score") is not None
+                ),
+                "result_status": (
+                    "pass"
+                    if released and score and score.get("score") is not None
+                    and float(score.get("percentage") or 0) >= PASSING_PERCENTAGE
+                    else "fail"
+                    if released and score and score.get("score") is not None
+                    else "pending"
                 ),
                 "released_at": activity.get("released_at"),
                 "release_status": "Released" if released else "Awaiting Release",
