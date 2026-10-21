@@ -7814,15 +7814,6 @@ def download_compliance_report(report_type, section_id):
             )
             _assessment_outcomes_by_activity(assessments)
             workspace["assessments"] = assessments
-        if report_type in {
-            "class-grading-sheet", "student-outcome-attainment"
-        } and gradebook_status != "locked":
-            return jsonify({
-                "error": (
-                    "This report is available only after the gradebook "
-                    "has been locked."
-                )
-            }), 409
         if (
             report_type in {"syllabus-matrix", "student-outcome-attainment"}
             and role == "student"
@@ -7940,10 +7931,12 @@ def download_compliance_report(report_type, section_id):
             )
 
         elif report_type == "class-grading-sheet":
-            metadata.extend([
-                ("Gradebook status", "Locked"),
-                ("Locked at", gradebook.get("locked_at") or "—"),
-            ])
+            metadata.append((
+                "Gradebook status",
+                str(gradebook_status).replace("_", " ").title(),
+            ))
+            if gradebook.get("locked_at"):
+                metadata.append(("Locked at", gradebook["locked_at"]))
             headers = [
                 "Student No.", "Student Name", "Assessment",
                 "Type", "Score", "Maximum", "Percentage",
@@ -8060,7 +8053,10 @@ def download_compliance_report(report_type, section_id):
                         ).title(),
                     ])
                 metadata.extend([
-                    ("Gradebook status", "Locked"),
+                    (
+                        "Gradebook status",
+                        str(gradebook_status).replace("_", " ").title(),
+                    ),
                     ("Mapping review", "Verified"),
                     ("Student scope", "Your own results only"),
                 ])
@@ -8261,7 +8257,10 @@ def download_compliance_report(report_type, section_id):
                     "\n".join(group.get("titles", [])) or "—",
                 ])
             metadata.extend([
-                ("Gradebook status", "Locked"),
+                (
+                    "Gradebook status",
+                    str(gradebook_status).replace("_", " ").title(),
+                ),
                 ("Mapping review", "Verified"),
                 ("Active students", len(active_student_ids)),
             ])

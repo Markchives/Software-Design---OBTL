@@ -12736,7 +12736,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 sections.length
                     ? isStudent
                         ? 'Choose a report for an active course section. The attainment summary contains only your own results; class-wide grades are not available to students.'
-                        : 'Choose a report to download its PDF. Grade and attainment reports require a locked gradebook; the Student Outcome summary also requires verified mappings.'
+                        : 'Printable reports do not require a locked gradebook. Student Outcome reports require verified section mappings.'
                     : 'No course sections are available within your authorized scope.',
                 false
             );
