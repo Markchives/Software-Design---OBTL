@@ -12150,10 +12150,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 row.dataset.event = "true";
                 row.dataset.result = String(event.result || "SUCCESS").toUpperCase();
                 const timestamp = event.timestamp ? new Date(event.timestamp).toLocaleString() : "—";
-                for (const [index, value] of [timestamp, event.role, event.operation, event.module, event.record_id, event.result].entries()) {
+                for (const [index, value] of [timestamp, event.role, event.operation, event.module, event.result].entries()) {
                     const cell = document.createElement("td");
                     cell.textContent = value == null || value === "" ? "—" : String(value);
-                    if (index === 5) {
+                    if (index === 4) {
                         cell.className = "gl-admin-result gl-admin-result-" +
                             String(event.result || "success").toLowerCase();
                     }
