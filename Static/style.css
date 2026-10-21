@@ -3921,13 +3921,12 @@ body > #rrDialog[hidden]{display:none!important;}
 .student-courses-page #scJoinStatus{min-height:18px;margin:10px 0 0;color:#315d84;}
 .student-courses-page #scJoinStatus.is-error{color:#b42318;}
 .crf-join-decision{margin:2px 4px 2px 0;}
-.gl-admin-page .gl-admin-table th:nth-child(1){width:15%;}
-.gl-admin-page .gl-admin-table th:nth-child(2){width:11%;}
-.gl-admin-page .gl-admin-table th:nth-child(3){width:20%;}
-.gl-admin-page .gl-admin-table th:nth-child(4){width:13%;}
-.gl-admin-page .gl-admin-table th:nth-child(5){width:12%;}
-.gl-admin-page .gl-admin-table th:nth-child(6){width:10%;}
-.gl-admin-page .gl-admin-table th:nth-child(7){width:19%;}
+.gl-admin-page .gl-admin-table th:nth-child(1){width:17%;}
+.gl-admin-page .gl-admin-table th:nth-child(2){width:12%;}
+.gl-admin-page .gl-admin-table th:nth-child(3){width:21%;}
+.gl-admin-page .gl-admin-table th:nth-child(4){width:15%;}
+.gl-admin-page .gl-admin-table th:nth-child(5){width:14%;}
+.gl-admin-page .gl-admin-table th:nth-child(6){width:21%;}
 .gl-admin-page .gl-admin-details-btn{padding:6px 12px;border:1px solid #9dc2e3;border-radius:18px;background:#fff;color:#004179;font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer;}
 .gl-admin-page .gl-admin-details-btn:hover{background:#edf6ff;}
 .gl-admin-page .gl-admin-result{font-weight:700;}
