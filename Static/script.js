@@ -7272,11 +7272,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function setContext(section) {
-        document.getElementById("cmFacultySchoolYear").textContent = section?.academic_year_name || "—";
-        document.getElementById("cmFacultyDepartment").textContent = section?.department_name || "—";
-        document.getElementById("cmFacultyCourse").textContent = section
+        const schoolYear = document.getElementById("cmFacultySchoolYear");
+        const department = document.getElementById("cmFacultyDepartment");
+        const course = document.getElementById("cmFacultyCourse");
+        const selectedSection = document.getElementById("cmFacultySection");
+        if (schoolYear) schoolYear.textContent = section?.academic_year_name || "—";
+        if (department) department.textContent = section?.department_name || "—";
+        if (course) course.textContent = section
             ? `${section.course_code} · ${section.course_title}` : "—";
-        document.getElementById("cmFacultySection").textContent = section?.section_name || "—";
+        if (selectedSection) selectedSection.textContent = section?.section_name || "—";
         window.syncEduMetricsWorkspaceSection?.(section?.section_id || "", section || undefined);
     }
 
