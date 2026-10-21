@@ -11882,10 +11882,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 row.dataset.event = "true";
                 row.dataset.result = String(event.result || "SUCCESS").toUpperCase();
                 const timestamp = event.timestamp ? new Date(event.timestamp).toLocaleString() : "—";
-                for (const [index, value] of [timestamp, event.role, event.operation, event.module, event.record_id, event.result].entries()) {
+                for (const [index, value] of [timestamp, event.role, event.operation, event.module, event.result].entries()) {
                     const cell = document.createElement("td");
                     cell.textContent = value == null || value === "" ? "—" : String(value);
-                    if (index === 5) {
+                    if (index === 4) {
                         cell.className = "gl-admin-result gl-admin-result-" +
                             String(event.result || "success").toLowerCase();
                     }
@@ -11904,7 +11904,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     [
                         ["Timestamp", timestamp], ["Role", event.role],
                         ["Operation", event.operation], ["Module", event.module],
-                        ["Record ID", event.record_id], ["Result", event.result],
+                        ["Status", event.result],
                         ["IP Address", event.ip_address], ["Details", event.details]
                     ].forEach(([label, value]) => {
                         const term = document.createElement("strong");
@@ -11923,7 +11923,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const row = document.createElement("tr");
                 row.className = "gl-admin-empty-row";
                 const cell = document.createElement("td");
-                cell.colSpan = 7;
+                cell.colSpan = 6;
                 cell.textContent = "No system history has been recorded yet.";
                 row.appendChild(cell);
                 rows.appendChild(row);
@@ -11935,7 +11935,7 @@ document.addEventListener("DOMContentLoaded", function () {
             rows.replaceChildren();
             const row = document.createElement("tr");
             const cell = document.createElement("td");
-            cell.colSpan = 7;
+            cell.colSpan = 6;
             cell.textContent = "System history could not be loaded.";
             row.appendChild(cell);
             rows.appendChild(row);

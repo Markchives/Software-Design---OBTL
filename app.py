@@ -7787,7 +7787,7 @@ def admin_system_history_api():
             elif level == "ERROR":
                 outcome = "Failed"
             elif level == "WARNING":
-                outcome = "Warning"
+                outcome = "Failed"
             elif "requested" in details.casefold() or "pending" in details.casefold():
                 outcome = "Pending"
             else:
@@ -7799,7 +7799,6 @@ def admin_system_history_api():
                 "role": role_labels.get(role, role.replace("-", " ").title()),
                 "operation": row.get("action") or "System event",
                 "module": row.get("module") or "System",
-                "record_id": row.get("record_id") or row.get("table_name") or "—",
                 "result": outcome,
                 "details": details or row.get("module") or "—",
                 "ip_address": row.get("ip_address") or "—",
