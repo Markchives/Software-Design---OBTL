@@ -9278,7 +9278,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         const totalStudents = new Set(visible.map(item => item.student_profile_id)).size;
         $("crdhTotal").textContent = String(totalStudents);
-        $("crdhEnrolled").textContent = String(visible.filter(item => item.enrollment_status === "active").length);
+        $("crdhEnrolled").textContent = String(new Set(
+            visible.filter(item => item.enrollment_status === "active").map(item => item.student_profile_id)
+        ).size);
         const selectedCourse = $("crdhCourse").selectedOptions[0];
         $("crdhCourseTitle").textContent = selectedCourse && selectedCourse.value ? selectedCourse.textContent : "All Courses";
         const selectedYear = $("crdhSchoolYear").value;
