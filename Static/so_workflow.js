@@ -436,6 +436,7 @@
         const availableSyllabusCount = document.getElementById("availableSyllabusCount");
         const escape = esc;
         let syllabusRows = [];
+        let loading = false;
         function renderSyllabi() {
             const syllabusList = document.getElementById("studentSyllabusList");
             const emptySyllabus = document.getElementById("studentSyllabusEmpty");
@@ -445,25 +446,31 @@
             }
             if (emptySyllabus) emptySyllabus.hidden = syllabusRows.length > 0;
         }
-        async function load() {
+        async function load(silent = false) {
+            if (loading) return;
+            loading = true;
             try {
-                const data = await api(studentSectionScopedUrl("/api/student/so-assessments"));
-                const rows = data.assessments || [];
-                if (count) count.textContent = rows.length;
-                if (dueCount) dueCount.textContent = rows.filter(row => row.due_date && (new Date(row.due_date + "T00:00:00") - new Date()) / 86400000 <= 7).length;
-                list.innerHTML = rows.map(row => `<article class="so-pending-item"><div class="so-pending-information"><h3 class="so-pending-title">${escape(row.student_outcome?.code)} · ${escape(row.title)}</h3><div class="so-pending-meta"><span>Due: ${escape(row.due_date || "No due date")}</span><span class="so-pending-status">${escape(row.course_code)} · ${escape(row.section_name)}</span></div><p>${escape(row.course_title)} · ${escape(row.academic_term)} ${escape(row.academic_year)}</p></div><div class="so-pending-course">${row.syllabus_url ? `<a href="${escape(row.syllabus_url)}" target="_blank" rel="noopener">View syllabus</a> · <a href="${escape(row.syllabus_download_url)}" target="_blank" rel="noopener">Download</a>` : "Syllabus unavailable"}</div><button type="button" class="so-start-assessment-btn" data-assessment="${escape(row.id)}">Complete self-assessment</button></article>`).join("");
-                list.hidden = !rows.length;
-                const empty = document.getElementById("pendingSOEmpty"); if (empty) empty.hidden = !!rows.length;
-            } catch (error) {
-                notify(error.message);
-            }
-            try {
-                const syllabusData = await api(studentSectionScopedUrl("/api/student/syllabi"));
-                syllabusRows = Array.isArray(syllabusData.syllabi) ? syllabusData.syllabi : [];
-                if (availableSyllabusCount) availableSyllabusCount.textContent = String(syllabusRows.length);
-                renderSyllabi();
-            } catch (error) {
-                notify(error.message);
+                try {
+                    const data = await api(studentSectionScopedUrl("/api/student/so-assessments"));
+                    const rows = data.assessments || [];
+                    if (count) count.textContent = rows.length;
+                    if (dueCount) dueCount.textContent = rows.filter(row => row.due_date && (new Date(row.due_date + "T00:00:00") - new Date()) / 86400000 <= 7).length;
+                    list.innerHTML = rows.map(row => `<article class="so-pending-item"><div class="so-pending-information"><h3 class="so-pending-title">${escape(row.student_outcome?.code)} · ${escape(row.title)}</h3><div class="so-pending-meta"><span>Due: ${escape(row.due_date || "No due date")}</span><span class="so-pending-status">${escape(row.course_code)} · ${escape(row.section_name)}</span></div><p>${escape(row.course_title)} · ${escape(row.academic_term)} ${escape(row.academic_year)}</p></div><div class="so-pending-course">${row.syllabus_url ? `<a href="${escape(row.syllabus_url)}" target="_blank" rel="noopener">View syllabus</a> · <a href="${escape(row.syllabus_download_url)}" target="_blank" rel="noopener">Download</a>` : "Syllabus unavailable"}</div><button type="button" class="so-start-assessment-btn" data-assessment="${escape(row.id)}">Complete self-assessment</button></article>`).join("");
+                    list.hidden = !rows.length;
+                    const empty = document.getElementById("pendingSOEmpty"); if (empty) empty.hidden = !!rows.length;
+                } catch (error) {
+                    if (!silent) notify(error.message);
+                }
+                try {
+                    const syllabusData = await api(studentSectionScopedUrl("/api/student/syllabi"));
+                    syllabusRows = Array.isArray(syllabusData.syllabi) ? syllabusData.syllabi : [];
+                    if (availableSyllabusCount) availableSyllabusCount.textContent = String(syllabusRows.length);
+                    renderSyllabi();
+                } catch (error) {
+                    if (!silent) notify(error.message);
+                }
+            } finally {
+                loading = false;
             }
         }
         list.addEventListener("click", async event => {
@@ -485,6 +492,11 @@
             } catch (error) { notify(error.message); }
         });
         load();
+        const refreshWhenActive = () => {
+            if (document.visibilityState === "visible") load(true);
+        };
+        window.addEventListener("focus", refreshWhenActive);
+        document.addEventListener("visibilitychange", refreshWhenActive);
     }
 
     function initOverview() {
