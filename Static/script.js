@@ -9183,36 +9183,284 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById('sdReaderStop').addEventListener('click', stopSpeech);
 })();
 
-/* Department Head Class Roster: Add / Update / Import / Export */
+/* Department Head Class Roster: database-backed, department-scoped roster management */
 (() => {
-    const root = document.querySelector('.cr-dept-head-page'); if (!root) return; const $ = id => document.getElementById(id); let data = Array.from({ length: 31 }, (_, i) => ({ id: `2023-${String(11111 + i).padStart(5, '0')}`, name: ['Angel S. Villanueva', 'Bea M. Santos', 'Carl P. Reyes', 'Dana L. Cruz', 'Ella P. Ramos', 'Francis D. Garcia'][i % 6], email: `student${i + 1}@students.national-u.edu.ph`, section: ['COE232', 'COE231', 'COE233'][i % 3], faculty: i % 4 === 0 ? 'Prof. Maria Santos' : 'Engr. J. T. Leonen', category: ['Registered', 'Regular', 'Late Enrollee', 'Transferee'][i % 4], status: i < 21 ? 'Enrolled' : 'Not Enrolled' })); const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); const filtered = () => { let q = $('crdhSearch').value.trim().toLowerCase(), f = $('crdhFaculty').value, c = $('crdhCategory').value, s = $('crdhSection').value; return data.filter(x => (!q || [x.id, x.name, x.email].some(v => v.toLowerCase().includes(q))) && (f === 'All Faculty' || x.faculty === f) && (c === 'All Students' || x.category === c) && (s === 'All Sections' || x.section === s)).sort((a, b) => $('crdhSort').value === 'id' ? a.id.localeCompare(b.id) : $('crdhSort').value === 'za' ? b.name.localeCompare(a.name) : a.name.localeCompare(b.name)); }; function render() { const rows = filtered(); $('crdhRows').innerHTML = rows.map((x, i) => `<tr><td>${i + 1}</td><td>${esc(x.id)}</td><td>${esc(x.name)}</td><td>${esc(x.email)}</td><td>${esc(x.section)}</td><td>${esc(x.faculty)}</td><td><span class="crf-category">${esc(x.category)}</span></td><td><span class="crf-status ${x.status === 'Enrolled' ? 'enrolled' : 'pending'}">${esc(x.status)}</span></td><td><div class="crdh-actions"><button class="crdh-update" data-id="${esc(x.id)}">Update</button><button class="crdh-remove" data-id="${esc(x.id)}">Remove</button></div></td></tr>`).join('') || '<tr><td colspan="9">No matching students.</td></tr>'; $('crdhCount').textContent = `Showing ${rows.length} of ${data.length} demo records`; $('crdhTotal').textContent = data.length; $('crdhEnrolled').textContent = data.filter(x => x.status === 'Enrolled').length; $('crdhCourseTitle').textContent = $('crdhCourse').value === 'All Courses' ? 'Software Design - Lab' : $('crdhCourse').value; } ['crdhSearch', 'crdhFaculty', 'crdhCategory', 'crdhSort', 'crdhSection', 'crdhCourse', 'crdhSchoolYear', 'crdhDepartment', 'crdhProgram'].forEach(id => $(id).addEventListener('input', render)); $('crdhRows').addEventListener('click', e => { const b = e.target.closest('button[data-id]'); if (!b) return; const i = data.findIndex(x => x.id === b.dataset.id); if (i < 0) return; if (b.classList.contains('crdh-update')) { openModal('update', data[i]); return; } else if (confirm('Remove this demo student record?')) { data.splice(i, 1); $('crdhNote').textContent = 'Demo record removed.'; } render(); }); const modal = $('crdhModal'), form = $('crdhRecordForm'); let editId = null; let previousFocus = null;
-    function openModal(mode, record) {
-        previousFocus = document.activeElement; editId = mode === 'update' ? record.id : null;
-        form.reset(); $('crdhModalError').hidden = true;
-        $('crdhModalTitle').textContent = editId ? 'Update Roster Record' : 'Add Roster Record';
-        $('crdhModalSubmit').textContent = editId ? 'Save Changes' : 'Add Record';
-        if (record) { for (const key of ['id', 'name', 'email', 'category', 'course', 'section', 'faculty', 'status']) if (form.elements[key]) form.elements[key].value = record[key] || (key === 'course' ? 'Software Design - Lab' : ''); }
-        form.elements.id.disabled = !!editId; modal.hidden = false; modal.classList.add('show'); document.body.style.overflow = 'hidden';
-        (editId ? form.elements.name : form.elements.id).focus();
+    "use strict";
+    const root = document.querySelector(".cr-dept-head-page");
+    if (!root) return;
+    const $ = id => document.getElementById(id);
+    const rosterBody = $("crdhRows");
+    const form = $("crdhRecordForm");
+    const modal = $("crdhModal");
+    let roster = [];
+    let sections = [];
+    let selectedStudent = null;
+    let searchTimer = null;
+
+    async function api(url, options) {
+        const response = await fetch(url, Object.assign({
+            credentials: "same-origin",
+            headers: { Accept: "application/json" }
+        }, options || {}));
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.error || "The request could not be completed.");
+        return payload;
     }
-    function closeModal() { modal.hidden = true; modal.classList.remove('show'); document.body.style.overflow = ''; editId = null; if (previousFocus && previousFocus.isConnected) previousFocus.focus(); }
-    $('crdhAdd').addEventListener('click', () => openModal('add'));
-    $('crdhModalClose').addEventListener('click', closeModal);
-    $('crdhModalCancel').addEventListener('click', closeModal);
-    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
-    document.addEventListener('keydown', e => { if (modal.hidden) return; if (e.key === 'Escape') closeModal(); if (e.key === 'Tab') { const nodes = [...modal.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled])')].filter(x => x.offsetParent !== null); const first = nodes[0], last = nodes[nodes.length - 1]; if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); } else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); } } });
-    form.addEventListener('submit', e => {
-        e.preventDefault(); if (!form.reportValidity()) return;
-        const get = k => form.elements[k].value.trim();
-        const item = { id: editId || get('id'), name: get('name'), email: get('email'), category: get('category'), course: get('course'), section: get('section'), faculty: get('faculty'), status: get('status') };
-        const error = $('crdhModalError');
-        if (!editId && data.some(x => x.id === item.id)) { error.textContent = 'Student ID already exists. Please enter a unique ID.'; error.hidden = false; return; }
-        if (editId) { const index = data.findIndex(x => x.id === editId); if (index < 0) return; data[index] = { ...data[index], ...item }; }
-        else data.push(item);
-        $('crdhNote').textContent = editId ? 'Demo roster record updated.' : 'Demo roster record added.';
-        closeModal(); render();
+
+    function fillSelect(select, placeholder, options, valueKey, labelFn) {
+        select.replaceChildren(new Option(placeholder, ""));
+        options.forEach(item => select.add(new Option(labelFn(item), item[valueKey])));
+    }
+
+    function currentRows() {
+        const query = $("crdhSearch").value.trim().toLowerCase();
+        const year = $("crdhSchoolYear").value;
+        const program = $("crdhProgram").value;
+        const course = $("crdhCourse").value;
+        const section = $("crdhSection").value;
+        const faculty = $("crdhFaculty").value;
+        return roster.filter(item =>
+            (!query || [item.student_number, item.full_name, item.email].join(" ").toLowerCase().includes(query)) &&
+            (!year || item.academic_year_id === year) &&
+            (!program || item.program_id === program) &&
+            (!course || item.course_id === course) &&
+            (!section || item.section_id === section) &&
+            (!faculty || item.faculty_id === faculty)
+        ).sort((a, b) => {
+            const mode = $("crdhSort").value;
+            if (mode === "id") return String(a.student_number).localeCompare(String(b.student_number), undefined, { numeric: true });
+            return mode === "za"
+                ? String(b.full_name).localeCompare(String(a.full_name))
+                : String(a.full_name).localeCompare(String(b.full_name));
+        });
+    }
+
+    function render() {
+        const visible = currentRows();
+        rosterBody.replaceChildren();
+        visible.forEach((item, index) => {
+            const row = document.createElement("tr");
+            [String(index + 1), item.student_number, item.full_name, item.email, item.section_name, item.faculty_name]
+                .forEach(value => {
+                    const cell = document.createElement("td");
+                    cell.textContent = value || "?";
+                    row.appendChild(cell);
+                });
+            const statusCell = document.createElement("td");
+            const badge = document.createElement("span");
+            badge.className = "crf-status " + (item.enrollment_status === "active" ? "enrolled" : "pending");
+            badge.textContent = item.enrollment_status || "?";
+            statusCell.appendChild(badge);
+            row.appendChild(statusCell);
+            const actionCell = document.createElement("td");
+            if (item.enrollment_status === "active" || item.enrollment_status === "dropped") {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = item.enrollment_status === "active" ? "crdh-remove" : "crdh-update";
+                button.dataset.sectionId = item.section_id;
+                button.dataset.profileId = item.student_profile_id;
+                button.dataset.action = item.enrollment_status === "active" ? "drop" : "enroll";
+                button.textContent = item.enrollment_status === "active" ? "Drop" : "Reactivate";
+                actionCell.appendChild(button);
+            } else {
+                actionCell.textContent = "?";
+            }
+            row.appendChild(actionCell);
+            rosterBody.appendChild(row);
+        });
+        if (!visible.length) {
+            const row = document.createElement("tr");
+            const cell = document.createElement("td");
+            cell.colSpan = 8;
+            cell.textContent = "No roster records match these filters.";
+            row.appendChild(cell);
+            rosterBody.appendChild(row);
+        }
+        const totalStudents = new Set(visible.map(item => item.student_profile_id)).size;
+        $("crdhTotal").textContent = String(totalStudents);
+        $("crdhEnrolled").textContent = String(visible.filter(item => item.enrollment_status === "active").length);
+        const selectedCourse = $("crdhCourse").selectedOptions[0];
+        $("crdhCourseTitle").textContent = selectedCourse && selectedCourse.value ? selectedCourse.textContent : "All Courses";
+        const selectedYear = $("crdhSchoolYear").value;
+        const selectedProgram = $("crdhProgram").value;
+        const selectedCourseId = $("crdhCourse").value;
+        const selectedSection = $("crdhSection").value;
+        const selectedFaculty = $("crdhFaculty").value;
+        const facultyRosterCount = sections.filter(section =>
+            section.faculty_id &&
+            (!selectedYear || section.academic_year_id === selectedYear) &&
+            (!selectedCourseId || section.course_id === selectedCourseId) &&
+            (!selectedSection || section.id === selectedSection) &&
+            (!selectedFaculty || section.faculty_id === selectedFaculty) &&
+            (!selectedProgram || roster.some(item => item.section_id === section.id && item.program_id === selectedProgram))
+        ).length;
+        $("crdhFacultyRosterCount").textContent = String(facultyRosterCount);
+        $("crdhCount").textContent = `Showing ${visible.length} of ${roster.length} enrollment records`;
+    }
+
+    function openModal() {
+        form.reset();
+        selectedStudent = null;
+        $("crdhStudentProfileId").value = "";
+        $("crdhSelectedStudent").textContent = "No student selected.";
+        $("crdhStudentResults").replaceChildren();
+        $("crdhModalError").hidden = true;
+        fillSelect($("crdhSectionChoice"), "Choose a department section", sections, "id", section =>
+            [section.course_code, section.course_title, section.section_name, section.academic_year_name, section.term_name, section.faculty_name]
+                .filter(Boolean).join(" ? "));
+        if ($("crdhSection").value) $("crdhSectionChoice").value = $("crdhSection").value;
+        modal.hidden = false;
+        modal.classList.add("show");
+        document.body.style.overflow = "hidden";
+        $("crdhStudentSearch").focus();
+    }
+
+    function closeModal() {
+        modal.hidden = true;
+        modal.classList.remove("show");
+        document.body.style.overflow = "";
+    }
+
+    function setNote(message, isError) {
+        $("crdhNote").textContent = message || "";
+        $("crdhNote").classList.toggle("is-error", Boolean(isError));
+    }
+
+    async function load() {
+        try {
+            const data = await api("/api/department-head/class-roster");
+            roster = data.roster || [];
+            sections = data.sections || [];
+            $("departmentHeadName").textContent = data.user_name || "Department Head";
+            fillSelect($("crdhSchoolYear"), "All School Years", data.school_years || [], "id", year => year.name);
+            fillSelect($("crdhDepartment"), data.department.name, [data.department], "id", department => department.name);
+            $("crdhDepartment").value = data.department.id;
+            $("crdhDepartment").disabled = true;
+            fillSelect($("crdhProgram"), "All Programs", data.programs || [], "id", program => `${program.code} ? ${program.name}`);
+            fillSelect($("crdhCourse"), "All Courses", data.courses || [], "id", course => `${course.code} ? ${course.title}`);
+            fillSelect($("crdhSection"), "All Sections", sections, "id", section => `${section.course_code} ? ${section.section_name}`);
+            fillSelect($("crdhFaculty"), "All Faculty", data.faculty || [], "id", faculty => faculty.name);
+            setNote("Roster data is limited to your department.", false);
+            render();
+        } catch (error) {
+            roster = [];
+            render();
+            setNote(error.message || "Department roster could not be loaded.", true);
+        }
+    }
+
+    ["crdhSearch", "crdhSort", "crdhSchoolYear", "crdhProgram", "crdhCourse", "crdhSection", "crdhFaculty"]
+        .forEach(id => $(id).addEventListener(id === "crdhSearch" ? "input" : "change", render));
+    $("crdhAdd").addEventListener("click", openModal);
+    $("crdhModalClose").addEventListener("click", closeModal);
+    $("crdhModalCancel").addEventListener("click", closeModal);
+    modal.addEventListener("click", event => { if (event.target === modal) closeModal(); });
+    document.addEventListener("keydown", event => { if (event.key === "Escape" && !modal.hidden) closeModal(); });
+
+    $("crdhStudentSearch").addEventListener("input", () => {
+        window.clearTimeout(searchTimer);
+        selectedStudent = null;
+        $("crdhStudentProfileId").value = "";
+        $("crdhSelectedStudent").textContent = "No student selected.";
+        const query = $("crdhStudentSearch").value.trim();
+        const results = $("crdhStudentResults");
+        results.replaceChildren();
+        if (query.length < 2) return;
+        searchTimer = window.setTimeout(async () => {
+            try {
+                const data = await api("/api/department-head/class-roster/students?q=" + encodeURIComponent(query));
+                results.replaceChildren();
+                (data.students || []).forEach(student => {
+                    const option = document.createElement("button");
+                    option.type = "button";
+                    option.className = "crdh-student-option";
+                    option.textContent = [student.student_number, student.full_name, student.email, student.program_name]
+                        .filter(Boolean).join(" ? ");
+                    option.addEventListener("click", () => {
+                        selectedStudent = student;
+                        $("crdhStudentProfileId").value = student.student_profile_id;
+                        $("crdhStudentSearch").value = student.student_number;
+                        $("crdhSelectedStudent").textContent = `${student.full_name} ? ${student.student_number} ? ${student.email}`;
+                        results.replaceChildren();
+                    });
+                    results.appendChild(option);
+                });
+                if (!results.children.length) {
+                    const empty = document.createElement("p");
+                    empty.textContent = "No active student account found in your department.";
+                    results.appendChild(empty);
+                }
+            } catch (error) {
+                const message = document.createElement("p");
+                message.textContent = error.message;
+                results.replaceChildren(message);
+            }
+        }, 250);
     });
-    $('crdhDownload').addEventListener('click', () => { const keys = ['id', 'name', 'email', 'section', 'faculty', 'category', 'status']; const csv = [keys.join(','), ...filtered().map(x => keys.map(k => '"' + String(x[k]).replace(/"/g, '""') + '"').join(','))].join('\r\n'); const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = 'department-roster.csv'; a.click(); URL.revokeObjectURL(url); }); $('crdhImport').addEventListener('click', () => $('crdhFile').click()); $('crdhFile').addEventListener('change', async e => { const file = e.target.files[0]; if (!file) return; const text = await file.text(); const lines = text.trim().split(/\r?\n/).slice(1); let count = 0; for (const line of lines) { const cols = line.split(',').map(v => v.trim().replace(/^"|"$/g, '')); if (cols.length < 2 || !cols[0] || data.some(x => x.id === cols[0])) continue; data.push({ id: cols[0], name: cols[1], email: cols[2] || '', section: cols[3] || 'COE232', faculty: cols[4] || 'Engr. J. T. Leonen', category: cols[5] || 'Registered', status: cols[6] === 'Enrolled' ? 'Enrolled' : 'Not Enrolled' }); count++; } $('crdhNote').textContent = `Imported ${count} demo records. CSV parser supports simple rows (not quoted commas).`; e.target.value = ''; render(); }); render();
+
+    form.addEventListener("submit", async event => {
+        event.preventDefault();
+        const error = $("crdhModalError");
+        if (!selectedStudent || !$("crdhSectionChoice").value) {
+            error.textContent = "Select an existing student and a section.";
+            error.hidden = false;
+            return;
+        }
+        const button = $("crdhModalSubmit");
+        button.disabled = true;
+        try {
+            await api("/api/department-head/sections/" + encodeURIComponent($("crdhSectionChoice").value) + "/enrollments", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Accept: "application/json" },
+                body: JSON.stringify({ student_profile_id: selectedStudent.student_profile_id, action: "enroll" })
+            });
+            closeModal();
+            setNote("Student added to the selected section.", false);
+            await load();
+        } catch (requestError) {
+            error.textContent = requestError.message;
+            error.hidden = false;
+        } finally {
+            button.disabled = false;
+        }
+    });
+
+    rosterBody.addEventListener("click", async event => {
+        const button = event.target.closest("button[data-action]");
+        if (!button) return;
+        button.disabled = true;
+        try {
+            await api("/api/department-head/sections/" + encodeURIComponent(button.dataset.sectionId) + "/enrollments", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Accept: "application/json" },
+                body: JSON.stringify({ student_profile_id: button.dataset.profileId, action: button.dataset.action })
+            });
+            setNote(button.dataset.action === "drop" ? "Enrollment dropped." : "Enrollment reactivated.", false);
+            await load();
+        } catch (error) {
+            button.disabled = false;
+            setNote(error.message, true);
+        }
+    });
+
+    $("crdhDownload").addEventListener("click", () => {
+        const columns = [
+            ["student_number", "Student ID"], ["full_name", "Student Name"], ["email", "Email"],
+            ["program_name", "Program"], ["course_code", "Course Code"], ["course_title", "Course"],
+            ["section_name", "Section"], ["faculty_name", "Faculty"], ["enrollment_status", "Enrollment Status"]
+        ];
+        const csv = [columns.map(column => column[1]), ...currentRows().map(item => columns.map(column => item[column[0]] || ""))]
+            .map(row => row.map(value => `"${String(value).replaceAll('"', '""')}"`).join(","))
+            .join("\r\n");
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+        link.href = url;
+        link.download = "department-class-roster.csv";
+        link.click();
+        URL.revokeObjectURL(url);
+    });
+
+    load();
 })();
 
 

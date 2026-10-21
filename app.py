@@ -4967,6 +4967,306 @@ def _department_head_section(section_id, department_id):
     return {**section, "course": courses[0]}
 
 
+def _department_head_roster_scope():
+    department_id = _department_head_department_id(g.authenticated_user.id)
+    if not department_id:
+        return None, None
+    department_rows = (
+        admin_supabase.table("departments")
+        .select("id, name, code")
+        .eq("id", department_id)
+        .limit(1)
+        .execute()
+        .data
+        or []
+    )
+    return department_id, department_rows[0] if department_rows else None
+
+
+@app.get("/api/department-head/class-roster")
+@require_role("department-head")
+def department_head_class_roster():
+    if not admin_supabase:
+        return jsonify({"error": "Department roster data is unavailable."}), 503
+    try:
+        department_id, department = _department_head_roster_scope()
+        if not department_id or not department:
+            return jsonify({"error": "Your account is not assigned to a department."}), 403
+
+        course_rows = (
+            admin_supabase.table("courses")
+            .select("id, code, title, department_id")
+            .eq("department_id", department_id)
+            .order("code")
+            .execute()
+            .data
+            or []
+        )
+        course_by_id = {row["id"]: row for row in course_rows}
+        course_ids = list(course_by_id)
+        sections = (
+            admin_supabase.table("course_sections")
+            .select("id, course_id, academic_year_id, academic_term_id, section_name, faculty_id")
+            .in_("course_id", course_ids)
+            .execute()
+            .data
+            or []
+        ) if course_ids else []
+        section_ids = [row["id"] for row in sections]
+        year_ids = list({row["academic_year_id"] for row in sections if row.get("academic_year_id")})
+        term_ids = list({row["academic_term_id"] for row in sections if row.get("academic_term_id")})
+        faculty_profile_ids = list({row["faculty_id"] for row in sections if row.get("faculty_id")})
+        years = (
+            admin_supabase.table("academic_years").select("id, name")
+            .in_("id", year_ids).execute().data or []
+        ) if year_ids else []
+        terms = (
+            admin_supabase.table("academic_terms").select("id, name, term_number, academic_year_id")
+            .in_("id", term_ids).execute().data or []
+        ) if term_ids else []
+        faculty_profiles = (
+            admin_supabase.table("faculty_profiles").select("id, user_id")
+            .in_("id", faculty_profile_ids).execute().data or []
+        ) if faculty_profile_ids else []
+        faculty_user_ids = list({row["user_id"] for row in faculty_profiles if row.get("user_id")})
+        faculty_users = (
+            admin_supabase.table("users").select("id, full_name")
+            .in_("id", faculty_user_ids).execute().data or []
+        ) if faculty_user_ids else []
+        faculty_name_by_id = {
+            profile["id"]: next((user.get("full_name", "") for user in faculty_users
+                                  if user["id"] == profile.get("user_id")), "")
+            for profile in faculty_profiles
+        }
+        years_by_id = {row["id"]: row.get("name", "") for row in years}
+        terms_by_id = {row["id"]: row for row in terms}
+        sections_by_id = {row["id"]: row for row in sections}
+
+        enrollments = (
+            admin_supabase.table("enrollments")
+            .select("id, section_id, student_profile_id, enrollment_status")
+            .in_("section_id", section_ids)
+            .execute()
+            .data
+            or []
+        ) if section_ids else []
+        profile_ids = list({row["student_profile_id"] for row in enrollments if row.get("student_profile_id")})
+        profiles = (
+            admin_supabase.table("student_profiles")
+            .select("id, user_id, student_number, program_id")
+            .in_("id", profile_ids)
+            .execute()
+            .data
+            or []
+        ) if profile_ids else []
+        profiles_by_id = {row["id"]: row for row in profiles}
+        user_ids = list({row["user_id"] for row in profiles if row.get("user_id")})
+        users = (
+            admin_supabase.table("users")
+            .select("id, full_name, email, role, is_active")
+            .in_("id", user_ids)
+            .execute()
+            .data
+            or []
+        ) if user_ids else []
+        users_by_id = {row["id"]: row for row in users}
+        program_ids = list({row.get("program_id") for row in profiles if row.get("program_id")})
+        programs = (
+            admin_supabase.table("programs").select("id, name, code, department_id")
+            .in_("id", program_ids).execute().data or []
+        ) if program_ids else []
+        programs_by_id = {row["id"]: row for row in programs}
+
+        roster = []
+        for enrollment in enrollments:
+            section = sections_by_id.get(enrollment.get("section_id"), {})
+            course = course_by_id.get(section.get("course_id"), {})
+            profile = profiles_by_id.get(enrollment.get("student_profile_id"), {})
+            user = users_by_id.get(profile.get("user_id"), {})
+            if user.get("role") != "student":
+                continue
+            year_id = section.get("academic_year_id")
+            term = terms_by_id.get(section.get("academic_term_id"), {})
+            program = programs_by_id.get(profile.get("program_id"), {})
+            roster.append({
+                "enrollment_id": enrollment.get("id"),
+                "student_profile_id": profile.get("id"),
+                "student_number": profile.get("student_number", ""),
+                "full_name": user.get("full_name", ""),
+                "email": user.get("email", ""),
+                "program_id": profile.get("program_id", ""),
+                "program_name": program.get("name", ""),
+                "course_id": course.get("id", ""),
+                "course_code": course.get("code", ""),
+                "course_title": course.get("title", ""),
+                "section_id": section.get("id", ""),
+                "section_name": section.get("section_name", ""),
+                "academic_year_id": year_id or "",
+                "academic_year_name": years_by_id.get(year_id, ""),
+                "term_name": term.get("name", ""),
+                "faculty_id": section.get("faculty_id") or "",
+                "faculty_name": faculty_name_by_id.get(section.get("faculty_id"), "Unassigned") or "Unassigned",
+                "enrollment_status": enrollment.get("enrollment_status", ""),
+            })
+
+        program_options = (
+            admin_supabase.table("programs")
+            .select("id, name, code")
+            .eq("department_id", department_id)
+            .order("name")
+            .execute()
+            .data
+            or []
+        )
+        section_options = []
+        for section in sections:
+            course = course_by_id.get(section.get("course_id"), {})
+            term = terms_by_id.get(section.get("academic_term_id"), {})
+            year_id = section.get("academic_year_id")
+            section_options.append({
+                "id": section["id"],
+                "course_id": section.get("course_id"),
+                "course_code": course.get("code", ""),
+                "course_title": course.get("title", ""),
+                "section_name": section.get("section_name", ""),
+                "academic_year_id": year_id or "",
+                "academic_year_name": years_by_id.get(year_id, ""),
+                "academic_term_id": section.get("academic_term_id", ""),
+                "term_name": term.get("name", ""),
+                "faculty_id": section.get("faculty_id") or "",
+                "faculty_name": faculty_name_by_id.get(section.get("faculty_id"), "Unassigned") or "Unassigned",
+            })
+        department_head = admin_supabase.table("users").select("full_name").eq(
+            "id", str(g.authenticated_user.id)
+        ).limit(1).execute().data or []
+        return jsonify({
+            "department": {"id": department["id"], "name": department.get("name", "")},
+            "user_name": department_head[0].get("full_name", "") if department_head else "",
+            "school_years": [{"id": row["id"], "name": row.get("name", "")} for row in years],
+            "programs": program_options,
+            "courses": [{"id": row["id"], "code": row["code"], "title": row["title"]} for row in course_rows],
+            "sections": section_options,
+            "faculty": [
+                {"id": profile["id"], "name": faculty_name_by_id.get(profile["id"], "Faculty")}
+                for profile in faculty_profiles
+            ],
+            "roster": roster,
+            "metrics": {
+                "students": len({row["student_profile_id"] for row in roster}),
+                "enrolled": sum(row["enrollment_status"] == "active" for row in roster),
+                "faculty_rosters": len({section["faculty_id"] for section in sections if section.get("faculty_id")}),
+            },
+        }), 200
+    except Exception:
+        app.logger.exception("Unable to load Department Head class roster")
+        return jsonify({"error": "Department roster could not be loaded."}), 500
+
+
+@app.get("/api/department-head/class-roster/students")
+@require_role("department-head")
+def search_department_head_roster_students():
+    if not admin_supabase:
+        return jsonify({"error": "Student search is unavailable."}), 503
+    query = (request.args.get("q") or "").strip()
+    if len(query) < 2 or len(query) > 100:
+        return jsonify({"students": []}), 200
+    try:
+        department_id, _department = _department_head_roster_scope()
+        if not department_id:
+            return jsonify({"error": "Your account is not assigned to a department."}), 403
+        programs = admin_supabase.table("programs").select("id, name").eq(
+            "department_id", department_id
+        ).execute().data or []
+        program_ids = [row["id"] for row in programs]
+        if not program_ids:
+            return jsonify({"students": []}), 200
+        profiles_by_id = {}
+        for profile in (admin_supabase.table("student_profiles")
+                        .select("id, user_id, student_number, program_id")
+                        .in_("program_id", program_ids)
+                        .eq("is_enrolled", True)
+                        .ilike("student_number", f"%{query}%")
+                        .limit(20).execute().data or []):
+            profiles_by_id[profile["id"]] = profile
+        matched_users = []
+        for field in ("full_name", "email"):
+            matched_users.extend(admin_supabase.table("users")
+                                 .select("id, full_name, email")
+                                 .eq("role", "student").eq("is_active", True)
+                                 .ilike(field, f"%{query}%").limit(25).execute().data or [])
+        matched_user_ids = list({row["id"] for row in matched_users})
+        if matched_user_ids:
+            for profile in (admin_supabase.table("student_profiles")
+                            .select("id, user_id, student_number, program_id")
+                            .in_("program_id", program_ids)
+                            .in_("user_id", matched_user_ids)
+                            .eq("is_enrolled", True)
+                            .limit(30).execute().data or []):
+                profiles_by_id[profile["id"]] = profile
+        user_ids = list({row["user_id"] for row in profiles_by_id.values() if row.get("user_id")})
+        users = admin_supabase.table("users").select("id, full_name, email").in_(
+            "id", user_ids
+        ).eq("role", "student").eq("is_active", True).execute().data or [] if user_ids else []
+        users_by_id = {row["id"]: row for row in users}
+        program_by_id = {row["id"]: row for row in programs}
+        result = []
+        for profile in profiles_by_id.values():
+            user = users_by_id.get(profile.get("user_id"))
+            if not user:
+                continue
+            result.append({
+                "student_profile_id": profile["id"],
+                "student_number": profile.get("student_number", ""),
+                "full_name": user.get("full_name", ""),
+                "email": user.get("email", ""),
+                "program_name": program_by_id.get(profile.get("program_id"), {}).get("name", ""),
+            })
+        result.sort(key=lambda row: (row["full_name"].casefold(), row["student_number"]))
+        return jsonify({"students": result[:20]}), 200
+    except Exception:
+        app.logger.exception("Unable to search Department Head roster students")
+        return jsonify({"error": "Student search could not be completed."}), 500
+
+
+@app.post("/api/department-head/sections/<section_id>/enrollments")
+@require_role("department-head")
+def manage_department_head_roster_enrollment(section_id):
+    if not admin_supabase:
+        return jsonify({"error": "Roster enrollment is unavailable."}), 503
+    payload = request.get_json(silent=True) or {}
+    if not isinstance(payload, dict):
+        return jsonify({"error": "Enrollment data must be a JSON object."}), 400
+    action = payload.get("action", "enroll")
+    try:
+        section_uuid = str(UUID(str(section_id)))
+        student_profile_id = str(UUID(str(payload.get("student_profile_id", ""))))
+        department_id, _department = _department_head_roster_scope()
+        if not department_id or not _department_head_section(section_uuid, department_id):
+            return jsonify({"error": "Section is outside your department."}), 404
+        if action not in {"enroll", "drop"}:
+            return jsonify({"error": "Choose a valid roster action."}), 400
+        result = admin_supabase.rpc(
+            "manage_department_head_section_enrollment",
+            {
+                "p_section_id": section_uuid,
+                "p_actor_user_id": str(g.authenticated_user.id),
+                "p_student_profile_id": student_profile_id,
+                "p_action": action,
+            },
+        ).execute()
+        return jsonify({"result": result.data}), 200
+    except ValueError:
+        return jsonify({"error": "A valid section and student are required."}), 400
+    except Exception:
+        app.logger.exception("Unable to manage Department Head roster enrollment")
+        return jsonify({
+            "error": (
+                "Roster enrollment could not be saved. Verify that "
+                "database/department_head_roster_workflow.sql has been applied."
+            )
+        }), 503
+
+
 @app.get("/api/department-head/mapping-reviews")
 @require_role("department-head")
 def list_department_mapping_reviews():
