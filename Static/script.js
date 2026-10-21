@@ -9479,21 +9479,19 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function render() {
-        const visibleEnrollments = currentRows();
-        const studentsById = new Map();
-        visibleEnrollments.forEach(item => {
-            const key = item.student_profile_id || item.student_number;
-            if (!studentsById.has(key)) studentsById.set(key, { ...item, enrollments: [] });
-            studentsById.get(key).enrollments.push(item);
+        const enrollmentByStudentSection = new Map();
+        currentRows().forEach(item => {
+            const key = `${item.student_profile_id || item.student_number}:${item.section_id}`;
+            const existing = enrollmentByStudentSection.get(key);
+            if (!existing || (existing.enrollment_status !== "active" && item.enrollment_status === "active")) {
+                enrollmentByStudentSection.set(key, item);
+            }
         });
-        const visible = Array.from(studentsById.values());
+        const visible = Array.from(enrollmentByStudentSection.values());
         rosterBody.replaceChildren();
         visible.forEach((item, index) => {
             const row = document.createElement("tr");
-            const sectionsForStudent = [...new Set(item.enrollments.map(enrollment => enrollment.section_name).filter(Boolean))];
-            const facultyForStudent = [...new Set(item.enrollments.map(enrollment => enrollment.faculty_name).filter(Boolean))];
-            const programsForStudent = [...new Set(item.enrollments.map(enrollment => enrollment.program_name).filter(Boolean))];
-            [String(index + 1), item.student_number, item.full_name, item.email, sectionsForStudent.join(", "), facultyForStudent.join(", "), programsForStudent.join(", ")]
+            [String(index + 1), item.student_number, item.full_name, item.email, item.section_name, item.faculty_name, item.program_name]
                 .forEach(value => {
                     const cell = document.createElement("td");
                     cell.textContent = value || "?";
@@ -9501,23 +9499,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             const actionCell = document.createElement("td");
             actionCell.className = "crdh-row-actions";
-            const activeEnrollments = item.enrollments.filter(enrollment => enrollment.enrollment_status === "active");
-            if (activeEnrollments.length) {
-                activeEnrollments.forEach(enrollment => {
+            if (item.enrollment_status === "active") {
                 const button = document.createElement("button");
                 button.type = "button";
                 button.className = "crdh-remove";
-                button.dataset.sectionId = enrollment.section_id;
-                button.dataset.profileId = enrollment.student_profile_id;
+                button.dataset.sectionId = item.section_id;
+                button.dataset.profileId = item.student_profile_id;
                 button.dataset.action = "drop";
                 button.textContent = "Drop";
-                button.title = `Drop from ${enrollment.section_name || "this section"}`;
+                button.title = `Drop from ${item.section_name || "this section"}`;
                 actionCell.appendChild(button);
-                });
-            } else if (item.enrollments.some(enrollment => enrollment.enrollment_status === "dropped")) {
-                actionCell.textContent = "Dropped";
             } else {
-                actionCell.textContent = "—";
+                actionCell.textContent = item.enrollment_status === "dropped" ? "Dropped" : "—";
             }
             row.appendChild(actionCell);
             rosterBody.appendChild(row);
@@ -9533,8 +9526,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const totalStudents = new Set(visible.map(item => item.student_profile_id)).size;
         $("crdhTotal").textContent = String(totalStudents);
         $("crdhEnrolled").textContent = String(new Set(
-            visible.filter(item => item.enrollments.some(enrollment => enrollment.enrollment_status === "active"))
-                .map(item => item.student_profile_id)
+            visible.filter(item => item.enrollment_status === "active").map(item => item.student_profile_id)
         ).size);
         const selectedCourse = $("crdhCourse").selectedOptions[0];
         $("crdhCourseTitle").textContent = selectedCourse && selectedCourse.value ? selectedCourse.textContent : "All Courses";
@@ -9553,7 +9545,7 @@ document.addEventListener("DOMContentLoaded", function () {
         ).length;
         $("crdhFacultyRosterCount").textContent = String(facultyRosterCount);
         const uniqueStudents = new Set(roster.map(item => item.student_profile_id)).size;
-        $("crdhCount").textContent = `Showing ${visible.length} students from ${visibleEnrollments.length} enrollment records (${uniqueStudents} students total)`;
+        $("crdhCount").textContent = `Showing ${visible.length} enrollment records (${uniqueStudents} unique students total)`;
     }
 
     function setNote(message, isError) {
