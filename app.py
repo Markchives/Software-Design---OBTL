@@ -5384,16 +5384,9 @@ def search_department_head_roster_students():
         department_id, _department = _department_head_roster_scope()
         if not department_id:
             return jsonify({"error": "Your account is not assigned to a department."}), 403
-        programs = admin_supabase.table("programs").select("id, name").eq(
-            "department_id", department_id
-        ).execute().data or []
-        program_ids = [row["id"] for row in programs]
-        if not program_ids:
-            return jsonify({"students": []}), 200
         profiles_by_id = {}
         for profile in (admin_supabase.table("student_profiles")
                         .select("id, user_id, student_number, program_id")
-                        .in_("program_id", program_ids)
                         .ilike("student_number", f"%{query}%")
                         .limit(20).execute().data or []):
             profiles_by_id[profile["id"]] = profile
@@ -5407,7 +5400,6 @@ def search_department_head_roster_students():
         if matched_user_ids:
             for profile in (admin_supabase.table("student_profiles")
                             .select("id, user_id, student_number, program_id")
-                            .in_("program_id", program_ids)
                             .in_("user_id", matched_user_ids)
                             .limit(30).execute().data or []):
                 profiles_by_id[profile["id"]] = profile
@@ -5416,6 +5408,10 @@ def search_department_head_roster_students():
             "id", user_ids
         ).eq("role", "student").eq("is_active", True).execute().data or [] if user_ids else []
         users_by_id = {row["id"]: row for row in users}
+        program_ids = list({row.get("program_id") for row in profiles_by_id.values() if row.get("program_id")})
+        programs = admin_supabase.table("programs").select("id, name").in_(
+            "id", program_ids
+        ).execute().data or [] if program_ids else []
         program_by_id = {row["id"]: row for row in programs}
         result = []
         for profile in profiles_by_id.values():
