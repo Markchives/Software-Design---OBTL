@@ -1,3 +1,129 @@
+/* Short-lived API response cache for duplicate reads within this page. */
+(function () {
+    'use strict';
+    if (window.__eduMetricsFetchCacheInstalled) return;
+    window.__eduMetricsFetchCacheInstalled = true;
+
+    const nativeFetch = window.fetch.bind(window);
+    const cache = new Map();
+    const pending = new Map();
+    const ttlMs = 8000;
+    const maxEntries = 60;
+    let generation = 0;
+    const channel = typeof BroadcastChannel === 'function'
+        ? new BroadcastChannel('edumetrics-api-cache')
+        : null;
+
+    function clearCache(broadcast) {
+        cache.clear();
+        generation += 1;
+        if (broadcast && channel) channel.postMessage('invalidate');
+    }
+    window.__eduMetricsClearApiCache = function () {
+        clearCache(true);
+    };
+
+    if (channel) {
+        channel.addEventListener('message', event => {
+            if (event.data === 'invalidate') clearCache(false);
+        });
+    }
+
+    function requestDetails(input, options) {
+        const request = input instanceof Request ? input : null;
+        const method = String(options?.method || request?.method || 'GET').toUpperCase();
+        const rawUrl = request ? request.url : String(input);
+        let url;
+        try {
+            url = new URL(rawUrl, window.location.href);
+        } catch (_) {
+            return { method, url: null };
+        }
+        return { method, url };
+    }
+
+    function cacheableResponse(response) {
+        if (!response.ok || response.status === 204) return false;
+        const contentType = response.headers.get('content-type') || '';
+        const cacheControl = response.headers.get('cache-control') || '';
+        const vary = response.headers.get('vary') || '';
+        const varyHeaders = vary.split(',').map(header => header.trim().toLowerCase()).filter(Boolean);
+        return contentType.includes('application/json')
+            && !/\b(?:no-store|no-cache)\b/i.test(cacheControl)
+            && !/(?:^|,)\s*max-age\s*=\s*"?0"?\s*(?:,|$)/i.test(cacheControl)
+            && varyHeaders.every(header => header === 'accept' || header === 'cookie');
+    }
+
+    function remember(key, response, requestGeneration) {
+        if (generation !== requestGeneration || !cacheableResponse(response)) return;
+        cache.delete(key);
+        cache.set(key, { response: response.clone(), expiresAt: Date.now() + ttlMs });
+        while (cache.size > maxEntries) {
+            cache.delete(cache.keys().next().value);
+        }
+    }
+
+    window.fetch = function (input, options) {
+        const { method, url } = requestDetails(input, options);
+        const request = input instanceof Request ? input : null;
+        const headers = new Headers(options?.headers || request?.headers || {});
+        const isApi = url
+            && url.origin === window.location.origin
+            && url.pathname.startsWith('/api/');
+
+        if (!isApi) return nativeFetch(input, options);
+        if (method !== 'GET') {
+            clearCache(true);
+            return nativeFetch(input, options).then(response => {
+                if (response.status === 401 || response.status === 403) {
+                    clearCache(true);
+                }
+                return response;
+            });
+        }
+
+        const excluded = url.pathname.startsWith('/api/auth/')
+            || url.pathname === '/api/account/profile'
+            || url.pathname.startsWith('/api/reports/');
+        const cacheMode = options?.cache || request?.cache;
+        const credentials = options?.credentials || request?.credentials || 'same-origin';
+        if (excluded
+            || cacheMode === 'no-store'
+            || cacheMode === 'no-cache'
+            || credentials === 'omit'
+            || headers.has('authorization')) {
+            return nativeFetch(input, options);
+        }
+
+        const requestGeneration = generation;
+        const key = `${url.href}\n${headers.get('accept') || ''}`;
+        const cached = cache.get(key);
+        if (cached && cached.expiresAt > Date.now()) {
+            cache.delete(key);
+            cache.set(key, cached);
+            return Promise.resolve(cached.response.clone());
+        }
+        if (cached) cache.delete(key);
+
+        const pendingKey = `${requestGeneration}:${key}`;
+        const existing = pending.get(pendingKey);
+        if (existing) return existing.then(response => response.clone());
+
+        const request = nativeFetch(input, options).then(response => {
+            if (response.status === 401 || response.status === 403) {
+                clearCache(true);
+            } else {
+                remember(key, response, requestGeneration);
+            }
+            return response;
+        }).finally(() => {
+            pending.delete(pendingKey);
+        });
+        pending.set(pendingKey, request);
+        return request.then(response => response.clone());
+    };
+})();
+
 function studentSectionScopedUrl(path) {
     const sectionId = new URLSearchParams(window.location.search).get("section_id");
     if (!sectionId) return path;
@@ -2777,6 +2903,7 @@ function isValidRole(role) {
 /* SOCIAL LOGIN / SIGNUP */
 function socialLogin(provider) {
     /* SOCIAL LOGIN FLOW */
+    window.__eduMetricsClearApiCache?.();
     const params = new URLSearchParams(window.location.search);
     let role = params.get("role") ||
         getSelectedRole() ||
