@@ -35,6 +35,12 @@
 <h1>Curriculum Mapping</h1>
 <p>Manage course outcomes, assessment mappings, and student attainment.</p>
 </section>
+<section aria-labelledby="mappingReviewTitle" class="cm-student-content" id="mappingReviewWorkflow">
+<header class="cm-assessment-toolbar"><div><h2 id="mappingReviewTitle">Faculty Mapping Submissions</h2><p>Review submitted Course Outcome, Student Outcome, and assessment mappings for sections in your department.</p></div><label for="mappingReviewSection">Course section</label><select aria-label="Course section to review" id="mappingReviewSection"><option value="">Loading department sections...</option></select></header>
+<div class="cm-table-wrap"><table class="cm-table"><thead><tr><th>Assessment / Course Outcome</th><th>Type</th><th>Mapped CO(s)</th><th>Aligned SO(s)</th><th>Attainment</th><th>Review status</th></tr></thead><tbody id="mappingReviewRows"><tr><td colspan="6">Select a course section to load its mappings.</td></tr></tbody></table></div>
+<p aria-live="polite" class="faculty-outcome-status" id="mappingReviewStatus" role="status">Loading department sections...</p>
+<div class="cm-assessment-modal-actions"><button class="cm-assessment-cancel-btn" id="loadMappingReview" type="button">Load selected section</button><button class="cm-assessment-save-btn" id="verifyMappingReview" type="button" disabled>Verify mappings</button></div>
+</section>
 <section class="cm-student-filters dh-filters">
 <div class="cm-filter-group"><label for="cmDeptSchoolYear">School Year</label><select id="cmDeptSchoolYear"><option selected="" value="">Select School Year</option></select></div>
 <div class="cm-filter-group"><label for="cmDeptDepartment">Department</label><select id="cmDeptDepartment"><option selected="" value="">All Departments</option></select></div>
