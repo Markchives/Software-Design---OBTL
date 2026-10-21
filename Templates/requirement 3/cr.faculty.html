@@ -42,14 +42,14 @@
 <section class="cr-roster-panel crf-roster-panel">
 <div class="crf-section-picker crf-tool-field"><label for="crfSectionSelect">Assigned Section</label><select id="crfSectionSelect"><option value="">Loading assigned sections…</option></select></div>
 <div class="cr-toolbar crf-toolbar">
-<div class="crf-tool-field"><label for="crfCategory">Enrollment Status</label><select id="crfCategory"><option value="all">All statuses</option><option value="active">Active</option><option value="dropped">Dropped</option><option value="completed">Completed</option></select></div>
+<div class="crf-tool-field"><label for="crfCategory">Enrollment Status</label><select id="crfCategory"><option value="all">All statuses</option><option value="join_pending">Join requests</option><option value="active">Active</option><option value="dropped">Dropped</option><option value="completed">Completed</option></select></div>
 <div class="cr-sort-wrap"><label for="crfSort">Sort By</label><select id="crfSort"><option value="az">Students Name A-Z</option><option value="za">Students Name Z-A</option><option value="id">Student ID</option></select></div>
 <label class="cr-search crf-search"><span aria-hidden="true">⌕</span><input aria-label="⌕" id="crfSearch" placeholder="Search student id, name, or email..." type="search"/></label>
 <div class="crf-toolbar-actions"><button class="crf-outline-btn" id="crfAddStudentOpen" type="button">＋ Add Student</button><button class="crf-import-btn" id="crfImportOpen" type="button">＋ Import CSV</button><button class="crf-download-btn" id="crfDownload" type="button">⇩ Download</button></div>
 </div>
 <div class="cr-table-wrap">
 <table class="cr-table crf-table">
-<thead><tr><th>#</th><th>Student ID</th><th>Student Name</th><th>Email</th><th>Enrollment Status</th><th>Action</th></tr></thead>
+<thead><tr><th>#</th><th>Student ID</th><th>Student Name</th><th>Email</th><th>Enrollment Status</th><th>Course Request / Action</th></tr></thead>
 <tbody id="crfRosterBody">
 </tbody>
 </table>

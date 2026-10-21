@@ -3942,6 +3942,10 @@ body > #rrDialog[hidden]{display:none!important;}
 .student-courses-page .sc-join-dialog p{font-size:13px;color:#637b96;margin:8px 0 17px;}
 .student-courses-page .sc-join-dialog label{display:block;font-size:12px;font-weight:800;margin:12px 0 5px;}
 .student-courses-page .sc-join-dialog input{width:100%;box-sizing:border-box;padding:10px;border:1px solid #aac7e3;border-radius:8px;}
+.student-courses-page .sc-join-dialog select{width:100%;box-sizing:border-box;padding:10px;border:1px solid #aac7e3;border-radius:8px;background:#fff;color:#004179;}
+.student-courses-page #scJoinStatus{min-height:18px;margin:10px 0 0;color:#315d84;}
+.student-courses-page #scJoinStatus.is-error{color:#b42318;}
+.crf-join-decision{margin:2px 4px 2px 0;}
 .student-courses-page .sc-dialog-buttons{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;}
 .student-courses-page .sc-empty-state{padding:35px;text-align:center;border:1px dashed #aac7e3;border-radius:12px;color:#637b96;font-size:14px;}
 .student-hidden-courses-page .sc-course-grid{grid-auto-rows:max-content;}
