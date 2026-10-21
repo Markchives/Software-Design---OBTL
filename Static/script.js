@@ -9648,7 +9648,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
                 if (!results.children.length) {
                     const empty = document.createElement("p");
-                    empty.textContent = "No registered student account found in your department.";
+                    empty.textContent = "No active registered student account found.";
                     results.appendChild(empty);
                 }
             } catch (error) {

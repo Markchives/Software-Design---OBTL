@@ -64,15 +64,6 @@ BEGIN
          WHERE profile.id = p_student_profile_id
            AND student.role = 'student'
            AND student.is_active IS TRUE
-           AND (
-               v_role <> 'department-head'
-               OR EXISTS (
-                   SELECT 1
-                     FROM public.programs AS program
-                    WHERE program.id = profile.program_id
-                      AND program.department_id = v_actor_department_id
-               )
-           )
     ) INTO v_student_valid;
     IF NOT v_student_valid THEN
         RAISE EXCEPTION 'An active student account is required.';
