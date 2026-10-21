@@ -147,8 +147,8 @@
                 </button>
 </section>
 <section class="so-content-card so-workflow-manager" id="soWorkflowManager">
-<select aria-label="Assigned course section" id="soFacultySection" hidden><option value="">Loading assigned sections...</option></select>
-<p class="so-workflow-status" id="soFacultyStatus" role="status" aria-live="polite">Loading your assigned course...</p>
+<select aria-label="Assigned course section" id="soFacultySection" hidden><option value="">Select assigned section</option></select>
+<p class="so-workflow-status so-panel-feedback" id="soFacultyStatus" role="status" aria-live="polite" hidden></p>
 <div class="sodh-tabs sof-tabs" role="tablist" aria-label="Syllabus and outcome management">
 <button class="sodh-tab sof-tab active" id="soTabSyllabus" role="tab" aria-controls="syllabus" aria-selected="true" data-tab="syllabus" type="button">
                         Course Syllabus
@@ -175,7 +175,7 @@
 </label>
 </div>
 </div>
-<p aria-live="polite" class="so-workflow-status" id="facultySyllabusStatus" role="status">Select a course workspace to load its syllabus.</p>
+<p aria-live="polite" class="so-workflow-status" id="facultySyllabusStatus" role="status"></p>
 <div class="sof-syllabus-empty" id="facultySyllabusEmpty">
 <h3>
                             No syllabus uploaded
@@ -292,7 +292,7 @@
 <div class="sodh-table-wrap sof-outcome-table-wrap">
 <table class="sodh-table sof-outcome-table sof-student-outcome-table">
 <thead><tr><th>Student Outcome</th><th>Due Date</th><th>Responses</th><th>Status</th><th>Actions</th></tr></thead>
-<tbody id="soAssessmentRows"><tr><td colspan="5">Loading Student Outcomes...</td></tr></tbody>
+<tbody id="soAssessmentRows"></tbody>
 </table>
 </div>
 <div class="sodh-table-wrap" id="soResponseLog" hidden><h3>Response log</h3><table class="sodh-table"><thead><tr><th>Student number</th><th>Name</th><th>Program</th><th>Submitted</th><th>Answers</th></tr></thead><tbody id="soResponseRows"></tbody></table></div>

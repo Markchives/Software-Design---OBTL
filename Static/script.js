@@ -116,7 +116,7 @@ function studentSectionScopedUrl(path) {
             }
         });
     }
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initAcFaculty);
+    if (document.readyState === '') document.addEventListener('DOMContentLoaded', initAcFaculty);
     else initAcFaculty();
 })();
 
@@ -321,7 +321,7 @@ function studentSectionScopedUrl(path) {
     sectionSelect.addEventListener('change', loadReview);
     verifyButton.addEventListener('click', async () => {
         if (!currentReview || !sectionSelect.value) return;
-        verifyButton.disabled = true; status.textContent = 'Verifying mappings...';
+        verifyButton.disabled = true; status.textContent = '';
         try {
             await request('/api/department-head/sections/' + encodeURIComponent(sectionSelect.value) + '/verify-mappings', { method: 'POST' });
             status.textContent = 'Mappings verified. The syllabus and outcome information are now visible to enrolled students.';
@@ -399,7 +399,7 @@ function studentSectionScopedUrl(path) {
                 status.textContent = 'No syllabus outcomes are available for this course.';
             }
             else if (!data.student_outcomes?.length) status.textContent = 'No Student Outcomes are configured yet. Contact your Department Head before mapping.';
-            else status.textContent = '';
+            else status.textContent = data.outcomes.length + ' Course Outcome(s) loaded. Select one or more aligned Student Outcomes, then save.';
         } catch (error) { status.textContent = error.message; }
     }
     request('/api/faculty/sections').then(data => {
@@ -540,7 +540,7 @@ function studentSectionScopedUrl(path) {
     document.addEventListener('click', e => { const button = e.target.closest('button'); if (!button) return; const row = button.closest('#rpRows tr'); if (row && (button.matches('.rp-view,.rp-download'))) { e.preventDefault(); if (button.matches('.rp-view')) preview(row); else download(row); return; } if (button.id === 'rpClose' || button.id === 'rpDone') { $('rpDialog').close(); return; } if (button.id === 'rpDialogDownload' && selected) { download(selected); return; } if (button.id === 'rpExport') { const head = ['Report ID', 'Report Type', 'Course / Section', 'Owner', 'Updated', 'Status', 'Description']; const data = [head, ...rows().filter(r => !r.hidden).map(r => { const d = info(r); return [d.id, d.type, d.course, d.owner, d.updated, d.status, d.description] })]; downloadFile('faculty-compliance-report-index.csv', data.map(row => row.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\r\n'), 'text/csv;charset=utf-8'); } }, true);
     document.addEventListener('input', e => { if (e.target.id === 'rpSearch') filter() }, true);
     document.addEventListener('change', e => { if (e.target.id === 'rpType' || e.target.id === 'rpStatus') filter() }, true);
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', filter, { once: true }); else filter();
+    if (document.readyState === '') document.addEventListener('DOMContentLoaded', filter, { once: true }); else filter();
 })();
 
 /* RP STUDENT — reliable, standalone delegated report actions (shared script.js) */
@@ -638,7 +638,7 @@ function studentSectionScopedUrl(path) {
         });
         filter();
     }
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialize, { once: true }); else initialize();
+    if (document.readyState === '') document.addEventListener('DOMContentLoaded', initialize, { once: true }); else initialize();
 })();
 
 /* AC Department Head: Gradebook navigation and tab controller (early, independent). */
@@ -676,7 +676,7 @@ function studentSectionScopedUrl(path) {
     function initial() {
         if (location.hash === "#gradebook-approval") activateGradebook(true);
     }
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initial);
+    if (document.readyState === "") document.addEventListener("DOMContentLoaded", initial);
     else initial();
     window.addEventListener("hashchange", initial);
 })();
@@ -722,7 +722,7 @@ function studentSectionScopedUrl(path) {
             });
         });
     }
-    if (document.readyState === 'loading') {
+    if (document.readyState === '') {
         document.addEventListener('DOMContentLoaded', setup, { once: true });
     } else {
         setup();
@@ -905,7 +905,7 @@ function studentSectionScopedUrl(path) {
         }
         load();
     }
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initCQIDepartmentHead);
+    if (document.readyState === '') document.addEventListener('DOMContentLoaded', initCQIDepartmentHead);
     else initCQIDepartmentHead();
 })();
 
@@ -931,7 +931,7 @@ function studentSectionScopedUrl(path) {
     }
     function show(which) { returnFocus = document.activeElement; which.hidden = false; document.body.style.overflow = 'hidden'; (which.querySelector('input,select,textarea,button'))?.focus(); }
     function close() { modal.hidden = true; deleteModal.hidden = true; document.body.style.overflow = ''; returnFocus?.focus(); }
-    const targetOf = plan => (plan?.targets || [])[0] || {};
+    const targetOf = plan => (plan.targets || [])[0] || {};
     const statusLabel = value => ({ draft: 'Draft', submitted: 'Submitted', approved: 'Approved', returned: 'For Revision', rejected: 'Rejected', ongoing: 'Ongoing', completed: 'Completed' }[value] || value);
     function updateSummary() {
         $('cqifDraftCount').textContent = String(plans.filter(plan => ['draft', 'returned'].includes(plan.status)).length);
@@ -971,7 +971,7 @@ function studentSectionScopedUrl(path) {
         const select = $('cqifCo'), summary = $('cqifAttainment');
         select.disabled = true;
         select.innerHTML = '<option value="">Loading attainment...</option>';
-        summary.textContent = 'Loading current attainment and target...';
+        summary.textContent = '';
         if (!sectionId) {
             select.innerHTML = '<option value="">Select a section first</option>';
             summary.textContent = 'CQI planning requires verified CO–SO mappings and released assessment results. Gradebook locking is not required.';
@@ -1038,7 +1038,7 @@ function studentSectionScopedUrl(path) {
         ).join('');
     }
     async function loadWorkspace() {
-        feedback.textContent = 'Loading CQI plans...';
+        feedback.textContent = '';
         try {
             const data = await api('/api/faculty/cqi');
             sections = data.sections || [];
@@ -1541,7 +1541,7 @@ function studentSectionScopedUrl(path) {
             const value = document.getElementById(id);
             if (value) value.textContent = "—";
         });
-        setMessage(rosterMessage, "Loading roster…", false);
+        setMessage(rosterMessage, "", false);
         try {
             const result = await api(
                 "/api/faculty/sections/" + encodeURIComponent(section.section_id) + "/roster"
@@ -3788,7 +3788,7 @@ async function initializePersistentFacultySyllabus(sectionSelect) {
             status.textContent = "Select an assigned section to manage its syllabus.";
             return;
         }
-        status.textContent = '';
+        status.textContent = "";
         try {
             const result = await request("/api/faculty/syllabi/" +
                 encodeURIComponent(sectionSelect.value));
@@ -3813,7 +3813,7 @@ async function initializePersistentFacultySyllabus(sectionSelect) {
         const formData = new FormData();
         formData.append("syllabus", file);
         fileInput.disabled = true;
-        status.textContent = "Uploading syllabus...";
+        status.textContent = "";
         try {
             await request("/api/faculty/syllabi/" +
                 encodeURIComponent(sectionSelect.value), {
@@ -6960,9 +6960,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function renderActivities() {
         tbody.replaceChildren();
-        const readOnly = ['for_verification', 'verified', 'locked'].includes(
-            workspace?.gradebook_status
-        );
+        const locked = workspace?.gradebook_status === 'locked';
         (workspace?.assessments || []).forEach(activity => {
             const row = document.createElement('tr');
             const values = [
@@ -6982,13 +6980,13 @@ document.addEventListener("DOMContentLoaded", function () {
             edit.className = 'cm-action-btn cm-edit-btn';
             edit.dataset.action = 'edit';
             edit.textContent = 'Edit';
-            edit.disabled = readOnly;
+            edit.disabled = locked;
             const remove = document.createElement('button');
             remove.type = 'button';
             remove.className = 'cm-action-btn cm-delete-btn';
             remove.dataset.action = 'delete';
             remove.textContent = 'Delete';
-            remove.disabled = readOnly;
+            remove.disabled = locked;
             actions.append(edit, remove);
             row.appendChild(actions);
             tbody.appendChild(row);
@@ -7002,9 +7000,9 @@ document.addEventListener("DOMContentLoaded", function () {
             row.appendChild(cell);
             tbody.appendChild(row);
         }
-        openBtn.disabled = !sectionSelect.value || readOnly || !workspace?.outcomes.length;
-        if (readOnly) {
-            status.textContent = 'This gradebook is under review or locked. Activities and mappings are read-only.';
+        openBtn.disabled = !sectionSelect.value || locked || !workspace?.outcomes.length;
+        if (locked) {
+            status.textContent = 'This gradebook is locked. Activities and mappings are read-only.';
         } else if (!workspace?.outcomes.length) {
             status.textContent = 'Add Course Outcomes in Syllabus & Outcomes before creating activity mappings.';
         } else {
@@ -7254,6 +7252,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function setContext(section) {
+        document.getElementById("cmFacultySchoolYear").textContent = section?.academic_year_name || "—";
+        document.getElementById("cmFacultyDepartment").textContent = section?.department_name || "—";
+        document.getElementById("cmFacultyCourse").textContent = section
+            ? `${section.course_code} · ${section.course_title}` : "—";
+        document.getElementById("cmFacultySection").textContent = section?.section_name || "—";
         window.syncEduMetricsWorkspaceSection?.(section?.section_id || "", section || undefined);
     }
 
@@ -7318,15 +7321,11 @@ document.addEventListener("DOMContentLoaded", function () {
             const edit = document.createElement("button");
             edit.type = "button"; edit.className = "cm-action-btn cm-edit-btn";
             edit.dataset.action = "edit"; edit.textContent = "Edit";
-            edit.disabled = ["for_verification", "verified", "locked"].includes(
-                workspace.gradebook_status
-            );
+            edit.disabled = workspace.gradebook_status === "locked";
             const remove = document.createElement("button");
             remove.type = "button"; remove.className = "cm-action-btn cm-delete-btn";
             remove.dataset.action = "delete"; remove.textContent = "Delete";
-            remove.disabled = ["for_verification", "verified", "locked"].includes(
-                workspace.gradebook_status
-            );
+            remove.disabled = workspace.gradebook_status === "locked";
             actions.append(edit, remove);
             row.appendChild(actions);
             row.dataset.assessmentId = activity.id;
@@ -7335,10 +7334,8 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!activities.length) {
             activityBody.innerHTML = '<tr><td colspan="5">No activities are set up for this section yet.</td></tr>';
         }
-        if (status) status.textContent = ["for_verification", "verified", "locked"].includes(
-            workspace?.gradebook_status
-        )
-            ? "This gradebook is under review or locked. Activities and mappings are read-only."
+        if (status) status.textContent = workspace?.gradebook_status === "locked"
+            ? "This gradebook is locked. Activities and mappings are read-only."
             : "Activities are shared with Assessment Entry; only released scores contribute to CO attainment.";
     }
 
@@ -7358,7 +7355,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         if (!outcomes.length) outcomeBody.innerHTML = '<tr><td colspan="7">No Course Outcomes are configured for this course.</td></tr>';
         if (outcomeStatus) outcomeStatus.textContent = outcomes.length
-            ? '' : "Add Course Outcomes in Syllabus & Outcomes.";
+            ? `${outcomes.length} Course Outcome(s) loaded.` : "Add Course Outcomes in Syllabus & Outcomes.";
     }
 
     function calculateStudentResults() {
@@ -7455,11 +7452,11 @@ document.addEventListener("DOMContentLoaded", function () {
             renderActivities(); renderOutcomes(); renderStudents(); setSummaryValues();
             const message = sections.length > 1
                 ? "Open Curriculum Mapping from a specific assigned course section."
-                : sections.length ? "Loading your assigned course..." : "No course sections are assigned to your Faculty account.";
+                : sections.length ? "" : "No course sections are assigned to your Faculty account.";
             if (status) status.textContent = message;
             return;
         }
-        if (status) status.textContent = '';
+        if (status) status.textContent = "";
         try {
             const [assessmentData, attainmentData] = await Promise.all([
                 request(`/api/faculty/sections/${encodeURIComponent(section.section_id)}/assessments`),
@@ -7711,7 +7708,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
         if (status)
-            status.textContent = '';
+            status.textContent = "";
         try {
             const response = await fetch(
                 "/api/student/sections/" + encodeURIComponent(sectionId) + "/roster",
@@ -7802,7 +7799,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    if (document.readyState === "loading") {
+    if (document.readyState === "") {
         document.addEventListener("DOMContentLoaded", initializeWebsiteLoginDropdown);
     } else {
         initializeWebsiteLoginDropdown();
@@ -7959,7 +7956,7 @@ document.addEventListener("DOMContentLoaded", function () {
         filterGuides();
     }
 
-    if (document.readyState === "loading") {
+    if (document.readyState === "") {
         document.addEventListener("DOMContentLoaded", initializeResources, { once: true });
     } else {
         initializeResources();
@@ -8047,7 +8044,7 @@ document.addEventListener("DOMContentLoaded", function () {
         showSlide(0);
     }
 
-    if (document.readyState === "loading") {
+    if (document.readyState === "") {
         document.addEventListener("DOMContentLoaded", initializeBlogCarousel);
     } else {
         initializeBlogCarousel();
@@ -8112,241 +8109,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Keep the preview role when navigating to shared main pages.
     sessionStorage.setItem('edumetricsRole', selected);
     sessionStorage.setItem('userRole', selected);
-})();
-
-/* Populate role-specific dashboard metrics from authenticated, role-scoped APIs. */
-(function () {
-    const root = document.getElementById('dashboardRoleContent');
-    const role = document.body.dataset.dashboardRole;
-    const status = root?.querySelector('[data-dashboard-status]');
-    if (!root || !status || !['student', 'faculty', 'department-head'].includes(role)) return;
-
-    async function api(url) {
-        const response = await fetch(url, {
-            headers: { Accept: 'application/json' },
-            credentials: 'same-origin'
-        });
-        if (!(response.headers.get('content-type') || '').includes('application/json')) {
-            throw new Error('The server did not return dashboard data. Sign in again and retry.');
-        }
-        let result;
-        try {
-            result = await response.json();
-        } catch (_) {
-            throw new Error('The server returned an invalid dashboard response.');
-        }
-        if (!response.ok) throw new Error(result.error || 'Dashboard data could not be loaded.');
-        return result;
-    }
-
-    function setValue(key, value, detail) {
-        const target = root.querySelector('[data-dashboard-value="' + key + '"]');
-        if (!target) return;
-        target.replaceChildren(document.createTextNode(String(value)));
-        if (detail !== undefined && detail !== null) {
-            const small = document.createElement('small');
-            small.textContent = String(detail);
-            target.appendChild(small);
-        }
-    }
-
-    function setCaption(key, value) {
-        const target = root.querySelector('[data-dashboard-caption="' + key + '"]');
-        if (target) target.textContent = value;
-    }
-
-    function setProgress(key, value) {
-        const target = root.querySelector('[data-dashboard-progress="' + key + '"]');
-        if (target) {
-            const percent = Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
-            target.style.width = percent + '%';
-        }
-    }
-
-    function setProfile(profile) {
-        root.querySelectorAll('[data-dashboard-profile]').forEach(function (target) {
-            const field = target.dataset.dashboardProfile;
-            const value = field === 'name' ? profile.full_name : profile[field];
-            target.textContent = value || (field === 'name' ? 'Welcome back!' : '—');
-        });
-    }
-
-    function uniqueCount(rows, key) {
-        return new Set(rows.map(row => row[key]).filter(Boolean)).size;
-    }
-
-    function average(values) {
-        const available = values.map(Number).filter(Number.isFinite);
-        return available.length
-            ? available.reduce((total, value) => total + value, 0) / available.length
-            : null;
-    }
-
-    async function loadStudentDashboard() {
-        const [profileData, coursesData, soData, syllabiData, scoresData] = await Promise.all([
-            api('/api/account/profile'),
-            api('/api/student/courses'),
-            api('/api/student/so-assessments'),
-            api('/api/student/syllabi'),
-            api('/api/student/assessment-scores')
-        ]);
-        setProfile(profileData.profile || {});
-
-        const courses = coursesData.courses || [];
-        const assessments = soData.assessments || [];
-        const syllabi = syllabiData.syllabi || [];
-        const scores = scoresData.assessments || [];
-        const courseCount = uniqueCount(courses, 'course_code');
-        const today = new Date();
-        const todayUtc = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
-        const dueThisWeek = assessments.filter(function (assessment) {
-            if (!assessment.due_date) return false;
-            const due = new Date(assessment.due_date + 'T00:00:00Z').getTime();
-            const days = (due - todayUtc) / 86400000;
-            return days >= 0 && days <= 7;
-        }).length;
-        const totalSoAssessments = Number(soData.assessment_total) || 0;
-        const completedSoAssessments = Number(soData.assessment_completed) || 0;
-        const soCompletion = totalSoAssessments
-            ? Math.round(completedSoAssessments / totalSoAssessments * 100)
-            : null;
-        const releasedScores = scores.filter(row => row.has_score &&
-            row.percentage !== null && row.percentage !== undefined &&
-            Number.isFinite(Number(row.percentage)));
-        const assessmentAverage = average(releasedScores.map(row => row.percentage));
-        const coursesWithScores = uniqueCount(releasedScores, 'course_code');
-
-        setValue('student-courses', courseCount, 'courses');
-        setValue('student-pending-assessments', assessments.length);
-        setCaption('student-due-week', dueThisWeek + ' due this week');
-        setValue('student-so-completion', soCompletion === null ? '—' : soCompletion, soCompletion === null ? null : '%');
-        setProgress('student-so-completion', soCompletion || 0);
-        setValue('student-syllabi', syllabi.length, 'of ' + courses.length);
-        setValue('student-average', assessmentAverage === null ? '—' : Math.round(assessmentAverage) + '%');
-        setCaption('student-average', releasedScores.length
-            ? 'Average of ' + releasedScores.length + ' released assessment scores'
-            : 'No released assessment scores yet');
-        setValue('student-courses-with-scores', coursesWithScores, '/ ' + courseCount);
-        const totalAssessments = scores.length;
-        setValue('student-released-assessments', releasedScores.length, '/ ' + totalAssessments);
-        setCaption('student-released-assessments', releasedScores.length
-            ? 'Released assessments with a recorded score'
-            : 'No released assessments with scores yet');
-    }
-
-    async function loadFacultyDashboard() {
-        const [profileData, sectionData] = await Promise.all([
-            api('/api/account/profile'),
-            api('/api/faculty/sections')
-        ]);
-        setProfile(profileData.profile || {});
-        const sections = sectionData.sections || [];
-        let attainmentUnavailable = false;
-        const sectionResults = await Promise.all(sections.map(async function (section) {
-            const base = '/api/faculty/sections/' + encodeURIComponent(section.section_id);
-            const workspace = await api(base + '/assessments');
-            let attainment = null;
-            try {
-                attainment = await api(base + '/attainment');
-            } catch {
-                attainmentUnavailable = true;
-            }
-            return { workspace, attainment };
-        }));
-
-        const courseCount = uniqueCount(sections, 'course_id');
-        let missingScores = 0;
-        let incompleteAssessments = 0;
-        let fullyScoredAssessments = 0;
-        let assessmentCount = 0;
-        let reviewedSections = 0;
-        const attainmentValues = [];
-        sectionResults.forEach(function (result) {
-            const workspace = result.workspace;
-            const students = workspace.students || [];
-            const activities = workspace.assessments || [];
-            const readiness = workspace.gradebook_readiness || {};
-            missingScores += Number(readiness.missing_score_count) || 0;
-            assessmentCount += activities.length;
-            activities.forEach(function (activity) {
-                const activityScores = activity.scores || {};
-                const complete = students.length > 0 && students.every(function (student) {
-                    const score = activityScores[student.student_profile_id];
-                    return score && score.score !== null && score.score !== undefined;
-                });
-                if (complete) fullyScoredAssessments += 1;
-                else if (students.length) incompleteAssessments += 1;
-            });
-            if (['verified', 'locked'].includes(workspace.gradebook_status)) reviewedSections += 1;
-            (result.attainment?.outcomes || []).forEach(function (outcome) {
-                if (outcome.attainment_percentage !== null && outcome.attainment_percentage !== undefined) {
-                    attainmentValues.push(outcome.attainment_percentage);
-                }
-            });
-        });
-        const attainment = average(attainmentValues);
-
-        setValue('faculty-courses', courseCount, 'courses');
-        setValue('faculty-pending-grading', missingScores);
-        setValue('faculty-attainment', attainment === null ? '—' : Math.round(attainment), attainment === null ? null : '%');
-        setProgress('faculty-attainment', attainment || 0);
-        setValue('faculty-reviewed-gradebooks', reviewedSections, 'of ' + sections.length);
-        setValue('faculty-fully-scored', fullyScoredAssessments, '/ ' + assessmentCount);
-        setValue('faculty-reviewed-courses', uniqueCount(
-            sections.filter((section, index) => ['verified', 'locked'].includes(sectionResults[index]?.workspace.gradebook_status)),
-            'course_id'
-        ), '/ ' + courseCount);
-        setValue('faculty-incomplete-assessments', incompleteAssessments);
-        if (attainmentUnavailable) {
-            status.textContent = attainment === null
-                ? 'CO attainment is not available for your assigned sections; other dashboard data is current.'
-                : 'Some section CO attainment could not be loaded; the displayed average uses available sections.';
-        }
-    }
-
-    async function loadDepartmentHeadDashboard() {
-        const [profileData, overviewData, gradebookData, mappingData, reviewData] = await Promise.all([
-            api('/api/account/profile'),
-            api('/api/outcomes/overview'),
-            api('/api/department-head/gradebooks'),
-            api('/api/department-head/mapping-reviews'),
-            api('/api/department-head/assessment-reviews')
-        ]);
-        setProfile(profileData.profile || {});
-
-        const metrics = overviewData.metrics || {};
-        const coOutcomes = overviewData.co_summary || [];
-        const evaluatedOutcomes = coOutcomes.filter(row => row.attainment_percentage !== null && row.attainment_percentage !== undefined);
-        const attainment = average(evaluatedOutcomes.map(row => row.attainment_percentage));
-        const meetingTarget = evaluatedOutcomes.filter(row => Number(row.attainment_percentage) >= Number(row.target_percentage)).length;
-        const gradebooks = gradebookData.gradebooks || [];
-        const mappingReviews = mappingData.reviews || [];
-        const openFlags = (reviewData.flags || []).filter(row => row.status === 'open').length;
-        const pendingGradebooks = gradebooks.filter(row => row.status === 'for_verification').length;
-        const pendingMappings = mappingReviews.filter(row => ['pending', 'submitted', 'pending_review'].includes(row.status)).length;
-        const pendingReviews = pendingGradebooks + pendingMappings + openFlags;
-
-        setValue('dept-courses', Number(metrics.courses) || 0, 'courses');
-        setValue('dept-faculty', Number(metrics.faculty) || 0);
-        setValue('dept-attainment', attainment === null ? '—' : Math.round(attainment), attainment === null ? null : '%');
-        setProgress('dept-attainment', attainment || 0);
-        setValue('dept-pending-reviews', pendingReviews);
-        setValue('dept-academic-attainment', attainment === null ? '—' : Math.round(attainment) + '%');
-        setValue('dept-outcomes-meeting-target', meetingTarget, '/ ' + evaluatedOutcomes.length);
-        setValue('dept-academic-pending-reviews', pendingReviews);
-    }
-
-    (async function () {
-        try {
-            if (role === 'student') await loadStudentDashboard();
-            else if (role === 'faculty') await loadFacultyDashboard();
-            else await loadDepartmentHeadDashboard();
-            if (status.textContent === 'Loading dashboard data…') status.textContent = '';
-        } catch (error) {
-            status.textContent = error.message || 'Dashboard data could not be loaded. Refresh the page to try again.';
-            status.setAttribute('data-error', 'true');
-        }
-    })();
 })();
 
 
@@ -8820,7 +8582,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-    if (document.readyState === 'loading') {
+    if (document.readyState === '') {
         document.addEventListener('DOMContentLoaded', initAccountSettings);
         document.addEventListener('DOMContentLoaded', initAccountMenu);
     } else { initAccountSettings(); initAccountMenu(); }
@@ -8942,7 +8704,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     document.addEventListener('edumetrics:nav-ready', addDepartmentHeadAccountRequests);
-    if (document.readyState === 'loading') {
+    if (document.readyState === '') {
         document.addEventListener('DOMContentLoaded', addDepartmentHeadAccountRequests, { once: true });
     } else {
         addDepartmentHeadAccountRequests();
@@ -9006,7 +8768,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
     document.addEventListener('edumetrics:nav-ready', initRoleNavigation);
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initRoleNavigation);
+    if (document.readyState === '') document.addEventListener('DOMContentLoaded', initRoleNavigation);
     else initRoleNavigation();
 })();
 
@@ -9522,7 +9284,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!grid.contains(empty) && empty) grid.appendChild(empty);
         });
     }
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
+    if (document.readyState === '') document.addEventListener('DOMContentLoaded', init, { once: true });
     else init();
 })();
 
@@ -9973,8 +9735,6 @@ function initRawAssessmentFaculty() {
     const status = $('rafMessage');
     const saveButton = $('rafSave');
     const releaseButton = $('rafRelease');
-    const submitButton = $('rafSubmitGradebook');
-    const readinessStatus = $('rafReadiness');
 
     async function api(url, options) {
         const response = await fetch(url, Object.assign({
@@ -10066,47 +9826,12 @@ function initRawAssessmentFaculty() {
         const maxScore = Number(assessment?.max_score || 0);
         const query = $('rafSearch').value.trim().toLowerCase();
         const sort = $('rafSort').value;
-        const gradebookStatus = workspace?.gradebook_status || 'draft';
-        const readOnly = ['for_verification', 'verified', 'locked'].includes(gradebookStatus);
-        const modeLabels = {
-            for_verification: 'Awaiting Verification',
-            verified: 'Verified · Read Only',
-            locked: 'Gradebook Locked',
-            reopened: 'Reopened · Open for Editing'
-        };
-        $('rafMode').textContent = modeLabels[gradebookStatus] || 'Open for Editing';
-        $('rafMode').classList.toggle('in-progress', readOnly);
+        const locked = workspace?.gradebook_status === 'locked';
+        $('rafMode').textContent = locked ? 'Gradebook Locked' : 'Open for Editing';
+        $('rafMode').classList.toggle('in-progress', locked);
         assessmentSelect.disabled = !workspace?.assessments.length;
-        saveButton.disabled = !assessment || readOnly;
-        releaseButton.disabled = !assessment || readOnly || Boolean(assessment?.released_at);
-        const readiness = workspace?.gradebook_readiness;
-        const canSubmit = ['draft', 'reopened'].includes(gradebookStatus);
-        submitButton.disabled = !workspace || !canSubmit || !readiness?.ready;
-        submitButton.textContent = gradebookStatus === 'for_verification'
-            ? 'Submitted for Verification'
-            : gradebookStatus === 'verified' ? 'Gradebook Verified'
-                : gradebookStatus === 'locked' ? 'Gradebook Locked'
-                    : gradebookStatus === 'reopened'
-                        ? 'Resubmit for Verification' : 'Submit for Verification';
-        readinessStatus.replaceChildren();
-        if (readiness) {
-            const summary = document.createElement('strong');
-            summary.textContent = readiness.ready
-                ? 'Gradebook is ready to submit for Department Head verification.'
-                : 'Resolve these items before submitting for verification:';
-            readinessStatus.appendChild(summary);
-            if (readiness.blockers.length) {
-                const list = document.createElement('ul');
-                readiness.blockers.forEach(blocker => {
-                    const item = document.createElement('li');
-                    item.textContent = blocker;
-                    list.appendChild(item);
-                });
-                readinessStatus.appendChild(list);
-            }
-        } else {
-            readinessStatus.textContent = '';
-        }
+        saveButton.disabled = !assessment || locked;
+        releaseButton.disabled = !assessment || locked || Boolean(assessment?.released_at);
         releaseButton.textContent = assessment?.released_at ? 'Scores Released' : 'Release Scores';
         $('rafMaxInput').value = assessment ? String(maxScore) : '';
         $('rafCO').textContent = assessment?.outcome_code || '—';
@@ -10147,7 +9872,7 @@ function initRawAssessmentFaculty() {
             input.max = String(maxScore);
             input.step = '0.01';
             input.value = score === null ? '' : String(score);
-            input.disabled = !assessment || readOnly;
+            input.disabled = !assessment || locked;
             input.setAttribute('aria-label', 'Raw score for ' + nameCell.textContent);
             scoreCell.appendChild(input);
             const percentageCell = document.createElement('td');
@@ -10185,9 +9910,7 @@ function initRawAssessmentFaculty() {
         $('rafEmpty').hidden = visible.length > 0;
         updateSummary(assessment, students);
         renderQueries();
-        if (readOnly) status.textContent = gradebookStatus === 'locked'
-            ? 'This section gradebook is locked; scores are read-only.'
-            : 'This gradebook is under Department Head review; scores are read-only.';
+        if (locked) status.textContent = 'This section gradebook is locked; scores are read-only.';
         else if (!assessment && !status.textContent) {
             status.textContent = 'Select an activity to enter its scores.';
         }
@@ -10217,7 +9940,7 @@ function initRawAssessmentFaculty() {
             return;
         }
         assessmentSelect.disabled = true;
-        assessmentSelect.replaceChildren(new Option('Loading assessments...', ''));
+        assessmentSelect.replaceChildren(new Option('Select an option', ''));
         body.replaceChildren();
         $('rafMessage').textContent = '';
         try {
@@ -10311,22 +10034,6 @@ function initRawAssessmentFaculty() {
             saveButton.disabled = false;
         }
     });
-    submitButton.addEventListener('click', async () => {
-        if (!workspace || submitButton.disabled) return;
-        submitButton.disabled = true;
-        status.textContent = 'Submitting gradebook for verification...';
-        try {
-            await api('/api/faculty/sections/' +
-                encodeURIComponent(sectionSelect.value) + '/gradebook/submit', {
-                    method: 'POST'
-                });
-            await loadWorkspace();
-            status.textContent = 'Gradebook submitted to the Department Head for verification.';
-        } catch (error) {
-            status.textContent = error.message;
-            submitButton.disabled = false;
-        }
-    });
     api('/api/faculty/sections').then(result => {
         assignments = Array.isArray(result.sections) ? result.sections : [];
         sectionSelect.replaceChildren(new Option(
@@ -10361,7 +10068,7 @@ function initRawAssessmentFaculty() {
         $('rafMessage').textContent = error.message;
     });
 }
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initRawAssessmentFaculty, { once: true });
+if (document.readyState === '') document.addEventListener('DOMContentLoaded', initRawAssessmentFaculty, { once: true });
 else initRawAssessmentFaculty();
 
 /* so-faculty(20261012-150030).html.txt */
@@ -10613,12 +10320,16 @@ document.addEventListener("DOMContentLoaded", function () {
             actionCell.appendChild(button(
                 'View Scores', 'ra-review-action', 'reviewId', item.id
             ));
-            const gradebookLink = document.createElement('a');
-            gradebookLink.className = 'ra-review-action';
-            gradebookLink.href = '../requirement 7/gl-dept-head.html?section_id=' +
-                encodeURIComponent(item.section_id);
-            gradebookLink.textContent = 'Gradebook Workflow';
-            actionCell.appendChild(gradebookLink);
+            if (item.gradebook_status !== 'locked') {
+                actionCell.appendChild(button(
+                    'Lock Gradebook', 'ra-lock-action', 'lockSection', item.section_id
+                ));
+            } else {
+                const locked = document.createElement('span');
+                locked.className = 'ra-locked-label';
+                locked.textContent = 'Locked';
+                actionCell.appendChild(locked);
+            }
             row.appendChild(actionCell);
             reviewBody.appendChild(row);
         });
@@ -10799,6 +10510,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 message.textContent = error.message;
                 target.disabled = false;
             }
+        } else if (target.dataset.lockSection) {
+            const sectionId = target.dataset.lockSection;
+            if (!window.confirm('Lock this section gradebook? Faculty will no longer be able to edit its scores.')) return;
+            target.disabled = true;
+            try {
+                await api('/api/department-head/sections/' +
+                    encodeURIComponent(sectionId) + '/lock', {
+                        method: 'POST',
+                        headers: { Accept: 'application/json' }
+                    });
+                message.textContent = 'Gradebook locked. Faculty score editing is now disabled.';
+                await load();
+            } catch (error) {
+                message.textContent = error.message;
+                target.disabled = false;
+            }
         }
     });
 
@@ -10842,7 +10569,7 @@ document.addEventListener("DOMContentLoaded", function () {
         release.addEventListener('change', update);
         sort.addEventListener('change', update);
     }
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+    if (document.readyState === '') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 
 /* AC DEPARTMENT HEAD — department-scoped attainment and gradebook readiness. */
@@ -11003,7 +10730,7 @@ document.addEventListener("DOMContentLoaded", function () {
             filterRows();
         }
         async function load() {
-            status.textContent = '';
+            status.textContent = "";
             const params = new URLSearchParams();
             [
                 ["academic_year_id", year.value],
@@ -11020,7 +10747,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (!data) throw new Error(`The server returned an invalid response (HTTP ${response.status}).`);
                 render(data);
                 status.textContent = (data.rows || []).length
-                    ? ''
+                    ? "Showing released-score results within your department scope."
                     : "No Course Outcome attainment records are available for these filters.";
             } catch (error) {
                 status.textContent = error.message;
@@ -11080,7 +10807,7 @@ document.addEventListener("DOMContentLoaded", function () {
         activate(window.location.hash === "#gradebook-approval" ? 1 : 0);
         load();
     }
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initAcDepartmentHead);
+    if (document.readyState === "") document.addEventListener("DOMContentLoaded", initAcDepartmentHead);
     else initAcDepartmentHead();
 })();
 
@@ -11120,378 +10847,42 @@ document.addEventListener("DOMContentLoaded", function () {
         $('rpDhExport').addEventListener('click', () => { const columns = [['Report ID', 'Report Type', 'Course', 'Section', 'Owner', 'Updated', 'Status', 'Description'], ...rows.filter(r => !r.hidden).map(r => { const d = get(r); return [d.id, d.type, d.course, d.section, d.owner, d.updated, d.status, d.description]; })]; downloadBlob('department-head-compliance-index.csv', columns.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\r\n'), 'text/csv;charset=utf-8'); });
         apply();
     }
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true }); else init();
+    if (document.readyState === '') document.addEventListener('DOMContentLoaded', init, { once: true }); else init();
 })();
 
 
-/* Requirement 7 — Department Head gradebook verification workflow. */
+/* Requirement 7 — GL Department Head: scoped interactive prototype. */
 (function () {
     'use strict';
-
     function init() {
-        const page = document.querySelector('.gl-dept-head-page');
-        if (!page) return;
-        const $ = id => document.getElementById(id);
-        const tableBody = $('glRows');
-        const dialog = $('glDialog');
-        const statusMessage = $('glStatus');
-        let gradebooks = [];
-        let active = null;
-        let action = '';
-
-        const escape = value => String(value ?? '').replace(/[&<>"']/g, character => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        })[character]);
-        const labelStatus = value => ({
-            draft: 'Draft',
-            for_verification: 'For Verification',
-            verified: 'Verified',
-            locked: 'Locked',
-            reopened: 'Reopened'
-        })[value] || value;
-        const statusClass = value => ({
-            for_verification: 'gl-yellow',
-            verified: 'gl-green',
-            locked: 'gl-green'
-        })[value] || 'gl-muted';
-
-        async function request(url, options) {
-            const response = await fetch(url, Object.assign({
-                credentials: 'same-origin',
-                headers: { Accept: 'application/json' }
-            }, options || {}));
-            const payload = await response.json().catch(() => ({}));
-            if (!response.ok) throw new Error(payload.error || 'The request could not be completed.');
-            return payload;
+        const page = document.querySelector('.gl-dept-head-page'); if (!page) return;
+        const $ = id => document.getElementById(id), rows = [...$('glRows').rows], dialog = $('glDialog'); let active = null, mode = 'review';
+        const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        function state(row) { return { id: row.dataset.id, course: row.cells[0].querySelector('small').textContent.split('2026')[0].trim(), section: row.dataset.course, faculty: row.dataset.faculty, students: row.dataset.students, assessments: row.dataset.assessments, check: row.dataset.check, grades: row.dataset.grades, mapping: row.dataset.mapping, attainment: row.dataset.attainment, status: row.dataset.status }; }
+        function counts() { $('glPending').textContent = rows.filter(r => ['For Verification', 'Draft'].includes(r.dataset.status)).length; $('glLocked').textContent = rows.filter(r => r.dataset.status === 'Locked').length; $('glIssues').textContent = rows.filter(r => r.dataset.check !== 'clean').length; }
+        function filter() { const q = $('glSearch').value.toLowerCase().trim(), course = $('glCourse').value, section = $('glSection').value, department = $('glDepartment').value, program = $('glProgram').value; let n = 0; rows.forEach(r => { const ok = (!q || r.textContent.toLowerCase().includes(q)) && (!course || r.dataset.course === course) && (!section || r.dataset.course === section) && (!department || department === 'Engineering') && (!program || program === 'BS CpE'); r.hidden = !ok; if (ok) n++; }); $('glCount').textContent = n + ' gradebook(s)'; $('glEmpty').hidden = n > 0; }
+        function details(items) { return '<div class="gl-detail-grid">' + items.map(([k, v]) => '<div class="gl-detail"><span>' + esc(k) + '</span><strong>' + esc(v) + '</strong></div>').join('') + '</div>'; }
+        function btn(text, kind, action) { return '<button type="button" class="gl-btn ' + kind + '" data-gl-dialog="' + action + '">' + text + '</button>'; }
+        function show(row, action) {
+            active = row; mode = action; const d = state(row); let title = '', content = '', actions = btn('Close', 'gl-outline', 'close'); if (action === 'review') { title = 'Gradebook Review Details'; content = details([['Gradebook / Course', d.id + ' · ' + d.course], ['Section / Faculty', d.section + ' · ' + d.faculty], ['Academic Year / Students', '2026–2027 · ' + d.students + ' students'], ['Assessments', d.assessments + ' assessments'], ['Raw Scores', d.grades], ['Calculated Grades', d.grades === 'Complete' ? 'Verified' : 'Pending'], ['CO/SO Mappings', d.mapping], ['Attainment', d.attainment]]) + '<div class="gl-notice">Data validation: ' + (d.check === 'clean' ? '0 missing scores, 0 incomplete assessments, 0 invalid entries, 0 unmapped CO/SO records.' : '2 missing scores, 1 incomplete assessment, 0 invalid entries, 1 unmapped CO/SO record.') + '</div><h3>Audit history</h3><div class="gl-notice">Submitted for verification · ' + esc(d.faculty) + ' · Oct 12, 2026</div>'; }
+            if (action === 'verify') { title = 'Verify Gradebook'; content = details([['Gradebook', d.id + ' · ' + d.course], ['Section / Faculty', d.section + ' · ' + d.faculty], ['Raw Scores / Grades', d.grades], ['CO/SO / Attainment', d.mapping + ' / ' + d.attainment]]) + '<div class="gl-notice">Confirm student records, raw scores, grade calculations, assessment weights, CO/SO mappings and attainment. Any unresolved issues block verification.</div><label for="glReason">Verification remarks</label><textarea id="glReason" placeholder="Record checks performed and verification notes…"></textarea><p id="glDialogError" class="gl-error" hidden></p>'; actions = btn('Cancel', 'gl-outline', 'close') + btn('Mark Verified', 'gl-gold', 'confirm'); }
+            if (action === 'reopen') { title = 'Reopen Locked Gradebook'; content = details([['Locked Gradebook', d.id + ' · ' + d.course]]) + '<div class="gl-notice">Reopening allows corrections and changes the status to Reopened. The gradebook must be re-verified before it can be locked again.</div><label for="glReason">Required reason for reopening</label><textarea id="glReason" placeholder="Explain why reopening is necessary…"></textarea><p id="glDialogError" class="gl-error" hidden></p>'; actions = btn('Cancel', 'gl-outline', 'close') + btn('Reopen Gradebook', 'gl-red-outline', 'confirm'); }
+            if (action === 'lock') { title = 'Confirm Gradebook Lock'; content = '<p>Lock <strong>' + esc(d.id) + '</strong>? The gradebook will be marked read-only in this prototype. Only a verified record without unresolved issues can be locked.</p><div class="gl-notice">This action will be recorded in the locking history. Corrections require an authorized reopening reason.</div>'; actions = btn('Cancel', 'gl-outline', 'close') + btn('Confirm Lock', 'gl-gold', 'confirm'); }
+            $('glDialogTitle').textContent = title; $('glDialogContent').innerHTML = content; $('glDialogActions').innerHTML = actions; if (!dialog.open) dialog.showModal();
         }
-
-        function actionButton(item) {
-            if (item.status === 'for_verification') {
-                return '<button type="button" class="gl-btn gl-gold" data-gl-action="verify"' +
-                    (item.ready ? '' : ' disabled title="Resolve readiness issues before verification."') +
-                    '>Verify</button>';
-            }
-            if (item.status === 'verified') {
-                return '<button type="button" class="gl-btn gl-outline" data-gl-action="lock"' +
-                    (item.ready ? '' : ' disabled title="Resolve readiness issues before locking."') +
-                    '>Lock</button>';
-            }
-            if (item.status === 'locked') {
-                return '<button type="button" class="gl-btn gl-red-outline" data-gl-action="reopen">Reopen</button>';
-            }
-            return '';
-        }
-
-        function renderRows() {
-            tableBody.replaceChildren();
-            gradebooks.forEach(item => {
-                const row = document.createElement('tr');
-                row.dataset.sectionId = item.section_id;
-                row.dataset.courseCode = item.course_code;
-                row.dataset.sectionName = item.course_code + ' · ' + item.section_name;
-                row.dataset.year = item.academic_year_name;
-                row.dataset.status = item.status;
-                const course = document.createElement('td');
-                course.innerHTML = '<strong>' + escape(item.gradebook_id || 'Not submitted') +
-                    '</strong><small>' + escape(item.course_code + ' · ' + item.course_title) + '</small>';
-                const section = document.createElement('td');
-                section.textContent = item.section_name + ' · ' + item.faculty_name;
-                const enrollment = document.createElement('td');
-                enrollment.textContent = item.student_count + ' students · ' +
-                    item.assessment_count + ' activities';
-                const checks = document.createElement('td');
-                checks.textContent = item.missing_score_count + ' missing · ' +
-                    item.invalid_entry_count + ' invalid · ' +
-                    item.unreleased_assessment_count + ' unreleased · ' +
-                    item.unmapped_co_so_count + ' unmapped · ' +
-                    item.open_query_count + ' open queries';
-                const grades = document.createElement('td');
-                grades.textContent = item.ready ? 'Complete' : 'Incomplete';
-                const mapping = document.createElement('td');
-                mapping.textContent = item.mapping_verified
-                    ? 'Verified' : 'Needs verification';
-                const attainment = document.createElement('td');
-                attainment.textContent = item.attainment_available
-                    ? 'Available' : 'Pending';
-                const state = document.createElement('td');
-                state.innerHTML = '<span class="gl-pill gl-row-status ' +
-                    statusClass(item.status) + '">' + escape(labelStatus(item.status)) + '</span>';
-                const actions = document.createElement('td');
-                actions.className = 'gl-actions';
-                actions.innerHTML = '<button type="button" class="gl-btn gl-outline" ' +
-                    'data-gl-action="review">Review</button>' + actionButton(item);
-                row.append(course, section, enrollment, checks, grades, mapping, attainment, state, actions);
-                tableBody.appendChild(row);
-            });
-            applyFilters();
-            updateCounts();
-            renderHistory();
-            renderApproved();
-        }
-
-        function updateCounts() {
-            $('glPending').textContent = String(gradebooks.filter(item =>
-                item.status === 'for_verification').length);
-            $('glLocked').textContent = String(gradebooks.filter(item =>
-                item.status === 'locked').length);
-            $('glIssues').textContent = String(gradebooks.filter(item =>
-                !item.ready).length);
-        }
-
-        function fillFilter(id, values, placeholder) {
-            const select = $(id);
-            const selected = select.value;
-            select.replaceChildren(new Option(placeholder, ''));
-            [...new Set(values.filter(Boolean))].sort().forEach(value => {
-                select.add(new Option(value, value));
-            });
-            select.value = values.includes(selected) ? selected : '';
-        }
-
-        function applyFilters() {
-            const query = $('glSearch').value.trim().toLowerCase();
-            const course = $('glCourse').value;
-            const section = $('glSection').value;
-            const year = $('glYear').value;
-            let visible = 0;
-            [...tableBody.rows].forEach(row => {
-                const matches = (!query || row.textContent.toLowerCase().includes(query)) &&
-                    (!course || row.dataset.courseCode === course) &&
-                    (!section || row.dataset.sectionName === section) &&
-                    (!year || row.dataset.year === year);
-                row.hidden = !matches;
-                if (matches) visible += 1;
-            });
-            $('glCount').textContent = visible + ' gradebook(s)';
-            $('glEmpty').hidden = visible > 0;
-        }
-
-        function renderHistory() {
-            const events = gradebooks.flatMap(item => (item.history || []).map(event => ({
-                ...event,
-                gradebook: item.gradebook_id || item.course_code + ' · ' + item.section_name
-            }))).sort((left, right) =>
-                new Date(right.timestamp || 0) - new Date(left.timestamp || 0));
-            $('glHistory').replaceChildren();
-            events.forEach(event => {
-                const row = document.createElement('tr');
-                [event.gradebook, event.action, event.actor,
-                    event.timestamp ? new Date(event.timestamp).toLocaleString() : '—',
-                    event.reason || '—'].forEach(value => {
-                    const cell = document.createElement('td');
-                    cell.textContent = value;
-                    row.appendChild(cell);
-                });
-                $('glHistory').appendChild(row);
-            });
-        }
-
-        function renderApproved() {
-            const approved = gradebooks.filter(item =>
-                ['verified', 'locked'].includes(item.status));
-            $('glApprovedList').innerHTML = approved.length
-                ? approved.map(item => '<p><strong>' +
-                    escape(item.gradebook_id || item.course_code) + '</strong> · ' +
-                    escape(item.course_code + ' / ' + item.section_name) + ' — ' +
-                    escape(labelStatus(item.status)) + '</p>').join('')
-                : '<p>No verified or locked gradebooks yet.</p>';
-        }
-
-        function showDetails(item, selectedAction) {
-            active = item;
-            action = selectedAction;
-            const status = labelStatus(item.status);
-            const details = [
-                ['Course / section', item.course_code + ' · ' + item.course_title + ' / ' + item.section_name],
-                ['Faculty / school year', item.faculty_name + ' / ' + (item.academic_year_name || '—')],
-                ['Students / assessment activities', item.student_count + ' / ' + item.assessment_count],
-                ['Missing scores / invalid entries', item.missing_score_count + ' / ' + item.invalid_entry_count],
-                ['Unreleased / unmapped / open queries', item.unreleased_assessment_count +
-                    ' / ' + item.unmapped_co_so_count + ' / ' + item.open_query_count],
-                ['CO–SO mapping', item.mapping_verified ? 'Verified' : 'Not verified'],
-                ['Attainment results', item.attainment_available ? 'Available' : 'Pending'],
-                ['Current status', status]
-            ];
-            let content = '<div class="gl-detail-grid">' + details.map(([key, value]) =>
-                '<div class="gl-detail"><span>' + escape(key) + '</span><strong>' +
-                escape(value) + '</strong></div>').join('') + '</div>';
-            if (item.blockers.length) {
-                content += '<div class="gl-notice"><strong>Readiness issues</strong><ul>' +
-                    item.blockers.map(text => '<li>' + escape(text) + '</li>').join('') +
-                    '</ul></div>';
-            } else {
-                content += '<div class="gl-notice">All gradebook readiness checks passed.</div>';
-            }
-            if (selectedAction === 'verify') {
-                content += '<label for="glReason">Verification remarks (optional)</label>' +
-                    '<textarea id="glReason" maxlength="2000" placeholder="Record the checks performed…"></textarea>';
-            } else if (selectedAction === 'reopen') {
-                content += '<div class="gl-notice">Reopening returns the gradebook to Faculty for corrections. It must be submitted and verified again before relocking.</div>' +
-                    '<label for="glReason">Required reason for reopening</label>' +
-                    '<textarea id="glReason" maxlength="2000" required placeholder="Explain why reopening is necessary…"></textarea>';
-            } else if (selectedAction === 'lock') {
-                content += '<div class="gl-notice">Locking makes saved assessment data read-only. Only a verified gradebook can be locked.</div>';
-            } else if (selectedAction === 'review') {
-                const events = item.history || [];
-                content += '<h3>Gradebook audit history</h3>' + (events.length
-                    ? events.map(event => '<div class="gl-notice">' + escape(event.action) +
-                        ' · ' + escape(event.actor) + ' · ' +
-                        escape(event.timestamp ? new Date(event.timestamp).toLocaleString() : '—') +
-                        (event.reason ? '<br>' + escape(event.reason) : '') + '</div>').join('')
-                    : '<p>No gradebook transitions have been recorded.</p>');
-            }
-            $('glDialogTitle').textContent = selectedAction === 'review'
-                ? 'Gradebook Review Details'
-                : selectedAction === 'verify' ? 'Verify Gradebook'
-                    : selectedAction === 'lock' ? 'Lock Gradebook'
-                        : 'Reopen Locked Gradebook';
-            $('glDialogContent').innerHTML = content +
-                '<p id="glDialogError" class="gl-error" hidden></p>';
-            const controls = selectedAction === 'review'
-                ? '<button type="button" class="gl-btn gl-outline" data-gl-dialog="close">Close</button>'
-                : '<button type="button" class="gl-btn gl-outline" data-gl-dialog="close">Cancel</button>' +
-                  '<button type="button" class="gl-btn ' +
-                    (selectedAction === 'reopen' ? 'gl-red-outline' : 'gl-gold') +
-                    '" data-gl-dialog="confirm">' +
-                    (selectedAction === 'verify' ? 'Mark Verified' :
-                        selectedAction === 'lock' ? 'Confirm Lock' : 'Reopen Gradebook') +
-                    '</button>';
-            $('glDialogActions').innerHTML = controls;
-            if (!dialog.open) dialog.showModal();
-        }
-
-        async function performAction() {
-            if (!active) return;
-            const button = $('glDialogActions').querySelector('[data-gl-dialog="confirm"]');
-            const error = $('glDialogError');
-            const reason = $('glReason')?.value.trim() || '';
-            if (action === 'reopen' && !reason) {
-                error.hidden = false;
-                error.textContent = 'A reason is required to reopen this gradebook.';
-                return;
-            }
-            button.disabled = true;
-            error.hidden = true;
-            try {
-                const url = action === 'verify'
-                    ? '/api/department-head/sections/' + encodeURIComponent(active.section_id) + '/verify-gradebook'
-                    : action === 'lock'
-                        ? '/api/department-head/sections/' + encodeURIComponent(active.section_id) + '/lock'
-                        : '/api/department-head/sections/' + encodeURIComponent(active.section_id) + '/reopen-gradebook';
-                const options = { method: 'POST' };
-                if (action !== 'lock') {
-                    options.headers = {
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json'
-                    };
-                    options.body = JSON.stringify(action === 'verify'
-                        ? { remarks: reason } : { reason });
-                }
-                await request(url, options);
-                dialog.close();
-                await loadGradebooks();
-            } catch (requestError) {
-                error.hidden = false;
-                error.textContent = requestError.message;
-                button.disabled = false;
-            }
-        }
-
-        async function loadGradebooks() {
-            statusMessage.textContent = 'Loading department gradebooks…';
-            try {
-                const payload = await request('/api/department-head/gradebooks');
-                gradebooks = Array.isArray(payload.gradebooks) ? payload.gradebooks : [];
-                fillFilter('glYear', gradebooks.map(item => item.academic_year_name), 'All School Years');
-                fillFilter('glCourse', gradebooks.map(item => item.course_code), 'All Courses');
-                fillFilter('glSection', gradebooks.map(item =>
-                    item.course_code + ' · ' + item.section_name), 'All Sections');
-                const requestedSection = new URLSearchParams(location.search).get('section_id');
-                const selectedSection = gradebooks.find(item =>
-                    item.section_id === requestedSection);
-                if (selectedSection) {
-                    $('glSection').value = selectedSection.course_code + ' · ' +
-                        selectedSection.section_name;
-                }
-                renderRows();
-                statusMessage.textContent = gradebooks.length
-                    ? 'Department gradebooks loaded.'
-                    : 'No course sections are currently assigned to your department.';
-            } catch (error) {
-                gradebooks = [];
-                renderRows();
-                statusMessage.textContent = error.message;
-            }
-        }
-
-        tableBody.addEventListener('click', event => {
-            const button = event.target.closest('[data-gl-action]');
-            if (!button) return;
-            const row = button.closest('tr');
-            const item = gradebooks.find(record => record.section_id === row?.dataset.sectionId);
-            if (item) showDetails(item, button.dataset.glAction);
-        });
-        $('glDialogX').addEventListener('click', () => dialog.close());
-        dialog.addEventListener('click', event => {
-            const button = event.target.closest('[data-gl-dialog]');
-            if (button?.dataset.glDialog === 'close') dialog.close();
-            if (button?.dataset.glDialog === 'confirm') performAction();
-            if (event.target === dialog) dialog.close();
-        });
-        page.querySelectorAll('[data-gl-tab]').forEach(tab => tab.addEventListener('click', () => {
-            page.querySelectorAll('[data-gl-tab]').forEach(item => {
-                const selected = item === tab;
-                item.classList.toggle('active', selected);
-                item.setAttribute('aria-selected', String(selected));
-            });
-            page.querySelectorAll('[data-gl-panel]').forEach(panel => {
-                panel.hidden = panel.dataset.glPanel !== tab.dataset.glTab;
-            });
-        }));
-        $('glSearch').addEventListener('input', applyFilters);
-        ['glCourse', 'glSection', 'glYear'].forEach(id =>
-            $(id).addEventListener('change', applyFilters));
-        $('glReset').addEventListener('click', () => {
-            $('glSearch').value = '';
-            ['glCourse', 'glSection', 'glYear'].forEach(id => {
-                $(id).value = '';
-            });
-            applyFilters();
-        });
-        $('glExport')?.addEventListener('click', () => {
-            const data = [
-                ['Course', 'Section', 'Faculty', 'School Year', 'Students',
-                    'Activities', 'Missing Scores', 'Invalid Entries', 'Status'],
-                ...gradebooks.map(item => [
-                    item.course_code + ' · ' + item.course_title,
-                    item.section_name,
-                    item.faculty_name,
-                    item.academic_year_name,
-                    item.student_count,
-                    item.assessment_count,
-                    item.missing_score_count,
-                    item.invalid_entry_count,
-                    labelStatus(item.status)
-                ])
-            ];
-            const csv = data.map(row => row.map(value =>
-                '"' + String(value ?? '').replace(/"/g, '""') + '"').join(',')).join('\r\n');
-            const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'gradebook-locking-index.csv';
-            document.body.append(link);
-            link.click();
-            link.remove();
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
-        });
-        loadGradebooks();
+        function close() { if (dialog.open) dialog.close(); }
+        function updateRow(row, status) { row.dataset.status = status; const badge = row.querySelector('.gl-row-status'); badge.textContent = status; badge.className = 'gl-pill gl-row-status ' + (['Verified', 'Locked'].includes(status) ? 'gl-green' : status === 'For Verification' ? 'gl-yellow' : 'gl-muted'); const action = row.querySelector('.gl-actions'); const type = status === 'Locked' ? 'reopen' : status === 'Verified' ? 'lock' : 'verify'; action.querySelector('[data-gl-action]:last-child').outerHTML = btn(status === 'Locked' ? 'Reopen' : status === 'Verified' ? 'Lock' : 'Verify', type === 'reopen' ? 'gl-red-outline' : type === 'lock' ? 'gl-outline' : 'gl-gold', type).replace('data-gl-dialog', 'data-gl-action'); }
+        function history(row, action, remark) { const d = state(row), tr = document.createElement('tr');[d.id, action, 'Department Head', new Date().toLocaleString(), remark || '—'].forEach(value => { const td = document.createElement('td'); td.textContent = value; tr.append(td) }); $('glHistory').prepend(tr); }
+        function approved() { const list = rows.filter(r => ['Locked', 'Verified'].includes(r.dataset.status)); $('glApprovedList').innerHTML = list.length ? list.map(r => '<p><strong>' + esc(r.dataset.id) + '</strong> — ' + esc(r.dataset.status) + '</p>').join('') : '<p>No approved gradebooks yet.</p>'; }
+        $('glRows').addEventListener('click', e => { const button = e.target.closest('button[data-gl-action]'); if (button) show(button.closest('tr'), button.dataset.glAction); });
+        dialog.addEventListener('click', e => { const button = e.target.closest('button[data-gl-dialog]'); if (!button) return; if (button.dataset.glDialog === 'close') { close(); return; } if (!active) return; const d = state(active), remark = $('glReason')?.value.trim() || ''; let next = ''; if (mode === 'verify') { if (d.check !== 'clean' || d.grades !== 'Complete' || d.mapping !== 'Verified' || d.attainment !== 'Verified') { const el = $('glDialogError'); el.hidden = false; el.textContent = 'Verification blocked: resolve missing or incomplete data, grades, mappings and attainment first.'; return; } next = 'Verified'; } else if (mode === 'lock') { if (d.status !== 'Verified' || d.check !== 'clean') return; next = 'Locked'; } else if (mode === 'reopen') { if (!remark) { const el = $('glDialogError'); el.hidden = false; el.textContent = 'Please provide a reason for reopening.'; return; } next = 'Reopened'; } if (next) { updateRow(active, next); history(active, next, remark); counts(); filter(); approved(); close(); } });
+        $('glDialogX').addEventListener('click', close); dialog.addEventListener('click', e => { if (e.target === dialog) close(); });
+        page.querySelectorAll('[data-gl-tab]').forEach(tab => tab.addEventListener('click', () => { page.querySelectorAll('[data-gl-tab]').forEach(t => { const yes = t === tab; t.classList.toggle('active', yes); t.setAttribute('aria-selected', String(yes)); }); page.querySelectorAll('[data-gl-panel]').forEach(p => p.hidden = p.dataset.glPanel !== tab.dataset.glTab); approved(); }));
+        $('glSearch').addEventListener('input', filter);['glCourse', 'glSection', 'glDepartment', 'glProgram', 'glYear'].forEach(id => $(id).addEventListener('change', filter)); $('glReset').addEventListener('click', () => { $('glSearch').value = '';['glCourse', 'glSection', 'glDepartment', 'glProgram'].forEach(id => $(id).value = ''); filter(); });
+        $('glExport')?.addEventListener('click', () => { const data = [['Gradebook', 'Course', 'Faculty', 'Students', 'Assessments', 'Status'], ...rows.map(r => { const d = state(r); return [d.id, d.section, d.faculty, d.students, d.assessments, d.status] })]; const csv = data.map(a => a.map(s => '"' + String(s).replace(/"/g, '""') + '"').join(',')).join('\r\n'); const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = 'gradebook-locking-index.csv'; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000); });
+        counts(); filter(); approved();
     }
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init, { once: true });
-    } else {
-        init();
-    }
+    if (document.readyState === '') document.addEventListener('DOMContentLoaded', init, { once: true }); else init();
 })();
 
 
@@ -11504,7 +10895,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll('.so-nav-group details').forEach(d => { const s = d.querySelector('summary'); if (!s) return; const sync = () => s.setAttribute('aria-expanded', String(d.open)); sync(); d.addEventListener('toggle', sync) });
     }
 
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true }); else init();
+    if (document.readyState === '') document.addEventListener('DOMContentLoaded', init, { once: true }); else init();
 })();
 
 /* Logged-in main information pages: reuse role-specific navigation and header. */
@@ -11565,7 +10956,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.dispatchEvent(new Event('edumetrics:nav-ready'));
         document.dispatchEvent(new Event('edumetrics:profile-shell-ready'));
     }
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initLoggedInInfoPage);
+    if (document.readyState === '') document.addEventListener('DOMContentLoaded', initLoggedInInfoPage);
     else initLoggedInInfoPage();
 })();
 
@@ -11685,7 +11076,7 @@ document.addEventListener("DOMContentLoaded", function () {
         body.dataset.blogLayoutReady = 'true';
         document.dispatchEvent(new Event('edumetrics:profile-shell-ready'));
     }
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initSharedResourceDetail, { once: true });
+    if (document.readyState === '') document.addEventListener('DOMContentLoaded', initSharedResourceDetail, { once: true });
     else initSharedResourceDetail();
 })();
 
@@ -11712,7 +11103,7 @@ document.addEventListener("DOMContentLoaded", function () {
         })();
 
     }
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
+    if (document.readyState === "") document.addEventListener("DOMContentLoaded", init, { once: true });
     else init();
 })();
 
@@ -12101,7 +11492,7 @@ document.addEventListener("DOMContentLoaded", function () {
         })();
 
     }
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
+    if (document.readyState === "") document.addEventListener("DOMContentLoaded", init, { once: true });
     else init();
 })();
 
@@ -12113,7 +11504,7 @@ document.addEventListener("DOMContentLoaded", function () {
         (() => { const records = [["CQI-COE232-003", "Computer Engineering", "Software Design \u2013 Lab", "Jeffrey T. Leonen", "CO3 \u2022 66%", "Supplemental lab sessions and quiz revisions", "In Progress", "Oct 12, 2026"], ["CQI-COE233-001", "Computer Engineering", "Computer Networks", "Maria L. Santos", "CO2 \u2022 62%", "Guided routing practice and formative checks", "Pending Approval", "Oct 13, 2026"], ["CQI-IT234-001", "Information Technology", "Database Systems", "Ryan P. Cruz", "CO2 \u2022 68%", "Additional SQL practice modules", "Completed", "Oct 10, 2026"], ["CQI-ECE234-004", "Electronics Engineering", "Signals and Systems", "Roxanne D. Cruz", "CO4 \u2022 65%", "Worked examples and weekly feedback", "Returned", "Oct 11, 2026"], ["CQI-ME231-003", "Mechanical Engineering", "Engineering Mechanics", "Daniel R. Tan", "CO2 \u2022 61%", "Concept review and additional problem sets", "Approved", "Oct 9, 2026"]]; const tabs = [...document.querySelectorAll('.cqi-tab')]; tabs.forEach(tab => tab.addEventListener('click', () => { tabs.forEach(t => { const active = t === tab; t.setAttribute('aria-selected', String(active)); t.classList.toggle('active', active); document.getElementById('panel-' + t.dataset.tab).hidden = !active; }); })); const rows = [...document.querySelectorAll('#registerTable tbody tr')]; const filters = ['deptFilter', 'programFilter', 'statusFilter', 'registerSearch'].map(id => document.getElementById(id)); function filter() { let count = 0, progress = 0, pending = 0; rows.forEach(row => { const [dept, program, status, search] = filters.map(x => x.value.trim().toLowerCase()); const ok = (!dept || row.dataset.dept.toLowerCase() === dept) && (!program || row.dataset.dept.toLowerCase() === program) && (!status || row.dataset.status.toLowerCase() === status) && (!search || row.textContent.toLowerCase().includes(search)); row.hidden = !ok; if (ok) { count++; if (['In Progress', 'Completed'].includes(row.dataset.status)) progress++; if (row.dataset.status === 'Pending Approval') pending++; } }); document.getElementById('resultCount').textContent = count + ' record(s)'; document.getElementById('totalPlans').textContent = count; document.getElementById('progressPlans').textContent = progress; document.getElementById('pendingPlans').textContent = pending; } filters.forEach(el => el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', filter)); document.querySelectorAll('[data-record]').forEach(b => b.addEventListener('click', () => { const r = records[+b.dataset.record]; document.getElementById('recordDetails').textContent = 'CQI ID: ' + r[0] + '\nDepartment / Course: ' + r[1] + ' – ' + r[2] + '\nFaculty Owner: ' + r[3] + '\nCO Attainment: ' + r[4] + ' (Target 70%)\nIntervention: ' + r[5] + '\nStatus: ' + r[6] + '\nLast updated: ' + r[7]; document.getElementById('recordDialog').showModal(); })); document.getElementById('addCategory').addEventListener('click', () => document.getElementById('categoryDialog').showModal()); document.querySelectorAll('[data-close-dialog]').forEach(b => b.addEventListener('click', () => b.closest('dialog').close())); document.getElementById('categoryForm').addEventListener('submit', e => { e.preventDefault(); const name = document.getElementById('categoryName').value.trim(); if (!name) return; const tr = document.createElement('tr'); const a = document.createElement('td'), d = document.createElement('td'), n = document.createElement('td'), s = document.createElement('td'), act = document.createElement('td'); a.textContent = name; d.textContent = 'Custom intervention category'; n.textContent = '0'; s.innerHTML = '<span class="cqi-pill" data-cat-status>Active</span>'; act.innerHTML = '<button class="cqi-btn" data-toggle-category>Toggle Status</button>'; tr.append(a, d, n, s, act); document.querySelector('#categoryTable tbody').append(tr); document.getElementById('categoryDialog').close(); e.target.reset(); }); document.getElementById('categoryTable').addEventListener('click', e => { if (!e.target.matches('[data-toggle-category]')) return; const pill = e.target.closest('tr').querySelector('[data-cat-status]'); const inactive = pill.textContent === 'Active'; pill.textContent = inactive ? 'Inactive' : 'Active'; pill.classList.toggle('red', inactive); }); document.getElementById('savePermissions').addEventListener('click', () => alert('Permissions saved for this frontend prototype only.')); document.getElementById('exportRegister').addEventListener('click', () => { const csv = [['CQI ID', 'Department', 'Course', 'Faculty', 'CO / Attainment', 'Intervention', 'Status', 'Last Updated'], ...records].map(r => r.map(v => '"' + String(v).replaceAll('"', '""') + '"').join(',')).join('\r\n'); const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = 'cqi-admin-register.csv'; a.click(); URL.revokeObjectURL(url); }); })();
 
     }
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
+    if (document.readyState === "") document.addEventListener("DOMContentLoaded", init, { once: true });
     else init();
 })();
 
@@ -12170,10 +11561,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 row.dataset.event = "true";
                 row.dataset.result = String(event.result || "SUCCESS").toUpperCase();
                 const timestamp = event.timestamp ? new Date(event.timestamp).toLocaleString() : "—";
-                for (const [index, value] of [timestamp, event.role, event.operation, event.module, event.result].entries()) {
+                for (const [index, value] of [timestamp, event.role, event.operation, event.module, event.record_id, event.result].entries()) {
                     const cell = document.createElement("td");
                     cell.textContent = value == null || value === "" ? "—" : String(value);
-                    if (index === 4) {
+                    if (index === 5) {
                         cell.className = "gl-admin-result gl-admin-result-" +
                             String(event.result || "success").toLowerCase();
                     }
@@ -12192,7 +11583,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     [
                         ["Timestamp", timestamp], ["Role", event.role],
                         ["Operation", event.operation], ["Module", event.module],
-                        ["Status", event.result],
+                        ["Record ID", event.record_id], ["Result", event.result],
                         ["IP Address", event.ip_address], ["Details", event.details]
                     ].forEach(([label, value]) => {
                         const term = document.createElement("strong");
@@ -12211,7 +11602,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const row = document.createElement("tr");
                 row.className = "gl-admin-empty-row";
                 const cell = document.createElement("td");
-                cell.colSpan = 6;
+                cell.colSpan = 7;
                 cell.textContent = "No system history has been recorded yet.";
                 row.appendChild(cell);
                 rows.appendChild(row);
@@ -12223,7 +11614,7 @@ document.addEventListener("DOMContentLoaded", function () {
             rows.replaceChildren();
             const row = document.createElement("tr");
             const cell = document.createElement("td");
-            cell.colSpan = 6;
+            cell.colSpan = 7;
             cell.textContent = "System history could not be loaded.";
             row.appendChild(cell);
             rows.appendChild(row);
@@ -12237,7 +11628,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
+    if (document.readyState === "") document.addEventListener("DOMContentLoaded", init, { once: true });
     else init();
 })();
 /* RP Admin — frontend page controller */
@@ -12248,7 +11639,7 @@ document.addEventListener("DOMContentLoaded", function () {
         (() => { 'use strict'; const tabs = document.querySelectorAll('.rp-admin-tab'), panels = { library: document.getElementById('panel-library'), permissions: document.getElementById('panel-permissions'), settings: document.getElementById('panel-settings') }; tabs.forEach(b => b.addEventListener('click', () => { tabs.forEach(t => { t.setAttribute('aria-selected', String(t === b)); t.classList.toggle('active', t === b) }); Object.entries(panels).forEach(([name, p]) => p.hidden = name !== b.dataset.tab) })); const rows = [...document.querySelectorAll('#reportRows tr')], search = document.getElementById('search'), type = document.getElementById('typeFilter'), status = document.getElementById('statusFilter'); function filter() { const q = search.value.trim().toLowerCase(); rows.forEach(r => { r.hidden = !(r.textContent.toLowerCase().includes(q) && (!type.value || r.dataset.type === type.value) && (!status.value || r.dataset.status === status.value)) }) } search.addEventListener('input', filter); type.addEventListener('change', filter); status.addEventListener('change', filter); const modal = document.getElementById('modal'), content = document.getElementById('modalContent'), title = document.getElementById('modalTitle'), confirm = document.getElementById('modalConfirm'), toast = document.getElementById('toast'); function notice(s) { toast.textContent = s; toast.hidden = false; setTimeout(() => toast.hidden = true, 3000) } function close() { modal.hidden = true } document.getElementById('modalClose').onclick = close; modal.addEventListener('click', e => { if (e.target === modal) close() }); document.addEventListener('keydown', e => { if (e.key === 'Escape') close() }); function getRow(id) { return rows.find(r => r.cells[0].innerText.includes(id)) } document.querySelector('#reportRows').addEventListener('click', e => { const b = e.target.closest('button[data-action]'); if (!b) return; const id = b.dataset.id, row = getRow(id); if (!row) return; if (b.dataset.action === 'download') { const data = ['Report ID,Course,Owner,Updated,Status,Description', [id, row.cells[1].innerText.replace(/\n/g, ' '), row.cells[2].innerText, row.cells[3].innerText, row.dataset.status, row.cells[5].innerText].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')].join('\n'); download(id + '.csv', data); return } title.textContent = b.dataset.action === 'review' ? 'Review / Verification' : 'Compliance Report Details'; content.innerHTML = '<dl><dt>Report ID</dt><dd></dd><dt>Course</dt><dd></dd><dt>Owner</dt><dd></dd><dt>Status</dt><dd></dd></dl>' + (b.dataset.action === 'review' ? '<label style="font-size:12px">Review notes<textarea id="reviewNotes" placeholder="Record notes for review or verification..."></textarea></label>' : ''); const dd = content.querySelectorAll('dd');[id, row.cells[1].innerText, row.cells[2].innerText, row.dataset.status].forEach((v, i) => dd[i].textContent = v); confirm.hidden = b.dataset.action !== 'review'; confirm.onclick = () => { notice('Review recorded for ' + id + ' (frontend only).'); close() }; modal.hidden = false }); function download(name, data) { const a = document.createElement('a'), url = URL.createObjectURL(new Blob([data], { type: 'text/csv;charset=utf-8' })); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000) } document.getElementById('exportList').onclick = () => { const data = ['Report ID,Course,Owner,Updated,Status,Description', ...rows.filter(r => !r.hidden).map(r => [r.cells[0].innerText, r.cells[1].innerText, r.cells[2].innerText, r.cells[3].innerText, r.dataset.status, r.cells[5].innerText].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','))].join('\n'); download('compliance-report-index.csv', data) }; document.getElementById('settingsForm').addEventListener('submit', e => { e.preventDefault(); const f = e.currentTarget; sessionStorage.setItem('rpAdminSettings', JSON.stringify({ header: f.elements.namedItem("header").checked, date: f.elements.namedItem("date").checked, students: f.elements.namedItem("students").checked, footer: f.elements.namedItem("footer").value })); notice('Document settings saved in this browser.') }); })();
 
     }
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
+    if (document.readyState === "") document.addEventListener("DOMContentLoaded", init, { once: true });
     else init();
 })();
 
@@ -12373,7 +11764,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (!resetEmail) return feedbackCode('Your email is missing. Return to the forgot password page and try again.');
                 if (!/^\d{6}$/.test(token)) return feedbackCode('Enter the complete six-digit code.');
                 if (verifyButton) verifyButton.disabled = true;
-                feedbackCode('Verifying code…');
+                feedbackCode('');
                 try {
                     const response = await fetch('/api/auth/verify-otp', {
                         method: 'POST',
@@ -12415,7 +11806,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
     }
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initPasswordRecovery);
+    if (document.readyState === '') document.addEventListener('DOMContentLoaded', initPasswordRecovery);
     else initPasswordRecovery();
 })();
 
@@ -12536,7 +11927,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const select = document.getElementById("department");
             const error = document.getElementById("departmentError");
             const requestId = ++registrationOptionsRequest;
-            resetSelect(select, departmentId ? "Loading programs..." : "Select Program");
+            resetSelect(select, departmentId ? "Select an option" : "Select Program");
             select.disabled = true;
             if (error) error.textContent = "";
             if (!departmentId) return;
@@ -13568,7 +12959,7 @@ document.addEventListener("DOMContentLoaded", function () {
     approvalList.dataset.approvalsInitialized = "true";
 
     async function loadRequests() {
-      approvalStatus.textContent = '';
+      approvalStatus.textContent = "";
       approvalStatus.classList.remove("approval-error");
       approvalList.replaceChildren();
       try {
@@ -13686,7 +13077,7 @@ document.addEventListener("DOMContentLoaded", function () {
     bell.addEventListener('click', open);
 
   }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => {
+  if (document.readyState === "") document.addEventListener("DOMContentLoaded", () => {
     initApprovalWorkspace();
     if (document.getElementById('approvalList')) initAccountApprovals();
     setupApprovalNotifications();
@@ -13742,7 +13133,7 @@ document.addEventListener("DOMContentLoaded", function () {
           const errorMessage = document.getElementById("profileProgramError");
           const requestId = ++studentProgramRequest;
           programSelect.replaceChildren(new Option(
-            departmentId ? "Loading programs..." : "Select Program",
+            departmentId ? "" : "Select Program",
             ""
           ));
           programSelect.disabled = true;
@@ -13824,7 +13215,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         });
   }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initProfileCompletion, { once: true });
+  if (document.readyState === "") document.addEventListener("DOMContentLoaded", initProfileCompletion, { once: true });
   else initProfileCompletion();
 })();
 
@@ -13856,7 +13247,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.body.appendChild(dialog);
     dialog.showModal();
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initPendingNotice, { once: true });
+  if (document.readyState === '') document.addEventListener('DOMContentLoaded', initPendingNotice, { once: true });
   else initPendingNotice();
 })();
 
@@ -13952,6 +13343,28 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initLoginPage, {once:true});
+    if (document.readyState === "") document.addEventListener("DOMContentLoaded", initLoginPage, {once:true});
     else initLoginPage();
+})();
+
+/* Faculty SO: place real loading/error feedback in the active view panel. */
+(function () {
+  function init() {
+    const root = document.querySelector('.so-faculty-page #soWorkflowManager');
+    const feedback = root?.querySelector('#soFacultyStatus');
+    if (!root || !feedback) return;
+    function update() {
+      const panel = root.querySelector('.sof-tab-panel.active:not([hidden])') || root.querySelector('.sof-tab-panel:not([hidden])');
+      if (panel && feedback.parentElement !== panel) panel.appendChild(feedback);
+      const value = feedback.textContent.trim();
+      const isError = /error|failed|could not|unable|denied|unavailable|timed out|not found|HTTP\s*\d/i.test(value);
+      const isLoading = /loading|fetching|retrieving|calculating/i.test(value);
+      feedback.hidden = !isError;
+    }
+    new MutationObserver(update).observe(feedback, { childList: true, characterData: true, subtree: true });
+    root.querySelectorAll('[role="tab"]').forEach(tab => tab.addEventListener('click', () => queueMicrotask(update)));
+    update();
+  }
+  if (document.readyState === '') document.addEventListener('DOMContentLoaded', init);
+  else init();
 })();
