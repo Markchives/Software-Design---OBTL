@@ -239,6 +239,17 @@
         });
         saveAssessmentButton.addEventListener("click", async () => {
             if (!section) return notify("Select a section first.");
+            if (!outcomeSelect.value) {
+                notify("Select a mapped Student Outcome before creating this assessment.");
+                outcomeSelect.focus();
+                return;
+            }
+            const title = document.getElementById("soAssessmentTitle").value.trim();
+            if (!title) {
+                notify("Enter an assessment title.");
+                document.getElementById("soAssessmentTitle").focus();
+                return;
+            }
             const indicatorInputs = [...indicatorRows.querySelectorAll(".so-indicator-row input")];
             const indicators = indicatorInputs.map(input => input.value.trim());
             if (indicators.some(value => !value)) return notify("Complete or remove each blank performance indicator.");
@@ -255,7 +266,7 @@
             if (new Set(rating_scale.map(row => row.value)).size !== rating_scale.length) {
                 return notify("Each rating level must have a unique score.");
             }
-            const data = { student_outcome_id: outcomeSelect.value, title: document.getElementById("soAssessmentTitle").value, due_date: document.getElementById("soAssessmentDue").value || null, status: document.getElementById("soAssessmentStatus").value, performance_indicators: indicators, rating_scale };
+            const data = { student_outcome_id: outcomeSelect.value, title, due_date: document.getElementById("soAssessmentDue").value || null, status: document.getElementById("soAssessmentStatus").value, performance_indicators: indicators, rating_scale };
             saveAssessmentButton.disabled = true;
             try {
                 await api(editingAssessmentId

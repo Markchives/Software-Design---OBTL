@@ -4742,6 +4742,26 @@ body.gl-dept-head-page .gl-table tbody td:first-child > small b{font-weight:800!
 .so-faculty-page .so-mapping-dialog footer button{min-width:92px;min-height:38px;padding:0 16px;border:1px solid #b9c8d6;border-radius:7px;background:#fff;color:#004179;font:700 13px Arial,Helvetica,sans-serif;cursor:pointer;}
 .so-faculty-page .so-mapping-dialog footer .so-mapping-save{border-color:#004179;background:#004179;color:#fff;}
 .so-faculty-page .so-mapping-dialog footer button:disabled{cursor:wait;opacity:.65;}
+.so-requirement-one-page #student-outcomes .so-workflow-grid{box-sizing:border-box;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;width:100%;margin:0;padding:20px 16px;background:#f8fbfe;border-bottom:1px solid #dce7f0;}
+.so-requirement-one-page #student-outcomes .so-workflow-grid[hidden]{display:none!important;}
+.so-requirement-one-page #student-outcomes .so-workflow-grid>label{display:flex;flex-direction:column;gap:6px;min-width:0;color:#004179;font-size:13px;font-weight:700;line-height:1.35;}
+.so-requirement-one-page #student-outcomes .so-workflow-grid>label :is(input,select){box-sizing:border-box;width:100%;min-width:0;min-height:40px;padding:8px 10px;border:1px solid #b9cddd;border-radius:7px;background:#fff;color:#173c5e;font:400 13px Arial,Helvetica,sans-serif;}
+.so-requirement-one-page #student-outcomes .so-workflow-grid>label :is(input,select):focus{border-color:#0b518b;outline:2px solid #0b518b33;}
+.so-requirement-one-page #student-outcomes .so-workflow-wide{grid-column:1/-1;min-width:0;}
+.so-requirement-one-page #student-outcomes .so-assessment-editor{box-sizing:border-box;margin:0;padding:14px;border:1px solid #d4e2ed;border-radius:9px;background:#fff;}
+.so-requirement-one-page #student-outcomes .so-assessment-editor legend{padding:0 6px;color:#004179;font-size:13px;font-weight:700;}
+.so-requirement-one-page #student-outcomes .so-assessment-hint{margin:0 0 10px;color:#526d84;font-size:12px;line-height:1.45;}
+.so-requirement-one-page #student-outcomes .so-editor-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;margin:8px 0;}
+.so-requirement-one-page #student-outcomes .so-rating-editor-head,.so-requirement-one-page #student-outcomes .so-rating-row{display:grid;grid-template-columns:minmax(72px,.35fr) minmax(0,1fr) auto;align-items:center;gap:8px;}
+.so-requirement-one-page #student-outcomes .so-rating-editor-head{margin:8px 0;color:#526d84;font-size:11px;font-weight:700;}
+.so-requirement-one-page #student-outcomes .so-editor-row input{box-sizing:border-box;width:100%;min-width:0;min-height:36px;padding:7px 9px;border:1px solid #c5d5e2;border-radius:6px;background:#fff;color:#173c5e;font:400 12px Arial,Helvetica,sans-serif;}
+.so-requirement-one-page #student-outcomes .so-editor-row input:focus{border-color:#0b518b;outline:2px solid #0b518b33;}
+.so-requirement-one-page #student-outcomes .so-editor-remove,.so-requirement-one-page #student-outcomes .so-editor-add{min-height:34px;padding:6px 11px;border:1px solid #bfd1e0;border-radius:6px;background:#fff;color:#174e7c;font:700 12px Arial,Helvetica,sans-serif;cursor:pointer;}
+.so-requirement-one-page #student-outcomes .so-editor-remove:hover,.so-requirement-one-page #student-outcomes .so-editor-add:hover{border-color:#0b518b;background:#eef6fc;}
+.so-requirement-one-page #student-outcomes .so-editor-remove:disabled,.so-requirement-one-page #student-outcomes .so-editor-add:disabled{cursor:not-allowed;opacity:.55;}
+.so-requirement-one-page #student-outcomes .so-assessment-actions{display:flex;justify-content:flex-end;gap:10px;padding-top:2px;}
+.so-requirement-one-page #student-outcomes .so-assessment-actions button{min-height:38px;}
+@media(max-width:650px){.so-requirement-one-page #student-outcomes .so-workflow-grid{grid-template-columns:minmax(0,1fr);gap:12px;padding:16px 12px;}.so-requirement-one-page #student-outcomes .so-workflow-wide{grid-column:auto;}.so-requirement-one-page #student-outcomes .so-assessment-actions{justify-content:stretch;}.so-requirement-one-page #student-outcomes .so-assessment-actions button{flex:1;}}
 @media(max-width:560px) {
   .faculty-workspace-aligned .so-summary-grid,
  .faculty-workspace-aligned .rp-summary{grid-template-columns:minmax(0,1fr);}
