@@ -7825,7 +7825,10 @@ def download_compliance_report(report_type, section_id):
                     "have been verified."
                 )
             }), 409
-        if report_type == "student-outcome-attainment" and mapping_status != "verified":
+        if (
+            report_type == "student-outcome-attainment"
+            and mapping_status != "verified"
+        ):
             return jsonify({
                 "error": (
                     "Verify the section's Course Outcome–Student Outcome "
