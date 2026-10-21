@@ -89,12 +89,6 @@
 <main class="so-main cm-student-main">
 <div class="cw-breadcrumb">My Courses <span class="cw-breadcrumb-separator">/</span> <span class="cw-breadcrumb-current">Course not selected</span></div><div class="cw-workspace"><section aria-label="Selected course" class="cw-hero"><div><div class="cw-eyebrow">COURSE WORKSPACE</div><h2>—</h2><p>—</p></div></section><nav aria-label="Course modules" class="cw-module-nav"><a class="cw-module-tab" href="../requirement 1/so-faculty.html"><span class="cw-module-number">01</span> Syllabus &amp; Outcomes</a><a aria-current="page" class="cw-module-tab active" href="cm-faculty.html"><span class="cw-module-number">02</span> Curriculum Mapping</a><a class="cw-module-tab" href="../requirement 3/cr.faculty.html"><span class="cw-module-number">03</span> Class Roster</a><a class="cw-module-tab" href="../requirement 4/ra-faculty.html"><span class="cw-module-number">04</span> Assessment Entry</a><a class="cw-module-tab" href="../requirement 5/ac-faculty.html"><span class="cw-module-number">05</span> Attainment</a><a class="cw-module-tab" href="../requirement 6/cqi-faculty.html"><span class="cw-module-number">06</span> CQI Planning</a><a class="cw-module-tab" href="../requirement 8/rp-faculty.html"><span class="cw-module-number">07</span> Compliance Report</a></nav></div>
 <header class="cm-faculty-page-heading"><h1>Curriculum Mapping</h1><p>Manage course activities and map them to Course Outcomes.</p></header>
-<section aria-labelledby="facultyOutcomeMappingTitle" class="cm-student-content" id="facultyOutcomeMappingEditor">
-<header class="cm-assessment-toolbar"><div><h2 id="facultyOutcomeMappingTitle">CO - SO Mapping &amp; Submission</h2><p>Align each Course Outcome with the Student Outcomes it supports. Before submitting, upload the syllabus under Syllabus &amp; Outcomes and map every assessment activity to a Course Outcome.</p></div><div><label for="facultyMappingSection">Course section</label><select aria-label="Assigned section" id="facultyMappingSection"><option value="">Loading assigned sections...</option></select></div></header>
-<div class="cm-table-wrap"><table class="cm-table"><thead><tr><th>Course Outcome</th><th>Aligned Student Outcomes</th><th>Target</th></tr></thead><tbody id="facultyOutcomeMappingRows"><tr><td colspan="3">Select a course section to load its outcomes.</td></tr></tbody></table></div>
-<p aria-live="polite" class="faculty-outcome-status" id="facultyOutcomeMappingStatus" role="status">Loading assigned sections...</p>
-<div class="cm-assessment-modal-actions"><button class="cm-assessment-cancel-btn" id="loadFacultyOutcomeMappings" type="button">Reload mappings</button><button class="cm-assessment-save-btn" id="saveFacultyOutcomeMappings" type="button">Save CO - SO mappings</button><button class="cm-assessment-save-btn" id="submitFacultyOutcomeMappings" type="button">Submit for review</button></div>
-</section>
 <section class="cm-student-summary so-summary-grid" id="cmFacultySummary">
 <article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label" data-summary-label="first">Total Course Outcomes</span><strong class="so-summary-number" data-summary="outcomes">—</strong></article>
 <article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label" data-summary-label="second">Overall CO Attainment</span><strong class="so-summary-number" data-summary="attainment">—</strong></article>
@@ -105,6 +99,7 @@
 <button class="cm-tab active" data-cm-tab="assessment-mapping" type="button">Assessment Mapping</button>
 <button class="cm-tab" data-cm-tab="course-outcomes" type="button">Course Outcomes</button>
 <button class="cm-tab" data-cm-tab="students-attainment" type="button">Students' Attainment</button>
+<button class="cm-tab" data-cm-tab="mapping-verification" type="button">Request Verification</button>
 </div>
 <div class="cm-tab-panel active" id="assessment-mapping">
 <div class="cm-assessment-toolbar"><p>Set up course activities and map each activity to every Course Outcome it measures. These saved activities are used for Requirement 4 score entry.</p><button class="cm-add-assessment-btn" id="openAssessmentModal" type="button" disabled><span>+</span> Add Activity</button></div>
@@ -115,6 +110,14 @@
 </tbody></table></div></div>
 <div class="cm-tab-panel" id="students-attainment"><p aria-live="polite" class="faculty-outcome-status" id="facultyStudentsAttainmentStatus" role="status"></p><div class="cm-table-wrap"><table class="cm-table cm-students-attainment-table"><thead><tr id="facultyStudentsAttainmentHead"><th>#</th><th>Student ID</th><th>Student Name</th><th>Status</th><th>Action</th></tr></thead><tbody id="facultyStudentsAttainmentBody">
 </tbody></table></div></div>
+<div class="cm-tab-panel" id="mapping-verification">
+<section aria-labelledby="facultyOutcomeMappingTitle" id="facultyOutcomeMappingEditor">
+<div class="cm-assessment-toolbar"><div><h2 id="facultyOutcomeMappingTitle">Request Department Head Verification</h2><p>Align each Course Outcome with the Student Outcomes it supports. Upload the syllabus under Syllabus &amp; Outcomes and map every activity to a Course Outcome before submitting.</p></div><label for="facultyMappingSection">Course section</label><select aria-label="Assigned section" id="facultyMappingSection"><option value="">Loading assigned sections...</option></select></div>
+<div class="cm-table-wrap"><table class="cm-table"><thead><tr><th>Course Outcome</th><th>Aligned Student Outcomes</th><th>Target</th></tr></thead><tbody id="facultyOutcomeMappingRows"><tr><td colspan="3">Select a course section to load its outcomes.</td></tr></tbody></table></div>
+<p aria-live="polite" class="faculty-outcome-status" id="facultyOutcomeMappingStatus" role="status">Loading assigned sections...</p>
+<div class="cm-assessment-modal-actions"><button class="cm-assessment-cancel-btn" id="loadFacultyOutcomeMappings" type="button">Reload mappings</button><button class="cm-assessment-save-btn" id="saveFacultyOutcomeMappings" type="button">Save CO - SO mappings</button><button class="cm-assessment-save-btn" id="submitFacultyOutcomeMappings" type="button">Submit for verification</button></div>
+</section>
+</div>
 </section>
 </main>
 </div>

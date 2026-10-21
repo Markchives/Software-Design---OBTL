@@ -66,8 +66,6 @@
         const button = (text, action, id) => `<button class="so-workflow-action" type="button" data-action="${action}" data-id="${esc(id)}">${text}</button>`;
         const soLabel = outcome => outcome.description
             ? `${outcome.code} — ${outcome.description}` : outcome.code;
-        if (coForm) coForm.hidden = true;
-        if (assessmentForm) assessmentForm.hidden = true;
         function addIndicator(value = "") {
             const row = document.createElement("div");
             row.className = "so-editor-row so-indicator-row";
@@ -146,8 +144,8 @@
                     : sections.length === 1
                         ? "Loading your assigned course..."
                         : "No course sections are assigned to your Faculty account.";
-            if (coForm) coForm.hidden = true;
-            if (assessmentForm) assessmentForm.hidden = true;
+            if (coForm?.open) coForm.close();
+            if (assessmentForm?.open) assessmentForm.close();
             document.getElementById("soCoCode").textContent = "";
             document.getElementById("soCoDescription").textContent = "";
             nextCourseOutcome = null;
@@ -211,8 +209,8 @@
         addCoButton?.addEventListener("click", () => {
             if (!section) return notify("Select a section first.");
             if (!nextCourseOutcome) return notify("All ten fixed Course Outcomes have been added to this course.");
-            if (coForm) coForm.hidden = !coForm.hidden;
-            if (!coForm.hidden) document.getElementById("soCoTarget").focus();
+            if (coForm && !coForm.open) coForm.showModal();
+            document.getElementById("soCoTarget").focus();
         });
         addAssessmentButton?.addEventListener("click", () => {
             if (!section) return notify("Select a section first.");
@@ -220,10 +218,23 @@
                 const mapped = studentOutcomes.some(so => mappings.some(link => link.student_outcome_id === so.id));
                 if (!mapped) return notify("Add and align a Course Outcome with a Student Outcome before creating an assessment.");
             }
-            const opening = assessmentForm.hidden;
-            if (opening) setAssessmentEditor(null);
-            if (assessmentForm) assessmentForm.hidden = !opening;
-            if (!assessmentForm.hidden) outcomeSelect.focus();
+            if (!assessmentForm.open) {
+                setAssessmentEditor(null);
+                assessmentForm.showModal();
+                outcomeSelect.focus();
+            } else {
+                assessmentForm.close();
+            }
+        });
+        document.querySelectorAll("[data-close-workflow-dialog]").forEach(button => {
+            button.addEventListener("click", () => {
+                document.getElementById(button.dataset.closeWorkflowDialog)?.close();
+            });
+        });
+        [coForm, assessmentForm].forEach(dialog => {
+            dialog?.addEventListener("click", event => {
+                if (event.target === dialog) dialog.close();
+            });
         });
         saveCoButton.addEventListener("click", async () => {
             if (!section) return notify("Select a section first.");
@@ -231,7 +242,7 @@
             const data = { target_percentage: Number(document.getElementById("soCoTarget").value) };
             try {
                 await api(`/api/faculty/courses/${encodeURIComponent(section.course_id)}/outcomes`, { method: "POST", body: JSON.stringify(data) });
-                if (coForm) coForm.hidden = true;
+                if (coForm?.open) coForm.close();
                 await loadSection(section.section_id);
                 if (status) status.textContent = "Course Outcome saved.";
             }
@@ -275,7 +286,7 @@
                     method: editingAssessmentId ? "PUT" : "POST",
                     body: JSON.stringify(data)
                 });
-                if (assessmentForm) assessmentForm.hidden = true;
+                if (assessmentForm?.open) assessmentForm.close();
                 setAssessmentEditor(null);
                 await loadSection(section.section_id);
                 if (status) status.textContent = "Student Outcome assessment saved.";
@@ -283,7 +294,7 @@
             finally { saveAssessmentButton.disabled = !section; }
         });
         document.getElementById("soCancelAssessment").addEventListener("click", () => {
-            if (assessmentForm) assessmentForm.hidden = true;
+            if (assessmentForm?.open) assessmentForm.close();
             setAssessmentEditor(null);
         });
         function openMappingEditor(courseOutcomeId) {
@@ -367,7 +378,7 @@
                     const row = (await api(`/api/faculty/sections/${encodeURIComponent(section.section_id)}/so-assessments`)).assessments.find(item => item.id === id);
                     if (!row) return;
                     setAssessmentEditor(row);
-                    if (assessmentForm) assessmentForm.hidden = false;
+                    if (assessmentForm && !assessmentForm.open) assessmentForm.showModal();
                     document.getElementById("soTabStudentOutcomes").click();
                     document.getElementById("soAssessmentTitle").focus();
                 } else if (action === "responses") {
