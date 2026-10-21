@@ -969,9 +969,11 @@ function studentSectionScopedUrl(path) {
     }
     async function loadOutcomes(sectionId, selectedOutcomeId = '') {
         const select = $('cqifCo'), summary = $('cqifAttainment');
+        const saveButton = $('cqifSaveButton');
         select.disabled = true;
         select.innerHTML = '<option value="">Loading attainment...</option>';
-        summary.textContent = '';
+        saveButton.disabled = true;
+        summary.textContent = 'Loading current attainment and target...';
         if (!sectionId) {
             select.innerHTML = '<option value="">Select a section first</option>';
             summary.textContent = 'CQI planning requires verified CO–SO mappings and released assessment results. Gradebook locking is not required.';
@@ -979,14 +981,26 @@ function studentSectionScopedUrl(path) {
         }
         const data = await api(`/api/faculty/cqi/sections/${encodeURIComponent(sectionId)}/outcomes`);
         const outcomes = data.outcomes || [];
-        select.innerHTML = '<option value="">Select a below-target Course Outcome</option>' + outcomes.map(outcome =>
+        const readinessMessage = data.readiness?.message || (outcomes.length
+            ? 'Only Course Outcomes below their attainment target are eligible for a CQI plan.'
+            : 'No below-target Course Outcomes with released assessment results are available for this section.');
+        select.innerHTML = (outcomes.length
+            ? '<option value="">Select a below-target Course Outcome</option>'
+            : `<option value="">${esc(readinessMessage)}</option>`) + outcomes.map(outcome =>
             `<option value="${esc(outcome.course_outcome_id)}">${esc(outcome.code)} · ${esc(outcome.attainment_percentage)}% attained / ${esc(outcome.target_percentage)}% target</option>`
         ).join('');
         select.disabled = outcomes.length === 0;
+        saveButton.disabled = outcomes.length === 0;
         if (selectedOutcomeId && outcomes.some(outcome => outcome.course_outcome_id === selectedOutcomeId)) select.value = selectedOutcomeId;
-        summary.textContent = data.readiness?.message || (outcomes.length
-            ? 'Only Course Outcomes below their attainment target are eligible for a CQI plan.'
-            : 'No below-target Course Outcomes with released assessment results are available for this section.');
+        summary.textContent = readinessMessage;
+    }
+    function showOutcomeError(error) {
+        const message = error.message || 'Course Outcome attainment could not be loaded.';
+        $('cqifCo').innerHTML = `<option value="">${esc(message)}</option>`;
+        $('cqifCo').disabled = true;
+        $('cqifSaveButton').disabled = true;
+        $('cqifAttainment').textContent = message;
+        feedback.textContent = message;
     }
     function selectedTargetText() {
         const option = $('cqifCo').selectedOptions[0];
@@ -1004,6 +1018,7 @@ function studentSectionScopedUrl(path) {
         $('cqifSaveButton').textContent = 'Save Plan';
         $('cqifCo').innerHTML = '<option value="">Select a section first</option>';
         $('cqifCo').disabled = true;
+        $('cqifSaveButton').disabled = true;
         $('cqifAttainment').textContent = 'CQI planning requires verified CO–SO mappings and released assessment results. Gradebook locking is not required.';
     }
     async function editPlan(plan = null) {
@@ -1027,7 +1042,7 @@ function studentSectionScopedUrl(path) {
                 await loadOutcomes(plan.section_id, targetOf(plan).course_outcome_id);
                 selectedTargetText();
             } catch (error) {
-                feedback.textContent = error.message;
+                showOutcomeError(error);
             }
         }
         show(modal);
@@ -1055,7 +1070,7 @@ function studentSectionScopedUrl(path) {
     $('cqiFacultyCreate').addEventListener('click', () => editPlan());
     $('cqifSection').addEventListener('change', async () => {
         try { await loadOutcomes($('cqifSection').value); }
-        catch (error) { feedback.textContent = error.message; }
+        catch (error) { showOutcomeError(error); }
     });
     $('cqifCo').addEventListener('change', selectedTargetText);
     body.addEventListener('click', async event => {
@@ -6911,6 +6926,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const activityTypes = ['Quiz', 'Major Exam', 'Laboratory', 'Assignment', 'Other'];
     let workspace = null;
     let editingAssessmentId = null;
+    let sectionLoadVersion = 0;
 
     async function request(url, options) {
         const response = await fetch(url, Object.assign({
@@ -7009,22 +7025,27 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async function loadSection() {
+        const loadVersion = ++sectionLoadVersion;
+        const sectionId = sectionSelect.value;
         workspace = null;
         tbody.replaceChildren();
         openBtn.disabled = true;
-        if (!sectionSelect.value) {
+        if (!sectionId) {
             status.textContent = 'Choose a section to manage its activities and CO mappings.';
             renderOutcomeChoices([], []);
             return;
         }
         status.textContent = '';
         try {
-            workspace = await request('/api/faculty/sections/' +
-                encodeURIComponent(sectionSelect.value) + '/assessments');
+            const loadedWorkspace = await request('/api/faculty/sections/' +
+                encodeURIComponent(sectionId) + '/assessments');
+            if (loadVersion !== sectionLoadVersion || sectionSelect.value !== sectionId) return;
+            workspace = loadedWorkspace;
             const assignment = workspace.section;
-            window.syncEduMetricsWorkspaceSection?.(sectionSelect.value, assignment);
+            window.syncEduMetricsWorkspaceSection?.(sectionId, assignment);
             renderActivities();
         } catch (error) {
+            if (loadVersion !== sectionLoadVersion || sectionSelect.value !== sectionId) return;
             status.textContent = error.message;
             workspace = null;
         }
@@ -7238,6 +7259,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let workspace = null;
     let outcomes = [];
     let students = [];
+    let sectionLoadVersion = 0;
 
     async function request(url) {
         const response = await fetch(url, {
@@ -7260,17 +7282,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function showSummary(tab) {
         const cards = [...summary.querySelectorAll(".so-summary-card")];
-        cards.forEach((card, index) => { card.hidden = index > (tab === "students-attainment" ? 3 : 1); });
+        cards.forEach((card, index) => { card.hidden = index > (tab === "students-attainment" ? 2 : 1); });
         const labels = {
-            "assessment-mapping": ["Total Course Outcomes", "Overall CO Attainment"],
-            "course-outcomes": ["Total Course Outcomes", "Total Enrolled Students"],
-            "students-attainment": ["Total Enrolled Students", "Students Meeting All COs",
-                "Needs Improvement", "Low COs"]
+            "assessment-mapping": ["Total Course Outcomes", "Overall CO Attainment", "Students Meeting All COs"],
+            "course-outcomes": ["Total Course Outcomes", "Total Enrolled Students", "Students Meeting All COs"],
+            "students-attainment": ["Total Enrolled Students", "Students Meeting All COs", "Low COs"]
         }[tab] || [];
-        summary.querySelector('[data-summary-label="first"]').textContent = labels[0] || "—";
-        summary.querySelector('[data-summary-label="second"]').textContent = labels[1] || "—";
-        summary.querySelector('[data-summary-label="third"]').textContent = labels[2] || "—";
-        summary.querySelector('[data-summary-label="fourth"]').textContent = labels[3] || "—";
+        ["first", "second", "fourth"].forEach((field, index) => {
+            const label = summary.querySelector(`[data-summary-label="${field}"]`);
+            if (label) label.textContent = labels[index] || "—";
+        });
     }
 
     function setSummaryValues(selectedTab) {
@@ -7291,8 +7312,6 @@ document.addEventListener("DOMContentLoaded", function () {
         summary.querySelector('[data-summary="attainment"]').textContent =
             activeTab === "students-attainment" ? String(metAll)
                 : activeTab === "course-outcomes" ? String(students.length) : overall;
-        summary.querySelector('[data-summary="third"]').textContent =
-            activeTab === "students-attainment" ? String(needsImprovement) : String(students.length);
         summary.querySelector('[data-summary="fourth"]').textContent =
             activeTab === "students-attainment" ? String(lowOutcomes) : String(metAll);
         summary.dataset.needsImprovement = String(needsImprovement);
@@ -7443,7 +7462,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async function loadSection() {
-        const section = sections.find(item => item.section_id === sectionSelect.value);
+        const loadVersion = ++sectionLoadVersion;
+        const sectionId = sectionSelect.value;
+        const section = sections.find(item => item.section_id === sectionId);
         setContext(section || null);
         if (!section) {
             workspace = null; outcomes = []; students = [];
@@ -7454,18 +7475,24 @@ document.addEventListener("DOMContentLoaded", function () {
             if (status) status.textContent = message;
             return;
         }
-        if (status) status.textContent = "";
+        if (status) status.textContent = '';
+        workspace = null; outcomes = []; students = [];
+        renderActivities(); renderOutcomes(); renderStudents(); setSummaryValues();
         try {
             const [assessmentData, attainmentData] = await Promise.all([
-                request(`/api/faculty/sections/${encodeURIComponent(section.section_id)}/assessments`),
-                request(`/api/faculty/sections/${encodeURIComponent(section.section_id)}/attainment`)
+                request(`/api/faculty/sections/${encodeURIComponent(sectionId)}/assessments`),
+                request(`/api/faculty/sections/${encodeURIComponent(sectionId)}/attainment`)
             ]);
+            if (loadVersion !== sectionLoadVersion || sectionSelect.value !== sectionId) return;
             workspace = assessmentData;
             outcomes = attainmentData.outcomes || [];
             students = assessmentData.students || [];
             calculateStudentResults();
             renderActivities(); renderOutcomes(); renderStudents(); setSummaryValues();
         } catch (error) {
+            if (loadVersion !== sectionLoadVersion || sectionSelect.value !== sectionId) return;
+            workspace = null; outcomes = []; students = [];
+            renderActivities(); renderOutcomes(); renderStudents(); setSummaryValues();
             if (status) status.textContent = error.message;
             if (outcomeStatus) outcomeStatus.textContent = error.message;
             if (studentStatus) studentStatus.textContent = error.message;
