@@ -1601,7 +1601,7 @@ body.so-reflection-page{margin:0;min-height:100vh;background:#F4F7FB;color:#173B
 .so-faculty-page #student-outcomes .sof-outcome-table th:nth-child(3), .so-faculty-page #student-outcomes .sof-outcome-table td:nth-child(3){width:16%!important;}
 .so-faculty-page #student-outcomes .sof-outcome-table th:nth-child(4), .so-faculty-page #student-outcomes .sof-outcome-table td:nth-child(4){width:15%!important;}
 .so-faculty-page #student-outcomes .sof-outcome-table th:nth-child(5), .so-faculty-page #student-outcomes .sof-outcome-table td:nth-child(5){width:17%!important;}
-.so-faculty-page .sof-outcome-table tbody:empty::after{content:"No records yet";width:100%;min-height:115px;display:flex;align-items:center;justify-content:center;color:#8190A0;font-size:12px;font-weight:400;background:#FFFFFF;}
+
 .so-faculty-page .sof-outcome-table td button{min-width:98px!important;min-height:36px!important;margin:2px 4px 2px 0!important;padding:5px 17px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:9px!important;border:1.5px solid #C9DFF0!important;border-radius:999px!important;background:#FFFFFF!important;color:#004179!important;font-family:Arial, Helvetica, sans-serif!important;font-size:14px!important;font-weight:500!important;line-height:1!important;white-space:nowrap!important;cursor:pointer!important;box-shadow:none!important;}
 .so-faculty-page .sof-outcome-table td button:hover{background:#F5FAFE!important;border-color:#8DB9D8!important;}
 .so-faculty-page .sof-outcome-table td button::before{content:"✎";font-size:14px;line-height:1;}
@@ -2245,12 +2245,12 @@ body.so-reflection-page{margin:0;min-height:100vh;background:#F4F7FB;color:#173B
 .so-faculty-page #student-outcomes .sof-outcome-table-wrap{flex:1 1 auto;min-height:0;max-height:430px;padding:0 8px 12px 0;overflow-y:auto;overflow-x:hidden;border:none;border-radius:0;background:#FFFFFF;scrollbar-width:thin;scrollbar-color:#B7CAD9 transparent;}
 .so-faculty-page #student-outcomes .sof-outcome-table thead tr{background:#FFF6C8;}
 .so-faculty-page #student-outcomes .sof-outcome-table thead th{padding:12px 14px!important;border:0!important;background:#FFF6C8!important;}
-.so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row):hover td{border-top-color:#C7D9E7!important;}
-.so-faculty-page #student-outcomes #studentOutcomeTableBody .sof-outcome-name{display:block;color:#003F73;font-family:Arial, Helvetica, sans-serif;font-size:14px;line-height:1.4;white-space:normal;overflow:visible;text-overflow:clip;}
+.so-faculty-page #student-outcomes #soAssessmentRows tr:not(.sodh-empty-row):hover td{border-top-color:#C7D9E7!important;}
+.so-faculty-page #student-outcomes #soAssessmentRows .sof-outcome-name{display:block;color:#003F73;font-family:Arial, Helvetica, sans-serif;font-size:14px;line-height:1.4;white-space:normal;overflow:visible;text-overflow:clip;}
 .so-faculty-page .sodh-toolbar.sof-panel-toolbar, .so-faculty-page .sodh-toolbar.sof-outcome-toolbar{height:60px!important;min-height:60px!important;padding:11px 18px!important;box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:16px!important;border-bottom:2px solid #F4C300!important;}
 .so-faculty-page .sodh-toolbar.sof-panel-toolbar > p, .so-faculty-page .sodh-toolbar.sof-outcome-toolbar > p{margin:0!important;color:#004179!important;font-size:16px!important;font-weight:400!important;line-height:1.5!important;}
 .so-faculty-page #course-outcomes .sodh-table-wrap.sof-outcome-table-wrap{width:100%!important;margin:0!important;padding:0 0 10px 0!important;border:0!important;border-radius:0!important;background:#FFFFFF!important;overflow-x:hidden!important;overflow-y:auto!important;box-sizing:border-box!important;}
-.so-faculty-page #course-outcomes .sof-outcome-table{width:100%!important;margin:-8px 0 0!important;border-collapse:separate!important;border-spacing:0 8px!important;table-layout:fixed!important;background:transparent!important;}
+.so-faculty-page #course-outcomes .sof-outcome-table{width:100%!important;margin:0!important;border-collapse:separate!important;border-spacing:0!important;table-layout:fixed!important;background:transparent!important;}
 .so-faculty-page #course-outcomes .sof-outcome-table tbody tr:not(.sodh-empty-row) td{height:64px!important;padding:10px 20px!important;background:#FFFFFF!important;color:#004179!important;border-top:1px solid #D5E1EC!important;border-bottom:1px solid #D5E1EC!important;vertical-align:middle!important;}
 .so-faculty-page #course-outcomes .sof-outcome-table tbody tr:not(.sodh-empty-row) td:not(:last-child) *{color:#004179!important;}
 .so-faculty-page #course-outcomes .sof-outcome-table tbody tr:not(.sodh-empty-row) td:first-child{border-left:1px solid #D5E1EC!important;border-radius:10px 0 0 10px!important;}
@@ -2258,28 +2258,28 @@ body.so-reflection-page{margin:0;min-height:100vh;background:#F4F7FB;color:#173B
 .so-faculty-page #course-outcomes .sof-outcome-table tbody tr:not(.sodh-empty-row) td:last-child{border-right:1px solid #D5E1EC!important;border-radius:0 10px 10px 0!important;}
 .so-faculty-page #course-outcomes .sof-outcome-table thead, .so-faculty-page #course-outcomes .sof-outcome-table thead tr, .so-faculty-page #student-outcomes .sof-outcome-table thead, .so-faculty-page #student-outcomes .sof-outcome-table thead tr{height:43px!important;min-height:43px!important;max-height:43px!important;background:#FFF6C8!important;border-radius:0!important;}
 .so-faculty-page #course-outcomes .sof-outcome-table thead th, .so-faculty-page #student-outcomes .sof-outcome-table thead th{height:43px!important;min-height:43px!important;max-height:43px!important;padding:0 20px!important;box-sizing:border-box!important;vertical-align:middle!important;border-top:0!important;border-bottom:1px solid #D8C66C!important;border-left:0!important;border-right:0!important;border-radius:0!important;background:#FFF6C8!important;color:#004179!important;font-size:14px!important;font-weight:700!important;line-height:43px!important;}
-.so-faculty-page #student-outcomes.sodh-tab-panel.active, .so-faculty-page #student-outcomes.sof-tab-panel.active{display:flex!important;flex-direction:column!important;flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;}
-.so-faculty-page #student-outcomes .sodh-table-wrap.sof-outcome-table-wrap, .so-faculty-page #student-outcomes .sof-outcome-table-wrap{flex:1 1 0!important;min-height:0!important;width:100%!important;height:100%!important;max-height:none!important;margin:0!important;padding:0 0 10px 0!important;border:0!important;border-radius:0!important;background:#FFFFFF!important;overflow-y:auto!important;overflow-x:hidden!important;box-sizing:border-box!important;scrollbar-gutter:auto!important;}
-.so-faculty-page #student-outcomes .sof-outcome-table{width:100%!important;margin:-8px 0 0!important;border-collapse:separate!important;border-spacing:0 8px!important;table-layout:fixed!important;background:transparent!important;}
+.so-faculty-page #student-outcomes.sodh-tab-panel.active, .so-faculty-page #student-outcomes.sof-tab-panel.active{display:flex!important;flex-direction:column!important;flex:1 1 auto!important;min-height:220px!important;overflow:hidden!important;}
+.so-faculty-page #student-outcomes .sodh-table-wrap.sof-outcome-table-wrap, .so-faculty-page #student-outcomes .sof-outcome-table-wrap{flex:1 1 auto!important;min-height:155px!important;width:100%!important;height:auto!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:#FFFFFF!important;overflow-y:auto!important;overflow-x:hidden!important;box-sizing:border-box!important;scrollbar-gutter:auto!important;}
+.so-faculty-page #student-outcomes .sof-outcome-table{width:100%!important;margin:0!important;border-collapse:separate!important;border-spacing:0!important;table-layout:fixed!important;background:transparent!important;}
 .so-faculty-page #student-outcomes .sof-outcome-table thead{position:sticky!important;top:0!important;z-index:20!important;transform:none!important;}
 .so-faculty-page #student-outcomes .sof-outcome-table thead th{position:sticky!important;top:0!important;z-index:21!important;}
-.so-faculty-page #student-outcomes #studentOutcomeTableBody{transform:none!important;}
-.so-faculty-page #student-outcomes #studentOutcomeTableBody tr{background:transparent!important;}
-.so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row) td{white-space:normal;overflow:visible;text-overflow:clip;height:64px!important;padding:10px 20px!important;background:#FFFFFF!important;border-top:1px solid #D5E1EC!important;border-bottom:1px solid #D5E1EC!important;vertical-align:middle!important;}
-.so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row) td:nth-child(1), .so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row) td:nth-child(2), .so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row) td:nth-child(3){color:#004179!important;font-weight:700!important;}
-.so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row) td:first-child{padding-left:20px!important;border-left:1px solid #D5E1EC!important;border-radius:10px 0 0 10px!important;}
-.so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row) td:last-child{padding-right:20px!important;border-right:1px solid #D5E1EC!important;border-radius:0 10px 10px 0!important;}
-.so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row):hover td{background:#F8FBFD!important;border-bottom-color:#C7D9E7!important;}
-.so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row):hover td:first-child{border-left-color:#C7D9E7!important;}
-.so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row):hover td:last-child{border-right-color:#C7D9E7!important;}
-.so-faculty-page #student-outcomes .sof-outcome-table thead th:nth-child(1), .so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row) td:nth-child(1){width:42%!important;text-align:left!important;}
-.so-faculty-page #student-outcomes .sof-outcome-table thead th:nth-child(2), .so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row) td:nth-child(2){width:18%!important;text-align:left!important;}
-.so-faculty-page #student-outcomes .sof-outcome-table thead th:nth-child(3), .so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row) td:nth-child(3), .so-faculty-page #student-outcomes .sof-outcome-table thead th:nth-child(4), .so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row) td:nth-child(4){width:13%!important;text-align:center!important;}
-.so-faculty-page #student-outcomes .sof-outcome-table thead th:nth-child(5), .so-faculty-page #student-outcomes #studentOutcomeTableBody tr:not(.sodh-empty-row) td:nth-child(5){width:14%!important;text-align:center!important;}
-.so-faculty-page #student-outcomes #studentOutcomeTableBody .sof-row-actions{display:flex!important;align-items:center!important;justify-content:center!important;gap:12px!important;flex-wrap:nowrap!important;}
-.so-faculty-page #student-outcomes #studentOutcomeTableBody .sof-row-actions button:first-child{display:none!important;}
-.so-faculty-page #student-outcomes #studentOutcomeTableBody .sof-row-actions button{min-width:98px!important;min-height:36px!important;padding:5px 17px!important;margin:0!important;font-size:14px!important;font-weight:500!important;line-height:1!important;flex:0 0 auto!important;}
-.so-faculty-page #student-outcomes #studentOutcomeTableBody .sodh-empty-row td{border:0!important;border-radius:0!important;}
+.so-faculty-page #student-outcomes #soAssessmentRows{transform:none!important;}
+.so-faculty-page #student-outcomes #soAssessmentRows tr{background:transparent!important;}
+.so-faculty-page #student-outcomes #soAssessmentRows tr:not(.sodh-empty-row) td{white-space:normal;overflow:visible;text-overflow:clip;height:64px!important;padding:10px 20px!important;background:#FFFFFF!important;border-top:1px solid #D5E1EC!important;border-bottom:1px solid #D5E1EC!important;vertical-align:middle!important;}
+.so-faculty-page #student-outcomes #soAssessmentRows tr:not(.sodh-empty-row) td:nth-child(1), .so-faculty-page #student-outcomes #soAssessmentRows tr:not(.sodh-empty-row) td:nth-child(2), .so-faculty-page #student-outcomes #soAssessmentRows tr:not(.sodh-empty-row) td:nth-child(3){color:#004179!important;font-weight:700!important;}
+.so-faculty-page #student-outcomes #soAssessmentRows tr:not(.sodh-empty-row) td:first-child{padding-left:20px!important;border-left:1px solid #D5E1EC!important;border-radius:10px 0 0 10px!important;}
+.so-faculty-page #student-outcomes #soAssessmentRows tr:not(.sodh-empty-row) td:last-child{padding-right:20px!important;border-right:1px solid #D5E1EC!important;border-radius:0 10px 10px 0!important;}
+.so-faculty-page #student-outcomes #soAssessmentRows tr:not(.sodh-empty-row):hover td{background:#F8FBFD!important;border-bottom-color:#C7D9E7!important;}
+.so-faculty-page #student-outcomes #soAssessmentRows tr:not(.sodh-empty-row):hover td:first-child{border-left-color:#C7D9E7!important;}
+.so-faculty-page #student-outcomes #soAssessmentRows tr:not(.sodh-empty-row):hover td:last-child{border-right-color:#C7D9E7!important;}
+.so-faculty-page #student-outcomes .sof-outcome-table thead th:nth-child(1), .so-faculty-page #student-outcomes #soAssessmentRows tr:not(.sodh-empty-row) td:nth-child(1){width:42%!important;text-align:left!important;}
+.so-faculty-page #student-outcomes .sof-outcome-table thead th:nth-child(2), .so-faculty-page #student-outcomes #soAssessmentRows tr:not(.sodh-empty-row) td:nth-child(2){width:18%!important;text-align:left!important;}
+.so-faculty-page #student-outcomes .sof-outcome-table thead th:nth-child(3), .so-faculty-page #student-outcomes #soAssessmentRows tr:not(.sodh-empty-row) td:nth-child(3), .so-faculty-page #student-outcomes .sof-outcome-table thead th:nth-child(4), .so-faculty-page #student-outcomes #soAssessmentRows tr:not(.sodh-empty-row) td:nth-child(4){width:13%!important;text-align:center!important;}
+.so-faculty-page #student-outcomes .sof-outcome-table thead th:nth-child(5), .so-faculty-page #student-outcomes #soAssessmentRows tr:not(.sodh-empty-row) td:nth-child(5){width:14%!important;text-align:center!important;}
+.so-faculty-page #student-outcomes #soAssessmentRows .sof-row-actions{display:flex!important;align-items:center!important;justify-content:center!important;gap:12px!important;flex-wrap:nowrap!important;}
+.so-faculty-page #student-outcomes #soAssessmentRows .sof-row-actions button:first-child{display:none!important;}
+.so-faculty-page #student-outcomes #soAssessmentRows .sof-row-actions button{min-width:98px!important;min-height:36px!important;padding:5px 17px!important;margin:0!important;font-size:14px!important;font-weight:500!important;line-height:1!important;flex:0 0 auto!important;}
+.so-faculty-page #student-outcomes #soAssessmentRows .sodh-empty-row td{border:0!important;border-radius:0!important;}
 .so-faculty-page .sodh-content-card{flex:1 1 auto;min-height:0;margin-top:0!important;overflow:hidden!important;}
 .so-faculty-page #student-outcomes .sof-outcome-table-wrap::-webkit-scrollbar{width:6px!important;}
 .so-faculty-page #student-outcomes .sof-outcome-table-wrap::-webkit-scrollbar-track{background:transparent!important;}
@@ -5761,3 +5761,19 @@ body.edu-management-page .so-main{width:100%;min-width:0}
 .em-table-loading-row td { height: 110px; text-align: center !important; vertical-align: middle; }
 .em-table-spinner { display: inline-block; width: 26px; height: 26px; border: 3px solid #DCE6EF; border-top-color: #004179; border-radius: 50%; animation: em-table-spin .75s linear infinite; }
 @keyframes em-table-spin { to { transform: rotate(360deg); } }
+
+/* Faculty SO workspace: consistent view panels and aligned outcome table. */
+.so-faculty-page #soWorkflowManager{height:500px;min-height:500px;display:flex;flex-direction:column;padding:0;overflow:hidden}
+.so-faculty-page #soWorkflowManager>.sodh-tabs{flex:0 0 auto}
+.so-faculty-page #soWorkflowManager>.sof-tab-panel.active{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+.so-faculty-page #soWorkflowManager .sof-outcome-table-wrap{min-height:155px;max-height:none!important;flex:1 1 auto;position:relative;overflow:auto}
+.so-faculty-page #soWorkflowManager #facultySyllabusStatus,.so-faculty-page #soWorkflowManager #soFacultyStatus{display:none!important}
+.so-faculty-page #student-outcomes .sof-outcome-table thead th{line-height:1.3!important;white-space:nowrap}
+/* Existing empty-state rules are scoped to Faculty SO; no extra JS observer. */
+.so-faculty-page #student-outcomes #soAssessmentRows .sodh-empty-row td{text-align:center!important;height:100px!important;color:#60778D!important}
+.so-faculty-page #soWorkflowManager .sof-syllabus-empty{flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px!important}
+.so-faculty-page #soWorkflowManager .sof-outcome-table-wrap .sof-clean-empty{display:none;position:absolute;inset:44px 0 0;align-items:center;justify-content:center;flex-direction:column;gap:7px;text-align:center;padding:20px;background:#fff;pointer-events:none}
+.so-faculty-page #soWorkflowManager .sof-outcome-table-wrap:has(tbody:empty) .sof-clean-empty,.so-faculty-page #soWorkflowManager .sof-outcome-table-wrap:has(tbody>.sodh-empty-row:only-child) .sof-clean-empty{display:flex}
+.so-faculty-page #soWorkflowManager .sof-clean-empty strong{font-size:15px;font-weight:700;color:#004179}
+.so-faculty-page #soWorkflowManager .sof-clean-empty span{font-size:13px;color:#60778d}
+.so-faculty-page #soWorkflowManager .sof-outcome-table-wrap:has(tbody>.sodh-empty-row:only-child) tbody{visibility:hidden}

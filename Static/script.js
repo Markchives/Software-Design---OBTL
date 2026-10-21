@@ -3793,9 +3793,7 @@ async function initializePersistentFacultySyllabus(sectionSelect) {
             const result = await request("/api/faculty/syllabi/" +
                 encodeURIComponent(sectionSelect.value));
             syllabus = result.syllabus;
-            status.textContent = syllabus
-                ? "Syllabus is saved for this section."
-                : "No syllabus is saved for this section yet.";
+            status.textContent = "";
             render();
         } catch (error) {
             status.textContent = error.message;
@@ -13347,24 +13345,25 @@ document.addEventListener("DOMContentLoaded", function () {
     else initLoginPage();
 })();
 
-/* Faculty SO: place real loading/error feedback in the active view panel. */
+/* Faculty SO: keep one centered empty state without interfering with table data. */
 (function () {
-  function init() {
-    const root = document.querySelector('.so-faculty-page #soWorkflowManager');
-    const feedback = root?.querySelector('#soFacultyStatus');
-    if (!root || !feedback) return;
-    function update() {
-      const panel = root.querySelector('.sof-tab-panel.active:not([hidden])') || root.querySelector('.sof-tab-panel:not([hidden])');
-      if (panel && feedback.parentElement !== panel) panel.appendChild(feedback);
-      const value = feedback.textContent.trim();
-      const isError = /error|failed|could not|unable|denied|unavailable|timed out|not found|HTTP\s*\d/i.test(value);
-      const isLoading = /loading|fetching|retrieving|calculating/i.test(value);
-      feedback.hidden = !isError;
-    }
-    new MutationObserver(update).observe(feedback, { childList: true, characterData: true, subtree: true });
-    root.querySelectorAll('[role="tab"]').forEach(tab => tab.addEventListener('click', () => queueMicrotask(update)));
-    update();
+  function initFacultySOEmptyStates() {
+    if (!document.body.classList.contains('so-faculty-page')) return;
+    ['soCoRows', 'soAssessmentRows'].forEach(function (id) {
+      const body = document.getElementById(id);
+      const wrap = body && body.closest('.sof-outcome-table-wrap');
+      if (!body || !wrap || wrap.dataset.emptyStateReady === 'true') return;
+      wrap.dataset.emptyStateReady = 'true';
+      function refresh() {
+        const rows = Array.from(body.querySelectorAll(':scope > tr'));
+        const placeholder = rows.length === 1 && !rows[0].querySelector('button, a, input, select') &&
+          /^(no records yet|no course outcomes|no student outcome assessments|choose an assigned section)/i.test(rows[0].textContent.trim());
+        wrap.classList.toggle('is-empty', rows.length === 0 || placeholder);
+      }
+      new MutationObserver(refresh).observe(body, {childList:true, subtree:true, characterData:true});
+      refresh();
+    });
   }
-  if (document.readyState === '') document.addEventListener('DOMContentLoaded', init);
-  else init();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initFacultySOEmptyStates);
+  else initFacultySOEmptyStates();
 })();

@@ -175,7 +175,7 @@
 </label>
 </div>
 </div>
-<p aria-live="polite" class="so-workflow-status" id="facultySyllabusStatus" role="status"></p>
+<p aria-live="polite" class="so-workflow-status" id="facultySyllabusStatus" role="status" hidden></p>
 <div class="sof-syllabus-empty" id="facultySyllabusEmpty">
 <h3>
                             No syllabus uploaded
@@ -255,8 +255,9 @@
 <div class="sodh-table-wrap sof-outcome-table-wrap">
 <table class="sodh-table sof-outcome-table">
 <thead><tr><th>CO No.</th><th>Course Outcomes</th><th>Target Attainment</th><th>Aligned SOs</th><th>Actions</th></tr></thead>
-<tbody id="soCoRows"><tr><td colspan="5">Choose an assigned section to load outcomes.</td></tr></tbody>
+<tbody id="soCoRows"></tbody>
 </table>
+<div class="sof-clean-empty" aria-live="polite"><strong>No Course Outcomes Yet</strong><span>Add a Course Outcome to get started.</span></div>
 </div>
 </div>
 <div class="sodh-tab-panel sof-tab-panel" hidden="" id="student-outcomes" role="tabpanel" aria-labelledby="soTabStudentOutcomes">
@@ -294,6 +295,7 @@
 <thead><tr><th>Student Outcome</th><th>Due Date</th><th>Responses</th><th>Status</th><th>Actions</th></tr></thead>
 <tbody id="soAssessmentRows"></tbody>
 </table>
+<div class="sof-clean-empty" aria-live="polite"><strong>No Student Outcome Assessments Yet</strong><span>Create an SO Assessment to get started.</span></div>
 </div>
 <div class="sodh-table-wrap" id="soResponseLog" hidden><h3>Response log</h3><table class="sodh-table"><thead><tr><th>Student number</th><th>Name</th><th>Program</th><th>Submitted</th><th>Answers</th></tr></thead><tbody id="soResponseRows"></tbody></table></div>
 </div>
