@@ -9435,13 +9435,15 @@ document.addEventListener("DOMContentLoaded", function () {
         const course = $("crdhCourse").value;
         const section = $("crdhSection").value;
         const faculty = $("crdhFaculty").value;
+        const category = $("crdhCategory").value;
         return roster.filter(item =>
             (!query || [item.student_number, item.full_name, item.email].join(" ").toLowerCase().includes(query)) &&
             (!year || item.academic_year_id === year) &&
             (!program || item.program_id === program) &&
             (!course || item.course_id === course) &&
             (!section || item.section_id === section) &&
-            (!faculty || item.faculty_id === faculty)
+            (!faculty || item.faculty_id === faculty) &&
+            (!category || item.program_id === category)
         ).sort((a, b) => {
             const mode = $("crdhSort").value;
             if (mode === "id") return String(a.student_number).localeCompare(String(b.student_number), undefined, { numeric: true });
@@ -9456,7 +9458,7 @@ document.addEventListener("DOMContentLoaded", function () {
         rosterBody.replaceChildren();
         visible.forEach((item, index) => {
             const row = document.createElement("tr");
-            [String(index + 1), item.student_number, item.full_name, item.email, item.section_name, item.faculty_name]
+            [String(index + 1), item.student_number, item.full_name, item.email, item.section_name, item.faculty_name, item.program_name]
                 .forEach(value => {
                     const cell = document.createElement("td");
                     cell.textContent = value || "?";
@@ -9465,7 +9467,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const statusCell = document.createElement("td");
             const badge = document.createElement("span");
             badge.className = "crf-status " + (item.enrollment_status === "active" ? "enrolled" : "pending");
-            badge.textContent = item.enrollment_status || "?";
+            badge.textContent = item.enrollment_status === "active" ? "Enrolled" : item.enrollment_status === "dropped" ? "Not Enrolled" : (item.enrollment_status || "—");
             statusCell.appendChild(badge);
             row.appendChild(statusCell);
             const actionCell = document.createElement("td");
@@ -9487,7 +9489,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!visible.length) {
             const row = document.createElement("tr");
             const cell = document.createElement("td");
-            cell.colSpan = 8;
+            cell.colSpan = 9;
             cell.textContent = "No roster records match these filters.";
             row.appendChild(cell);
             rosterBody.appendChild(row);
@@ -9584,6 +9586,7 @@ document.addEventListener("DOMContentLoaded", function () {
             fillSelect($("crdhCourse"), "All Courses", data.courses || [], "id", course => `${course.code} ? ${course.title}`);
             fillSelect($("crdhSection"), "All Sections", sections, "id", section => `${section.course_code} ? ${section.section_name}`);
             fillSelect($("crdhFaculty"), "All Faculty", data.faculty || [], "id", faculty => faculty.name);
+            fillSelect($("crdhCategory"), "All Students", data.programs || [], "id", program => program.name);
             setNote("Roster data is limited to your department.", false);
             render();
         } catch (error) {
@@ -9593,7 +9596,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    ["crdhSearch", "crdhSort", "crdhSchoolYear", "crdhProgram", "crdhCourse", "crdhSection", "crdhFaculty"]
+    ["crdhSearch", "crdhSort", "crdhSchoolYear", "crdhProgram", "crdhCourse", "crdhSection", "crdhFaculty", "crdhCategory"]
         .forEach(id => $(id).addEventListener(id === "crdhSearch" ? "input" : "change", render));
     $("crdhAdd").addEventListener("click", openModal);
     $("crdhCourseChoice").addEventListener("change", () => populateModalSections($("crdhCourseChoice").value, ""));
@@ -9708,6 +9711,47 @@ document.addEventListener("DOMContentLoaded", function () {
         link.download = "department-class-roster.csv";
         link.click();
         URL.revokeObjectURL(url);
+    });
+
+    $("crdhImport").addEventListener("click", () => {
+        const sectionId = $("crdhSection").value;
+        if (!sectionId) {
+            setNote("Choose one section in the filters before importing students.", true);
+            return;
+        }
+        $("crdhImportFile").click();
+    });
+
+    $("crdhImportFile").addEventListener("change", async event => {
+        const file = event.target.files?.[0];
+        const sectionId = $("crdhSection").value;
+        if (!file || !sectionId) return;
+        try {
+            const lines = (await file.text()).split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+            const numbers = [...new Set(lines.map(line => line.split(/[;,\t]/)[0].trim().replace(/^\"|\"$/g, "")))]
+                .filter(value => value && !/^(student\s*id|student\s*number|id)$/i.test(value));
+            let added = 0;
+            const rejected = [];
+            for (const number of numbers) {
+                try {
+                    const search = await api("/api/department-head/class-roster/students?q=" + encodeURIComponent(number));
+                    const student = (search.students || []).find(row => String(row.student_number).toLowerCase() === number.toLowerCase());
+                    if (!student) { rejected.push(number); continue; }
+                    await api("/api/department-head/sections/" + encodeURIComponent(sectionId) + "/enrollments", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", Accept: "application/json" },
+                        body: JSON.stringify({ student_profile_id: student.student_profile_id, action: "enroll" })
+                    });
+                    added++;
+                } catch (_) { rejected.push(number); }
+            }
+            setNote(`Imported ${added} student(s).${rejected.length ? ` Could not import: ${rejected.join(", ")}.` : ""}`, rejected.length > 0);
+            await load();
+        } catch (error) {
+            setNote(error.message || "The roster CSV could not be read.", true);
+        } finally {
+            event.target.value = "";
+        }
     });
 
     load();
