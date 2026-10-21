@@ -201,6 +201,7 @@ def audit_authenticated_api_mutations(response):
                 "verify_department_head_gradebook",
                 "lock_department_head_gradebook",
                 "reopen_department_head_gradebook",
+                "manage_department_head_roster_enrollment",
             }
             or response.status_code >= 400
         )
@@ -5458,6 +5459,16 @@ def manage_department_head_roster_enrollment(section_id):
                 "p_action": action,
             },
         ).execute()
+        record_audit_event(
+            action="Student enrollment dropped by Department Head",
+            module="class-roster",
+            details=(
+                f"Department Head dropped student profile {student_profile_id} "
+                f"from section {section_uuid}."
+            ),
+            table_name="enrollments",
+            record_id=f"{section_uuid}:{student_profile_id}",
+        )
         return jsonify({"result": result.data}), 200
     except ValueError:
         return jsonify({"error": "A valid section and student are required."}), 400

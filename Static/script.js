@@ -9510,7 +9510,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 button.title = `Drop from ${item.section_name || "this section"}`;
                 actionCell.appendChild(button);
             } else {
-                actionCell.textContent = item.enrollment_status === "dropped" ? "Dropped" : "—";
+                if (item.enrollment_status === "dropped") {
+                    const dropped = document.createElement("span");
+                    dropped.className = "crdh-dropped-badge";
+                    dropped.textContent = "Dropped";
+                    actionCell.appendChild(dropped);
+                } else {
+                    actionCell.textContent = "—";
+                }
             }
             row.appendChild(actionCell);
             rosterBody.appendChild(row);

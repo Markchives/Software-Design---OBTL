@@ -2691,6 +2691,12 @@ body.cm-dept-review-open, body.cm-dept-modal-open{overflow:hidden;}
 .cr-dept-head-page .crf-toolbar .crf-search{width:100%;max-width:250px;min-width:0;margin-left:auto;justify-self:end;}
 .cr-dept-head-page .crf-toolbar .crf-toolbar-actions{display:flex;align-items:center;justify-self:end;gap:10px;flex-wrap:nowrap;margin:0;white-space:nowrap;}
 .cr-dept-head-page #crdhRecordForm{position:relative;}
+.cr-dept-head-page .crdh-row-actions{white-space:nowrap;}
+.cr-dept-head-page .crdh-remove{min-width:76px;min-height:32px;padding:0 16px;border:1px solid #B42318;border-radius:18px;background:#FFF;color:#B42318;font:700 12px Arial,Helvetica,sans-serif;cursor:pointer;transition:background .16s ease,color .16s ease,box-shadow .16s ease,transform .16s ease;}
+.cr-dept-head-page .crdh-remove:hover{background:#B42318;color:#FFF;box-shadow:0 3px 8px rgba(180,35,24,.2);transform:translateY(-1px);}
+.cr-dept-head-page .crdh-remove:focus-visible{outline:3px solid rgba(244,195,0,.7);outline-offset:2px;}
+.cr-dept-head-page .crdh-remove:disabled{opacity:.58;cursor:wait;transform:none;box-shadow:none;}
+.cr-dept-head-page .crdh-dropped-badge{display:inline-flex;min-width:72px;justify-content:center;padding:6px 12px;border-radius:16px;background:#FDE8E7;color:#A12622;font-size:12px;font-weight:700;}
 .cr-dept-head-page #crdhModal .crf-modal-dialog{width:min(790px,96vw);}
 .cr-dept-head-page #crdhRecordForm .crdh-add-fields{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 12px;align-items:end;padding:13px 14px;margin:0 0 14px;}
 .cr-dept-head-page #crdhRecordForm .crdh-student-picker{position:relative;min-width:0;}
