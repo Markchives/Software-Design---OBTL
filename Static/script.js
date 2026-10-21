@@ -375,6 +375,7 @@ function studentSectionScopedUrl(path) {
     const rows = document.getElementById('facultyOutcomeMappingRows');
     const status = document.getElementById('facultyOutcomeMappingStatus');
     let sections = [];
+    let mappingLoadVersion = 0;
     async function request(url, options) {
         const response = await fetch(url, Object.assign({ credentials: 'same-origin', headers: { Accept: 'application/json' } }, options || {}));
         const data = await response.json().catch(() => ({}));
@@ -382,6 +383,7 @@ function studentSectionScopedUrl(path) {
         return data;
     }
     async function load() {
+        const version = ++mappingLoadVersion;
         rows.replaceChildren();
         const section = sections.find(item => item.section_id === sectionSelect.value);
         if (!section) {
@@ -400,36 +402,45 @@ function studentSectionScopedUrl(path) {
         status.textContent = '';
         try {
             const data = await request('/api/faculty/courses/' + encodeURIComponent(section.course_id) + '/outcome-mappings');
+            if (version !== mappingLoadVersion) return;
+            const uniqueOutcomes = Array.from(new Map((data.outcomes || []).map(co => [String(co.id || co.code).trim(), co])).values());
+            const uniqueStudentOutcomes = Array.from(new Map((data.student_outcomes || []).map(so => [String(so.id || so.code).trim(), so])).values());
             const selected = new Set((data.mappings || []).map(item => item.course_outcome_id + ':' + item.student_outcome_id));
-            (data.outcomes || []).forEach(co => {
+            uniqueOutcomes.forEach(co => {
                 const row = document.createElement('tr');
                 const label = document.createElement('td');
                 label.className = 'faculty-outcome-description';
                 label.textContent = co.code + ' — ' + co.description;
                 const choices = document.createElement('td');
                 choices.className = 'faculty-outcome-choices';
-                (data.student_outcomes || []).forEach(so => {
+                const choiceGrid = document.createElement('div');
+                choiceGrid.className = 'faculty-outcome-choice-grid';
+                uniqueStudentOutcomes.forEach(so => {
                     const wrapper = document.createElement('label');
                     wrapper.className = 'faculty-outcome-choice';
                     const input = document.createElement('input'); input.type = 'checkbox';
                     input.dataset.co = co.id; input.dataset.so = so.id;
                     input.checked = selected.has(co.id + ':' + so.id);
-                    wrapper.append(input, document.createTextNode(' ' + so.code + ' — ' + so.description));
-                    choices.appendChild(wrapper);
+                    const code = document.createElement('span');
+                    code.textContent = so.code;
+                    wrapper.title = so.description || so.code;
+                    wrapper.append(input, code);
+                    choiceGrid.appendChild(wrapper);
                 });
+                choices.appendChild(choiceGrid);
                 const target = document.createElement('td'); target.textContent = Number(co.target_percentage || 70).toFixed(1) + '%';
                 row.append(label, choices, target); rows.appendChild(row);
             });
-            if (!data.outcomes?.length) {
+            if (!uniqueOutcomes.length) {
                 const row = document.createElement('tr'); row.className = 'faculty-outcome-placeholder';
                 const cell = document.createElement('td'); cell.colSpan = 3;
                 cell.textContent = 'No Course Outcomes are configured for this course yet. Add them under Syllabus & Outcomes before creating activity mappings.';
                 row.appendChild(cell); rows.appendChild(row);
                 status.textContent = 'No syllabus outcomes are available for this course.';
             }
-            else if (!data.student_outcomes?.length) status.textContent = 'No Student Outcomes are configured yet. Contact your Department Head before mapping.';
-            else status.textContent = data.outcomes.length + ' Course Outcome(s) loaded. Select one or more aligned Student Outcomes, then save.';
-        } catch (error) { status.textContent = error.message; }
+            else if (!uniqueStudentOutcomes.length) status.textContent = 'No Student Outcomes are configured yet. Contact your Department Head before mapping.';
+            else status.textContent = uniqueOutcomes.length + ' Course Outcome(s) loaded. Select one or more aligned Student Outcomes, then save.';
+        } catch (error) { if (version === mappingLoadVersion) status.textContent = error.message; }
     }
     request('/api/faculty/sections').then(data => {
         sections = Array.isArray(data.sections) ? data.sections : [];
