@@ -6000,3 +6000,26 @@ body.cm-faculty-page:has(.cm-tabs > .cm-tab:nth-child(4):is(.active,.is-active,[
 @media (max-width: 760px) {
     .cm-faculty-page #facultyOutcomeMappingEditor .cm-table { min-width: 760px; }
 }
+
+/* Requirement 8: generated compliance report downloads. */
+.rp-print-center {
+    display: grid;
+    gap: 14px;
+    margin: 22px 0;
+    padding: 22px;
+    border: 1px solid #d9e1ea;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(7,31,58,.05);
+}
+.rp-print-center h2 { margin: 0 0 6px; color: #073e74; font-size: 20px; }
+.rp-print-center p { margin: 0; color: #526b82; font-size: 13px; line-height: 1.5; }
+.rp-print-center label { display: grid; gap: 6px; max-width: 520px; color: #244c70; font-size: 13px; font-weight: 700; }
+.rp-print-center select { box-sizing: border-box; width: 100%; min-height: 40px; padding: 8px 10px; border: 1px solid #bdcbd8; border-radius: 6px; background: #fff; color: #173c5d; font: inherit; font-weight: 400; }
+.rp-print-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.rp-print-actions button { min-height: 48px; padding: 11px 14px; border: 1px solid #079886; border-left: 7px solid #079886; border-radius: 5px; background: #fff; color: #102f3d; text-align: left; font: inherit; font-weight: 700; cursor: pointer; }
+.rp-print-actions button:hover:not(:disabled) { background: #f0f8f6; }
+.rp-print-actions button:disabled { opacity: .55; cursor: wait; }
+.rp-print-status { min-height: 1.4em; }
+.rp-print-status.is-error { color: #a12434; }
+@media (max-width: 620px) { .rp-print-center { padding: 16px; } .rp-print-actions { grid-template-columns: 1fr; } }

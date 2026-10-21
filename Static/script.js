@@ -12278,6 +12278,150 @@ document.addEventListener("DOMContentLoaded", function () {
     else init();
 })();
 
+/* Requirement 08 — authorized downloadable PDF reports. */
+(function () {
+    'use strict';
+    const sectionSelect = document.getElementById('rpExportSectionSelect');
+    if (!sectionSelect) return;
+    const status = document.getElementById('rpExportStatus');
+    const buttons = Array.from(document.querySelectorAll('.rp-print-actions [data-report-type]'));
+    const isFaculty = document.body.classList.contains('rp-faculty-page');
+    const isStudent = document.body.classList.contains('rp-student-page');
+
+    function setStatus(message, isError) {
+        status.textContent = message;
+        status.classList.toggle('is-error', Boolean(isError));
+    }
+
+    async function readJson(response) {
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(result.error || `Request failed (HTTP ${response.status}).`);
+        }
+        return result;
+    }
+
+    function updateButtons() {
+        buttons.forEach(button => {
+            button.disabled = !sectionSelect.value || button.dataset.loading === 'true';
+        });
+    }
+
+    async function loadSections() {
+        try {
+            const endpoint = isStudent
+                ? '/api/student/courses'
+                : isFaculty ? '/api/faculty/sections' : '/api/reports/sections';
+            const response = await fetch(endpoint, {
+                credentials: 'same-origin',
+                headers: { Accept: 'application/json' }
+            });
+            const data = await readJson(response);
+            let sections;
+            if (isStudent) {
+                sections = (data.courses || []).map(item => ({
+                    id: item.section_id,
+                    label: [
+                        item.course_code,
+                        item.section_name,
+                        item.academic_year_name
+                    ].filter(Boolean).join(' · ')
+                }));
+            } else if (isFaculty) {
+                sections = (data.sections || []).map(item => ({
+                    id: item.section_id,
+                    label: [
+                        item.course_code,
+                        item.section_name,
+                        item.academic_year_name
+                    ].filter(Boolean).join(' · ')
+                }));
+            } else {
+                sections = (data.sections || []).map(item => ({
+                    id: item.id,
+                    label: [
+                        item.course_code,
+                        item.section_name,
+                        item.academic_year_name
+                    ].filter(Boolean).join(' · ')
+                }));
+            }
+            sectionSelect.replaceChildren(new Option(
+                sections.length ? 'Select course section' : 'No authorized sections',
+                ''
+            ));
+            sections.forEach(item => sectionSelect.add(
+                new Option(item.label || 'Course section', item.id)
+            ));
+            const requested = new URLSearchParams(location.search).get('section_id');
+            if (sections.some(item => item.id === requested)) {
+                sectionSelect.value = requested;
+            } else if (sections.length === 1) {
+                sectionSelect.value = sections[0].id;
+            }
+            updateButtons();
+            setStatus(
+                sections.length
+                    ? isStudent
+                        ? 'Choose a report for an active course section. The attainment summary contains only your own results; class-wide grades are not available to students.'
+                        : 'Choose a report to download its PDF. Grade and attainment reports require a locked gradebook; the Student Outcome summary also requires verified mappings.'
+                    : 'No course sections are available within your authorized scope.',
+                false
+            );
+        } catch (error) {
+            sectionSelect.replaceChildren(new Option('Sections could not be loaded', ''));
+            updateButtons();
+            setStatus(error.message || 'Authorized course sections could not be loaded.', true);
+        }
+    }
+
+    sectionSelect.addEventListener('change', updateButtons);
+    buttons.forEach(button => button.addEventListener('click', async () => {
+        const sectionId = sectionSelect.value;
+        if (!sectionId || button.dataset.loading === 'true') return;
+        button.dataset.loading = 'true';
+        button.disabled = true;
+        setStatus(`Generating ${button.textContent.trim()}…`, false);
+        try {
+            const response = await fetch(
+                `/api/reports/${encodeURIComponent(button.dataset.reportType)}/${encodeURIComponent(sectionId)}`,
+                {
+                    credentials: 'same-origin',
+                    headers: { Accept: 'application/pdf, application/json' }
+                }
+            );
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({}));
+                throw new Error(error.error || `Report generation failed (HTTP ${response.status}).`);
+            }
+            const blob = await response.blob();
+            if (blob.type !== 'application/pdf') {
+                throw new Error('The server did not return a PDF file.');
+            }
+            const disposition = response.headers.get('Content-Disposition') || '';
+            const filenameMatch = disposition.match(/filename="?([^";]+)"?/i);
+            const filename = filenameMatch
+                ? filenameMatch[1]
+                : `${button.dataset.reportType}-${sectionId}.pdf`;
+            const objectUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = objectUrl;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.setTimeout(() => URL.revokeObjectURL(objectUrl), 30000);
+            setStatus(`${button.textContent.trim()} downloaded.`, false);
+        } catch (error) {
+            setStatus(error.message || 'The report could not be generated.', true);
+        } finally {
+            button.dataset.loading = 'false';
+            updateButtons();
+        }
+    }));
+    loadSections();
+})();
+
 /* Password recovery pages: one scoped controller, no duplicate auth handlers. */
 (function () {
     function initPasswordRecovery() {

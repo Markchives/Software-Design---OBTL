@@ -32,6 +32,17 @@
 </aside>
 <main class="sodh-main so-main dh-main">
 <section class="so-page-heading dh-heading"><h1>Compliance Report Printing</h1><p>Access, review, verify, print, and download compliance reports according to your role and authorized records.</p></section>
+<section aria-labelledby="rpExportHeading" class="rp-print-center">
+<div><h2 id="rpExportHeading">Generated Printable Reports</h2><p>Reports are limited to your department. Grade and attainment exports require locked gradebooks.</p></div>
+<label for="rpExportSectionSelect">Course section<select id="rpExportSectionSelect"><option value="">Loading department sections…</option></select></label>
+<div class="rp-print-actions">
+<button data-report-type="syllabus-matrix" type="button">Course Syllabus Outcome Matrix</button>
+<button data-report-type="class-grading-sheet" type="button">Class Master Grading Sheet</button>
+<button data-report-type="student-outcome-attainment" type="button">Student Outcome Attainment Summary</button>
+<button data-report-type="cqi-action-report" type="button">CQI Action Report</button>
+</div>
+<p aria-live="polite" class="rp-print-status" id="rpExportStatus" role="status"></p>
+</section>
 <section aria-label="Compliance report filters" class="sodh-filter-card dh-filters">
 <div class="sodh-filter-group"><label for="rpDhYear">School Year</label><select id="rpDhYear"><option>Select School Year</option></select></div>
 <div class="sodh-filter-group"><label for="rpDhDepartment">Department</label><select id="rpDhDepartment"><option value="all">All Departments</option></select></div>

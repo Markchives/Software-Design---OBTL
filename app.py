@@ -3,9 +3,11 @@ import time
 from functools import wraps
 import logging
 import re
+from io import BytesIO
 from logging.handlers import RotatingFileHandler
 import os
 from uuid import UUID, uuid4
+from xml.sax.saxutils import escape
 
 from dotenv import load_dotenv
 
@@ -18,6 +20,7 @@ from flask import (
     redirect,
     url_for,
     g,
+    send_file,
 )
 from supabase import create_client, Client
 from datetime import datetime, timedelta, timezone
@@ -25,6 +28,18 @@ import math
 from werkzeug.utils import secure_filename
 from werkzeug.middleware.proxy_fix import ProxyFix
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER
+from reportlab.lib.pagesizes import landscape, letter
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.units import inch
+from reportlab.platypus import (
+    Paragraph,
+    SimpleDocTemplate,
+    Spacer,
+    Table,
+    TableStyle,
+)
 
 
 load_dotenv()
@@ -7433,6 +7448,907 @@ def signed_syllabus_url(record, download=True):
         record["storage_path"], 900, options=options,
     )
     return response.get("signedURL") or response.get("signedUrl")
+
+
+def _report_pdf(title, subtitle, metadata, headers, rows, note=None):
+    """Render a role-authorized report as a downloadable PDF."""
+    output = BytesIO()
+    document = SimpleDocTemplate(
+        output,
+        pagesize=landscape(letter),
+        leftMargin=0.45 * inch,
+        rightMargin=0.45 * inch,
+        topMargin=0.55 * inch,
+        bottomMargin=0.55 * inch,
+        title=title,
+        author="EduMetrics",
+    )
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        "EduMetricsReportTitle",
+        parent=styles["Title"],
+        alignment=TA_CENTER,
+        textColor=colors.HexColor("#073e74"),
+        fontSize=18,
+        leading=22,
+        spaceAfter=5,
+    )
+    subtitle_style = ParagraphStyle(
+        "EduMetricsReportSubtitle",
+        parent=styles["Normal"],
+        alignment=TA_CENTER,
+        textColor=colors.HexColor("#526b82"),
+        fontSize=9,
+        leading=12,
+        spaceAfter=14,
+    )
+    cell_style = ParagraphStyle(
+        "EduMetricsReportCell",
+        parent=styles["BodyText"],
+        fontName="Helvetica",
+        fontSize=7.5,
+        leading=9.5,
+        wordWrap="CJK",
+    )
+    header_style = ParagraphStyle(
+        "EduMetricsReportHeader",
+        parent=cell_style,
+        fontName="Helvetica-Bold",
+        textColor=colors.white,
+    )
+
+    def cell(value, style=cell_style):
+        text = escape(str(value if value is not None else "—")).replace(
+            "\n", "<br/>"
+        )
+        return Paragraph(text or "—", style)
+
+    story = [
+        Paragraph("EduMetrics", ParagraphStyle(
+            "EduMetricsReportBrand",
+            parent=styles["Normal"],
+            alignment=TA_CENTER,
+            textColor=colors.HexColor("#079886"),
+            fontName="Helvetica-Bold",
+            fontSize=10,
+            spaceAfter=4,
+        )),
+        Paragraph(escape(title), title_style),
+        Paragraph(escape(subtitle), subtitle_style),
+    ]
+    metadata_rows = [
+        [cell(label), cell(value)]
+        for label, value in metadata
+    ]
+    if metadata_rows:
+        metadata_table = Table(metadata_rows, colWidths=[
+            1.45 * inch, document.width - 1.45 * inch
+        ])
+        metadata_table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (0, -1), colors.HexColor("#edf4f8")),
+            ("TEXTCOLOR", (0, 0), (0, -1), colors.HexColor("#073e74")),
+            ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+            ("BOX", (0, 0), (-1, -1), 0.4, colors.HexColor("#cbd8e2")),
+            ("INNERGRID", (0, 0), (-1, -1), 0.3, colors.HexColor("#d8e2ea")),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 7),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 7),
+            ("TOPPADDING", (0, 0), (-1, -1), 5),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ]))
+        story.extend([metadata_table, Spacer(1, 14)])
+
+    if headers:
+        table_data = [[cell(value, header_style) for value in headers]]
+        table_data.extend(
+            [[cell(value) for value in row]
+             for row in rows]
+        )
+        content_table = Table(
+            table_data,
+            colWidths=[document.width / len(headers)] * len(headers),
+            repeatRows=1,
+            hAlign="LEFT",
+        )
+        content_table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#073e74")),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [
+                colors.white, colors.HexColor("#f2f6f9")
+            ]),
+            ("GRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#cfdae3")),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 5),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+            ("TOPPADDING", (0, 0), (-1, -1), 5),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ]))
+        story.append(content_table)
+        if not rows:
+            story.append(Spacer(1, 6))
+            story.append(Paragraph(
+                "No records are available for this report and section.",
+                styles["BodyText"],
+            ))
+    if note:
+        story.extend([
+            Spacer(1, 10),
+            Paragraph(escape(note), styles["Italic"]),
+        ])
+
+    def footer(canvas, _document):
+        canvas.saveState()
+        canvas.setFont("Helvetica", 8)
+        canvas.setFillColor(colors.HexColor("#526b82"))
+        canvas.drawString(
+            document.leftMargin,
+            0.3 * inch,
+            "Confidential academic record · Authorized access only",
+        )
+        canvas.drawRightString(
+            document.pagesize[0] - document.rightMargin,
+            0.3 * inch,
+            f"Page {canvas.getPageNumber()}",
+        )
+        canvas.restoreState()
+
+    document.build(story, onFirstPage=footer, onLaterPages=footer)
+    return output.getvalue()
+
+
+@app.get("/api/reports/sections")
+@require_roles("department-head", "admin-security")
+def list_compliance_report_sections():
+    if not admin_supabase:
+        return jsonify({"error": "Report sections are unavailable."}), 503
+    try:
+        courses_query = admin_supabase.table("courses").select(
+            "id, code, title, department_id"
+        )
+        if normalize_role_name(get_user_role(g.authenticated_user)) == "department-head":
+            department_id = _department_head_department_id(
+                g.authenticated_user.id
+            )
+            if not department_id:
+                return jsonify({
+                    "error": "Your department profile is incomplete."
+                }), 409
+            courses_query = courses_query.eq("department_id", department_id)
+        courses = courses_query.order("code").execute().data or []
+        course_by_id = {row["id"]: row for row in courses}
+        course_ids = list(course_by_id)
+        sections = (
+            admin_supabase.table("course_sections")
+            .select("id, course_id, section_name, academic_year_id")
+            .in_("course_id", course_ids)
+            .execute()
+            .data
+            if course_ids else []
+        ) or []
+        year_ids = list({
+            row["academic_year_id"] for row in sections
+            if row.get("academic_year_id")
+        })
+        years = (
+            admin_supabase.table("academic_years")
+            .select("id, name")
+            .in_("id", year_ids)
+            .execute()
+            .data
+            if year_ids else []
+        ) or []
+        year_by_id = {row["id"]: row.get("name", "") for row in years}
+        return jsonify({
+            "sections": [{
+                "id": section["id"],
+                "course_id": section["course_id"],
+                "course_code": course_by_id[section["course_id"]].get("code", ""),
+                "course_title": course_by_id[section["course_id"]].get("title", ""),
+                "section_name": section.get("section_name", ""),
+                "academic_year_name": year_by_id.get(
+                    section.get("academic_year_id"), ""
+                ),
+            } for section in sections if section["course_id"] in course_by_id]
+        }), 200
+    except Exception:
+        app.logger.exception("Unable to load authorized report sections")
+        return jsonify({"error": "Authorized report sections could not be loaded."}), 500
+
+
+@app.get("/api/reports/<report_type>/<section_id>")
+@require_roles("student", "faculty", "department-head", "admin-security")
+def download_compliance_report(report_type, section_id):
+    if not admin_supabase:
+        return jsonify({"error": "Report data is unavailable."}), 503
+
+    report_titles = {
+        "syllabus-matrix": "Course Syllabus Outcome Matrix",
+        "class-grading-sheet": "Class Master Grading Sheet",
+        "student-outcome-attainment": "Student Outcome Attainment Summary",
+        "cqi-action-report": "CQI Action Report",
+    }
+    if report_type not in report_titles:
+        return jsonify({"error": "Choose a supported report type."}), 404
+
+    try:
+        section_id = _parse_uuid(section_id, "Invalid course section.")
+        section_rows = (
+            admin_supabase.table("course_sections")
+            .select("id, course_id, section_name, academic_year_id, faculty_id")
+            .eq("id", section_id)
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if not section_rows:
+            return jsonify({"error": "Course section was not found."}), 404
+        section = section_rows[0]
+        course_rows = (
+            admin_supabase.table("courses")
+            .select("id, code, title, department_id")
+            .eq("id", section["course_id"])
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if not course_rows:
+            return jsonify({"error": "Course was not found."}), 404
+        course = course_rows[0]
+        role = normalize_role_name(get_user_role(g.authenticated_user))
+        student_profile = None
+        if role == "faculty":
+            if not get_faculty_section(section_id):
+                return jsonify({"error": "Section is not assigned to you."}), 403
+        elif role == "department-head":
+            department_id = _department_head_department_id(
+                g.authenticated_user.id
+            )
+            if not department_id:
+                return jsonify({"error": "Your department profile is incomplete."}), 409
+            if course.get("department_id") != department_id:
+                return jsonify({"error": "Section is outside your department."}), 403
+        elif role == "student":
+            if report_type == "class-grading-sheet":
+                return jsonify({
+                    "error": "Class-wide grade sheets are restricted to authorized staff."
+                }), 403
+            student_profile = _account_profile(
+                "student", g.authenticated_user.id, "id"
+            )
+            if not student_profile:
+                return jsonify({"error": "Your student profile is incomplete."}), 409
+            enrollment_rows = (
+                admin_supabase.table("enrollments")
+                .select("id")
+                .eq("section_id", section_id)
+                .eq("student_profile_id", student_profile["id"])
+                .eq("enrollment_status", "active")
+                .limit(1)
+                .execute()
+                .data
+                or []
+            )
+            if not enrollment_rows:
+                return jsonify({
+                    "error": "You are not actively enrolled in this section."
+                }), 403
+
+        year_rows = (
+            admin_supabase.table("academic_years")
+            .select("name")
+            .eq("id", section["academic_year_id"])
+            .limit(1)
+            .execute()
+            .data
+            if section.get("academic_year_id") else []
+        ) or []
+        year_name = year_rows[0].get("name", "") if year_rows else "—"
+        faculty_name = "—"
+        if section.get("faculty_id"):
+            faculty_rows = (
+                admin_supabase.table("faculty_profiles")
+                .select("user_id")
+                .eq("id", section["faculty_id"])
+                .limit(1)
+                .execute()
+                .data
+                or []
+            )
+            if faculty_rows:
+                faculty_users = (
+                    admin_supabase.table("users")
+                    .select("full_name")
+                    .eq("id", faculty_rows[0]["user_id"])
+                    .limit(1)
+                    .execute()
+                    .data
+                    or []
+                )
+                if faculty_users:
+                    faculty_name = faculty_users[0].get("full_name") or "—"
+
+        mapping_rows = (
+            admin_supabase.table("course_mapping_reviews")
+            .select("status, reviewed_at")
+            .eq("section_id", section_id)
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        mapping_status = (
+            mapping_rows[0].get("status", "draft")
+            if mapping_rows else "draft"
+        )
+        workspace = {"assessments": []}
+        if role != "student" and report_type == "class-grading-sheet":
+            workspace = _faculty_assessment_workspace(
+                section_id, check_assignment=False
+            )
+            if not workspace:
+                return jsonify({"error": "Section data could not be loaded."}), 404
+            gradebook = workspace.get("gradebook") or {}
+            gradebook_status = workspace.get("gradebook_status", "draft")
+        else:
+            gradebook_rows = (
+                admin_supabase.table("gradebooks")
+                .select("id, status, locked_at")
+                .eq("section_id", section_id)
+                .limit(1)
+                .execute()
+                .data
+                or []
+            )
+            gradebook = gradebook_rows[0] if gradebook_rows else {}
+            gradebook_status = gradebook.get("status", "draft")
+        if report_type == "syllabus-matrix":
+            assessments = (
+                admin_supabase.table("assessment_activities")
+                .select("id, title, activity_type, created_at")
+                .eq("section_id", section_id)
+                .order("created_at")
+                .execute()
+                .data
+                or []
+            )
+            _assessment_outcomes_by_activity(assessments)
+            workspace["assessments"] = assessments
+        if report_type in {
+            "class-grading-sheet", "student-outcome-attainment"
+        } and gradebook_status != "locked":
+            return jsonify({
+                "error": (
+                    "This report is available only after the gradebook "
+                    "has been locked."
+                )
+            }), 409
+        if (
+            report_type in {"syllabus-matrix", "student-outcome-attainment"}
+            and role == "student"
+            and mapping_status != "verified"
+        ):
+            return jsonify({
+                "error": (
+                    "This report is available after the section mappings "
+                    "have been verified."
+                )
+            }), 409
+        if report_type == "student-outcome-attainment" and mapping_status != "verified":
+            return jsonify({
+                "error": (
+                    "Verify the section's Course Outcome–Student Outcome "
+                    "mapping before generating this report."
+                )
+            }), 409
+
+        title = report_titles[report_type]
+        metadata = [
+            ("Course", f'{course.get("code", "")} — {course.get("title", "")}'),
+            ("Section", section.get("section_name", "")),
+            ("Academic Year", year_name),
+            ("Faculty", faculty_name),
+            ("Generated", datetime.now(timezone.utc).strftime(
+                "%Y-%m-%d %H:%M UTC"
+            )),
+        ]
+        headers = []
+        rows = []
+        note = None
+
+        if report_type == "syllabus-matrix":
+            syllabus_rows = (
+                admin_supabase.table("course_syllabi")
+                .select("file_name, uploaded_at")
+                .eq("section_id", section_id)
+                .limit(1)
+                .execute()
+                .data
+                or []
+            )
+            outcomes = (
+                admin_supabase.table("course_outcomes")
+                .select("id, code, description, target_percentage")
+                .eq("course_id", course["id"])
+                .order("code")
+                .execute()
+                .data
+                or []
+            )
+            outcome_ids = [row["id"] for row in outcomes]
+            mappings = (
+                admin_supabase.table("course_outcome_student_outcomes")
+                .select("course_outcome_id, student_outcome_id")
+                .in_("course_outcome_id", outcome_ids)
+                .execute()
+                .data
+                if outcome_ids else []
+            ) or []
+            student_outcome_ids = list({
+                row["student_outcome_id"] for row in mappings
+            })
+            student_outcomes = (
+                admin_supabase.table("student_outcomes")
+                .select("id, code, description")
+                .in_("id", student_outcome_ids)
+                .execute()
+                .data
+                if student_outcome_ids else []
+            ) or []
+            student_outcome_by_id = {
+                row["id"]: row for row in student_outcomes
+            }
+            student_outcomes_by_course_outcome = {}
+            for mapping in mappings:
+                item = student_outcome_by_id.get(
+                    mapping["student_outcome_id"]
+                )
+                if item:
+                    student_outcomes_by_course_outcome.setdefault(
+                        mapping["course_outcome_id"], []
+                    ).append(item["code"])
+            assessment_titles_by_outcome = {}
+            for assessment in workspace["assessments"]:
+                for outcome_id in assessment.get("course_outcome_ids", []):
+                    assessment_titles_by_outcome.setdefault(
+                        outcome_id, []
+                    ).append(assessment.get("title", ""))
+            syllabus = syllabus_rows[0] if syllabus_rows else {}
+            metadata.extend([
+                ("Syllabus file", syllabus.get("file_name", "Not uploaded")),
+                ("Mapping review", mapping_status.replace("_", " ").title()),
+            ])
+            headers = [
+                "Course Outcome", "Description", "Mapped Student Outcomes",
+                "Mapped Assessments", "Target",
+            ]
+            rows = [[
+                outcome.get("code", ""),
+                outcome.get("description", ""),
+                ", ".join(student_outcomes_by_course_outcome.get(
+                    outcome["id"], []
+                )) or "Not mapped",
+                ", ".join(assessment_titles_by_outcome.get(
+                    outcome["id"], []
+                )) or "Not mapped",
+                f'{float(outcome.get("target_percentage") or 70):.1f}%',
+            ] for outcome in outcomes]
+            note = (
+                "This matrix shows the section's uploaded syllabus metadata, "
+                "Course Outcome to Student Outcome mappings, and linked "
+                "assessment activities. The syllabus PDF itself is not embedded."
+            )
+
+        elif report_type == "class-grading-sheet":
+            metadata.extend([
+                ("Gradebook status", "Locked"),
+                ("Locked at", gradebook.get("locked_at") or "—"),
+            ])
+            headers = [
+                "Student No.", "Student Name", "Assessment",
+                "Type", "Score", "Maximum", "Percentage",
+            ]
+            students = sorted(
+                workspace["students"],
+                key=lambda item: (
+                    item.get("full_name") or "",
+                    item.get("student_number") or "",
+                ),
+            )
+            assessments = sorted(
+                workspace["assessments"],
+                key=lambda item: item.get("created_at") or "",
+            )
+            for student in students:
+                for assessment in assessments:
+                    score = (assessment.get("scores") or {}).get(
+                        student["student_profile_id"]
+                    ) or {}
+                    raw_score = score.get("score")
+                    maximum = score.get("max_score") or assessment.get("max_score")
+                    percentage = score.get("percentage")
+                    rows.append([
+                        student.get("student_number", ""),
+                        student.get("full_name", ""),
+                        assessment.get("title", ""),
+                        assessment.get("activity_type", ""),
+                        f"{float(raw_score):.2f}" if raw_score is not None else "Missing",
+                        f"{float(maximum):.2f}" if maximum is not None else "—",
+                        f"{float(percentage):.1f}%" if percentage is not None else "—",
+                    ])
+            note = "Confidential student grade records. This export is available only to the assigned Faculty, the Department Head for this department, and Admin."
+
+        elif report_type == "student-outcome-attainment":
+            if role == "student":
+                outcomes = (
+                    admin_supabase.table("course_outcomes")
+                    .select("id, code, description, target_percentage")
+                    .eq("course_id", course["id"])
+                    .order("code")
+                    .execute()
+                    .data
+                    or []
+                )
+                outcome_ids = [row["id"] for row in outcomes]
+                personal_attainment = (
+                    admin_supabase.table("student_co_attainment")
+                    .select(
+                        "course_outcome_id, attainment_percentage, status, can_view"
+                    )
+                    .eq("section_id", section_id)
+                    .eq("student_profile_id", student_profile["id"])
+                    .eq("can_view", True)
+                    .execute()
+                    .data
+                    or []
+                )
+                personal_by_outcome = {
+                    row["course_outcome_id"]: row
+                    for row in personal_attainment
+                }
+                mappings = (
+                    admin_supabase.table("course_outcome_student_outcomes")
+                    .select("course_outcome_id, student_outcome_id")
+                    .in_("course_outcome_id", outcome_ids)
+                    .execute()
+                    .data
+                    if outcome_ids else []
+                ) or []
+                student_outcome_ids = list({
+                    row["student_outcome_id"] for row in mappings
+                })
+                student_outcomes = (
+                    admin_supabase.table("student_outcomes")
+                    .select("id, code")
+                    .in_("id", student_outcome_ids)
+                    .execute()
+                    .data
+                    if student_outcome_ids else []
+                ) or []
+                student_outcome_codes = {
+                    row["id"]: row["code"] for row in student_outcomes
+                }
+                so_by_course_outcome = {}
+                for mapping in mappings:
+                    code = student_outcome_codes.get(
+                        mapping["student_outcome_id"]
+                    )
+                    if code:
+                        so_by_course_outcome.setdefault(
+                            mapping["course_outcome_id"], []
+                        ).append(code)
+                headers = [
+                    "Course Outcome", "Mapped Student Outcomes",
+                    "Your Attainment", "Target", "Status",
+                ]
+                rows = []
+                for outcome in outcomes:
+                    record = personal_by_outcome.get(outcome["id"], {})
+                    percentage = record.get("attainment_percentage")
+                    target = float(outcome.get("target_percentage") or 70)
+                    rows.append([
+                        f'{outcome.get("code", "")} — '
+                        f'{outcome.get("description", "")}',
+                        ", ".join(so_by_course_outcome.get(
+                            outcome["id"], []
+                        )) or "Not mapped",
+                        f"{float(percentage):.1f}%" if percentage is not None
+                        else "Awaiting results",
+                        f"{target:.1f}%",
+                        record.get("status", "awaiting_results").replace(
+                            "_", " "
+                        ).title(),
+                    ])
+                metadata.extend([
+                    ("Gradebook status", "Locked"),
+                    ("Mapping review", "Verified"),
+                    ("Student scope", "Your own results only"),
+                ])
+                note = (
+                    "This report contains only your own released Course "
+                    "Outcome results. It does not include classmates' scores."
+                )
+            else:
+                enrollments = (
+                    admin_supabase.table("enrollments")
+                    .select("student_profile_id")
+                    .eq("section_id", section_id)
+                    .eq("enrollment_status", "active")
+                    .execute()
+                    .data
+                    or []
+                )
+                active_student_ids = {
+                    row["student_profile_id"] for row in enrollments
+                }
+                self_assessments = (
+                    admin_supabase.table("so_self_assessments")
+                    .select(
+                        "id, student_outcome_id, title, rating_scale, status"
+                    )
+                    .eq("section_id", section_id)
+                    .eq("status", "closed")
+                    .execute()
+                    .data
+                    or []
+                )
+                assessment_ids = [row["id"] for row in self_assessments]
+                responses = (
+                    admin_supabase.table("so_self_assessment_responses")
+                    .select("assessment_id, student_profile_id, answers")
+                    .in_("assessment_id", assessment_ids)
+                    .execute()
+                    .data
+                    if assessment_ids else []
+                ) or []
+                assessment_by_id = {
+                    row["id"]: row for row in self_assessments
+                }
+                summary = {}
+                for response in responses:
+                    if (
+                        response.get("student_profile_id")
+                        not in active_student_ids
+                    ):
+                        continue
+                    assessment = assessment_by_id.get(
+                        response.get("assessment_id")
+                    )
+                    if not assessment:
+                        continue
+                    outcome_id = assessment["student_outcome_id"]
+                    group = summary.setdefault(outcome_id, {
+                        "score_sum": 0.0,
+                        "rating_count": 0,
+                        "responses": 0,
+                        "expected": 0,
+                        "titles": [],
+                    })
+                    group["responses"] += 1
+                    if assessment["title"] not in group["titles"]:
+                        group["titles"].append(assessment["title"])
+                    scale_values = []
+                    for item in assessment.get("rating_scale") or []:
+                        try:
+                            scale_values.append(float(item.get("value")))
+                        except (TypeError, ValueError, AttributeError):
+                            continue
+                    low, high = (
+                        (min(scale_values), max(scale_values))
+                        if scale_values else (0.0, 0.0)
+                    )
+                    answers = response.get("answers") or {}
+                    for answer in answers.values():
+                        try:
+                            value = float(answer)
+                        except (TypeError, ValueError):
+                            continue
+                        normalized = (
+                            (value - low) / (high - low) * 100
+                            if high > low else 0.0
+                        )
+                        group["score_sum"] += normalized
+                        group["rating_count"] += 1
+                for assessment in self_assessments:
+                    group = summary.setdefault(
+                        assessment["student_outcome_id"], {
+                            "score_sum": 0.0,
+                            "rating_count": 0,
+                            "responses": 0,
+                            "expected": 0,
+                            "titles": [],
+                        }
+                    )
+                    group["expected"] += len(active_student_ids)
+                    if assessment["title"] not in group["titles"]:
+                        group["titles"].append(assessment["title"])
+
+            outcomes = (
+                admin_supabase.table("course_outcomes")
+                .select("id, code, description")
+                .eq("course_id", course["id"])
+                .order("code")
+                .execute()
+                .data
+                or []
+            )
+            outcome_ids = [row["id"] for row in outcomes]
+            mappings = (
+                admin_supabase.table("course_outcome_student_outcomes")
+                .select("course_outcome_id, student_outcome_id")
+                .in_("course_outcome_id", outcome_ids)
+                .execute()
+                .data
+                if outcome_ids else []
+            ) or []
+            mapped_outcome_ids = list({
+                row["student_outcome_id"] for row in mappings
+            })
+            student_outcomes = (
+                admin_supabase.table("student_outcomes")
+                .select("id, code, description")
+                .in_("id", mapped_outcome_ids)
+                .execute()
+                .data
+                if mapped_outcome_ids else []
+            ) or []
+            student_outcome_by_id = {
+                row["id"]: row for row in student_outcomes
+            }
+            co_by_id = {row["id"]: row for row in outcomes}
+            attainment_rows = (
+                admin_supabase.table("co_attainment")
+                .select(
+                    "course_outcome_id, attainment_percentage, "
+                    "target_percentage, status"
+                )
+                .eq("section_id", section_id)
+                .execute()
+                .data
+                or []
+            )
+            attainment_by_co = {
+                row["course_outcome_id"]: row for row in attainment_rows
+            }
+            mapped_cos_by_so = {}
+            for mapping in mappings:
+                outcome = co_by_id.get(mapping["course_outcome_id"])
+                if outcome:
+                    mapped_cos_by_so.setdefault(
+                        mapping["student_outcome_id"], []
+                    ).append(outcome)
+            headers = [
+                "Student Outcome", "Self-Assessment Average",
+                "Responses / Expected", "Course Outcome Evidence",
+                "Assessment",
+            ]
+            all_so_ids = set(mapped_cos_by_so) | set(summary)
+            rows = []
+            for outcome_id in sorted(
+                all_so_ids,
+                key=lambda item: student_outcome_by_id.get(item, {}).get(
+                    "code", ""
+                ),
+            ):
+                student_outcome = student_outcome_by_id.get(outcome_id, {})
+                group = summary.get(outcome_id, {})
+                average = (
+                    group["score_sum"] / group["rating_count"]
+                    if group.get("rating_count") else None
+                )
+                co_evidence = []
+                for course_outcome in mapped_cos_by_so.get(outcome_id, []):
+                    attainment = attainment_by_co.get(
+                        course_outcome["id"], {}
+                    )
+                    percentage = attainment.get("attainment_percentage")
+                    target = attainment.get("target_percentage")
+                    value = (
+                        f'{float(percentage):.1f}% / '
+                        f'{float(target):.1f}% target'
+                        if percentage is not None and target is not None
+                        else "Awaiting results"
+                    )
+                    co_evidence.append(
+                        f'{course_outcome.get("code", "")}: {value}'
+                    )
+                rows.append([
+                    f'{student_outcome.get("code", "")} — '
+                    f'{student_outcome.get("description", "")}',
+                    f"{average:.1f}%" if average is not None else "No responses",
+                    f'{group.get("responses", 0)} / {group.get("expected", 0)}',
+                    "\n".join(co_evidence) or "No mapped Course Outcomes",
+                    "\n".join(group.get("titles", [])) or "—",
+                ])
+            metadata.extend([
+                ("Gradebook status", "Locked"),
+                ("Mapping review", "Verified"),
+                ("Active students", len(active_student_ids)),
+            ])
+            note = (
+                "Only closed Student Outcome self-assessments are included. "
+                "Averages normalize each numeric response "
+                "against that assessment's configured rating scale. Course "
+                "Outcome evidence is reported separately and is not combined "
+                "into a synthetic Student Outcome score."
+            )
+
+        elif report_type == "cqi-action-report":
+            plans = (
+                admin_supabase.table("cqi_action_plans")
+                .select("*")
+                .eq("section_id", section_id)
+                .in_("status", ["approved", "ongoing", "completed"])
+                .order("updated_at", desc=True)
+                .execute()
+                .data
+                or []
+            )
+            plans = _cqi_enrich_plans(plans)
+            headers = [
+                "Action Plan / Status", "Problem Statement",
+                "Proposed Intervention", "Expected Improvement",
+                "Target Outcomes", "Target Date", "Review",
+            ]
+            for plan in plans:
+                targets = plan.get("targets") or [{}]
+                for target in targets:
+                    current = target.get("attainment_percentage")
+                    target_value = target.get("target_percentage")
+                    evidence = (
+                        f'{target.get("code", "")} '
+                        f'({float(current):.1f}% / '
+                        f'{float(target_value):.1f}% target)'
+                        if current is not None and target_value is not None
+                        else target.get("code") or "—"
+                    )
+                    rows.append([
+                        f'{plan.get("title", "")} — '
+                        f'{plan.get("status", "").title()}',
+                        plan.get("problem_statement", ""),
+                        plan.get("proposed_intervention", ""),
+                        plan.get("expected_improvement") or "—",
+                        evidence + (
+                            f' · {target.get("category_name")}'
+                            if target.get("category_name") else ""
+                        ),
+                        plan.get("target_date") or "—",
+                        (
+                            "Published"
+                            if role == "student"
+                            else plan.get("review_comments") or "—"
+                        ),
+                    ])
+            note = "Only approved, ongoing, and completed CQI plans are included. Draft, submitted, returned, and rejected plans are excluded."
+
+        pdf = _report_pdf(
+            title,
+            f'{course.get("code", "")} · {section.get("section_name", "")}',
+            metadata,
+            headers,
+            rows,
+            note,
+        )
+        filename = (
+            f'{report_type}-{course.get("code", "course")}-'
+            f'{section.get("section_name", "section")}.pdf'
+        )
+        filename = re.sub(r"[^A-Za-z0-9._-]+", "-", filename).strip("-")
+        response = send_file(
+            BytesIO(pdf),
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name=filename,
+        )
+        response.headers["Cache-Control"] = "private, no-store, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        return response
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+    except Exception:
+        app.logger.exception("Unable to generate compliance report")
+        return jsonify({"error": "The report could not be generated."}), 500
 
 
 def get_oauth_callback_url():
