@@ -5913,9 +5913,90 @@ body.cm-faculty-page:has(.cm-tabs > .cm-tab:nth-child(4):is(.active,.is-active,[
   padding: 15px;
   border: 1px solid #DCE5EE;
   border-radius: 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 @media (max-width: 560px) {
   .so-faculty-page .so-workflow-dialog[open] { grid-template-columns: minmax(0, 1fr); padding: 18px; gap: 14px; }
   .so-faculty-page .so-workflow-dialog-header h2 { font-size: 19px; }
   .so-faculty-page .so-workflow-dialog .so-assessment-actions button { flex: 1 1 auto; }
+}
+
+/* Faculty SO mapping dialog: single shared definition. */
+.so-faculty-page .so-mapping-dialog:not([open]) { display: none; }
+.so-faculty-page .so-mapping-dialog[open] {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(680px, calc(100vw - 32px));
+  max-height: min(82vh, 720px);
+  padding: 26px;
+  overflow: auto;
+  border: 1px solid #D8E3EE;
+  border-radius: 12px;
+  background: #fff;
+  color: #004179;
+  box-shadow: 0 24px 65px rgba(5, 27, 53, .24);
+}
+.so-faculty-page .so-mapping-dialog::backdrop { background: rgba(5, 27, 53, .58); }
+.so-faculty-page .so-mapping-dialog h2 { margin: 0 0 20px; font-size: 22px; line-height: 1.35; font-weight: 750; }
+.so-faculty-page .so-mapping-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 18px; }
+.so-faculty-page .so-mapping-options label { display: flex; align-items: center; gap: 8px; min-height: 42px; padding: 10px 12px; border: 1px solid #D8E3EE; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.so-faculty-page .so-mapping-options label:has(input:checked) { border-color: #004179; background: #F0F6FC; }
+.so-faculty-page .so-mapping-options input { flex: 0 0 auto; accent-color: #004179; }
+.so-faculty-page .so-mapping-status { margin: 0 0 12px; font-size: 13px; }
+.so-faculty-page .so-mapping-dialog footer { display: flex; justify-content: flex-end; gap: 10px; padding-top: 16px; border-top: 1px solid #E3EAF2; }
+.so-faculty-page .so-mapping-dialog footer button { min-height: 40px; padding: 9px 20px; border-radius: 7px; font-size: 14px; font-weight: 700; cursor: pointer; }
+.so-faculty-page .so-mapping-cancel { border: 1px solid #C9D9E8; background: #fff; color: #004179; }
+.so-faculty-page .so-mapping-save { border: 1px solid #004179; background: #004179; color: #fff; }
+@media (max-width: 540px) {
+  .so-faculty-page .so-mapping-dialog[open] { padding: 18px; }
+  .so-faculty-page .so-mapping-dialog h2 { font-size: 19px; }
+  .so-faculty-page .so-mapping-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* SO assessment editor: dynamic indicator and rating rows. */
+.so-faculty-page .so-assessment-editor legend { padding: 0 7px; color: #004179; font-size: 14px; font-weight: 700; }
+.so-faculty-page .so-assessment-hint { margin: 0; color: #46617C; font-size: 13px; line-height: 1.5; }
+.so-faculty-page #soIndicatorRows, .so-faculty-page #soRatingRows { display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+.so-faculty-page #soIndicatorRows > *, .so-faculty-page #soRatingRows > * { display: flex; align-items: center; gap: 10px; min-width: 0; width: 100%; }
+.so-faculty-page #soIndicatorRows input, .so-faculty-page #soRatingRows input { min-width: 0; min-height: 40px; padding: 9px 11px; border: 1px solid #CBD9E7; border-radius: 7px; background: #fff; color: #004179; font-size: 13px; }
+.so-faculty-page #soIndicatorRows input { flex: 1 1 auto; width: 100%; }
+.so-faculty-page #soRatingRows input:first-of-type { flex: 0 0 86px; width: 86px; }
+.so-faculty-page #soRatingRows input:nth-of-type(2) { flex: 1 1 auto; width: 100%; }
+.so-faculty-page #soIndicatorRows button, .so-faculty-page #soRatingRows button { flex: 0 0 auto; min-height: 38px; padding: 8px 12px; border: 1px solid #D2DFEB; border-radius: 7px; background: #fff; color: #004179; font-size: 12px; font-weight: 650; cursor: pointer; }
+.so-faculty-page #soIndicatorRows button:disabled, .so-faculty-page #soRatingRows button:disabled { opacity: .45; cursor: not-allowed; }
+.so-faculty-page .so-rating-editor-head { display: grid; grid-template-columns: 86px minmax(0, 1fr) 82px; gap: 10px; color: #49647F; font-size: 12px; font-weight: 700; }
+.so-faculty-page .so-editor-add { align-self: flex-start; min-height: 38px; padding: 8px 13px; border: 1px solid #C7D9E9; border-radius: 7px; background: #F5F9FD; color: #004179; font-size: 13px; font-weight: 700; cursor: pointer; }
+.so-faculty-page .so-editor-add:hover { background: #E9F2FA; }
+@media (max-width: 560px) {
+  .so-faculty-page #soIndicatorRows > *, .so-faculty-page #soRatingRows > * { gap: 6px; }
+  .so-faculty-page #soRatingRows input:first-of-type { flex-basis: 64px; width: 64px; }
+  .so-faculty-page .so-rating-editor-head { grid-template-columns: 64px minmax(0, 1fr) 70px; gap: 6px; }
+  .so-faculty-page #soIndicatorRows button, .so-faculty-page #soRatingRows button { padding: 8px; }
+}
+
+/* Curriculum Mapping: Request Verification CO–SO selection layout. */
+.cm-faculty-page #facultyOutcomeMappingEditor .faculty-outcome-description {
+    width: 34%; text-align: left; vertical-align: middle; line-height: 1.5;
+}
+.cm-faculty-page #facultyOutcomeMappingEditor .faculty-outcome-choices {
+    width: 52%; vertical-align: middle; text-align: left;
+}
+.cm-faculty-page #facultyOutcomeMappingEditor .faculty-outcome-choice-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 10px 12px; padding: 8px 4px;
+}
+.cm-faculty-page #facultyOutcomeMappingEditor .faculty-outcome-choice {
+    display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; cursor: pointer; font-weight: 500;
+}
+.cm-faculty-page #facultyOutcomeMappingEditor .faculty-outcome-choice input {
+    margin: 0; width: 16px; height: 16px; flex: 0 0 16px; accent-color: #064477;
+}
+.cm-faculty-page #facultyOutcomeMappingEditor .cm-table th:last-child,
+.cm-faculty-page #facultyOutcomeMappingEditor .cm-table td:last-child {
+    width: 14%; text-align: center; vertical-align: middle;
+}
+@media (max-width: 760px) {
+    .cm-faculty-page #facultyOutcomeMappingEditor .cm-table { min-width: 760px; }
 }
