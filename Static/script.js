@@ -237,6 +237,24 @@ function studentSectionScopedUrl(path) {
 
 /* Department Head mapping verification workflow. */
 (function () {
+    const page = document.querySelector(".cm-dept-head-page");
+    const tabs = page ? Array.from(page.querySelectorAll("[data-dh-cm-tab]")) : [];
+    const panels = page ? Array.from(page.querySelectorAll("[data-dh-cm-panel]")) : [];
+    tabs.forEach(tab => tab.addEventListener("click", () => {
+        const target = tab.dataset.dhCmTab;
+        tabs.forEach(item => {
+            const selected = item === tab;
+            item.classList.toggle("active", selected);
+            item.setAttribute("aria-selected", String(selected));
+        });
+        panels.forEach(panel => {
+            panel.hidden = panel.dataset.dhCmPanel !== target;
+            panel.classList.toggle("active", !panel.hidden);
+        });
+    }));
+})();
+
+(function () {
     const root = document.getElementById('mappingReviewWorkflow');
     if (!root) return;
     const sectionSelect = document.getElementById('mappingReviewSection');
@@ -279,7 +297,7 @@ function studentSectionScopedUrl(path) {
                 addRow([
                     activity.title, activity.activity_type,
                     mappedOutcomes.map(outcome => outcome.code).join(', ') || 'Unmapped',
-                    mappedOutcomes.map(outcome => outcome.student_outcomes
+                    mappedOutcomes.map(outcome => (outcome.student_outcomes || [])
                         .map(studentOutcome => studentOutcome.code).join(', ') || 'No SO mapping'
                     ).join('; ') || 'No SO mapping',
                     coAttainments.map(({ outcome, result }) => outcome.code + ': ' +
@@ -300,7 +318,7 @@ function studentSectionScopedUrl(path) {
                 )) return;
                 addRow([
                     outcome.code + ' · ' + outcome.description, 'Course Outcome', outcome.code,
-                    outcome.student_outcomes.map(so => so.code).join(', ') || 'No SO mapping',
+                    (outcome.student_outcomes || []).map(so => so.code).join(', ') || 'No SO mapping',
                     coAttainment?.attainment_percentage == null ? 'Awaiting scores' : Number(coAttainment.attainment_percentage).toFixed(1) + '%',
                     coAttainment?.flagged ? 'Flagged · CQI recommended' : coAttainment?.status || data.review.status
                 ]);

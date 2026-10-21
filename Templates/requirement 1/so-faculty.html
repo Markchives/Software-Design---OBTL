@@ -244,14 +244,15 @@
 <span>Add Course Outcome</span>
 </button>
 </div>
-<div class="so-workflow-grid" id="soCourseOutcomeForm">
+<dialog aria-labelledby="soCourseOutcomeDialogTitle" class="so-workflow-grid so-workflow-dialog so-co-workflow-dialog" id="soCourseOutcomeForm">
+<header class="so-workflow-dialog-header"><div><h2 id="soCourseOutcomeDialogTitle">Add Course Outcome</h2><p>Add the next Course Outcome and set its target attainment.</p></div><button aria-label="Close Add Course Outcome" class="so-workflow-dialog-close" data-close-workflow-dialog="soCourseOutcomeForm" type="button">×</button></header>
 <div class="so-workflow-wide">
 <p><strong>Next fixed Course Outcome:</strong> <output id="soCoCode">—</output></p>
 <p id="soCoDescription"></p>
 </div>
 <label>Target attainment (%)<input id="soCoTarget" type="number" min="0" max="100" value="70"></label>
-<button class="sof-add-outcome-btn" id="soSaveCo" type="button">Save Course Outcome</button>
-</div>
+<footer class="so-assessment-actions so-workflow-wide"><button class="so-assessment-cancel" data-close-workflow-dialog="soCourseOutcomeForm" type="button">Cancel</button><button class="sof-add-outcome-btn" id="soSaveCo" type="button">Save Course Outcome</button></footer>
+</dialog>
 <div class="sodh-table-wrap sof-outcome-table-wrap">
 <table class="sodh-table sof-outcome-table">
 <thead><tr><th>CO No.</th><th>Course Outcomes</th><th>Target Attainment</th><th>Aligned SOs</th><th>Actions</th></tr></thead>
@@ -267,7 +268,8 @@
 <span class="sof-add-icon">+</span><span>Create SO Assessment</span>
 </button>
 </div>
-<div class="so-workflow-grid" id="soAssessmentForm">
+<dialog aria-labelledby="soAssessmentDialogTitle" class="so-workflow-grid so-workflow-dialog so-assessment-workflow-dialog" id="soAssessmentForm">
+<header class="so-workflow-dialog-header"><div><h2 id="soAssessmentDialogTitle">Create SO Assessment</h2><p>Configure the assessment details, performance indicators, and rating scale.</p></div><button aria-label="Close Create SO Assessment" class="so-workflow-dialog-close" data-close-workflow-dialog="soAssessmentForm" type="button">×</button></header>
 <label>Student Outcome<select id="soAssessmentOutcome"><option value="">Select a mapped SO</option></select></label>
 <label>Assessment title<input id="soAssessmentTitle" maxlength="160" placeholder="SO self-assessment"></label>
 <label>Due date<input id="soAssessmentDue" type="date"></label>
@@ -289,7 +291,7 @@
 <button class="so-assessment-cancel" id="soCancelAssessment" type="button">Cancel</button>
 <button class="sof-add-outcome-btn" id="soSaveAssessment" type="button">Create Assessment</button>
 </div>
-</div>
+</dialog>
 <div class="sodh-table-wrap sof-outcome-table-wrap">
 <table class="sodh-table sof-outcome-table sof-student-outcome-table">
 <thead><tr><th>Student Outcome</th><th>Due Date</th><th>Responses</th><th>Status</th><th>Actions</th></tr></thead>

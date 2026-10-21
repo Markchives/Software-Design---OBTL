@@ -5580,7 +5580,15 @@ def get_department_mapping_review(section_id):
             coso_by_id.setdefault(row["course_outcome_id"], []).append(
                 so_by_id.get(row["student_outcome_id"])
             )
-        co_by_id = {row["id"]: row for row in outcomes}
+        co_by_id = {
+            row["id"]: {
+                **row,
+                "student_outcomes": [
+                    item for item in coso_by_id.get(row["id"], []) if item
+                ],
+            }
+            for row in outcomes
+        }
         for activity in activities:
             activity["course_outcomes"] = [
                 co_by_id[outcome_id]
@@ -5612,10 +5620,7 @@ def get_department_mapping_review(section_id):
             "review": review[0] if review else {"status": "draft"},
             "syllabus": syllabus,
             "assessments": activities,
-            "outcomes": [{
-                **row,
-                "student_outcomes": [item for item in coso_by_id.get(row["id"], []) if item],
-            } for row in outcomes],
+            "outcomes": list(co_by_id.values()),
             "attainment": attainment,
         }), 200
     except ValueError:
