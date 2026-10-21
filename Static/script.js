@@ -279,10 +279,10 @@ function studentSectionScopedUrl(path) {
         });
         rows.appendChild(row);
     }
-    async function loadReview() {
+    async function loadReview(confirmation) {
         rows.replaceChildren(); verifyButton.disabled = true; currentReview = null;
         if (!sectionSelect.value) { status.textContent = 'Select a section to review.'; return; }
-        status.textContent = '';
+        status.textContent = 'Loading mapping review...';
         try {
             const data = await request('/api/department-head/sections/' + encodeURIComponent(sectionSelect.value) + '/mapping-review');
             currentReview = data;
@@ -327,24 +327,35 @@ function studentSectionScopedUrl(path) {
             const syllabusLink = data.syllabus?.signed_url;
             status.textContent = 'Review status: ' + data.review.status +
                 (data.syllabus ? ' · Syllabus: ' + data.syllabus.file_name : ' · No syllabus uploaded');
+            if (confirmation) status.append(document.createTextNode(' · ' + confirmation));
             if (syllabusLink) {
                 const link = document.createElement('a'); link.href = syllabusLink;
                 link.target = '_blank'; link.rel = 'noopener'; link.textContent = ' View syllabus';
                 status.appendChild(link);
             }
             verifyButton.disabled = data.review.status !== 'submitted';
-        } catch (error) { status.textContent = error.message; }
+        } catch (error) {
+            status.textContent = confirmation
+                ? confirmation + ' The review details could not be refreshed: ' + error.message
+                : error.message;
+        }
     }
     document.getElementById('loadMappingReview').addEventListener('click', loadReview);
     sectionSelect.addEventListener('change', loadReview);
     verifyButton.addEventListener('click', async () => {
         if (!currentReview || !sectionSelect.value) return;
-        verifyButton.disabled = true; status.textContent = '';
+        verifyButton.disabled = true;
+        status.textContent = 'Verifying mappings...';
         try {
-            await request('/api/department-head/sections/' + encodeURIComponent(sectionSelect.value) + '/verify-mappings', { method: 'POST' });
-            status.textContent = 'Mappings verified. The syllabus and outcome information are now visible to enrolled students.';
-            await loadReview();
-        } catch (error) { status.textContent = error.message; verifyButton.disabled = false; }
+            const result = await request('/api/department-head/sections/' + encodeURIComponent(sectionSelect.value) + '/verify-mappings', { method: 'POST' });
+            if (result.status !== 'verified') {
+                throw new Error('The server did not confirm that the mappings were verified.');
+            }
+            await loadReview('Verification succeeded. The syllabus and outcome information are now visible to enrolled students.');
+        } catch (error) {
+            status.textContent = 'Verification failed: ' + error.message;
+            verifyButton.disabled = !currentReview || currentReview.review.status !== 'submitted';
+        }
     });
     request('/api/department-head/mapping-reviews').then(data => {
         const reviews = Array.isArray(data.reviews) ? data.reviews : [];
