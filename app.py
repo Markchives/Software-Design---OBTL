@@ -5447,16 +5447,8 @@ def manage_department_head_roster_enrollment(section_id):
         department_id, _department = _department_head_roster_scope()
         if not department_id or not _department_head_section(section_uuid, department_id):
             return jsonify({"error": "Section is outside your department."}), 404
-        if action not in {"enroll", "drop"}:
-            return jsonify({"error": "Choose a valid roster action."}), 400
-        if action == "enroll":
-            existing = admin_supabase.table("enrollments").select(
-                "id, enrollment_status"
-            ).eq("section_id", section_uuid).eq(
-                "student_profile_id", student_profile_id
-            ).limit(1).execute().data or []
-            if existing and existing[0].get("enrollment_status") == "active":
-                return jsonify({"error": "This student is already on the selected section roster."}), 409
+        if action != "drop":
+            return jsonify({"error": "Only dropping an active roster enrollment is supported here."}), 400
         result = admin_supabase.rpc(
             "manage_department_head_section_enrollment",
             {
@@ -5466,8 +5458,6 @@ def manage_department_head_roster_enrollment(section_id):
                 "p_action": action,
             },
         ).execute()
-        if action == "enroll" and isinstance(result.data, dict) and result.data.get("status") == "already_active":
-            return jsonify({"error": "This student is already on the selected section roster."}), 409
         return jsonify({"result": result.data}), 200
     except ValueError:
         return jsonify({"error": "A valid section and student are required."}), 400

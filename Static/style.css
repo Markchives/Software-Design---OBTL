@@ -2724,6 +2724,8 @@ body.cm-dept-review-open, body.cm-dept-modal-open{overflow:hidden;}
 .cr-dept-head-page .crf-table :is(th, td):nth-child(7){width:11%;}
 .cr-dept-head-page .crf-table :is(th, td):nth-child(8){width:14%;}
 .cr-dept-head-page .crf-table :is(th, td):nth-child(9){width:7%;}
+.cr-dept-head-page .crf-table .crdh-row-actions{white-space:normal;}
+.cr-dept-head-page .crf-table .crdh-row-actions button{margin:2px;}
 .cr-dept-head-page .crf-table :is(th, td):nth-child(n/**/+7){padding-left:14px;padding-right:14px;}
 .cr-faculty-page .crf-roster-panel{width:100%;min-height:560px;padding:0 8px 14px;overflow:hidden;border-radius:12px;background:#FFFFFF;}
 .cr-faculty-page:not(.cr-dept-head-page) .crf-section-picker{max-width:520px;padding:14px 10px 8px;}

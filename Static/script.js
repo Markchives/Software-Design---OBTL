@@ -9435,12 +9435,8 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!root) return;
     const $ = id => document.getElementById(id);
     const rosterBody = $("crdhRows");
-    const form = $("crdhRecordForm");
-    const modal = $("crdhModal");
     let roster = [];
     let sections = [];
-    let selectedStudent = null;
-    let searchTimer = null;
 
     async function api(url, options) {
         const response = await fetch(url, Object.assign({
@@ -9483,28 +9479,45 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function render() {
-        const visible = currentRows();
+        const visibleEnrollments = currentRows();
+        const studentsById = new Map();
+        visibleEnrollments.forEach(item => {
+            const key = item.student_profile_id || item.student_number;
+            if (!studentsById.has(key)) studentsById.set(key, { ...item, enrollments: [] });
+            studentsById.get(key).enrollments.push(item);
+        });
+        const visible = Array.from(studentsById.values());
         rosterBody.replaceChildren();
         visible.forEach((item, index) => {
             const row = document.createElement("tr");
-            [String(index + 1), item.student_number, item.full_name, item.email, item.section_name, item.faculty_name, item.program_name]
+            const sectionsForStudent = [...new Set(item.enrollments.map(enrollment => enrollment.section_name).filter(Boolean))];
+            const facultyForStudent = [...new Set(item.enrollments.map(enrollment => enrollment.faculty_name).filter(Boolean))];
+            const programsForStudent = [...new Set(item.enrollments.map(enrollment => enrollment.program_name).filter(Boolean))];
+            [String(index + 1), item.student_number, item.full_name, item.email, sectionsForStudent.join(", "), facultyForStudent.join(", "), programsForStudent.join(", ")]
                 .forEach(value => {
                     const cell = document.createElement("td");
                     cell.textContent = value || "?";
                     row.appendChild(cell);
                 });
             const actionCell = document.createElement("td");
-            if (item.enrollment_status === "active" || item.enrollment_status === "dropped") {
+            actionCell.className = "crdh-row-actions";
+            const activeEnrollments = item.enrollments.filter(enrollment => enrollment.enrollment_status === "active");
+            if (activeEnrollments.length) {
+                activeEnrollments.forEach(enrollment => {
                 const button = document.createElement("button");
                 button.type = "button";
-                button.className = item.enrollment_status === "active" ? "crdh-remove" : "crdh-update";
-                button.dataset.sectionId = item.section_id;
-                button.dataset.profileId = item.student_profile_id;
-                button.dataset.action = item.enrollment_status === "active" ? "drop" : "enroll";
-                button.textContent = item.enrollment_status === "active" ? "Drop" : "Reactivate";
+                button.className = "crdh-remove";
+                button.dataset.sectionId = enrollment.section_id;
+                button.dataset.profileId = enrollment.student_profile_id;
+                button.dataset.action = "drop";
+                button.textContent = "Drop";
+                button.title = `Drop from ${enrollment.section_name || "this section"}`;
                 actionCell.appendChild(button);
+                });
+            } else if (item.enrollments.some(enrollment => enrollment.enrollment_status === "dropped")) {
+                actionCell.textContent = "Dropped";
             } else {
-                actionCell.textContent = "?";
+                actionCell.textContent = "—";
             }
             row.appendChild(actionCell);
             rosterBody.appendChild(row);
@@ -9520,7 +9533,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const totalStudents = new Set(visible.map(item => item.student_profile_id)).size;
         $("crdhTotal").textContent = String(totalStudents);
         $("crdhEnrolled").textContent = String(new Set(
-            visible.filter(item => item.enrollment_status === "active").map(item => item.student_profile_id)
+            visible.filter(item => item.enrollments.some(enrollment => enrollment.enrollment_status === "active"))
+                .map(item => item.student_profile_id)
         ).size);
         const selectedCourse = $("crdhCourse").selectedOptions[0];
         $("crdhCourseTitle").textContent = selectedCourse && selectedCourse.value ? selectedCourse.textContent : "All Courses";
@@ -9538,46 +9552,8 @@ document.addEventListener("DOMContentLoaded", function () {
             (!selectedProgram || roster.some(item => item.section_id === section.id && item.program_id === selectedProgram))
         ).length;
         $("crdhFacultyRosterCount").textContent = String(facultyRosterCount);
-        $("crdhCount").textContent = `Showing ${visible.length} of ${roster.length} enrollment records`;
-    }
-
-    function openModal() {
-        form.reset();
-        selectedStudent = null;
-        $("crdhStudentProfileId").value = "";
-        $("crdhStudentName").value = "";
-        $("crdhStudentResults").replaceChildren();
-        $("crdhModalError").hidden = true;
-        const courseOptions = Array.from(new Map(sections.map(section => [section.course_id, {
-            id: section.course_id, code: section.course_code, title: section.course_title
-        }])).values());
-        fillSelect($("crdhCourseChoice"), "Choose a course", courseOptions, "id", course => `${course.code} · ${course.title}`);
-        fillSelect($("crdhSectionChoice"), "Choose a section", [], "id", () => "");
-        const filteredSection = sections.find(section => section.id === $("crdhSection").value);
-        const currentCourse = $("crdhCourse").value || filteredSection?.course_id || "";
-        if (currentCourse) {
-            $("crdhCourseChoice").value = currentCourse;
-            populateModalSections(currentCourse, filteredSection?.id || "");
-        }
-        modal.hidden = false;
-        modal.classList.add("show");
-        document.body.style.overflow = "hidden";
-        $("crdhStudentSearch").focus();
-    }
-
-    function populateModalSections(courseId, selectedSectionId) {
-        const matching = sections.filter(section => section.course_id === courseId);
-        fillSelect($("crdhSectionChoice"), "Choose a section", matching, "id", section =>
-            [section.section_name, section.academic_year_name, section.term_name].filter(Boolean).join(" · "));
-        if (selectedSectionId && matching.some(section => section.id === selectedSectionId)) {
-            $("crdhSectionChoice").value = selectedSectionId;
-        }
-    }
-
-    function closeModal() {
-        modal.hidden = true;
-        modal.classList.remove("show");
-        document.body.style.overflow = "";
+        const uniqueStudents = new Set(roster.map(item => item.student_profile_id)).size;
+        $("crdhCount").textContent = `Showing ${visible.length} students from ${visibleEnrollments.length} enrollment records (${uniqueStudents} students total)`;
     }
 
     function setNote(message, isError) {
@@ -9611,81 +9587,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     ["crdhSearch", "crdhSort", "crdhSchoolYear", "crdhProgram", "crdhCourse", "crdhSection", "crdhFaculty", "crdhCategory"]
         .forEach(id => $(id).addEventListener(id === "crdhSearch" ? "input" : "change", render));
-    $("crdhAdd").addEventListener("click", openModal);
-    $("crdhCourseChoice").addEventListener("change", () => populateModalSections($("crdhCourseChoice").value, ""));
-    $("crdhModalClose").addEventListener("click", closeModal);
-    $("crdhModalCancel").addEventListener("click", closeModal);
-    modal.addEventListener("click", event => { if (event.target === modal) closeModal(); });
-    document.addEventListener("keydown", event => { if (event.key === "Escape" && !modal.hidden) closeModal(); });
-
-    $("crdhStudentSearch").addEventListener("input", () => {
-        window.clearTimeout(searchTimer);
-        selectedStudent = null;
-        $("crdhStudentProfileId").value = "";
-        $("crdhStudentName").value = "";
-        const query = $("crdhStudentSearch").value.trim();
-        const results = $("crdhStudentResults");
-        results.replaceChildren();
-        if (query.length < 2) return;
-        searchTimer = window.setTimeout(async () => {
-            try {
-                const data = await api("/api/department-head/class-roster/students?q=" + encodeURIComponent(query));
-                results.replaceChildren();
-                (data.students || []).forEach(student => {
-                    const option = document.createElement("button");
-                    option.type = "button";
-                    option.className = "crdh-student-option";
-                    option.textContent = [student.student_number, student.full_name]
-                        .filter(Boolean).join(" ? ");
-                    option.addEventListener("click", () => {
-                        selectedStudent = student;
-                        $("crdhStudentProfileId").value = student.student_profile_id;
-                        $("crdhStudentSearch").value = student.student_number;
-                        $("crdhStudentName").value = student.full_name || "";
-                        results.replaceChildren();
-                    });
-                    results.appendChild(option);
-                });
-                if (!results.children.length) {
-                    const empty = document.createElement("p");
-                    empty.textContent = "No active registered student account found.";
-                    results.appendChild(empty);
-                }
-            } catch (error) {
-                const message = document.createElement("p");
-                message.textContent = error.message;
-                results.replaceChildren(message);
-            }
-        }, 250);
-    });
-
-    form.addEventListener("submit", async event => {
-        event.preventDefault();
-        const error = $("crdhModalError");
-        if (!selectedStudent || !$("crdhSectionChoice").value) {
-            error.textContent = "Select a registered student account, course, and section.";
-            error.hidden = false;
-            return;
-        }
-        const button = $("crdhModalSubmit");
-        button.disabled = true;
-        try {
-            await api("/api/department-head/sections/" + encodeURIComponent($("crdhSectionChoice").value) + "/enrollments", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", Accept: "application/json" },
-                body: JSON.stringify({ student_profile_id: selectedStudent.student_profile_id, action: "enroll" })
-            });
-            closeModal();
-            setNote("Student added to the selected section.", false);
-            await load();
-        } catch (requestError) {
-            error.textContent = requestError.message;
-            error.hidden = false;
-        } finally {
-            button.disabled = false;
-        }
-    });
-
     rosterBody.addEventListener("click", async event => {
         const button = event.target.closest("button[data-action]");
         if (!button) return;
@@ -9696,7 +9597,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 headers: { "Content-Type": "application/json", Accept: "application/json" },
                 body: JSON.stringify({ student_profile_id: button.dataset.profileId, action: button.dataset.action })
             });
-            setNote(button.dataset.action === "drop" ? "Enrollment dropped." : "Enrollment reactivated.", false);
+            setNote("Enrollment dropped.", false);
             await load();
         } catch (error) {
             button.disabled = false;
@@ -9719,47 +9620,6 @@ document.addEventListener("DOMContentLoaded", function () {
         link.download = "department-class-roster.csv";
         link.click();
         URL.revokeObjectURL(url);
-    });
-
-    $("crdhImport").addEventListener("click", () => {
-        const sectionId = $("crdhSection").value;
-        if (!sectionId) {
-            setNote("Choose one section in the filters before importing students.", true);
-            return;
-        }
-        $("crdhImportFile").click();
-    });
-
-    $("crdhImportFile").addEventListener("change", async event => {
-        const file = event.target.files?.[0];
-        const sectionId = $("crdhSection").value;
-        if (!file || !sectionId) return;
-        try {
-            const lines = (await file.text()).split(/\r?\n/).map(line => line.trim()).filter(Boolean);
-            const numbers = [...new Set(lines.map(line => line.split(/[;,\t]/)[0].trim().replace(/^\"|\"$/g, "")))]
-                .filter(value => value && !/^(student\s*id|student\s*number|id)$/i.test(value));
-            let added = 0;
-            const rejected = [];
-            for (const number of numbers) {
-                try {
-                    const search = await api("/api/department-head/class-roster/students?q=" + encodeURIComponent(number));
-                    const student = (search.students || []).find(row => String(row.student_number).toLowerCase() === number.toLowerCase());
-                    if (!student) { rejected.push(number); continue; }
-                    await api("/api/department-head/sections/" + encodeURIComponent(sectionId) + "/enrollments", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json", Accept: "application/json" },
-                        body: JSON.stringify({ student_profile_id: student.student_profile_id, action: "enroll" })
-                    });
-                    added++;
-                } catch (_) { rejected.push(number); }
-            }
-            setNote(`Imported ${added} student(s).${rejected.length ? ` Could not import: ${rejected.join(", ")}.` : ""}`, rejected.length > 0);
-            await load();
-        } catch (error) {
-            setNote(error.message || "The roster CSV could not be read.", true);
-        } finally {
-            event.target.value = "";
-        }
     });
 
     load();
