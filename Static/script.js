@@ -1192,6 +1192,159 @@ function studentSectionScopedUrl(path) {
     window.setInterval(refreshWhenActive, 60000);
 })();
 
+/* Student gradebook view exposes only this student's released scores. */
+(function () {
+    "use strict";
+    const page = document.querySelector(".gl-student-page");
+    if (!page) return;
+
+    const gradebookRows = page.querySelector("#glStudentGradebookRows");
+    const scoreRows = page.querySelector("#glStudentScoreRows");
+    const status = page.querySelector("#glStudentSyncStatus");
+    const coursesEmpty = page.querySelector("#glStudentCoursesEmpty");
+    const scoresEmpty = page.querySelector("#glStudentScoresEmpty");
+    const courseCount = page.querySelector("#glStudentCourseCount");
+    const finalizedCount = page.querySelector("#glStudentFinalizedCount");
+    const releasedCount = page.querySelector("#glStudentReleasedCount");
+    let loading = false;
+
+    async function getJson(path) {
+        const response = await fetch(studentSectionScopedUrl(path), {
+            credentials: "same-origin",
+            headers: { Accept: "application/json" }
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(data.error || "Your gradebook could not be loaded.");
+        }
+        return data;
+    }
+
+    function addCells(body, values) {
+        const row = document.createElement("tr");
+        values.forEach(value => {
+            const cell = document.createElement("td");
+            cell.textContent = value == null || value === "" ? "—" : String(value);
+            row.appendChild(cell);
+        });
+        body.appendChild(row);
+    }
+
+    function labelStatus(value) {
+        return ({
+            draft: "In progress",
+            for_verification: "Awaiting verification",
+            verified: "Verified",
+            locked: "Locked",
+            reopened: "Reopened"
+        })[value] || value || "In progress";
+    }
+
+    function formatDate(value) {
+        if (!value) return "—";
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString();
+    }
+
+    async function load(silent) {
+        if (loading) return;
+        loading = true;
+        status.textContent = "Loading your gradebook...";
+        try {
+            const [gradebookData, scoreData] = await Promise.all([
+                getJson("/api/student/gradebooks"),
+                getJson("/api/student/assessment-scores")
+            ]);
+            const gradebooks = Array.isArray(gradebookData.gradebooks)
+                ? gradebookData.gradebooks : [];
+            const scores = (Array.isArray(scoreData.assessments)
+                ? scoreData.assessments : []).filter(item =>
+                    item.release_status === "Released" && item.has_score
+                );
+
+            gradebookRows.replaceChildren();
+            gradebooks.forEach(item => addCells(gradebookRows, [
+                [item.course_code, item.course_title].filter(Boolean).join(" · "),
+                item.section_name,
+                item.academic_year_name,
+                labelStatus(item.gradebook_status),
+                item.final_status,
+                formatDate(item.locked_at)
+            ]));
+
+            scoreRows.replaceChildren();
+            scores.forEach(item => addCells(scoreRows, [
+                item.title,
+                [item.course_code, item.section_name].filter(Boolean).join(" · "),
+                item.course_outcome_code,
+                `${item.score} / ${item.max_score}`,
+                `${Number(item.percentage).toFixed(1)}%`,
+                item.result_status === "pass" ? "Pass"
+                    : item.result_status === "fail" ? "Needs improvement" : "Released",
+                formatDate(item.released_at)
+            ]));
+
+            courseCount.textContent = String(gradebooks.length);
+            finalizedCount.textContent = String(
+                gradebooks.filter(item => item.gradebook_status === "locked").length
+            );
+            releasedCount.textContent = String(scores.length);
+            coursesEmpty.hidden = gradebooks.length > 0;
+            scoresEmpty.hidden = scores.length > 0;
+            status.textContent = `Updated. ${gradebooks.length} active course(s), ${scores.length} released score(s).`;
+        } catch (error) {
+            status.textContent = (silent ? "Refresh failed: " : "Gradebook could not be loaded: ") +
+                error.message;
+        } finally {
+            loading = false;
+        }
+    }
+
+    load(false);
+    const refreshWhenActive = () => {
+        if (document.visibilityState === "visible") load(true);
+    };
+    window.addEventListener("focus", refreshWhenActive);
+    document.addEventListener("visibilitychange", refreshWhenActive);
+    window.setInterval(refreshWhenActive, 30000);
+})();
+
+/* Add the Gradebook module link to existing student course workspaces. */
+(function () {
+    if (!document.getElementById("studentName")) return;
+    document.querySelectorAll(".cw-module-nav").forEach(nav => {
+        const links = Array.from(nav.querySelectorAll("a[href]"));
+        const reportLink = links.find(link =>
+            decodeURIComponent(new URL(link.href, location.href).pathname)
+                .endsWith("/requirement 8/rp-student.html")
+        );
+        if (!reportLink) return;
+
+        const reportNumber = reportLink.querySelector(".cw-module-number");
+        if (reportNumber) reportNumber.textContent = "08";
+
+        let gradebookLink = links.find(link =>
+            decodeURIComponent(new URL(link.href, location.href).pathname)
+                .endsWith("/requirement 7/gl-student.html")
+        );
+        if (!gradebookLink) {
+            gradebookLink = document.createElement("a");
+            gradebookLink.className = "cw-module-tab";
+            gradebookLink.href = "../requirement 7/gl-student.html";
+            gradebookLink.innerHTML =
+                '<span class="cw-module-number">07</span> Gradebook';
+            reportLink.before(gradebookLink);
+        }
+
+        const current = decodeURIComponent(
+            new URL(location.href).pathname
+        ).endsWith("/requirement 7/gl-student.html");
+        gradebookLink.classList.toggle("active", current);
+        if (current) gradebookLink.setAttribute("aria-current", "page");
+        else gradebookLink.removeAttribute("aria-current");
+    });
+})();
+
 /* CQI STUDENT — enrolled-section, approved-action view. */
 (function () {
     "use strict";
@@ -7466,6 +7619,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function showSummary(tab) {
+        // The summary sits outside the tab panels; hide the whole grid for verification.
+        const verification = tab === "mapping-verification";
+        summary.hidden = verification;
+        if (verification) summary.style.setProperty("display", "none", "important");
+        else summary.style.removeProperty("display");
         const cards = [...summary.querySelectorAll(".so-summary-card")];
         cards.forEach((card, index) => { card.hidden = index > (tab === "students-attainment" ? 2 : 1); });
         const labels = {
