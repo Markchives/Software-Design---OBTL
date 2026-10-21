@@ -1445,11 +1445,25 @@ function studentSectionScopedUrl(path) {
             status.className = "crf-status " + (
                 student.enrollment_status === "active" ? "enrolled" : "pending"
             );
-            status.textContent = student.enrollment_status || "unknown";
+            status.textContent = student.enrollment_status === "join_pending"
+                ? "Pending approval" : (student.enrollment_status || "unknown");
             statusCell.appendChild(status);
             row.appendChild(statusCell);
             const actionCell = document.createElement("td");
-            if (student.enrollment_status === "active" || student.enrollment_status === "dropped") {
+            if (student.enrollment_status === "join_pending" && student.join_request_id) {
+                [
+                    ["accepted", "Accept", "crf-reenroll-btn"],
+                    ["rejected", "Reject", "crf-remove-btn"]
+                ].forEach(function (decision) {
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    button.className = decision[2] + " crf-join-decision";
+                    button.dataset.joinRequestId = student.join_request_id;
+                    button.dataset.decision = decision[0];
+                    button.textContent = decision[1];
+                    actionCell.appendChild(button);
+                });
+            } else if (student.enrollment_status === "active" || student.enrollment_status === "dropped") {
                 const button = document.createElement("button");
                 button.type = "button";
                 button.className = student.enrollment_status === "active"
@@ -1799,6 +1813,36 @@ function studentSectionScopedUrl(path) {
             } catch (error) {
                 enrollButton.disabled = false;
                 setMessage(studentSearchMessage, error.message, true);
+            }
+            return;
+        }
+        const joinDecisionButton = event.target.closest("[data-join-request-id][data-decision]");
+        if (joinDecisionButton) {
+            const section = selectedSection();
+            if (!section) return;
+            const decision = joinDecisionButton.dataset.decision;
+            const decisionButtons = body.querySelectorAll(
+                '[data-join-request-id="' + joinDecisionButton.dataset.joinRequestId + '"]'
+            );
+            decisionButtons.forEach(function (button) { button.disabled = true; });
+            try {
+                await api(
+                    "/api/faculty/sections/" + encodeURIComponent(section.section_id) +
+                    "/join-requests/" + encodeURIComponent(joinDecisionButton.dataset.joinRequestId) +
+                    "/decision",
+                    {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", Accept: "application/json" },
+                        body: JSON.stringify({ decision: decision })
+                    }
+                );
+                setMessage(rosterMessage,
+                    decision === "accepted" ? "Student course request accepted." : "Student course request rejected.",
+                    false);
+                await loadRoster();
+            } catch (error) {
+                decisionButtons.forEach(function (button) { button.disabled = false; });
+                setMessage(rosterMessage, error.message, true);
             }
             return;
         }
@@ -6460,6 +6504,102 @@ document.addEventListener("DOMContentLoaded", function () {
     if (facultySection && !usesPersistentFacultySyllabus) {
         facultySection.addEventListener("change", loadFacultySyllabus);
     }
+})();
+
+(function () {
+    "use strict";
+    const dialog = document.getElementById("scJoinDialog");
+    const form = document.getElementById("scJoinForm");
+    const openButton = document.getElementById("scJoinCourse");
+    const codeInput = document.getElementById("scJoinCode");
+    const sectionSelect = document.getElementById("scJoinSection");
+    const sectionLabel = document.getElementById("scJoinSectionLabel");
+    const submitButton = document.getElementById("scJoinSubmit");
+    const status = document.getElementById("scJoinStatus");
+    if (!dialog || !form || !openButton || !codeInput || !sectionSelect || !submitButton) return;
+
+    let lookedUpCourse = null;
+    function setStatus(message, isError) {
+        status.textContent = message || "";
+        status.classList.toggle("is-error", Boolean(isError));
+    }
+    function resetLookup() {
+        lookedUpCourse = null;
+        sectionSelect.replaceChildren(new Option("Select a section", ""));
+        sectionSelect.hidden = true;
+        sectionSelect.disabled = true;
+        sectionLabel.hidden = true;
+        submitButton.textContent = "Find Course";
+    }
+    openButton.addEventListener("click", function () {
+        if (dialog.showModal) dialog.showModal();
+        else dialog.setAttribute("open", "");
+        codeInput.focus();
+    });
+    ["scJoinClose", "scJoinCancel"].forEach(function (id) {
+        const button = document.getElementById(id);
+        if (button) button.addEventListener("click", function () {
+            if (dialog.close) dialog.close();
+            else dialog.removeAttribute("open");
+        });
+    });
+    codeInput.addEventListener("input", function () {
+        if (lookedUpCourse && codeInput.value.trim().toUpperCase() !== lookedUpCourse.code) {
+            resetLookup();
+            setStatus("Course code changed. Find the course again.", false);
+        }
+    });
+    form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        const code = codeInput.value.trim().toUpperCase();
+        if (!code) return;
+        submitButton.disabled = true;
+        try {
+            if (!lookedUpCourse || lookedUpCourse.code !== code) {
+                setStatus("Looking up course sections…", false);
+                const response = await fetch("/api/student/course-join-requests/lookup", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", Accept: "application/json" },
+                    credentials: "same-origin",
+                    body: JSON.stringify({ course_code: code })
+                });
+                const result = await response.json().catch(function () { return {}; });
+                if (!response.ok) throw new Error(result.error || "Course lookup failed.");
+                lookedUpCourse = result.course;
+                sectionSelect.replaceChildren(new Option("Select a section", ""));
+                (result.sections || []).forEach(function (section) {
+                    const details = [section.section_name, section.academic_year, section.term, section.faculty_name]
+                        .filter(Boolean).join(" · ");
+                    sectionSelect.add(new Option(details, section.id));
+                });
+                sectionSelect.hidden = false;
+                sectionSelect.disabled = false;
+                sectionLabel.hidden = false;
+                submitButton.textContent = "Send Join Request";
+                setStatus("Found " + result.course.code + " — " + result.course.title + ". Choose your section, then send the request.", false);
+                return;
+            }
+            if (!sectionSelect.value) throw new Error("Choose a section first.");
+            setStatus("Sending your request…", false);
+            const response = await fetch("/api/student/course-join-requests", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Accept: "application/json" },
+                credentials: "same-origin",
+                body: JSON.stringify({ course_code: code, section_id: sectionSelect.value })
+            });
+            const result = await response.json().catch(function () { return {}; });
+            if (!response.ok) throw new Error(result.error || "Course request could not be sent.");
+            setStatus(result.already_requested
+                ? "Your request is already pending faculty approval."
+                : "Join request sent. The assigned faculty member must approve it before the course appears in My Courses.", false);
+            form.reset();
+            resetLookup();
+        } catch (error) {
+            setStatus(error.message, true);
+        } finally {
+            submitButton.disabled = false;
+        }
+    });
 })();
 
 (function () {
@@ -11704,10 +11844,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         function filterRows() {
             const query = (search?.value || "").trim().toLowerCase();
-            const selectedLevel = (level?.value || "").toUpperCase();
+            const selectedResult = (level?.value || "").toUpperCase();
             rows.querySelectorAll("tr[data-event]").forEach(row => {
                 row.hidden = !(row.textContent.toLowerCase().includes(query)
-                    && (!selectedLevel || row.dataset.level === selectedLevel));
+                    && (!selectedResult || row.dataset.result === selectedResult));
             });
         }
 
@@ -11740,37 +11880,73 @@ document.addEventListener("DOMContentLoaded", function () {
             for (const event of events) {
                 const row = document.createElement("tr");
                 row.dataset.event = "true";
-                row.dataset.level = String(event.level || "INFO").toUpperCase();
+                row.dataset.result = String(event.result || "SUCCESS").toUpperCase();
                 const timestamp = event.timestamp ? new Date(event.timestamp).toLocaleString() : "—";
-                for (const value of [timestamp, event.level || "INFO", event.event, event.actor, event.record, event.details]) {
+                for (const [index, value] of [timestamp, event.role, event.operation, event.module, event.record_id, event.result].entries()) {
                     const cell = document.createElement("td");
                     cell.textContent = value == null || value === "" ? "—" : String(value);
+                    if (index === 5) {
+                        cell.className = "gl-admin-result gl-admin-result-" +
+                            String(event.result || "success").toLowerCase();
+                    }
                     row.appendChild(cell);
                 }
+                const detailsCell = document.createElement("td");
+                const detailsButton = document.createElement("button");
+                detailsButton.type = "button";
+                detailsButton.className = "gl-admin-btn gl-admin-details-btn";
+                detailsButton.textContent = "View Details";
+                detailsButton.addEventListener("click", () => {
+                    const dialog = document.getElementById("glDialog");
+                    const body = document.getElementById("glDialogBody");
+                    document.getElementById("glDialogTitle").textContent = "System Record Details";
+                    body.replaceChildren();
+                    [
+                        ["Timestamp", timestamp], ["Role", event.role],
+                        ["Operation", event.operation], ["Module", event.module],
+                        ["Record ID", event.record_id], ["Result", event.result],
+                        ["IP Address", event.ip_address], ["Details", event.details]
+                    ].forEach(([label, value]) => {
+                        const term = document.createElement("strong");
+                        term.textContent = label;
+                        const description = document.createElement("span");
+                        description.textContent = value == null || value === "" ? "—" : String(value);
+                        body.append(term, description);
+                    });
+                    dialog.hidden = false;
+                });
+                detailsCell.appendChild(detailsButton);
+                row.appendChild(detailsCell);
                 rows.appendChild(row);
             }
             if (!events.length) {
                 const row = document.createElement("tr");
                 row.className = "gl-admin-empty-row";
                 const cell = document.createElement("td");
-                cell.colSpan = 6;
+                cell.colSpan = 7;
                 cell.textContent = "No system history has been recorded yet.";
                 row.appendChild(cell);
                 rows.appendChild(row);
             }
-            status.textContent = `Showing ${events.length} most recent system event${events.length === 1 ? "" : "s"}.`;
+            status.textContent = `Showing ${events.length} most recent system record${events.length === 1 ? "" : "s"}.`;
             filterRows();
         } catch (error) {
             count.textContent = "0";
             rows.replaceChildren();
             const row = document.createElement("tr");
             const cell = document.createElement("td");
-            cell.colSpan = 6;
+            cell.colSpan = 7;
             cell.textContent = "System history could not be loaded.";
             row.appendChild(cell);
             rows.appendChild(row);
             status.textContent = error.message;
         }
+
+        document.getElementById("glDialog")?.addEventListener("click", event => {
+            if (event.target === event.currentTarget || event.target.closest("[data-close]")) {
+                event.currentTarget.hidden = true;
+            }
+        });
     }
 
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });

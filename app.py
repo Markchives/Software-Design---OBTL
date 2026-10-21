@@ -2,6 +2,7 @@ from threading import Lock
 import time
 from functools import wraps
 import logging
+import re
 from logging.handlers import RotatingFileHandler
 import os
 from uuid import UUID, uuid4
@@ -651,17 +652,112 @@ def faculty_section_roster(section_id):
                 "email": user.get("email", ""),
                 "enrollment_status": enrollment.get("enrollment_status", ""),
             })
+        request_rows = (
+            admin_supabase.table("student_course_join_requests")
+            .select("id, student_profile_id, requested_at")
+            .eq("section_id", section_id)
+            .eq("status", "pending")
+            .order("requested_at")
+            .execute()
+            .data
+            or []
+        )
+        request_profile_ids = list({
+            row["student_profile_id"] for row in request_rows
+            if row.get("student_profile_id")
+        })
+        request_profiles = []
+        request_users = {}
+        if request_profile_ids:
+            request_profiles = (
+                admin_supabase.table("student_profiles")
+                .select("id, user_id, student_number")
+                .in_("id", request_profile_ids)
+                .execute()
+                .data
+                or []
+            )
+            request_user_ids = list({
+                row["user_id"] for row in request_profiles if row.get("user_id")
+            })
+            if request_user_ids:
+                request_users = {
+                    row["id"]: row for row in (
+                        admin_supabase.table("users")
+                        .select("id, full_name, email")
+                        .in_("id", request_user_ids)
+                        .execute()
+                        .data
+                        or []
+                    )
+                }
+        request_profiles_by_id = {row["id"]: row for row in request_profiles}
+        for join_request in request_rows:
+            profile = request_profiles_by_id.get(join_request.get("student_profile_id"))
+            if not profile:
+                continue
+            user = request_users.get(profile.get("user_id"), {})
+            roster.append({
+                "student_profile_id": profile["id"],
+                "student_number": profile.get("student_number", ""),
+                "full_name": user.get("full_name", ""),
+                "email": user.get("email", ""),
+                "enrollment_status": "join_pending",
+                "join_request_id": join_request["id"],
+                "requested_at": join_request.get("requested_at"),
+            })
         return jsonify({
             "roster": roster,
+            "join_requests": [row for row in roster if row.get("join_request_id")],
             "counts": {
-                "total": len(roster),
+                "total": sum(not row.get("join_request_id") for row in roster),
                 "active": sum(row["enrollment_status"] == "active" for row in roster),
-                "inactive": sum(row["enrollment_status"] != "active" for row in roster),
+                "inactive": sum(
+                    row["enrollment_status"] != "active" and not row.get("join_request_id")
+                    for row in roster
+                ),
+                "join_requests": len(request_rows),
             },
         }), 200
     except Exception:
         app.logger.exception("Unable to load Faculty section roster")
         return jsonify({"error": "Class roster could not be loaded."}), 500
+
+
+@app.post("/api/faculty/sections/<section_id>/join-requests/<request_id>/decision")
+@require_role("faculty")
+def decide_faculty_course_join_request(section_id, request_id):
+    if not admin_supabase:
+        return jsonify({"error": "Course join requests are unavailable."}), 503
+    payload = request.get_json(silent=True) or {}
+    decision = payload.get("decision") if isinstance(payload, dict) else None
+    if decision not in ("accepted", "rejected"):
+        return jsonify({"error": "Choose accept or reject for this request."}), 400
+    try:
+        section_uuid = str(UUID(str(section_id)))
+        request_uuid = str(UUID(str(request_id)))
+        if not _faculty_roster_section(section_uuid):
+            return jsonify({"error": "Section not found or not assigned to you."}), 404
+        result = admin_supabase.rpc(
+            "review_student_course_join_request",
+            {
+                "p_request_id": request_uuid,
+                "p_section_id": section_uuid,
+                "p_faculty_user_id": str(g.authenticated_user.id),
+                "p_decision": decision,
+            },
+        ).execute()
+        return jsonify({"result": result.data}), 200
+    except ValueError:
+        return jsonify({"error": "The section or request ID is invalid."}), 400
+    except Exception:
+        app.logger.exception("Unable to review a student course join request")
+        return jsonify({
+            "error": (
+                "The course join request could not be reviewed. Verify that "
+                "database/student_course_join_requests.sql has been applied."
+            )
+        }), 503
 
 
 @app.get("/api/faculty/sections/<section_id>/students")
@@ -1004,6 +1100,165 @@ def student_courses():
     except Exception:
         app.logger.exception("Unable to load student course enrollments")
         return jsonify({"error": "Student courses could not be loaded."}), 500
+
+
+@app.post("/api/student/course-join-requests/lookup")
+@require_role("student")
+def lookup_student_course_for_join():
+    if not admin_supabase:
+        return jsonify({"error": "Course lookup is unavailable."}), 503
+    payload = request.get_json(silent=True) or {}
+    code = str(payload.get("course_code", "")).strip().upper() if isinstance(payload, dict) else ""
+    if not code or len(code) > 24 or any(not (char.isalnum() or char in " -_./") for char in code):
+        return jsonify({"error": "Enter a valid course code."}), 400
+    try:
+        profile = _account_profile("student", g.authenticated_user.id, "id, is_enrolled")
+        if not profile or profile.get("is_enrolled") is not True:
+            return jsonify({"error": "Complete an active student profile before requesting a course."}), 403
+        course_rows = (
+            admin_supabase.table("courses")
+            .select("id, code, title")
+            .ilike("code", code)
+            .limit(2)
+            .execute()
+            .data
+            or []
+        )
+        course = next((row for row in course_rows if row.get("code", "").casefold() == code.casefold()), None)
+        if not course:
+            return jsonify({"error": "No course matches that code."}), 404
+        section_rows = (
+            admin_supabase.table("course_sections")
+            .select("id, section_name, academic_year_id, academic_term_id, faculty_id")
+            .eq("course_id", course["id"])
+            .not_.is_("faculty_id", "null")
+            .execute()
+            .data
+            or []
+        )
+        if not section_rows:
+            return jsonify({"error": "There are no sections with an assigned faculty member for this course."}), 404
+        year_ids = list({row["academic_year_id"] for row in section_rows if row.get("academic_year_id")})
+        term_ids = list({row["academic_term_id"] for row in section_rows if row.get("academic_term_id")})
+        faculty_ids = list({row["faculty_id"] for row in section_rows if row.get("faculty_id")})
+        years = {
+            row["id"]: row.get("name", "")
+            for row in (admin_supabase.table("academic_years").select("id, name").in_("id", year_ids).execute().data or [])
+        } if year_ids else {}
+        terms = {
+            row["id"]: row
+            for row in (admin_supabase.table("academic_terms").select("id, term_number, name").in_("id", term_ids).execute().data or [])
+        } if term_ids else {}
+        faculty_profiles = (
+            admin_supabase.table("faculty_profiles")
+            .select("id, user_id")
+            .in_("id", faculty_ids)
+            .execute()
+            .data
+            or []
+        ) if faculty_ids else []
+        faculty_user_ids = list({row["user_id"] for row in faculty_profiles if row.get("user_id")})
+        faculty_names = {
+            row["id"]: row.get("full_name", "")
+            for row in (admin_supabase.table("users").select("id, full_name").in_("id", faculty_user_ids).execute().data or [])
+        } if faculty_user_ids else {}
+        faculty_by_profile = {row["id"]: faculty_names.get(row.get("user_id"), "") for row in faculty_profiles}
+        sections = []
+        for section in section_rows:
+            term = terms.get(section.get("academic_term_id"), {})
+            sections.append({
+                "id": section["id"],
+                "section_name": section.get("section_name", ""),
+                "academic_year": years.get(section.get("academic_year_id"), ""),
+                "term": term.get("name") or (f"Term {term['term_number']}" if term.get("term_number") else ""),
+                "faculty_name": faculty_by_profile.get(section.get("faculty_id"), ""),
+            })
+        sections.sort(key=lambda item: (item["academic_year"], item["term"], item["section_name"]))
+        return jsonify({"course": {"code": course["code"], "title": course["title"]}, "sections": sections}), 200
+    except Exception:
+        app.logger.exception("Unable to look up a course join request")
+        return jsonify({"error": "Course sections could not be loaded."}), 500
+
+
+@app.post("/api/student/course-join-requests")
+@require_role("student")
+def create_student_course_join_request():
+    if not admin_supabase:
+        return jsonify({"error": "Course join requests are unavailable."}), 503
+    payload = request.get_json(silent=True) or {}
+    if not isinstance(payload, dict):
+        return jsonify({"error": "Join request data must be a JSON object."}), 400
+    code = str(payload.get("course_code", "")).strip().upper()
+    section_id = str(payload.get("section_id", "")).strip()
+    try:
+        profile = _account_profile("student", g.authenticated_user.id, "id, is_enrolled")
+        if not profile or profile.get("is_enrolled") is not True:
+            return jsonify({"error": "Complete an active student profile before requesting a course."}), 403
+        section_uuid = str(UUID(section_id))
+        section_rows = (
+            admin_supabase.table("course_sections")
+            .select("id, course_id, faculty_id")
+            .eq("id", section_uuid)
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if not section_rows or not section_rows[0].get("faculty_id"):
+            return jsonify({"error": "That section is not currently available to join."}), 404
+        course_rows = (
+            admin_supabase.table("courses")
+            .select("id, code")
+            .eq("id", section_rows[0]["course_id"])
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if not course_rows or course_rows[0].get("code", "").upper() != code:
+            return jsonify({"error": "The selected section does not match that course code."}), 400
+        existing = (
+            admin_supabase.table("enrollments")
+            .select("id, enrollment_status")
+            .eq("student_profile_id", profile["id"])
+            .eq("section_id", section_uuid)
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if existing and existing[0].get("enrollment_status") in ("active", "completed"):
+            return jsonify({"error": "You are already enrolled in this section."}), 409
+        pending = (
+            admin_supabase.table("student_course_join_requests")
+            .select("id")
+            .eq("student_profile_id", profile["id"])
+            .eq("section_id", section_uuid)
+            .eq("status", "pending")
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if pending:
+            return jsonify({"request_id": pending[0]["id"], "status": "pending", "already_requested": True}), 200
+        result = admin_supabase.table("student_course_join_requests").insert({
+            "student_profile_id": profile["id"],
+            "section_id": section_uuid,
+            "status": "pending",
+        }).execute()
+        request_row = (result.data or [{}])[0]
+        return jsonify({"request_id": request_row.get("id"), "status": "pending"}), 201
+    except ValueError:
+        return jsonify({"error": "Choose a valid course section."}), 400
+    except Exception:
+        app.logger.exception("Unable to create a student course join request")
+        return jsonify({
+            "error": (
+                "Your course request could not be saved. Verify that "
+                "database/student_course_join_requests.sql has been applied."
+            )
+        }), 503
 
 
 @app.get("/api/student/sections/<section_id>/roster")
@@ -7508,7 +7763,7 @@ def admin_system_history_api():
         if actor_ids:
             users_result = (
                 admin_supabase.table("users")
-                .select("id,full_name,email")
+            .select("id,role")
                 .in_("id", actor_ids)
                 .execute()
             )
@@ -7516,15 +7771,38 @@ def admin_system_history_api():
 
         events = []
         for row in rows:
-            actor = actors.get(row.get("user_id"), {})
+            user = actors.get(row.get("user_id"), {})
+            role = user.get("role") or "system"
+            role_labels = {
+                "student": "Student",
+                "faculty": "Faculty",
+                "department-head": "Department Head",
+                "admin-security": "Admin",
+            }
+            details = row.get("details") or ""
+            level = (row.get("level") or "INFO").upper()
+            status_match = re.search(r"HTTP\s+(\d{3})", details, re.IGNORECASE)
+            if status_match and int(status_match.group(1)) >= 400:
+                outcome = "Failed"
+            elif level == "ERROR":
+                outcome = "Failed"
+            elif level == "WARNING":
+                outcome = "Warning"
+            elif "requested" in details.casefold() or "pending" in details.casefold():
+                outcome = "Pending"
+            else:
+                outcome = "Success"
             events.append({
                 "id": row.get("id"),
                 "timestamp": row.get("created_at"),
-                "level": row.get("level") or "INFO",
-                "event": row.get("action") or "System event",
-                "actor": actor.get("full_name") or actor.get("email") or "System",
-                "record": row.get("record_id") or row.get("table_name") or "—",
-                "details": row.get("details") or row.get("module") or "—",
+                "level": level,
+                "role": role_labels.get(role, role.replace("-", " ").title()),
+                "operation": row.get("action") or "System event",
+                "module": row.get("module") or "System",
+                "record_id": row.get("record_id") or row.get("table_name") or "—",
+                "result": outcome,
+                "details": details or row.get("module") or "—",
+                "ip_address": row.get("ip_address") or "—",
             })
         gradebook_history = (
             admin_supabase.table("gradebook_history")
