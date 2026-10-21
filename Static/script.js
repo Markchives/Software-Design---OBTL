@@ -3132,7 +3132,7 @@ function closeInfoModal() {
 /* WEBSITE SUPPORT */
 function showSupport() {
     window.location.href =
-        "webpage/support.html";
+        "/webpage/support.html";
 }
 
 /* WEBSITE SETTINGS */

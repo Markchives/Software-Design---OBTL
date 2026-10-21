@@ -7069,6 +7069,7 @@ def student_syllabi():
 
 
 @app.get("/")
+@app.get("/website.html")
 def home():
     # Supabase can fall back to the configured Site URL when the requested
     # OAuth redirect is not allowlisted. Forward that returned code to the
@@ -7087,6 +7088,31 @@ def home():
         return redirect(url_for("auth_callback", **callback_args))
 
     return render_template("website.html")
+
+
+@app.get("/webpage/platform.html")
+def public_platform_page():
+    return render_template("webpage/platform.html")
+
+
+@app.get("/webpage/workflow.html")
+def public_workflow_page():
+    return render_template("webpage/workflow.html")
+
+
+@app.get("/webpage/resources.html")
+def public_resources_page():
+    return render_template("webpage/resources.html")
+
+
+@app.get("/webpage/about us.html")
+def public_about_page():
+    return render_template("webpage/about us.html")
+
+
+@app.get("/webpage/support.html")
+def public_support_page():
+    return render_template("webpage/support.html")
 
 
 @app.get("/healthz")
