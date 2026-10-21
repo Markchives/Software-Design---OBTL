@@ -11469,13 +11469,41 @@ document.addEventListener("DOMContentLoaded", function () {
         function close() { if (dialog.open) dialog.close(); }
         function updateRow(row, status) { row.dataset.status = status; const badge = row.querySelector('.gl-row-status'); badge.textContent = status; badge.className = 'gl-pill gl-row-status ' + (['Verified', 'Locked'].includes(status) ? 'gl-green' : status === 'For Verification' ? 'gl-yellow' : 'gl-muted'); const action = row.querySelector('.gl-actions'); const type = status === 'Locked' ? 'reopen' : status === 'Verified' ? 'lock' : 'verify'; action.querySelector('[data-gl-action]:last-child').outerHTML = btn(status === 'Locked' ? 'Reopen' : status === 'Verified' ? 'Lock' : 'Verify', type === 'reopen' ? 'gl-red-outline' : type === 'lock' ? 'gl-outline' : 'gl-gold', type).replace('data-gl-dialog', 'data-gl-action'); }
         function history(row, action, remark) { const d = state(row), tr = document.createElement('tr');[d.id, action, 'Department Head', new Date().toLocaleString(), remark || '—'].forEach(value => { const td = document.createElement('td'); td.textContent = value; tr.append(td) }); $('glHistory').prepend(tr); }
-        function approved() { const list = rows.filter(r => ['Locked', 'Verified'].includes(r.dataset.status)); $('glApprovedList').innerHTML = list.length ? list.map(r => '<p><strong>' + esc(r.dataset.id) + '</strong> — ' + esc(r.dataset.status) + '</p>').join('') : '<p>No approved gradebooks yet.</p>'; }
+        function approved() { const list = rows.filter(r => r.dataset.status === 'Locked'); $('glApprovedList').innerHTML = list.length ? list.map(r => '<p><strong>' + esc(r.dataset.id) + '</strong> — Locked</p>').join('') : '<p>No locked gradebooks are available to export.</p>'; }
         $('glRows').addEventListener('click', e => { const button = e.target.closest('button[data-gl-action]'); if (button) show(button.closest('tr'), button.dataset.glAction); });
         dialog.addEventListener('click', e => { const button = e.target.closest('button[data-gl-dialog]'); if (!button) return; if (button.dataset.glDialog === 'close') { close(); return; } if (!active) return; const d = state(active), remark = $('glReason')?.value.trim() || ''; let next = ''; if (mode === 'verify') { if (d.check !== 'clean' || d.grades !== 'Complete' || d.mapping !== 'Verified' || d.attainment !== 'Verified') { const el = $('glDialogError'); el.hidden = false; el.textContent = 'Verification blocked: resolve missing or incomplete data, grades, mappings and attainment first.'; return; } next = 'Verified'; } else if (mode === 'lock') { if (d.status !== 'Verified' || d.check !== 'clean') return; next = 'Locked'; } else if (mode === 'reopen') { if (!remark) { const el = $('glDialogError'); el.hidden = false; el.textContent = 'Please provide a reason for reopening.'; return; } next = 'Reopened'; } if (next) { updateRow(active, next); history(active, next, remark); counts(); filter(); approved(); close(); } });
         $('glDialogX').addEventListener('click', close); dialog.addEventListener('click', e => { if (e.target === dialog) close(); });
         page.querySelectorAll('[data-gl-tab]').forEach(tab => tab.addEventListener('click', () => { page.querySelectorAll('[data-gl-tab]').forEach(t => { const yes = t === tab; t.classList.toggle('active', yes); t.setAttribute('aria-selected', String(yes)); }); page.querySelectorAll('[data-gl-panel]').forEach(p => p.hidden = p.dataset.glPanel !== tab.dataset.glTab); approved(); }));
         $('glSearch').addEventListener('input', filter);['glCourse', 'glSection', 'glDepartment', 'glProgram', 'glYear'].forEach(id => $(id).addEventListener('change', filter)); $('glReset').addEventListener('click', () => { $('glSearch').value = '';['glCourse', 'glSection', 'glDepartment', 'glProgram'].forEach(id => $(id).value = ''); filter(); });
-        $('glExport')?.addEventListener('click', () => { const data = [['Gradebook', 'Course', 'Faculty', 'Students', 'Assessments', 'Status'], ...rows.map(r => { const d = state(r); return [d.id, d.section, d.faculty, d.students, d.assessments, d.status] })]; const csv = data.map(a => a.map(s => '"' + String(s).replace(/"/g, '""') + '"').join(',')).join('\r\n'); const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = 'gradebook-locking-index.csv'; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000); });
+        $('glExport')?.addEventListener('click', () => {
+            const lockedRows = rows.filter(row => row.dataset.status === 'Locked');
+            if (!lockedRows.length) {
+                $('glStatus').textContent = 'No locked gradebooks are available to export.';
+                return;
+            }
+            const data = [
+                ['Gradebook', 'Course', 'Faculty', 'Students', 'Assessments', 'Status'],
+                ...lockedRows.map(row => {
+                    const gradebook = state(row);
+                    return [
+                        gradebook.id, gradebook.section, gradebook.faculty,
+                        gradebook.students, gradebook.assessments, 'Locked'
+                    ];
+                })
+            ];
+            const csv = data.map(row =>
+                row.map(value => '"' + String(value).replace(/"/g, '""') + '"').join(',')
+            ).join('\r\n');
+            const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'locked-gradebooks.csv';
+            document.body.append(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            $('glStatus').textContent = `Exported ${lockedRows.length} locked gradebook record(s).`;
+        });
         counts(); filter(); approved();
     }
     if (document.readyState === '') document.addEventListener('DOMContentLoaded', init, { once: true }); else init();
