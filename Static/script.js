@@ -909,7 +909,7 @@ function studentSectionScopedUrl(path) {
     }
     function show(which) { returnFocus = document.activeElement; which.hidden = false; document.body.style.overflow = 'hidden'; (which.querySelector('input,select,textarea,button'))?.focus(); }
     function close() { modal.hidden = true; deleteModal.hidden = true; document.body.style.overflow = ''; returnFocus?.focus(); }
-    const targetOf = plan => (plan.targets || [])[0] || {};
+    const targetOf = plan => (plan?.targets || [])[0] || {};
     const statusLabel = value => ({ draft: 'Draft', submitted: 'Submitted', approved: 'Approved', returned: 'For Revision', rejected: 'Rejected', ongoing: 'Ongoing', completed: 'Completed' }[value] || value);
     function updateSummary() {
         $('cqifDraftCount').textContent = String(plans.filter(plan => ['draft', 'returned'].includes(plan.status)).length);
