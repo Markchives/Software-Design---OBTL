@@ -119,6 +119,7 @@
 <article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Need Improvement</span><strong class="so-summary-number">0</strong></article>
 <article class="so-summary-card"><div class="so-summary-accent"></div><span class="so-summary-label">Total COs</span><strong class="so-summary-number">0</strong></article>
 </section>
+<p aria-live="polite" class="cm-sync-status" id="cm-student-sync-status" role="status">Loading your course data…</p>
 <section class="cm-student-content">
 <div class="cm-tabs" role="tablist">
 <button class="cm-tab active" data-cm-tab="course-outcomes" type="button">Course Outcomes</button>
@@ -143,9 +144,9 @@
 <th>Status</th>
 </tr>
 </thead>
-<tbody></tbody>
+<tbody id="cm-student-outcome-rows"></tbody>
 </table>
-<div class="cm-empty-state">
+<div class="cm-empty-state" id="cm-student-outcomes-empty" hidden>
 <h3>No course outcomes yet</h3>
 <p>Course outcomes will appear here once backend data is connected.</p>
 </div>
@@ -191,9 +192,9 @@
 <th>Details</th>
 </tr>
 </thead>
-<tbody></tbody>
+<tbody id="cm-student-assessment-rows"></tbody>
 </table>
-<div class="cm-empty-state">
+<div class="cm-empty-state" id="cm-student-assessments-empty" hidden>
 <h3>No assessment mappings yet</h3>
 <p>Assessment mappings will appear here once backend data is connected.</p>
 </div>

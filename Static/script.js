@@ -917,7 +917,7 @@ function studentSectionScopedUrl(path) {
     const $ = id => document.getElementById(id);
     const body = $('cqiFacultyRows'), modal = $('cqiFacultyModal'), deleteModal = $('cqiFacultyDeleteModal');
     const search = $('cqiFacultySearch'), status = $('cqiFacultyStatus'), feedback = $('cqiFacultyFeedback');
-    let plans = [], sections = [], categories = [], currentPlan = null, pendingDelete = null, returnFocus = null;
+    let plans = [], sections = [], categories = [], currentPlan = null, pendingDelete = null, returnFocus = null, workspaceLoading = false;
     const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
     async function api(url, options = {}) {
         const response = await fetch(url, {
@@ -931,7 +931,7 @@ function studentSectionScopedUrl(path) {
     }
     function show(which) { returnFocus = document.activeElement; which.hidden = false; document.body.style.overflow = 'hidden'; (which.querySelector('input,select,textarea,button'))?.focus(); }
     function close() { modal.hidden = true; deleteModal.hidden = true; document.body.style.overflow = ''; returnFocus?.focus(); }
-    const targetOf = plan => (plan.targets || [])[0] || {};
+    const targetOf = plan => (plan?.targets || [])[0] || {};
     const statusLabel = value => ({ draft: 'Draft', submitted: 'Submitted', approved: 'Approved', returned: 'For Revision', rejected: 'Rejected', ongoing: 'Ongoing', completed: 'Completed' }[value] || value);
     function updateSummary() {
         $('cqifDraftCount').textContent = String(plans.filter(plan => ['draft', 'returned'].includes(plan.status)).length);
@@ -1037,6 +1037,10 @@ function studentSectionScopedUrl(path) {
         setSectionOptions(plan?.section_id || '');
         const categoryId = targetOf(plan).category_id || '';
         $('cqifCategory').value = categoryId;
+        if (!sections.length) {
+            $('cqifAttainment').textContent = 'No course sections are assigned to your Faculty account yet.';
+        }
+        show(modal);
         if (plan?.section_id) {
             try {
                 await loadOutcomes(plan.section_id, targetOf(plan).course_outcome_id);
@@ -1045,14 +1049,17 @@ function studentSectionScopedUrl(path) {
                 showOutcomeError(error);
             }
         }
-        show(modal);
     }
     function renderCategories() {
+        const selected = $('cqifCategory').value;
         $('cqifCategory').innerHTML = '<option value="">No category</option>' + categories.map(category =>
             `<option value="${esc(category.id)}">${esc(category.name)}</option>`
         ).join('');
+        $('cqifCategory').value = selected;
     }
     async function loadWorkspace() {
+        if (workspaceLoading) return;
+        workspaceLoading = true;
         feedback.textContent = '';
         try {
             const data = await api('/api/faculty/cqi');
@@ -1061,10 +1068,21 @@ function studentSectionScopedUrl(path) {
             plans = data.plans || [];
             renderCategories();
             filter();
-            feedback.textContent = '';
+            if (!modal.hidden) {
+                const selectedSection = $('cqifSection').value;
+                setSectionOptions(selectedSection);
+                if (selectedSection && !$('cqifCo').disabled) {
+                    await loadOutcomes(selectedSection, $('cqifCo').value);
+                }
+            }
+            feedback.textContent = sections.length
+                ? ''
+                : 'No course sections are assigned to your Faculty account yet.';
         } catch (error) {
             feedback.textContent = error.message;
             body.innerHTML = `<tr><td colspan="7">${esc(error.message)}</td></tr>`;
+        } finally {
+            workspaceLoading = false;
         }
     }
     $('cqiFacultyCreate').addEventListener('click', () => editPlan());
@@ -1137,6 +1155,12 @@ function studentSectionScopedUrl(path) {
     search.addEventListener('input', filter);
     status.addEventListener('change', filter);
     loadWorkspace();
+    function refreshWhenActive() {
+        if (document.visibilityState === 'visible') loadWorkspace();
+    }
+    window.addEventListener('focus', refreshWhenActive);
+    document.addEventListener('visibilitychange', refreshWhenActive);
+    window.setInterval(refreshWhenActive, 60000);
 })();
 
 /* CQI STUDENT — enrolled-section, approved-action view. */
@@ -6270,6 +6294,134 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
+/* Student curriculum mapping uses the same verified, released data as attainment. */
+(function () {
+    const page = document.querySelector('.cm-student-main');
+    if (!page) return;
+    const outcomeBody = page.querySelector('#cm-student-outcome-rows');
+    const assessmentBody = page.querySelector('#cm-student-assessment-rows');
+    const status = page.querySelector('#cm-student-sync-status');
+    const outcomeEmpty = page.querySelector('#cm-student-outcomes-empty');
+    const assessmentEmpty = page.querySelector('#cm-student-assessments-empty');
+    const summary = Array.from(page.querySelectorAll('.cm-student-summary .so-summary-number'));
+    let loading = false;
+
+    async function fetchData(path) {
+        const response = await fetch(studentSectionScopedUrl(path), {
+            credentials: 'same-origin',
+            headers: { Accept: 'application/json' }
+        });
+        if (!(response.headers.get('content-type') || '').includes('application/json')) {
+            throw new Error('The server did not return student data. Sign in again and retry.');
+        }
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Student course data could not be loaded.');
+        return result;
+    }
+
+    function addCell(row, value) {
+        const cell = document.createElement('td');
+        cell.textContent = value == null || value === '' ? '—' : String(value);
+        row.appendChild(cell);
+    }
+
+    function renderOutcomes(outcomes, assessments) {
+        outcomeBody.replaceChildren();
+        let met = 0, needsImprovement = 0;
+        outcomes.forEach(item => {
+            const row = document.createElement('tr');
+            const mapped = assessments.filter(assessment =>
+                (assessment.course_outcome_ids || []).includes(item.course_outcome_id)
+            );
+            const attainment = item.attainment_percentage;
+            const label = item.status === 'met' ? 'Met'
+                : item.status === 'not_met' ? 'Needs improvement' : 'Awaiting results';
+            if (item.status === 'met') met++;
+            else if (item.status === 'not_met') needsImprovement++;
+            addCell(row, item.code);
+            addCell(row, item.description);
+            addCell(row, mapped.map(assessment => assessment.title).join(', '));
+            addCell(row, attainment == null ? 'Awaiting results' : `${Number(attainment).toFixed(1)}%`);
+            addCell(row, label);
+            outcomeBody.appendChild(row);
+        });
+        if (summary.length >= 3) {
+            summary[0].textContent = String(met);
+            summary[1].textContent = String(needsImprovement);
+            summary[2].textContent = String(outcomes.length);
+        }
+        if (outcomeEmpty) outcomeEmpty.hidden = outcomes.length > 0;
+        if (outcomes.length === 0 && outcomeEmpty) {
+            outcomeEmpty.querySelector('h3').textContent = 'No verified course outcomes yet';
+            outcomeEmpty.querySelector('p').textContent = 'Course outcomes appear here after your section mappings are verified.';
+        }
+    }
+
+    function renderAssessments(assessments) {
+        assessmentBody.replaceChildren();
+        assessments.forEach(item => {
+            const row = document.createElement('tr');
+            addCell(row, [item.course_code, item.course_title, item.section_name, item.title].filter(Boolean).join(' · '));
+            addCell(row, item.activity_type);
+            addCell(row, (item.course_outcome_code || '').split(', ').filter(Boolean).join(', '));
+            addCell(row, item.due_date || '—');
+            addCell(row, '—');
+            addCell(row, item.release_status === 'Released' && item.has_score
+                ? `${item.score} / ${item.max_score}` : '—');
+            addCell(row, item.release_status === 'Released' && item.has_score
+                ? `${Number(item.percentage).toFixed(1)}%` : '—');
+            addCell(row, '—');
+            addCell(row, item.release_status === 'Released'
+                ? (item.result_status === 'pending' ? 'Released · score pending' : 'Released')
+                : 'Awaiting release');
+            assessmentBody.appendChild(row);
+        });
+        if (assessmentEmpty) assessmentEmpty.hidden = assessments.length > 0;
+        if (assessments.length === 0 && assessmentEmpty) {
+            assessmentEmpty.querySelector('h3').textContent = 'No assessment mappings yet';
+            assessmentEmpty.querySelector('p').textContent = 'Mapped assessments will appear after your faculty publishes them.';
+        }
+    }
+
+    async function load() {
+        if (loading || !status || !outcomeBody || !assessmentBody) return;
+        loading = true;
+        status.textContent = 'Loading your course data…';
+        try {
+            const [outcomesResult, assessmentsResult] = await Promise.allSettled([
+                fetchData('/api/student/course-outcomes'),
+                fetchData('/api/student/assessment-scores')
+            ]);
+            const outcomes = outcomesResult.status === 'fulfilled'
+                ? outcomesResult.value.outcomes || [] : [];
+            const assessments = assessmentsResult.status === 'fulfilled'
+                ? assessmentsResult.value.assessments || [] : [];
+            renderOutcomes(outcomes, assessments);
+            renderAssessments(assessments);
+            const errors = [outcomesResult, assessmentsResult]
+                .filter(result => result.status === 'rejected')
+                .map(result => result.reason.message);
+            status.textContent = errors.length
+                ? `Some course data could not be refreshed: ${errors.join(' ')}`
+                : `Updated from your active course enrollments. ${outcomes.length} outcomes and ${assessments.length} assessments loaded.`;
+        } finally {
+            loading = false;
+        }
+    }
+
+    load().catch(error => {
+        status.textContent = `Course data could not be loaded: ${error.message}`;
+    });
+    function refreshWhenActive() {
+        if (document.visibilityState === 'visible') load().catch(error => {
+            status.textContent = `Course data could not be loaded: ${error.message}`;
+        });
+    }
+    window.addEventListener('focus', refreshWhenActive);
+    document.addEventListener('visibilitychange', refreshWhenActive);
+    window.setInterval(refreshWhenActive, 30000);
+})();
+
 /* FACULTY -> STUDENT COURSE SYLLABUS SHARED FRONTEND STORAGE */
 (function () {
     const facultyPage = document.querySelector(".so-faculty-page");
@@ -8138,6 +8290,70 @@ document.addEventListener("DOMContentLoaded", function () {
     // Keep the preview role when navigating to shared main pages.
     sessionStorage.setItem('edumetricsRole', selected);
     sessionStorage.setItem('userRole', selected);
+})();
+
+/* Faculty dashboard summary is refreshed from the authenticated workspace API. */
+(function () {
+    const root = document.getElementById('dashboardRoleContent');
+    if (!root || document.body.dataset.dashboardRole !== 'faculty') return;
+    const status = root.querySelector('[data-dashboard-status]');
+    const progress = root.querySelector('[data-dashboard-progress="faculty-attainment"]');
+    let loading = false;
+
+    async function load() {
+        if (loading) return;
+        loading = true;
+        try {
+            const response = await fetch('/api/faculty/dashboard-summary', {
+                credentials: 'same-origin',
+                headers: { Accept: 'application/json' }
+            });
+            if (!(response.headers.get('content-type') || '').includes('application/json')) {
+                throw new Error('The server did not return dashboard data. Sign in again and retry.');
+            }
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Faculty dashboard data could not be loaded.');
+
+            const profile = data.profile || {};
+            const metrics = data.metrics || {};
+            const name = profile.full_name || 'Faculty';
+            root.querySelectorAll('[data-dashboard-profile="name"]').forEach(node => {
+                node.textContent = name;
+            });
+            root.querySelectorAll('[data-dashboard-profile="id_number"]').forEach(node => {
+                node.textContent = profile.employee_number || '—';
+            });
+            root.querySelectorAll('[data-dashboard-profile="affiliation"]').forEach(node => {
+                node.textContent = profile.department_name || '—';
+            });
+            Object.entries(metrics).forEach(([key, value]) => {
+                root.querySelectorAll(`[data-dashboard-value="${key}"]`).forEach(node => {
+                    node.textContent = value == null
+                        ? '—'
+                        : key === 'faculty-attainment' ? `${value}%` : String(value);
+                });
+            });
+            if (progress) {
+                const attainment = Number(metrics['faculty-attainment']);
+                progress.style.width = Number.isFinite(attainment)
+                    ? `${Math.min(100, Math.max(0, attainment))}%`
+                    : '0%';
+            }
+            if (status) status.textContent = '';
+        } catch (error) {
+            if (status) status.textContent = `Dashboard data could not be refreshed: ${error.message}`;
+        } finally {
+            loading = false;
+        }
+    }
+
+    load();
+    function refreshWhenActive() {
+        if (document.visibilityState === 'visible') load();
+    }
+    window.addEventListener('focus', refreshWhenActive);
+    document.addEventListener('visibilitychange', refreshWhenActive);
+    window.setInterval(refreshWhenActive, 60000);
 })();
 
 
