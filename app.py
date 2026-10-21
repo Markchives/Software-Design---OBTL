@@ -214,11 +214,23 @@ def audit_authenticated_api_mutations(response):
         # Only write attributed changes. Public actions such as login requests
         # are logged explicitly once authentication succeeds.
         if actor_id:
+            response_payload = response.get_json(silent=True) or {}
+            operation_status = response_payload.get("status") if isinstance(response_payload, dict) else None
+            if isinstance(response_payload, dict) and isinstance(response_payload.get("result"), dict):
+                operation_status = response_payload["result"].get("status") or operation_status
+            if isinstance(response_payload, dict) and isinstance(response_payload.get("result"), list):
+                operation_status = next((
+                    item.get("status") for item in response_payload["result"]
+                    if isinstance(item, dict) and item.get("status")
+                ), operation_status)
+            detail_text = f"Endpoint {endpoint} completed with HTTP {response.status_code}."
+            if operation_status in {"pending", "requested", "accepted", "rejected"}:
+                detail_text += f" Operation status: {operation_status}."
             record_audit_event(
                 action=f"{request.method} {endpoint.replace('_', ' ')}",
                 module=module,
                 level=status_level,
-                details=f"Endpoint {endpoint} completed with HTTP {response.status_code}.",
+                details=detail_text,
                 user_id=actor_id,
             )
     return response
@@ -7784,6 +7796,45 @@ def admin_system_history_api():
             )
             actors = {user["id"]: user for user in (users_result.data or [])}
 
+        # Older audit records only contain the HTTP result. Reconcile course join
+        # request entries with their current request state so open requests remain
+        # visibly Pending until faculty accepts or rejects them.
+        join_request_states = {}
+        join_event_user_ids = list({
+            row.get("user_id") for row in rows
+            if row.get("user_id")
+            and "create student course join request" in str(row.get("action", "")).casefold()
+        })
+        if join_event_user_ids:
+            try:
+                profiles = (
+                    admin_supabase.table("student_profiles")
+                    .select("id, user_id")
+                    .in_("user_id", join_event_user_ids)
+                    .execute()
+                    .data
+                    or []
+                )
+                profile_to_user = {profile["id"]: profile.get("user_id") for profile in profiles}
+                profile_ids = list(profile_to_user)
+                if profile_ids:
+                    requests = (
+                        admin_supabase.table("student_course_join_requests")
+                        .select("student_profile_id, status, requested_at")
+                        .in_("student_profile_id", profile_ids)
+                        .order("requested_at", desc=True)
+                        .limit(1000)
+                        .execute()
+                        .data
+                        or []
+                    )
+                    for join_request in requests:
+                        user_id = profile_to_user.get(join_request.get("student_profile_id"))
+                        if user_id:
+                            join_request_states.setdefault(user_id, []).append(join_request)
+            except Exception:
+                app.logger.exception("Unable to reconcile course join request audit statuses")
+
         events = []
         for row in rows:
             user = actors.get(row.get("user_id"), {})
@@ -7797,7 +7848,40 @@ def admin_system_history_api():
             details = row.get("details") or ""
             level = (row.get("level") or "INFO").upper()
             status_match = re.search(r"HTTP\s+(\d{3})", details, re.IGNORECASE)
-            if status_match and int(status_match.group(1)) >= 400:
+            operation_status_match = re.search(
+                r"Operation status:\s*(pending|requested|accepted|rejected)",
+                details,
+                re.IGNORECASE,
+            )
+            operation_status = operation_status_match.group(1).lower() if operation_status_match else None
+            if not operation_status and "create student course join request" in str(row.get("action", "")).casefold():
+                event_time_value = row.get("created_at")
+                try:
+                    event_time = datetime.fromisoformat(str(event_time_value).replace("Z", "+00:00"))
+                    if event_time.tzinfo is None:
+                        event_time = event_time.replace(tzinfo=timezone.utc)
+                    best_request = None
+                    best_delta = None
+                    for join_request in join_request_states.get(row.get("user_id"), []):
+                        requested_at = datetime.fromisoformat(
+                            str(join_request.get("requested_at", "")).replace("Z", "+00:00")
+                        )
+                        if requested_at.tzinfo is None:
+                            requested_at = requested_at.replace(tzinfo=timezone.utc)
+                        delta = abs((event_time - requested_at).total_seconds())
+                        if delta <= 180 and (best_delta is None or delta < best_delta):
+                            best_request, best_delta = join_request, delta
+                    if best_request:
+                        operation_status = str(best_request.get("status", "")).lower()
+                except (TypeError, ValueError):
+                    operation_status = None
+            if operation_status in {"pending", "requested"}:
+                outcome = "Pending"
+            elif operation_status == "rejected":
+                outcome = "Failed"
+            elif operation_status == "accepted":
+                outcome = "Success"
+            elif status_match and int(status_match.group(1)) >= 400:
                 outcome = "Failed"
             elif level == "ERROR":
                 outcome = "Failed"
