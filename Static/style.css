@@ -2447,11 +2447,6 @@ button, .cm-co-options label{cursor:pointer;}
 .so-student-page.cm-faculty-page .cm-course-outcomes-table th:first-child, .so-student-page.cm-faculty-page .cm-course-outcomes-table td:first-child{width:10%;}
 .so-student-page.cm-faculty-page .cm-course-outcomes-table th:nth-child(2), .so-student-page.cm-faculty-page .cm-course-outcomes-table td:nth-child(2){width:32%;padding-left:12px;white-space:normal;overflow-wrap:normal;}
 .so-student-page.cm-dept-head-page .cm-tabs{grid-template-columns:repeat(5, max-content);}
-.so-student-page.cm-dept-head-page .dh-cm-top-tabs{display:flex;gap:0;margin:0 0 14px;border-bottom:1px solid #D8E2EA;background:#F5F7FA;}
-.so-student-page.cm-dept-head-page .dh-cm-top-tabs > .dh-cm-top-tab{min-width:180px;min-height:42px;padding:0 18px;border:0;border-right:1px solid #D8E2EA;border-bottom:3px solid transparent;border-radius:8px 8px 0 0;background:#F5F7FA;color:#004179;font:700 14px Arial,Helvetica,sans-serif;cursor:pointer;}
-.so-student-page.cm-dept-head-page .dh-cm-top-tabs > .dh-cm-top-tab.active{border-bottom-color:#F4C300;background:#FFFFFF;}
-.so-student-page.cm-dept-head-page .dh-cm-top-panel[hidden]{display:none!important;}
-.so-student-page.cm-dept-head-page .dh-cm-top-panel.active{display:block;}
 .so-student-page.cm-dept-head-page .cm-table{table-layout:fixed;min-width:100%;}
 .so-student-page.cm-dept-head-page .cm-table thead th, .so-student-page.cm-dept-head-page .cm-table tbody td{color:#004179;font-family:Arial, Helvetica, sans-serif;font-size:14px;font-weight:700;padding-left:12px;padding-right:12px;overflow-wrap:break-word;}
 .so-student-page.cm-dept-head-page .cm-course-outcomes-table th:nth-child(2), .so-student-page.cm-dept-head-page .cm-course-outcomes-table td:nth-child(2){width:32%;white-space:normal;overflow-wrap:normal;}
@@ -2692,13 +2687,12 @@ body.cm-dept-review-open, body.cm-dept-modal-open{overflow:hidden;}
 .cr-faculty-page .crf-summary{grid-template-columns:1.65fr 1fr 1fr 1fr;}
 .cr-dept-head-page .crf-summary .cm-course-card > div:last-child,
 .cr-dept-head-page .crf-summary .cm-stat-card > div:last-child{padding:0 18px 0 22px;min-width:0;}
-.cr-dept-head-page .crf-toolbar{display:grid;grid-template-columns:repeat(3,minmax(120px,1fr)) minmax(180px,1.2fr) auto;align-items:end;column-gap:10px;row-gap:12px;padding:8px 10px 12px;}
+.cr-dept-head-page .crf-toolbar{display:grid;grid-template-columns:170px 230px 260px minmax(180px, 1fr) auto;align-items:end;column-gap:16px;row-gap:12px;padding:8px 10px 12px;}
 .cr-dept-head-page .crf-toolbar .crf-search{width:100%;max-width:250px;min-width:0;margin-left:auto;justify-self:end;}
 .cr-dept-head-page .crf-toolbar .crf-toolbar-actions{display:flex;align-items:center;justify-self:end;gap:10px;flex-wrap:nowrap;margin:0;white-space:nowrap;}
 .cr-dept-head-page #crdhRecordForm{position:relative;}
 .cr-dept-head-page #crdhModal .crf-modal-dialog{width:min(790px,96vw);}
-.cr-dept-head-page #crdhRecordForm .crdh-add-fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 12px;align-items:end;padding:13px 14px;margin:0 0 14px;}
-.cr-dept-head-page .crf-toolbar #crdhDownload{margin-left:10px;}
+.cr-dept-head-page #crdhRecordForm .crdh-add-fields{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 12px;align-items:end;padding:13px 14px;margin:0 0 14px;}
 .cr-dept-head-page #crdhRecordForm .crdh-student-picker{position:relative;min-width:0;}
 .cr-dept-head-page #crdhRecordForm .crdh-student-picker .cm-filter-group{min-width:0;}
 .cr-dept-head-page #crdhRecordForm .crdh-student-picker label,
@@ -2711,8 +2705,7 @@ body.cm-dept-review-open, body.cm-dept-modal-open{overflow:hidden;}
 .cr-dept-head-page #crdhRecordForm .crdh-student-results:not(:empty){position:absolute;z-index:5;top:calc(100% + 4px);left:0;right:0;max-height:220px;overflow:auto;padding:5px;border:1px solid #91B8D7;border-radius:7px;background:#fff;box-shadow:0 6px 18px rgba(0,45,114,.16);}
 .cr-dept-head-page #crdhRecordForm .crdh-student-results button{display:block;width:100%;padding:9px 10px;border:0;border-radius:5px;background:#fff;color:#214B70;text-align:left;cursor:pointer;}
 .cr-dept-head-page #crdhRecordForm .crdh-student-results button:hover{background:#F0F6FB;}
-@media(max-width:1100px){.cr-dept-head-page .crf-toolbar{grid-template-columns:repeat(2,minmax(0,1fr));}.cr-dept-head-page .crf-toolbar .crf-search{max-width:none;}.cr-dept-head-page .crf-toolbar .crf-toolbar-actions{grid-column:1/-1;justify-self:end;}}
-@media(max-width:700px){.cr-dept-head-page .crf-toolbar{grid-template-columns:1fr;}.cr-dept-head-page .crf-toolbar .crf-toolbar-actions{grid-column:auto;justify-self:start;flex-wrap:wrap;}.cr-dept-head-page #crdhRecordForm .crdh-add-fields{grid-template-columns:1fr;}.cr-dept-head-page #crdhRecordForm .crdh-student-results:not(:empty){position:static;}}
+@media(max-width:700px){.cr-dept-head-page #crdhRecordForm .crdh-add-fields{grid-template-columns:1fr;}.cr-dept-head-page #crdhRecordForm .crdh-student-results:not(:empty){position:static;}}
 .cr-dept-head-page .crf-table-wrap{overflow-x:auto;overflow-y:auto;max-height:410px;min-height:0;}
 .cr-dept-head-page .crf-table{table-layout:fixed;width:100%;}
 .cr-dept-head-page .crf-table :is(th, td):nth-child(1){width:5%;}
@@ -2724,8 +2717,6 @@ body.cm-dept-review-open, body.cm-dept-modal-open{overflow:hidden;}
 .cr-dept-head-page .crf-table :is(th, td):nth-child(7){width:11%;}
 .cr-dept-head-page .crf-table :is(th, td):nth-child(8){width:14%;}
 .cr-dept-head-page .crf-table :is(th, td):nth-child(9){width:7%;}
-.cr-dept-head-page .crf-table .crdh-row-actions{white-space:normal;}
-.cr-dept-head-page .crf-table .crdh-row-actions button{margin:2px;}
 .cr-dept-head-page .crf-table :is(th, td):nth-child(n/**/+7){padding-left:14px;padding-right:14px;}
 .cr-faculty-page .crf-roster-panel{width:100%;min-height:560px;padding:0 8px 14px;overflow:hidden;border-radius:12px;background:#FFFFFF;}
 .cr-faculty-page:not(.cr-dept-head-page) .crf-section-picker{max-width:520px;padding:14px 10px 8px;}
@@ -3808,8 +3799,8 @@ body > #rrDialog[hidden]{display:none!important;}
 .course-workspace-page .cw-breadcrumb{color:#6b879d;font-size:12px;margin:0 0 9px;line-height:1.4;padding-left:2px;}
 .course-workspace-page .cw-breadcrumb-separator{color:#9bb0c1;margin:0 5px;}
 .course-workspace-page .cw-breadcrumb-current{color:#d39a00;font-weight:800;}
-.course-workspace-page .cw-hero{position:relative;isolation:isolate;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:22px 26px;height:145px;min-height:145px;box-sizing:border-box;background:#0b4079;border-radius:12px 12px 0 0;color:#fff;overflow:hidden;}
-.course-workspace-page .cw-hero::after{content:"";position:absolute;z-index:-1;right:-95px;top:-145px;width:380px;height:380px;border:1px solid rgba(255,255,255,.13);border-radius:50%;pointer-events:none;}
+.course-workspace-page .cw-hero{position:relative;isolation:isolate;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:24px 24px;min-height:132px;height:132px;box-sizing:border-box;background:#0b4079;border-radius:12px 12px 0 0;color:#fff;overflow:hidden;}
+.course-workspace-page .cw-hero::after{content:none;}
 .course-workspace-page .cw-eyebrow{font-size:11px;letter-spacing:.06em;font-weight:800;color:#ffcc05;}
 .course-workspace-page .cw-hero h2{margin:5px 0 5px;font-size:26px;line-height:1.2;color:#fff;font-weight:800;}
 .course-workspace-page .cw-hero p{margin:0;color:#e4f0ff;font-size:12px;line-height:1.45;}
@@ -3856,7 +3847,7 @@ body > #rrDialog[hidden]{display:none!important;}
 .course-workspace-page .so-main:has(#pendingSOList) .so-pending-item{padding:8px 13px!important;min-height:60px!important;gap:8px!important;}
 .course-workspace-page .so-main:has(#pendingSOList) .so-pending-list{gap:8px!important;padding-top:5px!important;}
 @media(max-width:700px) {
-  .course-workspace-page .cw-hero{height:auto;min-height:125px;padding:16px;align-items:center;}
+  .course-workspace-page .cw-hero{height:auto;min-height:120px;padding:16px;align-items:flex-start;}
   .course-workspace-page .cw-hero h2{font-size:21px;}
   .course-workspace-page .cw-demo-badge{font-size:9px;padding:6px 9px;}
 }
@@ -3865,6 +3856,7 @@ body > #rrDialog[hidden]{display:none!important;}
 .so-student-page.faculty-workspace-aligned .so-main{width:auto!important;max-width:none!important;min-width:0!important;margin:0!important;transform:none!important;flex:1 1 0%!important;box-sizing:border-box;overflow-x:hidden!important;}
 .so-student-page.faculty-workspace-aligned .cw-workspace{width:100%!important;max-width:none!important;margin-inline:0!important;}
 .course-workspace-page.faculty-workspace-aligned .so-summary-grid, .course-workspace-page.faculty-workspace-aligned .cm-student-summary{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important;width:100%!important;max-width:none!important;margin:12px 0!important;} .cm-faculty-page.faculty-workspace-aligned #cmFacultySummary{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+.cm-faculty-page.faculty-workspace-aligned #cmFacultySummary:has(> .so-summary-card:nth-child(2):last-child),.cm-faculty-page.faculty-workspace-aligned #cmFacultySummary:has(> .so-summary-card:nth-child(3)[hidden]){grid-template-columns:repeat(2,minmax(0,1fr))!important;}
 .cm-faculty-page.faculty-workspace-aligned #cmFacultySummary>.so-summary-card[hidden]{display:none!important;}
 .course-workspace-page.faculty-workspace-aligned .so-summary-card{min-height:76px!important;height:76px!important;box-sizing:border-box!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;gap:3px!important;padding:12px 18px 12px 27px!important;position:relative!important;overflow:hidden!important;background:#fff!important;border-radius:12px!important;box-shadow:0 2px 4px rgba(0,0,0,.16)!important;}
 .course-workspace-page.faculty-workspace-aligned .so-summary-accent{position:absolute!important;top:0!important;bottom:0!important;left:0!important;width:11px!important;background:#f4c300!important;}
@@ -5804,46 +5796,5 @@ body.edu-management-page .so-main{width:100%;min-width:0}
 .so-faculty-page #soWorkflowManager .sof-clean-empty span{font-size:13px;color:#60778d}
 .so-faculty-page #soWorkflowManager .sof-outcome-table-wrap:has(tbody>.sodh-empty-row:only-child) tbody{visibility:hidden}
 
-/* Faculty R1 editors are modal dialogs so the fixed-height workspace cannot clip them. */
-.so-faculty-page #soWorkflowManager .so-workflow-dialog{box-sizing:border-box;position:fixed;inset:0;margin:auto;width:min(620px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow-y:auto;padding:24px;border:1px solid #D7E2EB;border-top:5px solid #F4C300;border-radius:14px;background:#FFFFFF;color:#004179;box-shadow:0 22px 55px rgba(0,32,61,.24);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;gap:16px}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog:not([open]){display:none}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog::backdrop{background:rgba(0,35,67,.55);backdrop-filter:blur(2px)}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog-header{grid-column:1/-1;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding-bottom:14px;border-bottom:1px solid #DCE6EF}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog-header h2{margin:0;color:#004179;font-size:21px;line-height:1.25}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog-header p{margin:5px 0 0;color:#60788D;font-size:13px;line-height:1.5}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog-close{width:34px;height:34px;flex:0 0 34px;border:1px solid #D5E1EB;border-radius:50%;background:#F5F8FB;color:#004179;font-size:23px;line-height:1;cursor:pointer}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog-close:hover{background:#EAF2F8}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog > label{min-width:0;display:grid;gap:7px;color:#004179;font-size:13px;font-weight:700}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog input,.so-faculty-page #soWorkflowManager .so-workflow-dialog select{width:100%;min-height:42px;box-sizing:border-box;padding:9px 11px;border:1px solid #C8D6E3;border-radius:7px;background:#FFFFFF;color:#004179;font:inherit}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog input:focus,.so-faculty-page #soWorkflowManager .so-workflow-dialog select:focus{outline:2px solid rgba(0,65,121,.16);border-color:#004179}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog .so-workflow-wide{grid-column:1/-1;min-width:0}
-.so-faculty-page #soWorkflowManager .so-co-workflow-dialog .so-workflow-wide:first-of-type{padding:14px 16px;border:1px solid #DCE6EF;border-radius:9px;background:#F6F9FC}
-.so-faculty-page #soWorkflowManager .so-co-workflow-dialog .so-workflow-wide p{margin:0;color:#365D7A;font-size:13px;line-height:1.5}
-.so-faculty-page #soWorkflowManager .so-co-workflow-dialog .so-workflow-wide p+p{margin-top:7px}
-.so-faculty-page #soWorkflowManager .so-co-workflow-dialog output{color:#004179;font-weight:800}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog .so-assessment-actions{display:flex;justify-content:flex-end;gap:10px;padding-top:14px;border-top:1px solid #E4EBF1}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog .so-assessment-cancel,.so-faculty-page #soWorkflowManager .so-workflow-dialog .sof-add-outcome-btn{min-height:40px;padding:0 16px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog .so-assessment-cancel{border:1px solid #B9C8D5;background:#FFFFFF;color:#004179}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog .sof-add-outcome-btn{border:1px solid #004179;background:#004179;color:#FFFFFF}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog .so-assessment-editor{min-width:0;margin:0;padding:14px;border:1px solid #DCE6EF;border-radius:9px;background:#F9FBFD}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog .so-assessment-editor legend{padding:0 6px;color:#004179;font-size:13px;font-weight:800}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog .so-assessment-hint{margin:0 0 10px;color:#60788D;font-size:12px;line-height:1.45}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog .so-rating-editor-head,.so-faculty-page #soWorkflowManager .so-workflow-dialog .so-rating-row{display:grid;grid-template-columns:minmax(72px,.45fr) minmax(0,1fr) auto;align-items:center;gap:8px}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog .so-rating-editor-head{margin-bottom:6px;color:#60788D;font-size:11px;font-weight:700}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog .so-editor-row{margin-top:8px}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog .so-indicator-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog .so-editor-remove,.so-faculty-page #soWorkflowManager .so-workflow-dialog .so-editor-add{min-height:34px;padding:0 11px;border:1px solid #B9D3E8;border-radius:7px;background:#FFFFFF;color:#004179;font-size:12px;font-weight:700;cursor:pointer}
-.so-faculty-page #soWorkflowManager .so-workflow-dialog .so-editor-remove:disabled,.so-faculty-page #soWorkflowManager .so-workflow-dialog .so-editor-add:disabled{opacity:.5;cursor:not-allowed}
-.so-faculty-page #soMappingDialog{box-sizing:border-box;position:fixed;inset:0;margin:auto;width:min(560px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow-y:auto;padding:24px;border:1px solid #D7E2EB;border-top:5px solid #F4C300;border-radius:14px;background:#FFFFFF;color:#004179;box-shadow:0 22px 55px rgba(0,32,61,.24)}
-.so-faculty-page #soMappingDialog::backdrop{background:rgba(0,35,67,.55);backdrop-filter:blur(2px)}
-.so-faculty-page #soMappingDialog h2{margin:0 0 18px;padding-bottom:14px;border-bottom:1px solid #DCE6EF;color:#004179;font-size:20px;line-height:1.3}
-.so-faculty-page #soMappingDialog .so-mapping-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.so-faculty-page #soMappingDialog .so-mapping-chip{min-height:42px;padding:9px 12px;border:1px solid #B9D3E8;border-radius:8px;background:#FFFFFF;color:#004179;font:inherit;font-weight:700;text-align:left;cursor:pointer}
-.so-faculty-page #soMappingDialog .so-mapping-chip:hover{border-color:#004179;background:#F2F7FB}
-.so-faculty-page #soMappingDialog .so-mapping-chip[aria-pressed=true]{border-color:#004179;background:#004179;color:#FFFFFF}
-.so-faculty-page #soMappingDialog .so-mapping-status{min-height:20px;margin:12px 0 0;color:#A34220;font-size:13px}
-.so-faculty-page #soMappingDialog footer{display:flex;justify-content:flex-end;gap:10px;margin-top:8px;padding-top:14px;border-top:1px solid #E4EBF1}
-.so-faculty-page #soMappingDialog footer button{min-height:39px;padding:0 16px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer}
-.so-faculty-page #soMappingDialog .so-mapping-cancel{border:1px solid #B9C8D5;background:#FFFFFF;color:#004179}
-.so-faculty-page #soMappingDialog .so-mapping-save{border:1px solid #004179;background:#004179;color:#FFFFFF}
-@media(max-width:600px){.so-faculty-page #soWorkflowManager .so-workflow-dialog{grid-template-columns:minmax(0,1fr);padding:20px}.so-faculty-page #soWorkflowManager .so-workflow-dialog .so-workflow-wide{grid-column:1}.so-faculty-page #soWorkflowManager .so-workflow-dialog .so-assessment-editor{grid-column:1}.so-faculty-page #soMappingDialog{padding:20px}.so-faculty-page #soMappingDialog .so-mapping-options{grid-template-columns:minmax(0,1fr)}}
+/* Hide summary cards only while Request Verification is selected. */
+.cm-faculty-page:has(.cm-tabs .cm-tab:nth-child(4).active) #cmFacultySummary { display: none; }
