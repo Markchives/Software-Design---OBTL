@@ -2639,6 +2639,9 @@ body.cm-dept-review-open, body.cm-dept-modal-open{overflow:hidden;}
 .ra-faculty-page .raf-table-frame .cr-table-header{margin:0;}
 .ra-faculty-page .raf-table-frame .cr-table-wrap{height:410px;max-height:410px;min-height:0;padding:0 0 8px;}
 .ra-faculty-page .raf-table-frame .cr-table-wrap .cr-table td{height:42px;padding:5px 12px;}
+.ra-faculty-page .raf-entry-status.pass{background:#DDF4A7;color:#477a00;}
+.ra-faculty-page .raf-entry-status.fail{background:#FFD0CB;color:#b42318;}
+.ra-faculty-page .raf-entry-status.pending{background:#FFF0B3;color:#A87900;}
 .ra-faculty-page .raf-id{display:inline-block;padding:4px 9px;border:1px solid #B5D2E9;border-radius:18px;white-space:nowrap;}
 .ra-faculty-page .raf-score-input{width:90px;max-width:100%;height:30px;padding:4px 9px;border:1px solid #BFD5E7;border-radius:6px;color:#004179;background:#FFF;}
 .ra-faculty-page .raf-score-input:focus{outline:2px solid #F4C300;outline-offset:1px;}

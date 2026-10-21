@@ -9932,6 +9932,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* Faculty raw assessment entry uses server-backed assessments and scores. */
 function initRawAssessmentFaculty() {
+    const passingPercentage = 60;
     const $ = id => document.getElementById(id);
     const sectionSelect = $('rafSection');
     const assessmentSelect = $('rafAssessment');
@@ -9965,6 +9966,11 @@ function initRawAssessmentFaculty() {
         if (editedScores.has(studentId)) return editedScores.get(studentId);
         const saved = assessment?.scores?.[studentId];
         return saved && saved.score !== null ? Number(saved.score) : null;
+    }
+
+    function entryStatus(score, maxScore) {
+        if (score === null || !maxScore) return 'pending';
+        return score / maxScore * 100 >= passingPercentage ? 'pass' : 'fail';
     }
 
     function renderQueries() {
@@ -10123,8 +10129,9 @@ function initRawAssessmentFaculty() {
                 : (score / maxScore * 100).toFixed(1) + '%';
             const stateCell = document.createElement('td');
             const badge = document.createElement('span');
-            badge.className = 'sodh-status ' + (score === null ? 'in-progress' : 'complete');
-            badge.textContent = score === null ? 'Pending' : 'Entered';
+            const initialStatus = entryStatus(score, maxScore);
+            badge.className = 'sodh-status raf-entry-status ' + initialStatus;
+            badge.textContent = initialStatus[0].toUpperCase() + initialStatus.slice(1);
             stateCell.appendChild(badge);
             row.append(number, idCell, nameCell, scoreCell, percentageCell, stateCell);
             input.addEventListener('input', () => {
@@ -10139,8 +10146,9 @@ function initRawAssessmentFaculty() {
                 editedScores.set(student.student_profile_id, value);
                 percentageCell.textContent = value === null ? '—' :
                     (value / maxScore * 100).toFixed(1) + '%';
-                badge.className = 'sodh-status ' + (value === null ? 'in-progress' : 'complete');
-                badge.textContent = value === null ? 'Pending' : 'Entered';
+                const currentStatus = entryStatus(value, maxScore);
+                badge.className = 'sodh-status raf-entry-status ' + currentStatus;
+                badge.textContent = currentStatus[0].toUpperCase() + currentStatus.slice(1);
                 status.textContent = 'Unsaved changes';
                 updateSummary(assessment, students);
             });
