@@ -5337,15 +5337,6 @@ def get_student_assessment_scores():
             row["section_id"] for row in review_rows
             if row.get("status") == "verified"
         }
-        if not verified_section_ids:
-            return jsonify({
-                "assessments": [], "profile_complete": True,
-                "course_count": 0, "released_count": 0, "pending_count": 0,
-            }), 200
-        section_map = {
-            section_id: section for section_id, section in section_map.items()
-            if section_id in verified_section_ids
-        }
         course_ids = list({
             row["course_id"] for row in section_map.values()
             if row.get("course_id")
@@ -5396,14 +5387,19 @@ def get_student_assessment_scores():
             course = courses.get(section.get("course_id"), {})
             score = score_map.get(activity["id"])
             released = bool(activity.get("released_at"))
-            mapped_outcomes = activity["course_outcomes"]
+            mapping_verified = section_id in verified_section_ids
+            mapped_outcomes = (
+                activity["course_outcomes"] if mapping_verified else []
+            )
             rows.append({
                 "assessment_id": activity["id"],
                 "title": activity["title"],
                 "course_code": course.get("code", ""),
                 "course_title": course.get("title", ""),
                 "activity_type": activity["activity_type"],
-                "course_outcome_ids": activity["course_outcome_ids"],
+                "course_outcome_ids": (
+                    activity["course_outcome_ids"] if mapping_verified else []
+                ),
                 "course_outcome_codes": [row["code"] for row in mapped_outcomes],
                 "course_outcome_code": ", ".join(
                     row["code"] for row in mapped_outcomes
