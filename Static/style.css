@@ -5796,5 +5796,5 @@ body.edu-management-page .so-main{width:100%;min-width:0}
 .so-faculty-page #soWorkflowManager .sof-clean-empty span{font-size:13px;color:#60778d}
 .so-faculty-page #soWorkflowManager .sof-outcome-table-wrap:has(tbody>.sodh-empty-row:only-child) tbody{visibility:hidden}
 
-/* Hide summary cards only while Request Verification is selected. */
-.cm-faculty-page:has(.cm-tabs .cm-tab:nth-child(4).active) #cmFacultySummary { display: none; }
+/* Faculty CM: hide summary only on the active Request Verification tab. */
+body.cm-faculty-page:has(.cm-tabs > .cm-tab:nth-child(4):is(.active,.is-active,[aria-selected="true"])) #cmFacultySummary{display:none!important;}
