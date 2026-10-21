@@ -3808,7 +3808,7 @@ body > #rrDialog[hidden]{display:none!important;}
 .course-workspace-page .cw-breadcrumb{color:#6b879d;font-size:12px;margin:0 0 9px;line-height:1.4;padding-left:2px;}
 .course-workspace-page .cw-breadcrumb-separator{color:#9bb0c1;margin:0 5px;}
 .course-workspace-page .cw-breadcrumb-current{color:#d39a00;font-weight:800;}
-.course-workspace-page .cw-hero{position:relative;isolation:isolate;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:22px 26px;min-height:145px;box-sizing:border-box;background:#0b4079;border-radius:15px 15px 0 0;color:#fff;overflow:hidden;}
+.course-workspace-page .cw-hero{position:relative;isolation:isolate;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:22px 26px;height:145px;min-height:145px;box-sizing:border-box;background:#0b4079;border-radius:12px 12px 0 0;color:#fff;overflow:hidden;}
 .course-workspace-page .cw-hero::after{content:"";position:absolute;z-index:-1;right:-95px;top:-145px;width:380px;height:380px;border:1px solid rgba(255,255,255,.13);border-radius:50%;pointer-events:none;}
 .course-workspace-page .cw-eyebrow{font-size:11px;letter-spacing:.06em;font-weight:800;color:#ffcc05;}
 .course-workspace-page .cw-hero h2{margin:5px 0 5px;font-size:26px;line-height:1.2;color:#fff;font-weight:800;}
@@ -3856,7 +3856,7 @@ body > #rrDialog[hidden]{display:none!important;}
 .course-workspace-page .so-main:has(#pendingSOList) .so-pending-item{padding:8px 13px!important;min-height:60px!important;gap:8px!important;}
 .course-workspace-page .so-main:has(#pendingSOList) .so-pending-list{gap:8px!important;padding-top:5px!important;}
 @media(max-width:700px) {
-  .course-workspace-page .cw-hero{padding:16px;align-items:flex-start;}
+  .course-workspace-page .cw-hero{height:auto;min-height:125px;padding:16px;align-items:center;}
   .course-workspace-page .cw-hero h2{font-size:21px;}
   .course-workspace-page .cw-demo-badge{font-size:9px;padding:6px 9px;}
 }
@@ -4726,7 +4726,7 @@ body.gl-dept-head-page .gl-table tbody td:first-child > small b{font-weight:800!
 .faculty-workspace-aligned .cw-workspace,
 .faculty-workspace-aligned .so-summary-grid,
 .faculty-workspace-aligned .rp-summary{max-width:100%;min-width:0;}
-.faculty-workspace-aligned .cw-hero{border-radius:12px;}
+
 .faculty-workspace-aligned .so-summary-grid,
 .faculty-workspace-aligned .rp-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}
 .faculty-workspace-aligned .so-summary-card{min-width:0;}
