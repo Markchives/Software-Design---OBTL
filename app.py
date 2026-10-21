@@ -5902,6 +5902,7 @@ def get_student_assessment_scores():
             )
             rows.append({
                 "assessment_id": activity["id"],
+                "section_id": section_id,
                 "title": activity["title"],
                 "course_code": course.get("code", ""),
                 "course_title": course.get("title", ""),
@@ -5958,6 +5959,109 @@ def get_student_assessment_scores():
     except Exception:
         app.logger.exception("Unable to load student assessment scores")
         return jsonify({"error": "Assessment scores could not be loaded."}), 500
+
+
+@app.get("/api/student/gradebooks")
+@require_role("student")
+def get_student_gradebooks():
+    if not admin_supabase:
+        return jsonify({"error": "Gradebook status is unavailable."}), 503
+    try:
+        profile = _account_profile("student", g.authenticated_user.id, "id")
+        if not profile:
+            return jsonify({"gradebooks": [], "profile_complete": False}), 200
+        enrollments = (
+            admin_supabase.table("enrollments")
+            .select("section_id")
+            .eq("student_profile_id", profile["id"])
+            .eq("enrollment_status", "active")
+            .execute()
+            .data
+            or []
+        )
+        section_ids = list({
+            row["section_id"] for row in enrollments if row.get("section_id")
+        })
+        section_ids = _student_section_scope(section_ids)
+        if section_ids is None:
+            return jsonify({
+                "error": "You are not actively enrolled in this section."
+            }), 403
+        if not section_ids:
+            return jsonify({"gradebooks": [], "profile_complete": True}), 200
+
+        sections = (
+            admin_supabase.table("course_sections")
+            .select("id, course_id, section_name, academic_year_id")
+            .in_("id", section_ids)
+            .execute()
+            .data
+            or []
+        )
+        course_ids = list({
+            row["course_id"] for row in sections if row.get("course_id")
+        })
+        courses = (
+            admin_supabase.table("courses")
+            .select("id, code, title")
+            .in_("id", course_ids)
+            .execute()
+            .data
+            or []
+        ) if course_ids else []
+        course_by_id = {row["id"]: row for row in courses}
+
+        academic_year_ids = list({
+            row["academic_year_id"] for row in sections
+            if row.get("academic_year_id")
+        })
+        academic_years = (
+            admin_supabase.table("academic_years")
+            .select("id, name")
+            .in_("id", academic_year_ids)
+            .execute()
+            .data
+            or []
+        ) if academic_year_ids else []
+        year_by_id = {row["id"]: row.get("name", "") for row in academic_years}
+
+        gradebooks = (
+            admin_supabase.table("gradebooks")
+            .select("section_id, status, verified_at, locked_at")
+            .in_("section_id", section_ids)
+            .execute()
+            .data
+            or []
+        )
+        gradebook_by_section = {
+            row["section_id"]: row for row in gradebooks
+        }
+        result = []
+        for section in sections:
+            course = course_by_id.get(section.get("course_id"), {})
+            gradebook = gradebook_by_section.get(section["id"], {})
+            gradebook_status = gradebook.get("status", "draft")
+            result.append({
+                "section_id": section["id"],
+                "course_code": course.get("code", ""),
+                "course_title": course.get("title", ""),
+                "section_name": section.get("section_name", ""),
+                "academic_year_name": year_by_id.get(
+                    section.get("academic_year_id"), ""
+                ),
+                "gradebook_status": gradebook_status,
+                "final_status": (
+                    "Finalized"
+                    if gradebook_status == "locked"
+                    else "Not finalized"
+                ),
+                "verified_at": gradebook.get("verified_at"),
+                "locked_at": gradebook.get("locked_at"),
+            })
+        return jsonify({"gradebooks": result, "profile_complete": True}), 200
+    except Exception:
+        app.logger.exception("Unable to load student gradebook statuses")
+        return jsonify({"error": "Gradebook status could not be loaded."}), 500
 
 
 def _department_head_assessment_review_workspace(department_id):
@@ -7917,6 +8021,7 @@ def faculty_workflow_page():
 @app.get("/requirement 3/cr-student.html")
 @app.get("/requirement 5/ac-student.html")
 @app.get("/requirement 6/cqi-student.html")
+@app.get("/requirement 7/gl-student.html")
 @app.get("/requirement 8/rp-student.html")
 @require_role("student")
 def student_workflow_page():
