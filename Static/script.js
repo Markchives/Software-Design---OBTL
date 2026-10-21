@@ -297,7 +297,7 @@ function studentSectionScopedUrl(path) {
                 addRow([
                     activity.title, activity.activity_type,
                     mappedOutcomes.map(outcome => outcome.code).join(', ') || 'Unmapped',
-                    mappedOutcomes.map(outcome => outcome.student_outcomes
+                    mappedOutcomes.map(outcome => (outcome.student_outcomes || [])
                         .map(studentOutcome => studentOutcome.code).join(', ') || 'No SO mapping'
                     ).join('; ') || 'No SO mapping',
                     coAttainments.map(({ outcome, result }) => outcome.code + ': ' +
@@ -318,7 +318,7 @@ function studentSectionScopedUrl(path) {
                 )) return;
                 addRow([
                     outcome.code + ' · ' + outcome.description, 'Course Outcome', outcome.code,
-                    outcome.student_outcomes.map(so => so.code).join(', ') || 'No SO mapping',
+                    (outcome.student_outcomes || []).map(so => so.code).join(', ') || 'No SO mapping',
                     coAttainment?.attainment_percentage == null ? 'Awaiting scores' : Number(coAttainment.attainment_percentage).toFixed(1) + '%',
                     coAttainment?.flagged ? 'Flagged · CQI recommended' : coAttainment?.status || data.review.status
                 ]);
