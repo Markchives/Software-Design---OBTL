@@ -2,6 +2,7 @@ from threading import Lock
 import time
 from functools import wraps
 import logging
+import re
 from logging.handlers import RotatingFileHandler
 import os
 from uuid import UUID, uuid4
@@ -7213,7 +7214,7 @@ def admin_system_history_api():
         if actor_ids:
             users_result = (
                 admin_supabase.table("users")
-                .select("id,full_name,email")
+            .select("id,role")
                 .in_("id", actor_ids)
                 .execute()
             )
@@ -7221,15 +7222,38 @@ def admin_system_history_api():
 
         events = []
         for row in rows:
-            actor = actors.get(row.get("user_id"), {})
+            user = actors.get(row.get("user_id"), {})
+            role = user.get("role") or "system"
+            role_labels = {
+                "student": "Student",
+                "faculty": "Faculty",
+                "department-head": "Department Head",
+                "admin-security": "Admin",
+            }
+            details = row.get("details") or ""
+            level = (row.get("level") or "INFO").upper()
+            status_match = re.search(r"HTTP\s+(\d{3})", details, re.IGNORECASE)
+            if status_match and int(status_match.group(1)) >= 400:
+                outcome = "Failed"
+            elif level == "ERROR":
+                outcome = "Failed"
+            elif level == "WARNING":
+                outcome = "Warning"
+            elif "requested" in details.casefold() or "pending" in details.casefold():
+                outcome = "Pending"
+            else:
+                outcome = "Success"
             events.append({
                 "id": row.get("id"),
                 "timestamp": row.get("created_at"),
-                "level": row.get("level") or "INFO",
-                "event": row.get("action") or "System event",
-                "actor": actor.get("full_name") or actor.get("email") or "System",
-                "record": row.get("record_id") or row.get("table_name") or "—",
-                "details": row.get("details") or row.get("module") or "—",
+                "level": level,
+                "role": role_labels.get(role, role.replace("-", " ").title()),
+                "operation": row.get("action") or "System event",
+                "module": row.get("module") or "System",
+                "record_id": row.get("record_id") or row.get("table_name") or "—",
+                "result": outcome,
+                "details": details or row.get("module") or "—",
+                "ip_address": row.get("ip_address") or "—",
             })
         return jsonify({"events": events, "count": len(events)})
     except Exception:

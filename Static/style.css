@@ -3946,6 +3946,24 @@ body > #rrDialog[hidden]{display:none!important;}
 .student-courses-page #scJoinStatus{min-height:18px;margin:10px 0 0;color:#315d84;}
 .student-courses-page #scJoinStatus.is-error{color:#b42318;}
 .crf-join-decision{margin:2px 4px 2px 0;}
+.gl-admin-page .gl-admin-table th:nth-child(1){width:15%;}
+.gl-admin-page .gl-admin-table th:nth-child(2){width:11%;}
+.gl-admin-page .gl-admin-table th:nth-child(3){width:20%;}
+.gl-admin-page .gl-admin-table th:nth-child(4){width:13%;}
+.gl-admin-page .gl-admin-table th:nth-child(5){width:12%;}
+.gl-admin-page .gl-admin-table th:nth-child(6){width:10%;}
+.gl-admin-page .gl-admin-table th:nth-child(7){width:19%;}
+.gl-admin-page .gl-admin-details-btn{padding:6px 12px;border:1px solid #9dc2e3;border-radius:18px;background:#fff;color:#004179;font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer;}
+.gl-admin-page .gl-admin-details-btn:hover{background:#edf6ff;}
+.gl-admin-page .gl-admin-result{font-weight:700;}
+.gl-admin-page .gl-admin-result-success{color:#397c18;}
+.gl-admin-page .gl-admin-result-pending{color:#9a7000;}
+.gl-admin-page .gl-admin-result-warning,.gl-admin-page .gl-admin-result-failed{color:#b42318;}
+.gl-admin-page .gl-admin-modal:not([hidden]){position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:20px;background:rgba(0,31,63,.55);}
+.gl-admin-page .gl-admin-dialog{width:min(620px,100%);max-height:85vh;overflow:auto;padding:22px;border-radius:14px;background:#fff;box-shadow:0 18px 55px rgba(0,0,0,.25);}
+.gl-admin-page .gl-admin-modal-grid{display:grid;grid-template-columns:130px minmax(0,1fr);gap:10px 16px;margin-top:18px;color:#355d7b;font-size:14px;}
+.gl-admin-page .gl-admin-modal-grid strong{color:#004179;}
+.gl-admin-page .gl-admin-modal-grid span{overflow-wrap:anywhere;white-space:pre-wrap;}
 .student-courses-page .sc-dialog-buttons{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;}
 .student-courses-page .sc-empty-state{padding:35px;text-align:center;border:1px dashed #aac7e3;border-radius:12px;color:#637b96;font-size:14px;}
 .student-hidden-courses-page .sc-course-grid{grid-auto-rows:max-content;}

@@ -11470,10 +11470,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         function filterRows() {
             const query = (search?.value || "").trim().toLowerCase();
-            const selectedLevel = (level?.value || "").toUpperCase();
+            const selectedResult = (level?.value || "").toUpperCase();
             rows.querySelectorAll("tr[data-event]").forEach(row => {
                 row.hidden = !(row.textContent.toLowerCase().includes(query)
-                    && (!selectedLevel || row.dataset.level === selectedLevel));
+                    && (!selectedResult || row.dataset.result === selectedResult));
             });
         }
 
@@ -11506,37 +11506,73 @@ document.addEventListener("DOMContentLoaded", function () {
             for (const event of events) {
                 const row = document.createElement("tr");
                 row.dataset.event = "true";
-                row.dataset.level = String(event.level || "INFO").toUpperCase();
+                row.dataset.result = String(event.result || "SUCCESS").toUpperCase();
                 const timestamp = event.timestamp ? new Date(event.timestamp).toLocaleString() : "—";
-                for (const value of [timestamp, event.level || "INFO", event.event, event.actor, event.record, event.details]) {
+                for (const [index, value] of [timestamp, event.role, event.operation, event.module, event.record_id, event.result].entries()) {
                     const cell = document.createElement("td");
                     cell.textContent = value == null || value === "" ? "—" : String(value);
+                    if (index === 5) {
+                        cell.className = "gl-admin-result gl-admin-result-" +
+                            String(event.result || "success").toLowerCase();
+                    }
                     row.appendChild(cell);
                 }
+                const detailsCell = document.createElement("td");
+                const detailsButton = document.createElement("button");
+                detailsButton.type = "button";
+                detailsButton.className = "gl-admin-btn gl-admin-details-btn";
+                detailsButton.textContent = "View Details";
+                detailsButton.addEventListener("click", () => {
+                    const dialog = document.getElementById("glDialog");
+                    const body = document.getElementById("glDialogBody");
+                    document.getElementById("glDialogTitle").textContent = "System Record Details";
+                    body.replaceChildren();
+                    [
+                        ["Timestamp", timestamp], ["Role", event.role],
+                        ["Operation", event.operation], ["Module", event.module],
+                        ["Record ID", event.record_id], ["Result", event.result],
+                        ["IP Address", event.ip_address], ["Details", event.details]
+                    ].forEach(([label, value]) => {
+                        const term = document.createElement("strong");
+                        term.textContent = label;
+                        const description = document.createElement("span");
+                        description.textContent = value == null || value === "" ? "—" : String(value);
+                        body.append(term, description);
+                    });
+                    dialog.hidden = false;
+                });
+                detailsCell.appendChild(detailsButton);
+                row.appendChild(detailsCell);
                 rows.appendChild(row);
             }
             if (!events.length) {
                 const row = document.createElement("tr");
                 row.className = "gl-admin-empty-row";
                 const cell = document.createElement("td");
-                cell.colSpan = 6;
+                cell.colSpan = 7;
                 cell.textContent = "No system history has been recorded yet.";
                 row.appendChild(cell);
                 rows.appendChild(row);
             }
-            status.textContent = `Showing ${events.length} most recent system event${events.length === 1 ? "" : "s"}.`;
+            status.textContent = `Showing ${events.length} most recent system record${events.length === 1 ? "" : "s"}.`;
             filterRows();
         } catch (error) {
             count.textContent = "0";
             rows.replaceChildren();
             const row = document.createElement("tr");
             const cell = document.createElement("td");
-            cell.colSpan = 6;
+            cell.colSpan = 7;
             cell.textContent = "System history could not be loaded.";
             row.appendChild(cell);
             rows.appendChild(row);
             status.textContent = error.message;
         }
+
+        document.getElementById("glDialog")?.addEventListener("click", event => {
+            if (event.target === event.currentTarget || event.target.closest("[data-close]")) {
+                event.currentTarget.hidden = true;
+            }
+        });
     }
 
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
