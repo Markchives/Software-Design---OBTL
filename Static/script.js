@@ -136,7 +136,7 @@ function studentSectionScopedUrl(path) {
             message.textContent = 'Select a course section to view its attainment.';
             return;
         }
-        message.textContent = 'Calculating course outcomes...';
+        message.textContent = '';
         try {
             const response = await fetch('/api/faculty/sections/' + encodeURIComponent(sectionId) + '/attainment', {
                 credentials: 'same-origin', headers: { Accept: 'application/json' }
@@ -264,7 +264,7 @@ function studentSectionScopedUrl(path) {
     async function loadReview() {
         rows.replaceChildren(); verifyButton.disabled = true; currentReview = null;
         if (!sectionSelect.value) { status.textContent = 'Select a section to review.'; return; }
-        status.textContent = 'Loading syllabus and mappings...';
+        status.textContent = '';
         try {
             const data = await request('/api/department-head/sections/' + encodeURIComponent(sectionSelect.value) + '/mapping-review');
             currentReview = data;
@@ -368,7 +368,7 @@ function studentSectionScopedUrl(path) {
         if (heading) heading.textContent = section.course_code + ' — ' + section.course_title;
         if (subheading) subheading.textContent = section.section_name;
         if (breadcrumb) breadcrumb.textContent = section.course_code + ' / ' + section.section_name;
-        status.textContent = 'Loading outcomes from the course syllabus...';
+        status.textContent = '';
         try {
             const data = await request('/api/faculty/courses/' + encodeURIComponent(section.course_id) + '/outcome-mappings');
             const selected = new Set((data.mappings || []).map(item => item.course_outcome_id + ':' + item.student_outcome_id));
@@ -399,7 +399,7 @@ function studentSectionScopedUrl(path) {
                 status.textContent = 'No syllabus outcomes are available for this course.';
             }
             else if (!data.student_outcomes?.length) status.textContent = 'No Student Outcomes are configured yet. Contact your Department Head before mapping.';
-            else status.textContent = data.outcomes.length + ' Course Outcome(s) loaded. Select one or more aligned Student Outcomes, then save.';
+            else status.textContent = '';
         } catch (error) { status.textContent = error.message; }
     }
     request('/api/faculty/sections').then(data => {
@@ -3766,7 +3766,7 @@ async function initializePersistentFacultySyllabus(sectionSelect) {
             status.textContent = "Select an assigned section to manage its syllabus.";
             return;
         }
-        status.textContent = "Loading syllabus...";
+        status.textContent = '';
         try {
             const result = await request("/api/faculty/syllabi/" +
                 encodeURIComponent(sectionSelect.value));
@@ -6999,7 +6999,7 @@ document.addEventListener("DOMContentLoaded", function () {
             renderOutcomeChoices([], []);
             return;
         }
-        status.textContent = 'Loading course activities...';
+        status.textContent = '';
         try {
             workspace = await request('/api/faculty/sections/' +
                 encodeURIComponent(sectionSelect.value) + '/assessments');
@@ -7336,7 +7336,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         if (!outcomes.length) outcomeBody.innerHTML = '<tr><td colspan="7">No Course Outcomes are configured for this course.</td></tr>';
         if (outcomeStatus) outcomeStatus.textContent = outcomes.length
-            ? `${outcomes.length} Course Outcome(s) loaded.` : "Add Course Outcomes in Syllabus & Outcomes.";
+            ? '' : "Add Course Outcomes in Syllabus & Outcomes.";
     }
 
     function calculateStudentResults() {
@@ -7437,7 +7437,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (status) status.textContent = message;
             return;
         }
-        if (status) status.textContent = "Loading course activities and attainment...";
+        if (status) status.textContent = '';
         try {
             const [assessmentData, attainmentData] = await Promise.all([
                 request(`/api/faculty/sections/${encodeURIComponent(section.section_id)}/assessments`),
@@ -7689,7 +7689,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
         if (status)
-            status.textContent = "Loading classmates…";
+            status.textContent = '';
         try {
             const response = await fetch(
                 "/api/student/sections/" + encodeURIComponent(sectionId) + "/roster",
@@ -8971,6 +8971,12 @@ document.addEventListener("DOMContentLoaded", function () {
             if (active) link.setAttribute('aria-current', 'page');
             else link.removeAttribute('aria-current');
         });
+        if (current === 'resources.html') {
+            nav.querySelectorAll('.so-nav-group details').forEach(details => { details.open = false; });
+            nav.querySelectorAll('.so-nav-group summary.so-nav-item img.so-nav-image').forEach(img => {
+                img.src = img.src.replace(/(?:ws-blue|ws-white)\.png$/i, 'workflow-white.png');
+            });
+        }
         // Workflow indicator is reserved for Department Head requirement pages.
         nav.querySelectorAll('.so-nav-group summary.so-nav-item').forEach(summary => {
             summary.classList.remove('active', 'sd-active');
@@ -10633,7 +10639,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async function load() {
-        message.textContent = 'Loading department assessment records...';
+        message.textContent = '';
         try {
             const data = await api('/api/department-head/assessment-reviews');
             assessments = Array.isArray(data.assessments) ? data.assessments : [];
@@ -10950,7 +10956,7 @@ document.addEventListener("DOMContentLoaded", function () {
             filterRows();
         }
         async function load() {
-            status.textContent = "Loading department attainment...";
+            status.textContent = '';
             const params = new URLSearchParams();
             [
                 ["academic_year_id", year.value],
@@ -10967,7 +10973,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (!data) throw new Error(`The server returned an invalid response (HTTP ${response.status}).`);
                 render(data);
                 status.textContent = (data.rows || []).length
-                    ? "Showing released-score results within your department scope."
+                    ? ''
                     : "No Course Outcome attainment records are available for these filters.";
             } catch (error) {
                 status.textContent = error.message;
@@ -11493,11 +11499,11 @@ document.addEventListener("DOMContentLoaded", function () {
         const current = page.querySelector('.so-sidebar .so-nav');
         if (template && current) current.replaceWith(template.content.cloneNode(true));
         const pathname = decodeURIComponent(location.pathname).split('/').pop().toLowerCase();
-        page.querySelectorAll('.so-sidebar .so-nav > a[href]').forEach(link => {
-            const target = new URL(link.getAttribute('href'), location.href);
-            const active = decodeURIComponent(target.pathname).split('/').pop().toLowerCase() === pathname;
-            link.classList.toggle('sd-active', active);
-            link.classList.toggle('active', active);
+        page.querySelectorAll('.so-sidebar .so-nav a[href], .so-sidebar .so-nav-group summary').forEach(link => {
+            const href = link.getAttribute('href');
+            const active = href && decodeURIComponent(new URL(href, location.href).pathname).split('/').pop().toLowerCase() === pathname;
+            link.classList.toggle('sd-active', Boolean(active));
+            link.classList.toggle('active', Boolean(active));
             if (active) link.setAttribute('aria-current', 'page');
             else link.removeAttribute('aria-current');
         });
@@ -11954,7 +11960,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 applyFilters();
             }
             async function load() {
-                statusMessage.textContent = 'Loading attainment records...';
+                statusMessage.textContent = '';
                 const params = new URLSearchParams();
                 [
                     ['academic_year_id', year.value],
@@ -13515,7 +13521,7 @@ document.addEventListener("DOMContentLoaded", function () {
     approvalList.dataset.approvalsInitialized = "true";
 
     async function loadRequests() {
-      approvalStatus.textContent = "Loading requests...";
+      approvalStatus.textContent = '';
       approvalStatus.classList.remove("approval-error");
       approvalList.replaceChildren();
       try {
