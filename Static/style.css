@@ -2447,6 +2447,11 @@ button, .cm-co-options label{cursor:pointer;}
 .so-student-page.cm-faculty-page .cm-course-outcomes-table th:first-child, .so-student-page.cm-faculty-page .cm-course-outcomes-table td:first-child{width:10%;}
 .so-student-page.cm-faculty-page .cm-course-outcomes-table th:nth-child(2), .so-student-page.cm-faculty-page .cm-course-outcomes-table td:nth-child(2){width:32%;padding-left:12px;white-space:normal;overflow-wrap:normal;}
 .so-student-page.cm-dept-head-page .cm-tabs{grid-template-columns:repeat(5, max-content);}
+.so-student-page.cm-dept-head-page .dh-cm-top-tabs{display:flex;gap:0;margin:0 0 14px;border-bottom:1px solid #D8E2EA;background:#F5F7FA;}
+.so-student-page.cm-dept-head-page .dh-cm-top-tabs > .dh-cm-top-tab{min-width:180px;min-height:42px;padding:0 18px;border:0;border-right:1px solid #D8E2EA;border-bottom:3px solid transparent;border-radius:8px 8px 0 0;background:#F5F7FA;color:#004179;font:700 14px Arial,Helvetica,sans-serif;cursor:pointer;}
+.so-student-page.cm-dept-head-page .dh-cm-top-tabs > .dh-cm-top-tab.active{border-bottom-color:#F4C300;background:#FFFFFF;}
+.so-student-page.cm-dept-head-page .dh-cm-top-panel[hidden]{display:none!important;}
+.so-student-page.cm-dept-head-page .dh-cm-top-panel.active{display:block;}
 .so-student-page.cm-dept-head-page .cm-table{table-layout:fixed;min-width:100%;}
 .so-student-page.cm-dept-head-page .cm-table thead th, .so-student-page.cm-dept-head-page .cm-table tbody td{color:#004179;font-family:Arial, Helvetica, sans-serif;font-size:14px;font-weight:700;padding-left:12px;padding-right:12px;overflow-wrap:break-word;}
 .so-student-page.cm-dept-head-page .cm-course-outcomes-table th:nth-child(2), .so-student-page.cm-dept-head-page .cm-course-outcomes-table td:nth-child(2){width:32%;white-space:normal;overflow-wrap:normal;}

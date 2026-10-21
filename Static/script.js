@@ -237,6 +237,24 @@ function studentSectionScopedUrl(path) {
 
 /* Department Head mapping verification workflow. */
 (function () {
+    const page = document.querySelector(".cm-dept-head-page");
+    const tabs = page ? Array.from(page.querySelectorAll("[data-dh-cm-tab]")) : [];
+    const panels = page ? Array.from(page.querySelectorAll("[data-dh-cm-panel]")) : [];
+    tabs.forEach(tab => tab.addEventListener("click", () => {
+        const target = tab.dataset.dhCmTab;
+        tabs.forEach(item => {
+            const selected = item === tab;
+            item.classList.toggle("active", selected);
+            item.setAttribute("aria-selected", String(selected));
+        });
+        panels.forEach(panel => {
+            panel.hidden = panel.dataset.dhCmPanel !== target;
+            panel.classList.toggle("active", !panel.hidden);
+        });
+    }));
+})();
+
+(function () {
     const root = document.getElementById('mappingReviewWorkflow');
     if (!root) return;
     const sectionSelect = document.getElementById('mappingReviewSection');
