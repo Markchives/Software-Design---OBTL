@@ -41,10 +41,14 @@
         const mappingTitle = document.getElementById("soMappingTitle");
         const mappingStatus = document.getElementById("soMappingStatus");
         const saveMappingButton = document.getElementById("soSaveMapping");
+        const studentCount = document.getElementById("r1FacultyStudentCount");
+        const courseOutcomeCount = document.getElementById("r1FacultyCourseOutcomeCount");
+        const studentOutcomeCount = document.getElementById("r1FacultyStudentOutcomeCount");
         let mappingCourseOutcomeId = null;
         let selectedMappingSoIds = new Set();
         let sections = [];
         let section = null;
+        let sectionLoadSequence = 0;
         let outcomes = [];
         let studentOutcomes = [];
         let mappings = [];
@@ -119,9 +123,13 @@
             addRating(nextValue, "");
         });
         async function loadSection(sectionId) {
+            const loadSequence = ++sectionLoadSequence;
             section = sections.find(row => row.section_id === sectionId) || null;
             if (sectionSelect) sectionSelect.value = section?.section_id || "";
             window.syncEduMetricsWorkspaceSection?.(section?.section_id || "", section || undefined);
+            [studentCount, courseOutcomeCount, studentOutcomeCount].forEach(counter => {
+                if (counter) counter.textContent = "—";
+            });
             if (sectionContext) {
                 sectionContext.textContent = section
                     ? `${section.course_code} · ${section.course_title} · ${section.section_name} · ${section.academic_year_name || ""}`
@@ -150,10 +158,23 @@
                 return;
             }
             try {
-                const mapData = await api(`/api/faculty/courses/${encodeURIComponent(section.course_id)}/outcome-mappings`);
+                const [mapData, rosterData, assessmentData] = await Promise.all([
+                    api(`/api/faculty/courses/${encodeURIComponent(section.course_id)}/outcome-mappings`),
+                    api(`/api/faculty/sections/${encodeURIComponent(section.section_id)}/roster`)
+                        .catch(error => ({ rosterError: error })),
+                    api(`/api/faculty/sections/${encodeURIComponent(section.section_id)}/so-assessments`)
+                ]);
+                if (loadSequence !== sectionLoadSequence) return;
                 outcomes = mapData.outcomes || [];
                 mappings = mapData.mappings || [];
                 studentOutcomes = mapData.student_outcomes || [];
+                if (courseOutcomeCount) courseOutcomeCount.textContent = String(outcomes.length);
+                if (studentOutcomeCount) studentOutcomeCount.textContent = String(studentOutcomes.length);
+                if (studentCount) {
+                    studentCount.textContent = rosterData.rosterError
+                        ? "—"
+                        : String(rosterData.counts?.active ?? 0);
+                }
                 nextCourseOutcome = mapData.next_course_outcome || null;
                 document.getElementById("soCoCode").textContent = nextCourseOutcome?.code || "No outcomes available";
                 document.getElementById("soCoDescription").textContent = nextCourseOutcome?.description
@@ -172,14 +193,17 @@
                 const mappedSoIds = new Set(mappings.map(row => row.student_outcome_id));
                 const soOptions = studentOutcomes.filter(row => mappedSoIds.has(row.id));
                 outcomeSelect.innerHTML = `<option value="">Select a mapped SO</option>` + soOptions.map(row => `<option value="${esc(row.id)}">${esc(soLabel(row))}</option>`).join("");
-                const data = await api(`/api/faculty/sections/${encodeURIComponent(section.section_id)}/so-assessments`);
-                assessmentRows.innerHTML = (data.assessments || []).length ? data.assessments.map(row => {
+                assessmentRows.innerHTML = (assessmentData.assessments || []).length ? assessmentData.assessments.map(row => {
                     const statusLabel = row.status === "open" ? "Active" :
                         row.status.charAt(0).toUpperCase() + row.status.slice(1);
                     return `<tr><td><strong>${esc(row.student_outcome?.code)} · ${esc(row.title)}</strong>${row.student_outcome?.description ? `<small class="so-co-links">${esc(row.student_outcome.description)}</small>` : ""}</td><td>${esc(row.due_date || "No due date")}</td><td>${row.response_count || 0}</td><td><span class="so-status-pill ${esc(row.status)}">${esc(statusLabel)}</span></td><td>${button("Responses", "responses", row.id)} ${button("Edit", "edit-assessment", row.id)} ${button("Delete", "delete-assessment", row.id)}</td></tr>`;
                 }).join("") : `<tr><td colspan="5">No Student Outcome assessments for this section yet.</td></tr>`;
-                if (status) status.textContent = "Course outcomes and Student Outcome assessments loaded.";
+                if (status) status.textContent = rosterData.rosterError
+                    ? "Course outcomes and Student Outcome assessments loaded, but the student count could not be loaded: " +
+                        rosterData.rosterError.message
+                    : "Course outcomes and Student Outcome assessments loaded.";
             } catch (error) {
+                if (loadSequence !== sectionLoadSequence) return;
                 if (status) status.textContent = error.message;
                 notify(error.message);
             }
