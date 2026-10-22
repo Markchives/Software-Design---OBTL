@@ -957,7 +957,7 @@ function studentSectionScopedUrl(path) {
     const $ = id => document.getElementById(id);
     const body = $('cqiFacultyRows'), modal = $('cqiFacultyModal'), deleteModal = $('cqiFacultyDeleteModal');
     const search = $('cqiFacultySearch'), status = $('cqiFacultyStatus'), feedback = $('cqiFacultyFeedback');
-    let plans = [], sections = [], categories = [], currentPlan = null, pendingDelete = null, returnFocus = null, workspaceLoading = false;
+    let plans = [], sections = [], categories = [], belowTargetCount = 0, currentPlan = null, pendingDelete = null, returnFocus = null, workspaceLoading = false;
     const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
     async function api(url, options = {}) {
         const response = await fetch(url, {
@@ -975,7 +975,7 @@ function studentSectionScopedUrl(path) {
     const statusLabel = value => ({ draft: 'Draft', submitted: 'Submitted', approved: 'Approved', returned: 'For Revision', rejected: 'Rejected', ongoing: 'Ongoing', completed: 'Completed' }[value] || value);
     function updateSummary() {
         $('cqifDraftCount').textContent = String(plans.filter(plan => ['draft', 'returned'].includes(plan.status)).length);
-        $('cqifBelowCount').textContent = String(new Set(plans.map(plan => targetOf(plan).course_outcome_id).filter(Boolean)).size);
+        $('cqifBelowCount').textContent = String(belowTargetCount);
         $('cqifReviewCount').textContent = String(plans.filter(plan => plan.status === 'submitted').length);
     }
     function filter() {
@@ -1102,7 +1102,8 @@ function studentSectionScopedUrl(path) {
         workspaceLoading = true;
         feedback.textContent = '';
         try {
-            const data = await api('/api/faculty/cqi');
+            const data = await api(studentSectionScopedUrl('/api/faculty/cqi'));
+            belowTargetCount = data.below_target_count ?? 0;
             sections = data.sections || [];
             categories = data.categories || [];
             plans = data.plans || [];
@@ -1441,7 +1442,7 @@ function studentSectionScopedUrl(path) {
     document.addEventListener("keydown", event => {
         if (event.key === "Escape" && !modal.hidden) closeModal();
     });
-    api("/api/student/cqi").then(data => {
+    api(studentSectionScopedUrl("/api/student/cqi")).then(data => {
         plans = data.plans || [];
         render();
     }).catch(error => {

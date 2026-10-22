@@ -2692,161 +2692,20 @@ ATTAINMENT_ALGORITHM_VERSION = "co-threshold-rate-v1"
 
 
 def _calculate_section_attainment(section_id):
-    """Calculate CO class and individual results from saved raw scores."""
-    section_rows = (
-        admin_supabase.table("course_sections")
-        .select("id, course_id")
-        .eq("id", section_id)
-        .limit(1)
-        .execute()
-        .data
-        or []
-    )
-    if not section_rows:
-        raise LookupError("Course section not found.")
-    course_id = section_rows[0]["course_id"]
-    outcomes = (
-        admin_supabase.table("course_outcomes")
-        .select("id, code, description, target_percentage")
-        .eq("course_id", course_id)
-        .order("code")
-        .execute()
-        .data
-        or []
-    )
-    activities = (
-        admin_supabase.table("assessment_activities")
-        .select(
-            "id, course_outcome_id, title, activity_type, max_score, released_at"
-        )
-        .eq("section_id", section_id)
-        .execute()
-        .data
-        or []
-    )
-    _assessment_outcomes_by_activity(activities)
-    enrollments = (
-        admin_supabase.table("enrollments")
-        .select("student_profile_id")
-        .eq("section_id", section_id)
-        .eq("enrollment_status", "active")
-        .execute()
-        .data
-        or []
-    )
-    student_ids = list({
-        row["student_profile_id"] for row in enrollments
-        if row.get("student_profile_id")
-    })
-    released_activities = [
-        row for row in activities if row.get("released_at")
-    ]
-    released_activity_ids = [row["id"] for row in released_activities]
-    scores = []
-    if student_ids and released_activity_ids:
-        scores = (
-            admin_supabase.table("raw_assessment_scores")
-            .select("assessment_activity_id, student_profile_id, percentage")
-            .in_("assessment_activity_id", released_activity_ids)
-            .in_("student_profile_id", student_ids)
-            .execute()
-            .data
-            or []
-        )
-    activity_by_id = {row["id"]: row for row in released_activities}
-    scores_by_student_outcome = {}
-    for score in scores:
-        activity = activity_by_id.get(score.get("assessment_activity_id"))
-        percentage = score.get("percentage")
-        if not activity or percentage is None:
-            continue
-        for outcome_id in activity["course_outcome_ids"]:
-            scores_by_student_outcome.setdefault(
-                (score["student_profile_id"], outcome_id), []
-            ).append(float(percentage))
-
-    verified = _section_mapping_is_verified(section_id)
-    # Rebuild the materialized rows so blanked/deleted scores cannot leave stale
-    # attainment visible in the student or CQI views.
-    admin_supabase.table("co_attainment").delete().eq(
-        "section_id", section_id
-    ).execute()
-    admin_supabase.table("student_co_attainment").delete().eq(
-        "section_id", section_id
-    ).execute()
-    class_records, student_records, output = [], [], []
-    for outcome in outcomes:
-        outcome_id = outcome["id"]
-        target = float(outcome.get("target_percentage") or 70)
-        individual = []
-        for student_id in student_ids:
-            values = scores_by_student_outcome.get((student_id, outcome_id), [])
-            if not values:
-                continue
-            attainment = round(sum(values) / len(values), 2)
-            individual.append(attainment)
-            student_records.append({
-                "section_id": section_id,
-                "student_profile_id": student_id,
-                "course_outcome_id": outcome_id,
-                "attainment_percentage": attainment,
-                "status": "met" if attainment >= target else "not_met",
-                "can_view": verified,
-                "calculated_at": datetime.now(timezone.utc).isoformat(),
-            })
-        contributing = [
-            {"id": activity["id"], "title": activity["title"],
-             "activity_type": activity["activity_type"],
-             "released_at": activity.get("released_at"),
-             "released": bool(activity.get("released_at"))}
-            for activity in activities
-            if outcome_id in activity["course_outcome_ids"]
-        ]
-        met_student_count = sum(
-            student_attainment >= target for student_attainment in individual
-        )
-        class_attainment = (
-            round(met_student_count / len(individual) * 100, 2)
-            if individual else None
-        )
-        status = "awaiting_results" if class_attainment is None else (
-            "met" if class_attainment >= target else (
-                "needs_improvement"
-                if class_attainment < target * 0.85 else "below_target"
-            )
-        )
-        output.append({
-            "course_outcome_id": outcome_id,
-            "code": outcome["code"],
-            "description": outcome["description"],
-            "attainment_percentage": class_attainment,
-            "target_percentage": target,
-            "status": status if individual else "awaiting_results",
-            "flagged": bool(individual and class_attainment < target),
-            "student_count": len(individual),
-            "met_student_count": met_student_count,
-            "activities": contributing,
-        })
-        class_records.append({
-            "section_id": section_id,
-            "course_outcome_id": outcome_id,
-            "attainment_percentage": class_attainment,
-            "target_percentage": target,
-            "status": status,
-            "flagged": bool(individual and class_attainment < target),
-            "version": ATTAINMENT_ALGORITHM_VERSION,
-            "calculated_at": datetime.now(timezone.utc).isoformat(),
-        })
-    if class_records:
-        admin_supabase.table("co_attainment").upsert(
-            class_records, on_conflict="section_id,course_outcome_id"
+    """Rebuild class and personal attainment atomically in Supabase."""
+    try:
+        result = admin_supabase.rpc(
+            "refresh_section_attainment", {"p_section_id": section_id}
         ).execute()
-    if student_records:
-        admin_supabase.table("student_co_attainment").upsert(
-            student_records,
-            on_conflict="section_id,student_profile_id,course_outcome_id",
-        ).execute()
-    return output
+    except Exception as error:
+        if getattr(error, "code", None) == "PGRST202":
+            raise RuntimeError(
+                "Apply database/requirement_5_6_attainment_refresh.sql before using attainment."
+            ) from error
+        raise
+    if not isinstance(result.data, list):
+        raise RuntimeError("Attainment refresh returned an invalid response.")
+    return result.data
 
 
 def _cqi_enrich_plans(plans):
@@ -2854,6 +2713,8 @@ def _cqi_enrich_plans(plans):
         return []
     plan_ids = [row["id"] for row in plans]
     section_ids = list({row["section_id"] for row in plans})
+    for section_id in sorted(section_ids):
+        _calculate_section_attainment(section_id)
     sections = admin_supabase.table("course_sections").select(
         "id, course_id, section_name, faculty_id"
     ).in_("id", section_ids).execute().data or []
@@ -3074,6 +2935,12 @@ def get_faculty_cqi_workspace():
         section_rows = admin_supabase.table("course_sections").select(
             "id, course_id, section_name, academic_year_id"
         ).eq("faculty_id", profile["id"]).execute().data or []
+        requested_section_id = request.args.get("section_id", "").strip()
+        if requested_section_id:
+            section_rows = [row for row in section_rows if row["id"] == requested_section_id]
+            if not section_rows:
+                return jsonify({"error": "Section not found or not assigned to you."}), 404
+            plans = [plan for plan in plans if plan["section_id"] == requested_section_id]
         course_ids = list({row["course_id"] for row in section_rows})
         courses = admin_supabase.table("courses").select(
             "id, code, title"
@@ -3090,7 +2957,13 @@ def get_faculty_cqi_workspace():
         categories = admin_supabase.table("cqi_categories").select(
             "id, name, description"
         ).eq("is_active", True).order("name").execute().data or []
+        below_target_count = sum(
+            bool(outcome.get("flagged"))
+            for section in section_rows
+            for outcome in _calculate_section_attainment(section["id"])
+        )
         return jsonify({
+            "below_target_count": below_target_count,
             "sections": sections,
             "categories": categories,
             "plans": _cqi_enrich_plans(plans),
@@ -3412,6 +3285,9 @@ def get_student_cqi_actions():
             "enrollment_status", "active"
         ).execute().data or []
         section_ids = list({row["section_id"] for row in enrollments})
+        section_ids = _student_section_scope(section_ids)
+        if section_ids is None:
+            return jsonify({"error": "You are not actively enrolled in this section."}), 403
         plans = admin_supabase.table("cqi_action_plans").select(
             "*"
         ).in_("section_id", section_ids).in_(

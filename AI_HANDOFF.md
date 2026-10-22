@@ -1,15 +1,15 @@
 # EduMetrics AI Handoff
 
-Updated: 2026-10-20
+Updated: 2026-10-22
 
 ## Project background
 
 EduMetrics is a Flask application backed by Supabase. It supports role-based accounts for students, faculty, Department Heads, and Admin/Security staff. Account registration includes email/password signup and Google OAuth profile completion. Department Heads and Admins participate in account-request approval workflows.
 
-The active project directory is `D:\Final Proj\Software-Design---OBTL`. Run the Flask app from that directory with the project virtual environment:
+The active project directory is `D:\Software-Design---OBTL`. Run the Flask app from that directory with the project virtual environment:
 
 ```powershell
-Set-Location "D:\Final Proj\Software-Design---OBTL"
+Set-Location "D:\Software-Design---OBTL"
 & ".\.venv\Scripts\python.exe" app.py
 ```
 
@@ -257,3 +257,13 @@ def handle_pfp_upload():
 - Validation performed: the Requirement 1 HTML parsed with no duplicate IDs or missing editor controls; `git diff --check` passed. Browser checks confirmed the editor defaults, add-row behavior, and auto-incremented rating score. Browser preview uses a local `file:` page without an authenticated Flask session and its API calls returned 403, so authenticated persistence remains unverified. Node is unavailable in the current environment; browser loading confirmed the edited JavaScript parses and runs.
 - The Faculty Requirement 1 browser page exposes all three tabs; browser checks confirmed tab switching, editor interactions, and the CO/SO table headings. Persistent create/edit/delete and syllabus/assessment operations still require an authenticated end-to-end test.
 - The live Supabase schema/migrations and role-authenticated syllabus upload/download, student visibility, assessment submission, and overview filters still need end-to-end verification. No commit or push has been made.
+
+## Requirements 5 and 6 fixes (2026-10-22)
+
+- Faculty and Student CQI requests now carry the workspace `section_id`. The backend scopes Faculty plans and section choices to an assigned section (404 otherwise), and Student actions to an actively enrolled section (403 otherwise). Without a section filter, the existing cross-section view remains available. Student actions remain limited to approved, ongoing, and completed plans.
+- Faculty's Below-target COs card now counts current flagged section/CO results, including outcomes without plans and excluding recovered outcomes. The same course outcome in two sections counts as two section-specific results. It no longer counts plan references.
+- `_calculate_section_attainment` now calls the service-role-only `refresh_section_attainment` RPC. PostgreSQL calculates released-only, active-enrollment personal means and class threshold rates, then replaces class/personal results in one transaction. A section row lock serializes refreshes with each other and guarded assessment writes. There is no destructive Python fallback.
+- Enrollment insert/update/delete (including dropping, re-enrolling, and section transfers) invalidates saved attainment versions in the same database transaction. Existing Student, Department Head, and dashboard stale-version checks recalculate on the next read. CQI enrichment refreshes section results before displaying attainment.
+- **Required deployment step:** apply `database/requirement_5_6_attainment_refresh.sql` in the correct Supabase project AFTER `database/requirement_2_4_multi_co_assessment_mappings.sql` and `database/requirement_5_attainment_algorithm.sql`, and BEFORE restarting/deploying the matching `app.py`. The base schema and existing Requirement 4 migration must already exist. `database/schema.sql` includes the same functions/triggers for fresh installs. The new migration has NOT been applied to live Supabase from this session. Until it is applied, routes using attainment will fail rather than use the old non-atomic save path.
+- Validation: seven isolated Python API regressions (`python -m unittest discover -s tests -p test_attainment_cqi.py -v`), JavaScript syntax, and diff formatting checks. PostgreSQL regression tests use a temporary PGlite package outside the repository with `node tests/attainment_database_check.cjs <path-to-pglite-package>`; they exercise migration reapplication, service-role permissions, released-only multi-CO calculations, personal averaging, enrollment invalidation, failed-save rollback, mapping visibility, cleared scores, and missing sections. The PostgreSQL tests use isolated fixture tables and do not connect to Supabase; simultaneous independent database sessions and authenticated browser workflows remain unverified.
+- No live data was modified and no commit or push was made. The complete signed-in Faculty submit -> Department Head return/approve -> Faculty progress/complete -> Student view flow still needs a browser smoke test after applying the migration.
