@@ -12123,7 +12123,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const $ = id => document.getElementById(id);
     const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
     const stateLabel = value => ({ draft: "Draft", submitted: "Pending Approval", approved: "Approved", returned: "Returned", rejected: "Rejected", ongoing: "In Progress", completed: "Completed" }[value] || value);
-    let plans = [], categories = [];
+    let plans = [], categories = [], pagination = {
+        page: 1, page_size: 50, total_count: 0, total_pages: 0,
+        progress_count: 0, pending_count: 0
+    };
+    let departments = [], searchTimer = null, loadSequence = 0;
     async function api(url, options = {}) {
         const response = await fetch(url, {
             credentials: "same-origin",
@@ -12136,14 +12140,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     function targetOf(plan) { return (plan.targets || [])[0] || {}; }
     function currentFilterResults() {
-        const department = $("deptFilter").value;
-        const status = $("statusFilter").value;
-        const query = $("registerSearch").value.trim().toLowerCase();
-        return plans.filter(plan =>
-            (!department || plan.department_id === department) &&
-            (!status || plan.status === status) &&
-            (!query || `${plan.id} ${plan.department_name} ${plan.course_code} ${plan.course_title} ${plan.faculty_name} ${targetOf(plan).code} ${plan.proposed_intervention}`.toLowerCase().includes(query))
-        );
+        return plans;
     }
     function renderRegister() {
         const filtered = currentFilterResults();
@@ -12152,10 +12149,16 @@ document.addEventListener("DOMContentLoaded", function () {
             const attainment = target.attainment_percentage == null ? "—" : `${target.attainment_percentage}%`;
             return `<tr data-cqi-id="${esc(plan.id)}"><td><strong>CQI-${esc(plan.id.slice(0, 8))}</strong></td><td>${esc(plan.department_name)} / ${esc(plan.course_code)} · ${esc(plan.course_title)}</td><td>${esc(plan.faculty_name)}</td><td>${esc(target.code || "—")} · ${esc(attainment)}</td><td>${esc(plan.proposed_intervention)}</td><td>${esc(stateLabel(plan.status))}</td><td>${esc(plan.updated_at ? new Date(plan.updated_at).toLocaleDateString() : "—")}</td><td><button class="cqi-btn" type="button" data-cqi-admin-view="${esc(plan.id)}">View</button></td></tr>`;
         }).join("") || '<tr><td colspan="8">No CQI plans match these filters.</td></tr>';
-        $("resultCount").textContent = `${filtered.length} record(s)`;
-        $("totalPlans").textContent = String(filtered.length);
-        $("progressPlans").textContent = String(filtered.filter(plan => ["ongoing", "completed"].includes(plan.status)).length);
-        $("pendingPlans").textContent = String(filtered.filter(plan => plan.status === "submitted").length);
+        $("resultCount").textContent = `${pagination.total_count} record(s)`;
+        $("totalPlans").textContent = String(pagination.total_count);
+        $("progressPlans").textContent = String(pagination.progress_count);
+        $("pendingPlans").textContent = String(pagination.pending_count);
+        $("cqiPageInfo").textContent = pagination.total_pages
+            ? `Page ${pagination.page} of ${pagination.total_pages}`
+            : "Page 0 of 0";
+        $("cqiPagePrevious").disabled = pagination.page <= 1;
+        $("cqiPageNext").disabled = !pagination.total_pages ||
+            pagination.page >= pagination.total_pages;
     }
     function renderCategories() {
         $("categoryTable").tBodies[0].innerHTML = categories.map(category =>
@@ -12164,27 +12167,40 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     function renderFilters() {
         const previous = $("deptFilter").value;
-        const departments = new Map(plans.filter(plan => plan.department_id).map(plan => [plan.department_id, plan.department_name]));
-        $("deptFilter").innerHTML = '<option value="">All Departments</option>' + Array.from(departments, ([id, name]) =>
-            `<option value="${esc(id)}">${esc(name)}</option>`
+        $("deptFilter").innerHTML = '<option value="">All Departments</option>' + departments.map(department =>
+            `<option value="${esc(department.id)}">${esc(department.name)}</option>`
         ).join("");
-        if (departments.has(previous)) $("deptFilter").value = previous;
-        const selectedStatus = $("statusFilter").value;
-        const statuses = [...new Set(plans.map(plan => plan.status))];
-        $("statusFilter").innerHTML = '<option value="">All Statuses</option>' + statuses.map(value =>
-            `<option value="${esc(value)}">${esc(stateLabel(value))}</option>`
-        ).join("");
-        if (statuses.includes(selectedStatus)) $("statusFilter").value = selectedStatus;
+        if (departments.some(department => department.id === previous)) {
+            $("deptFilter").value = previous;
+        }
     }
-    async function load() {
+    function filterParams(page = 1, pageSize = 50) {
+        const params = new URLSearchParams({
+            page: String(page),
+            page_size: String(pageSize)
+        });
+        const department = $("deptFilter").value;
+        const status = $("statusFilter").value;
+        const search = $("registerSearch").value.trim();
+        if (department) params.set("department_id", department);
+        if (status) params.set("status", status);
+        if (search) params.set("search", search);
+        return params;
+    }
+    async function load(page = 1) {
+        const sequence = ++loadSequence;
         try {
-            const data = await api("/api/admin/cqi");
+            const data = await api(`/api/admin/cqi?${filterParams(page)}`);
+            if (sequence !== loadSequence) return;
             plans = data.plans || [];
             categories = data.categories || [];
+            departments = data.departments || [];
+            pagination = data.pagination || pagination;
             renderFilters();
             renderRegister();
             renderCategories();
         } catch (error) {
+            if (sequence !== loadSequence) return;
             $("registerTable").tBodies[0].innerHTML = `<tr><td colspan="8">${esc(error.message)}</td></tr>`;
             $("categoryTable").tBodies[0].innerHTML = `<tr><td colspan="5">${esc(error.message)}</td></tr>`;
             $("resultCount").textContent = "Unavailable";
@@ -12199,8 +12215,17 @@ document.addEventListener("DOMContentLoaded", function () {
             if (panel) panel.hidden = !active;
         });
     }));
-    ["deptFilter", "statusFilter"].forEach(id => $(id).addEventListener("change", renderRegister));
-    $("registerSearch").addEventListener("input", renderRegister);
+    ["deptFilter", "statusFilter"].forEach(id => $(id).addEventListener("change", () => load(1)));
+    $("registerSearch").addEventListener("input", () => {
+        window.clearTimeout(searchTimer);
+        searchTimer = window.setTimeout(() => load(1), 250);
+    });
+    $("cqiPagePrevious").addEventListener("click", () => {
+        if (pagination.page > 1) load(pagination.page - 1);
+    });
+    $("cqiPageNext").addEventListener("click", () => {
+        if (pagination.page < pagination.total_pages) load(pagination.page + 1);
+    });
     $("registerTable").addEventListener("click", event => {
         const button = event.target.closest("[data-cqi-admin-view]");
         if (!button) return;
@@ -12260,20 +12285,29 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (error) { window.alert(error.message); }
         finally { button.disabled = false; }
     });
-    $("exportRegister").addEventListener("click", () => {
-        const rows = [["CQI ID", "Department", "Course", "Section", "Faculty", "CO", "Attainment", "Intervention", "Status"],
-            ...currentFilterResults().map(plan => {
-                const target = targetOf(plan);
-                return [`CQI-${plan.id.slice(0, 8)}`, plan.department_name, plan.course_code, plan.section_name,
-                    plan.faculty_name, target.code, target.attainment_percentage, plan.proposed_intervention, stateLabel(plan.status)];
-            })];
-        const csv = rows.map(row => row.map(value => `"${String(value ?? "").replace(/"/g, '""')}"`).join(",")).join("\r\n");
-        const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-        const anchor = document.createElement("a");
-        anchor.href = url;
-        anchor.download = "cqi-register.csv";
-        anchor.click();
-        URL.revokeObjectURL(url);
+    $("exportRegister").addEventListener("click", async event => {
+        const button = event.currentTarget;
+        button.disabled = true;
+        try {
+            const response = await fetch(`/api/admin/cqi/export?${filterParams(1, 100)}`, {
+                credentials: "same-origin",
+                headers: { Accept: "text/csv, application/json" }
+            });
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({}));
+                throw new Error(error.error || "CQI register export failed.");
+            }
+            const url = URL.createObjectURL(await response.blob());
+            const anchor = document.createElement("a");
+            anchor.href = url;
+            anchor.download = "cqi-admin-register.csv";
+            anchor.click();
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            window.alert(error.message || "CQI register export failed.");
+        } finally {
+            button.disabled = false;
+        }
     });
     load();
 })();
@@ -12737,7 +12771,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 sections.length
                     ? isStudent
                         ? 'Choose a report for an active course section. The attainment summary contains only your own results; class-wide grades are not available to students.'
-                        : 'Printable reports do not require a locked gradebook. Student Outcome reports require verified section mappings.'
+                            : 'Unlocked or reopened reports are marked PRELIMINARY. Locked-gradebook reports are labeled as locked but are not immutable snapshots. Student Outcome reports require verified section mappings.'
                     : 'No course sections are available within your authorized scope.',
                 false
             );
