@@ -6,7 +6,7 @@ function studentSectionScopedUrl(path) {
     return url.pathname + url.search + url.hash;
 }
 
-/* AC Faculty: accessible attainment / assessment input tabs and breakdown */
+/* AC Faculty: accessible attainment / assessment input tabs */
 (function () {
     function initAcFaculty() {
         const root = document.querySelector('.ac-faculty-page');
@@ -42,79 +42,7 @@ function studentSectionScopedUrl(path) {
         });
         activateTab(tabs.find(function (tab) { return tab.getAttribute('aria-selected') === 'true'; }) || tabs[0]);
 
-        const modal = root.querySelector('#ac-co-breakdown');
-        const content = root.querySelector('#ac-co-breakdown-content');
-        const closeButton = root.querySelector('.ac-co-dialog-close');
-        const heading = root.querySelector('#ac-dialog-title');
-        if (!modal || !content) return;
-        // Keep the overlay outside the workspace scroll/stacking context.
-        if (modal.parentElement !== document.body) document.body.appendChild(modal);
-        let previousFocus = null;
-        function closeModal() {
-            if (modal.hidden) return;
-            modal.hidden = true;
-            document.body.classList.remove('ac-breakdown-open');
-            if (previousFocus && previousFocus.isConnected) previousFocus.focus();
-        }
-        document.addEventListener('click', function (event) {
-            const button = event.target.closest('.ac-faculty-page .ac-co-action[data-co]');
-            if (!button) return;
-            event.stopImmediatePropagation();
-            event.preventDefault();
-            const row = button.closest('tr');
-            if (!row) return;
-            const cells = row.cells;
-            const co = button.dataset.co;
-            const description = cells[1]?.textContent.trim() || '';
-            const attainment = cells[3]?.textContent.trim() || '';
-            const target = cells[4]?.textContent.trim() || '';
-            const status = cells[5]?.textContent.trim() || '';
-            const assessments = [...cells[2].querySelectorAll('.ac-co-chip')].map(chip => chip.textContent.trim());
-            heading.textContent = co + ' — Attainment Breakdown';
-            content.replaceChildren();
-            const intro = document.createElement('p');
-            intro.className = 'ac-breakdown-description';
-            intro.textContent = description;
-            content.appendChild(intro);
-            const grid = document.createElement('div');
-            grid.className = 'ac-breakdown-grid';
-            [['Calculated Attainment', attainment], ['Target', target], ['Status', status]].forEach(([label, value]) => {
-                const item = document.createElement('div');
-                item.className = 'ac-breakdown-stat';
-                const small = document.createElement('span'); small.textContent = label;
-                const strong = document.createElement('strong'); strong.textContent = value;
-                item.append(small, strong); grid.appendChild(item);
-            });
-            content.appendChild(grid);
-            const title = document.createElement('h3'); title.textContent = 'Assessments Contributing';
-            content.appendChild(title);
-            const list = document.createElement('ul'); list.className = 'ac-breakdown-assessments';
-            assessments.forEach(name => {
-                const item = document.createElement('li'); item.textContent = name;
-                list.appendChild(item);
-            });
-            content.appendChild(list);
-            const note = document.createElement('p'); note.className = 'ac-breakdown-note';
-            note.textContent = 'Only released mapped assessment results are included. Each scored student’s CO score is the average of their released assessment percentages; class attainment is the share meeting the CO target.';
-            content.appendChild(note);
-            previousFocus = button;
-            modal.hidden = false;
-            document.body.classList.add('ac-breakdown-open');
-            closeButton?.focus();
-        }, true);
-        closeButton?.addEventListener('click', closeModal);
-        modal.addEventListener('click', function (event) { if (event.target === modal) closeModal(); });
-        document.addEventListener('keydown', function (event) {
-            if (modal.hidden) return;
-            if (event.key === 'Escape') { event.preventDefault(); closeModal(); }
-            if (event.key === 'Tab') {
-                const focusable = [...modal.querySelectorAll('button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')];
-                if (!focusable.length) return;
-                const first = focusable[0], last = focusable[focusable.length - 1];
-                if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-                else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-            }
-        });
+
     }
     if (document.readyState === '') document.addEventListener('DOMContentLoaded', initAcFaculty);
     else initAcFaculty();
@@ -173,9 +101,7 @@ function studentSectionScopedUrl(path) {
                     if (Array.isArray(value)) value.forEach(chip => td.appendChild(chip)); else td.textContent = value;
                     tr.appendChild(td);
                 });
-                const action = document.createElement('td');
-                const button = document.createElement('button'); button.type = 'button'; button.className = 'ac-co-action'; button.dataset.co = item.code; button.textContent = 'Breakdown';
-                action.appendChild(button); tr.appendChild(action); outcomeBody.appendChild(tr);
+                outcomeBody.appendChild(tr);
                 if (item.status === 'met') onTarget++; else if (item.flagged) belowTarget++;
             });
             (data.assessments || []).forEach(item => {
@@ -198,7 +124,7 @@ function studentSectionScopedUrl(path) {
             if (!(data.outcomes || []).length) {
                 const row = document.createElement('tr');
                 const cell = document.createElement('td');
-                cell.colSpan = 7;
+                cell.colSpan = 6;
                 cell.textContent = 'No Course Outcomes are configured for this course.';
                 row.appendChild(cell);
                 outcomeBody.appendChild(row);
@@ -11290,15 +11216,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     : Number(item.attainment_percentage).toFixed(1) + "%";
                 const statusLabel = item.status === "met" ? "On target" :
                     item.status === "awaiting_results" ? "Awaiting results" : "Below target";
-                const activities = (item.activities || []).map(activity =>
-                    activity.title + " (" + (activity.released ? "released" : "not released") + ")"
-                ).join(", ") || "No mapped activities";
-                const row = appendRow(attainmentBody, [
+                appendRow(attainmentBody, [
                     [item.course_code, item.course_title].filter(Boolean).join(" · "),
                     item.section_name,
                     item.faculty_name,
                     item.code + " — " + item.description,
-                    activities,
                     attainment,
                     Number(item.target_percentage).toFixed(1) + "%",
                     statusLabel,
@@ -11313,13 +11235,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     faculty: item.faculty_name || "",
                     activities: JSON.stringify(item.activities || [])
                 });
-                const action = document.createElement("td");
-                const button = document.createElement("button");
-                button.className = "ac-dh-view";
-                button.type = "button";
-                button.textContent = "Breakdown";
-                action.appendChild(button);
-                row.appendChild(action);
             });
             const approvalBody = byId("acDhApprovalRows");
             approvalBody.replaceChildren();
@@ -11389,29 +11304,6 @@ document.addEventListener("DOMContentLoaded", function () {
             section.value = "";
             load();
         });
-        const dialog = byId("acDhDialog");
-        page.addEventListener("click", event => {
-            const button = event.target.closest(".ac-dh-view");
-            if (!button || !button.closest("#acDhAttainmentRows")) return;
-            const row = button.closest("tr");
-            const activityList = JSON.parse(row.dataset.activities || "[]");
-            byId("acDhDialogTitle").textContent = row.dataset.code + " — Assessment Breakdown";
-            byId("acDhDialogDetails").textContent = [
-                row.dataset.courseName + " · " + row.cells[1].textContent,
-                "Faculty: " + row.dataset.faculty,
-                "Mapped assessments:",
-                ...activityList.map(activity =>
-                    "• " + activity.title + " — " +
-                    (activity.released ? "released and included" : "not released; excluded")
-                ),
-                "Only released mapped scores contribute to attainment."
-            ].join("\n");
-            if (typeof dialog.showModal === "function") dialog.showModal();
-        });
-        [byId("acDhDialogClose"), byId("acDhDialogDone")].forEach(button =>
-            button.addEventListener("click", () => dialog.close())
-        );
-        dialog.addEventListener("click", event => { if (event.target === dialog) dialog.close(); });
         activate(window.location.hash === "#gradebook-approval" ? 1 : 0);
         load();
     }

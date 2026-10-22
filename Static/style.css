@@ -4350,12 +4350,11 @@ body > #rrDialog[hidden]{display:none!important;}
 .ac-faculty-page .ac-co-table tbody td:first-child{border-left:1px solid #9bc9fb;border-radius:8px 0 0 8px;font-weight:800;}
 .ac-faculty-page .ac-co-table tbody td:last-child{border-right:1px solid #9bc9fb;border-radius:0 8px 8px 0;}
 .ac-faculty-page #panel-calculated .ac-co-table th:nth-child(1){width:5%;}
-.ac-faculty-page #panel-calculated .ac-co-table th:nth-child(2){width:30%;}
-.ac-faculty-page #panel-calculated .ac-co-table th:nth-child(3){width:25%;}
+.ac-faculty-page #panel-calculated .ac-co-table th:nth-child(2){width:35%;}
+.ac-faculty-page #panel-calculated .ac-co-table th:nth-child(3){width:30%;}
 .ac-faculty-page #panel-calculated .ac-co-table th:nth-child(4){width:13%;}
 .ac-faculty-page #panel-calculated .ac-co-table th:nth-child(5){width:7%;}
 .ac-faculty-page #panel-calculated .ac-co-table th:nth-child(6){width:10%;}
-.ac-faculty-page #panel-calculated .ac-co-table th:nth-child(7){width:10%;}
 .ac-faculty-page .ac-co-table .ac-co-chip{font-size:12px;font-weight:650;padding:5px 9px;border-color:#8ebbe8;color:#004179;}
 .ac-faculty-page .ac-co-table .ac-co-status{font-size:12px;min-width:96px;text-align:center;padding:7px 12px;}
 .ac-faculty-page .ac-co-table .ac-co-action{font-size:12px;padding:9px 13px;white-space:nowrap;}
