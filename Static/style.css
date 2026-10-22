@@ -4183,13 +4183,14 @@ body > #rrDialog[hidden]{display:none!important;}
 .cqi-faculty-page .cqi-faculty-table th:nth-child(6),.cqi-faculty-page .cqi-faculty-table td:nth-child(6),.cqi-faculty-page .cqi-faculty-table th:nth-child(7),.cqi-faculty-page .cqi-faculty-table td:nth-child(7){white-space:nowrap;overflow-wrap:normal;}
 .cqi-faculty-page .cqi-faculty-table-frame .cr-table-wrap{overflow-x:auto;overflow-y:auto;scrollbar-gutter:stable;}
 .cqi-faculty-page .cqi-faculty-table-frame .cr-table-header{overflow-x:auto;scrollbar-width:none;}
-.cqi-faculty-page .cqi-faculty-table-frame .cqi-faculty-table :is(th,td){padding:11px 12px;text-align:left;box-sizing:border-box;}
+.cqi-faculty-page .cqi-faculty-table-frame .cqi-faculty-table :is(th,td){padding:11px 12px;text-align:left;vertical-align:top;box-sizing:border-box;}
 .cqi-faculty-page .cqi-faculty-table-frame .cqi-faculty-table th{background:#fff2b9;border-top:1px solid #f4cd52;border-bottom:1px solid #f4cd52;}
 .cqi-faculty-page .cqi-faculty-table-frame .cqi-faculty-table th:first-child{border-left:1px solid #f4cd52;border-radius:7px 0 0 7px;}
 .cqi-faculty-page .cqi-faculty-table-frame .cqi-faculty-table th:last-child{border-right:1px solid #f4cd52;border-radius:0 7px 7px 0;}
 .cqi-faculty-page .cqi-faculty-table td small{display:block;margin-top:5px;font-size:10px;line-height:1.35;color:#7890a6;font-weight:400;}
 .cqi-faculty-page .cqi-faculty-table td strong{font-weight:700;}
 .cqi-faculty-status{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;padding:7px 12px;border-radius:18px;font-size:11px;font-weight:700;}
+.cqi-faculty-page .cqi-faculty-table .cqi-faculty-status{padding-inline:0;justify-content:flex-start;}
 .cqi-faculty-status.is-submitted{background:#d9edff;color:#0064a9;}
 .cqi-faculty-status.is-draft{background:#eaf0f5;color:#57738b;}
 .cqi-faculty-row-actions{display:flex;gap:6px;align-items:center;justify-content:flex-start;flex-wrap:nowrap;min-width:0;}
