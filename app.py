@@ -3,7 +3,8 @@ import time
 from functools import wraps
 import logging
 import re
-from io import BytesIO
+import csv
+from io import BytesIO, StringIO
 from logging.handlers import RotatingFileHandler
 import os
 from uuid import UUID, uuid4
@@ -13,6 +14,7 @@ from dotenv import load_dotenv
 
 from flask import (
     Flask,
+    Response,
     jsonify,
     request,
     render_template,
@@ -779,7 +781,11 @@ def decide_faculty_course_join_request(section_id, request_id):
         return jsonify({"result": result.data}), 200
     except ValueError:
         return jsonify({"error": "The section or request ID is invalid."}), 400
-    except Exception:
+    except Exception as error:
+        if _is_locked_roster_error(error):
+            return jsonify({
+                "error": "This section's gradebook is locked. Reopen it before changing roster membership."
+            }), 409
         app.logger.exception("Unable to review a student course join request")
         return jsonify({
             "error": (
@@ -956,7 +962,11 @@ def enroll_students_in_faculty_section(section_id):
         return jsonify({"results": response.data or []}), 200
     except ValueError:
         return jsonify({"error": "One or more selected student IDs are invalid."}), 400
-    except Exception:
+    except Exception as error:
+        if _is_locked_roster_error(error):
+            return jsonify({
+                "error": "This section's gradebook is locked. Reopen it before changing roster membership."
+            }), 409
         app.logger.exception("Unable to enroll students in a Faculty section")
         return jsonify({
             "error": (
@@ -991,7 +1001,11 @@ def drop_faculty_section_enrollment(section_id):
         return jsonify({"results": response.data or []}), 200
     except ValueError:
         return jsonify({"error": "The selected student ID is invalid."}), 400
-    except Exception:
+    except Exception as error:
+        if _is_locked_roster_error(error):
+            return jsonify({
+                "error": "This section's gradebook is locked. Reopen it before changing roster membership."
+            }), 409
         app.logger.exception("Unable to update a Faculty section enrollment")
         return jsonify({
             "error": (
@@ -2688,6 +2702,10 @@ def _is_gradebook_transition_conflict(error):
     ))
 
 
+def _is_locked_roster_error(error):
+    return "gradebook is locked" in str(error).lower()
+
+
 ATTAINMENT_ALGORITHM_VERSION = "co-threshold-rate-v1"
 
 
@@ -2831,6 +2849,31 @@ def _cqi_enrich_plans(plans):
             "reviewed_at": review.get("reviewed_at"),
         })
     return enriched
+
+
+def _student_cqi_plan(plan):
+    student_fields = (
+        "id",
+        "title",
+        "course_id",
+        "course_code",
+        "course_title",
+        "section_name",
+        "status",
+        "problem_statement",
+        "proposed_intervention",
+        "expected_improvement",
+    )
+    return {
+        **{field: plan.get(field) for field in student_fields},
+        "targets": [
+            {
+                "code": target.get("code", ""),
+                "category_name": target.get("category_name"),
+            }
+            for target in plan.get("targets", [])
+        ],
+    }
 
 
 def _cqi_validate_plan_data(data, section_id=None):
@@ -3293,7 +3336,12 @@ def get_student_cqi_actions():
         ).in_("section_id", section_ids).in_(
             "status", ["approved", "ongoing", "completed"]
         ).order("updated_at", desc=True).execute().data if section_ids else []
-        return jsonify({"plans": _cqi_enrich_plans(plans or [])}), 200
+        return jsonify({
+            "plans": [
+                _student_cqi_plan(plan)
+                for plan in _cqi_enrich_plans(plans or [])
+            ]
+        }), 200
     except Exception:
         app.logger.exception("Unable to load student CQI actions")
         return jsonify({"error": "Approved CQI actions could not be loaded."}), 500
@@ -3305,33 +3353,179 @@ def get_admin_cqi_register():
     if not admin_supabase:
         return jsonify({"error": "System CQI register is unavailable."}), 503
     try:
-        plans = admin_supabase.table("cqi_action_plans").select(
-            "*"
-        ).order("updated_at", desc=True).limit(1000).execute().data or []
+        filters = _admin_cqi_register_filters()
+        page_data = _admin_cqi_register_page(filters)
         categories = admin_supabase.table("cqi_categories").select(
             "id, name, description, is_active"
         ).order("name").execute().data or []
-        target_rows = admin_supabase.table("cqi_action_targets").select(
-            "category_id"
-        ).execute().data or []
-        category_plan_counts = {}
-        for row in target_rows:
-            if not row.get("category_id"):
-                continue
-            category_plan_counts[row["category_id"]] = (
-                category_plan_counts.get(row["category_id"], 0) + 1
-            )
+        category_plan_counts = page_data["category_counts"]
         categories = [
-            {**category, "plan_count": category_plan_counts.get(category["id"], 0)}
+            {
+                **category,
+                "plan_count": category_plan_counts.get(category["id"], 0),
+            }
             for category in categories
         ]
         return jsonify({
-            "plans": _cqi_enrich_plans(plans),
+            "plans": page_data["plans"],
             "categories": categories,
+            "departments": page_data["departments"],
+            "pagination": page_data["pagination"],
         }), 200
-    except Exception:
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+    except Exception as error:
+        if "admin_cqi_register_page" in str(error):
+            return jsonify({
+                "error": (
+                    "Admin CQI pagination is unavailable. Apply "
+                    "database/cqi_admin_pagination.sql."
+                )
+            }), 503
         app.logger.exception("Unable to load Admin CQI register")
         return jsonify({"error": "System CQI records could not be loaded."}), 500
+
+
+def _admin_cqi_register_filters():
+    try:
+        page = int(request.args.get("page", "1"))
+        page_size = int(request.args.get("page_size", "50"))
+    except (TypeError, ValueError):
+        raise ValueError("Page and page size must be integers.")
+    if page < 1:
+        raise ValueError("Page must be a positive integer.")
+    if page > 2_147_483_647:
+        raise ValueError("Page exceeds the supported range.")
+    if not 1 <= page_size <= 100:
+        raise ValueError("Page size must be between 1 and 100.")
+
+    department_id = request.args.get("department_id", "").strip()
+    if department_id:
+        try:
+            department_id = str(UUID(department_id))
+        except ValueError:
+            raise ValueError("Choose a valid department filter.")
+    else:
+        department_id = None
+
+    status = request.args.get("status", "").strip() or None
+    if status and status not in {
+        "draft", "submitted", "approved", "rejected", "returned",
+        "ongoing", "completed",
+    }:
+        raise ValueError("Choose a valid CQI status filter.")
+
+    search = request.args.get("search", "").strip()
+    if len(search) > 120:
+        raise ValueError("Search text must be 120 characters or fewer.")
+
+    return {
+        "page": page,
+        "page_size": page_size,
+        "department_id": department_id,
+        "status": status,
+        "search": search or None,
+    }
+
+
+def _admin_cqi_register_page(filters):
+    result = admin_supabase.rpc("admin_cqi_register_page", {
+        "p_page": filters["page"],
+        "p_page_size": filters["page_size"],
+        "p_department_id": filters["department_id"],
+        "p_status": filters["status"],
+        "p_search": filters["search"],
+    }).execute().data
+    if isinstance(result, list):
+        result = result[0] if result else None
+    if not isinstance(result, dict):
+        raise RuntimeError("Admin CQI pagination returned invalid data.")
+
+    plan_ids = [str(plan_id) for plan_id in result.get("plan_ids", [])]
+    plans = (
+        admin_supabase.table("cqi_action_plans").select("*")
+        .in_("id", plan_ids).execute().data or []
+    ) if plan_ids else []
+    enriched = _cqi_enrich_plans(plans)
+    order = {plan_id: index for index, plan_id in enumerate(plan_ids)}
+    enriched.sort(key=lambda plan: order.get(str(plan["id"]), len(order)))
+
+    total_count = int(result.get("total_count", 0))
+    page_size = filters["page_size"]
+    total_pages = math.ceil(total_count / page_size) if total_count else 0
+    return {
+        "plans": enriched,
+        "departments": result.get("departments", []),
+        "category_counts": result.get("category_counts", {}),
+        "pagination": {
+            "page": int(result.get("page", filters["page"])),
+            "page_size": page_size,
+            "total_count": total_count,
+            "total_pages": total_pages,
+            "progress_count": int(result.get("progress_count", 0)),
+            "pending_count": int(result.get("pending_count", 0)),
+        },
+    }
+
+
+@app.get("/api/admin/cqi/export")
+@require_role("admin-security")
+def export_admin_cqi_register():
+    if not admin_supabase:
+        return jsonify({"error": "System CQI register is unavailable."}), 503
+    try:
+        filters = _admin_cqi_register_filters()
+        filters["page"] = 1
+        filters["page_size"] = 100
+        output = StringIO(newline="")
+        writer = csv.writer(output)
+        writer.writerow([
+            "CQI ID", "Department", "Course", "Section", "Faculty",
+            "CO", "Attainment", "Intervention", "Status",
+        ])
+        status_labels = {
+            "draft": "Draft",
+            "submitted": "Pending Approval",
+            "approved": "Approved",
+            "rejected": "Rejected",
+            "returned": "Returned",
+            "ongoing": "In Progress",
+            "completed": "Completed",
+        }
+        while True:
+            page_data = _admin_cqi_register_page(filters)
+            for plan in page_data["plans"]:
+                target = (plan.get("targets") or [{}])[0]
+                writer.writerow([
+                    f"CQI-{str(plan['id'])[:8]}",
+                    plan.get("department_name", ""),
+                    f"{plan.get('course_code', '')} {plan.get('course_title', '')}".strip(),
+                    plan.get("section_name", ""),
+                    plan.get("faculty_name", ""),
+                    target.get("code", ""),
+                    target.get("attainment_percentage", ""),
+                    plan.get("proposed_intervention", ""),
+                    status_labels.get(plan.get("status"), plan.get("status", "")),
+                ])
+            if (
+                not page_data["plans"]
+                or filters["page"] >= page_data["pagination"]["total_pages"]
+            ):
+                break
+            filters["page"] += 1
+        return Response(
+            output.getvalue(),
+            mimetype="text/csv",
+            headers={
+                "Content-Disposition": 'attachment; filename="cqi-admin-register.csv"',
+                "Cache-Control": "private, no-store, max-age=0",
+            },
+        )
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+    except Exception:
+        app.logger.exception("Unable to export Admin CQI register")
+        return jsonify({"error": "System CQI register could not be exported."}), 500
 
 
 @app.post("/api/admin/cqi/categories")
@@ -5363,7 +5557,11 @@ def manage_department_head_roster_enrollment(section_id):
         return jsonify({"result": result.data}), 200
     except ValueError:
         return jsonify({"error": "A valid section and student are required."}), 400
-    except Exception:
+    except Exception as error:
+        if _is_locked_roster_error(error):
+            return jsonify({
+                "error": "This section's gradebook is locked. Reopen it before changing roster membership."
+            }), 409
         app.logger.exception("Unable to manage Department Head roster enrollment")
         return jsonify({
             "error": (
@@ -7471,6 +7669,43 @@ def _report_pdf(title, subtitle, metadata, headers, rows, note=None):
     return output.getvalue()
 
 
+def _compliance_report_classification(gradebook_status):
+    if gradebook_status == "locked":
+        return (
+            "LOCKED GRADEBOOK",
+            "LOCKED GRADEBOOK - NOT AN IMMUTABLE SNAPSHOT",
+        )
+    return "PRELIMINARY", "PRELIMINARY"
+
+
+def _compliance_report_response(
+    report_type, course, section, title, metadata, headers, rows, note
+):
+    pdf = _report_pdf(
+        title,
+        f'{course.get("code", "")} · {section.get("section_name", "")}',
+        metadata,
+        headers,
+        rows,
+        note,
+    )
+    filename = (
+        f'{report_type}-{course.get("code", "course")}-'
+        f'{section.get("section_name", "section")}.pdf'
+    )
+    filename = re.sub(r"[^A-Za-z0-9._-]+", "-", filename).strip("-")
+    response = send_file(
+        BytesIO(pdf),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=filename,
+    )
+    response.headers["Cache-Control"] = "private, no-store, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    return response
+
+
 @app.get("/api/reports/sections")
 @require_roles("department-head", "admin-security")
 def list_compliance_report_sections():
@@ -7549,7 +7784,7 @@ def download_compliance_report(report_type, section_id):
         section_id = _parse_uuid(section_id, "Invalid course section.")
         section_rows = (
             admin_supabase.table("course_sections")
-            .select("id, course_id, section_name, academic_year_id, faculty_id")
+            .select("id, course_id, section_name, academic_year_id, academic_term_id, faculty_id")
             .eq("id", section_id)
             .limit(1)
             .execute()
@@ -7620,6 +7855,19 @@ def download_compliance_report(report_type, section_id):
             if section.get("academic_year_id") else []
         ) or []
         year_name = year_rows[0].get("name", "") if year_rows else "—"
+        term_rows = (
+            admin_supabase.table("academic_terms")
+            .select("id, name, term_number")
+            .eq("id", section["academic_term_id"])
+            .limit(1)
+            .execute()
+            .data
+            if section.get("academic_term_id") else []
+        ) or []
+        term_name = ""
+        if term_rows:
+            term = term_rows[0]
+            term_name = term.get("name") or f'Term {term.get("term_number", "")}'
         faculty_name = "—"
         if section.get("faculty_id"):
             faculty_rows = (
@@ -7712,11 +7960,18 @@ def download_compliance_report(report_type, section_id):
                 )
             }), 409
 
-        title = report_titles[report_type]
+        report_status, report_classification = (
+            _compliance_report_classification(gradebook_status)
+        )
+        title = f"{report_status}: {report_titles[report_type]}"
         metadata = [
+            ("Report classification", report_classification),
             ("Course", f'{course.get("code", "")} — {course.get("title", "")}'),
             ("Section", section.get("section_name", "")),
+            ("Section ID", section_id),
             ("Academic Year", year_name),
+            ("Academic Term", term_name or "Not assigned"),
+            ("Term ID", section.get("academic_term_id") or "Not assigned"),
             ("Faculty", faculty_name),
             ("Generated", datetime.now(timezone.utc).strftime(
                 "%Y-%m-%d %H:%M UTC"
@@ -7942,6 +8197,10 @@ def download_compliance_report(report_type, section_id):
                 note = (
                     "This report contains only your own released Course "
                     "Outcome results. It does not include classmates' scores."
+                )
+                return _compliance_report_response(
+                    report_type, course, section, title, metadata,
+                    headers, rows, note,
                 )
             else:
                 enrollments = (
@@ -8199,29 +8458,10 @@ def download_compliance_report(report_type, section_id):
                     ])
             note = "Only approved, ongoing, and completed CQI plans are included. Draft, submitted, returned, and rejected plans are excluded."
 
-        pdf = _report_pdf(
-            title,
-            f'{course.get("code", "")} · {section.get("section_name", "")}',
-            metadata,
-            headers,
-            rows,
-            note,
+        return _compliance_report_response(
+            report_type, course, section, title, metadata,
+            headers, rows, note,
         )
-        filename = (
-            f'{report_type}-{course.get("code", "course")}-'
-            f'{section.get("section_name", "section")}.pdf'
-        )
-        filename = re.sub(r"[^A-Za-z0-9._-]+", "-", filename).strip("-")
-        response = send_file(
-            BytesIO(pdf),
-            mimetype="application/pdf",
-            as_attachment=True,
-            download_name=filename,
-        )
-        response.headers["Cache-Control"] = "private, no-store, max-age=0"
-        response.headers["Pragma"] = "no-cache"
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        return response
     except ValueError as error:
         return jsonify({"error": str(error)}), 400
     except Exception:
