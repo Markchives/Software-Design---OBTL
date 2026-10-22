@@ -6040,5 +6040,36 @@ body.assessment-attainment-scroll-page .so-main {
 body.assessment-attainment-scroll-page .so-main > * {
   flex-shrink: 0 !important;
 }
+
+/* Shared CQI table actions across Faculty, Student, Department Head and Admin. */
+:is(.cqi-faculty-page,.cqi-student-page,.cqi-dept-head-page,.cqi-admin-page) table button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  max-width: 100%;
+  min-height: 34px;
+  padding: 7px 9px;
+  border: 1px solid #b5d5ef;
+  border-radius: 7px;
+  background: #fff;
+  color: #07518c;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  white-space: normal;
+  cursor: pointer;
+  transition: background-color .15s, border-color .15s;
+}
+:is(.cqi-faculty-page,.cqi-student-page,.cqi-dept-head-page,.cqi-admin-page) table button:hover {
+  background: #edf6ff;
+  border-color: #07518c;
+}
+:is(.cqi-faculty-page,.cqi-student-page,.cqi-dept-head-page,.cqi-admin-page) table button:focus-visible {
+  outline: 2px solid #07518c;
+  outline-offset: 3px;
+}
 .rp-print-status.is-error { color: #a12434; }
 @media (max-width: 620px) { .rp-print-center { padding: 16px; } .rp-print-actions { grid-template-columns: 1fr; } }
