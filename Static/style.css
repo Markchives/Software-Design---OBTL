@@ -4251,6 +4251,9 @@ body > #rrDialog[hidden]{display:none!important;}
 :is(.cqi-dept-head-page, .gl-dept-head-page, .rp-dept-head-page) .cqi-dh-actions{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;}
 :is(.cqi-dept-head-page, .gl-dept-head-page, .rp-dept-head-page) .cqi-dh-outline,:is(.cqi-dept-head-page, .gl-dept-head-page, .rp-dept-head-page) .cqi-dh-gold{border-radius:7px;font-weight:700;padding:7px 12px;cursor:pointer;white-space:nowrap;line-height:1.2;font-size:12px;}
 :is(.cqi-dept-head-page, .gl-dept-head-page, .rp-dept-head-page) .cqi-dh-outline{background:#fff;color:#07518c;border:1px solid #b5d5ef;}
+.cqi-dept-head-page .cqi-dh-table .cqi-dh-review-details{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;max-width:100%;min-height:34px;padding:7px 9px;white-space:normal;text-align:center;transition:background-color .15s,border-color .15s;}
+.cqi-dept-head-page .cqi-dh-review-details:hover{background:#edf6ff;border-color:#07518c;}
+.cqi-dept-head-page .cqi-dh-review-details:focus-visible{outline:2px solid #07518c;outline-offset:3px;}
 :is(.cqi-dept-head-page, .gl-dept-head-page, .rp-dept-head-page) .cqi-dh-gold{background:#ffc400;color:#003e74;border:1px solid #ffc400;}
 :is(.cqi-dept-head-page, .gl-dept-head-page, .rp-dept-head-page) .cqi-dh-status{display:inline-block;padding:6px 10px;border-radius:999px;font-weight:700;white-space:nowrap;font-size:11px;}
 :is(.cqi-dept-head-page, .gl-dept-head-page, .rp-dept-head-page) .cqi-dh-status.submitted{background:#dcefff;color:#1668a9;}

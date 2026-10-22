@@ -744,7 +744,7 @@ function studentSectionScopedUrl(path) {
                     '<td><strong>' + esc(target.code || '—') + '</strong><small>' + esc(attainment) + ' / target ' + esc(targetValue) + '</small></td>' +
                     '<td>' + esc(plan.problem_statement) + '</td><td>' + esc(plan.proposed_intervention) + '</td>' +
                     '<td><span class="cqi-dh-status ' + esc(plan.status) + '">' + esc(label(plan.status)) + '</span></td>' +
-                    '<td><button type="button" data-action="evidence" data-id="' + esc(plan.id) + '">Review details</button></td></tr>';
+                    '<td><button class="cqi-dh-outline cqi-dh-review-details" type="button" data-action="evidence" data-id="' + esc(plan.id) + '">Review details</button></td></tr>';
             }).join('');
             apply();
             updateCounts();
